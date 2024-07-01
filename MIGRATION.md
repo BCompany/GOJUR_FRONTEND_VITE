@@ -33,6 +33,7 @@ Removi a dependência do node_sass não achei nenhum arquivo .SCSS então acho q
 **Tempo de build**:
 
 Código antigo CRA = 80 segundos para buildar
+
 Código com VITE = 12 segundos para buildar
 
 **Uma melhoria de 85% na velocidade do build.**
@@ -43,7 +44,7 @@ Tamanho do build gerado CRA: 7,9 MB
 
 Tamanho do build gerado VITE: novo 6,0 MB
 
-**Uma redução de 24% na velocidade do build.**
+**Uma redução de 24% no tamanho do build.**
 
 ## Novos comandos do projeto:
 
