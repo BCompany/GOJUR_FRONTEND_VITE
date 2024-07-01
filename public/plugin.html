@@ -1,0 +1,145 @@
+<<head>
+  <script type="text/javascript">
+
+    // When started page go to API and get back HTML configured with colors if define by user
+    window.onload = function() {
+
+      // IS IMPORTANT DEFINE THE URL FOR LOGIN USER AND
+      // BELLOW IS THE 3 EXAMPLES FOR TESTES | HOMO | API 
+      // USE API EXAMPLE TO REAL IMPLEMENTATIONS
+
+      // LOCAL HOST URL - TEST
+      let URL = 'http://localhost:60523/Usuario/LoginPluginView';               // localhost test
+
+      // HOMO URL - HOMOLOGACÃO
+      // let URL ='http://homoapi.gojur.com.br/Usuario/LoginPluginView'         // homo server
+
+      // API URL - PRODUÇÃO
+      // let URL ='http://api.gojur.com.br/Usuario/LoginPluginView'             // production server 
+
+      var urlParameters = GetParameters();
+
+      // split parameters and declare variables with default values
+      var queryStringParameters = urlParameters.split('?')
+      var color = '00000';
+      var background = 'FFFFFF';
+      var layout = 'V'
+
+      // if exists query string get values for color, background and layout
+      if (queryStringParameters.length > 1){
+        var parameters = queryStringParameters[1].split('&')
+
+        // color parameter
+        var colorParameter = parameters.find(x => x.includes('color'))
+        console.log('parameter', colorParameter)
+        if (colorParameter){
+          color = colorParameter.substr(6)
+        }
+
+        // background parameter
+        var backgroundParameter = parameters.find(x => x.includes('background'))
+        if (backgroundParameter){
+          background = backgroundParameter.substr(11)
+        }
+
+        // layout parameter
+        var layoutParameter = parameters.find(x => x.includes('layout'))
+        if (layoutParameter){
+          layout = layoutParameter.substr(7)
+        }
+      }
+
+      fetch(URL, {
+        method: 'POST',
+        body: decodeURIComponent(JSON.stringify({ color: color, background: background, layout: layout })),
+        headers: {"Content-type": "application/json; charset=UTF-8"}
+      })
+      .then(response => response.json())
+      .then(data => {
+        // save HTML plugin on content
+        var content = document.getElementById('content')
+        content.innerHTML += data
+
+        // configure event click enter for email input
+        var inputEmail = document.getElementById("email");
+        inputEmail.addEventListener("keypress", function(event) {
+          if (event.key === "Enter") {
+            handleSubmit();
+          }
+        });
+
+        // configure event click enter for password input
+        var inputPassword = document.getElementById("password");
+        inputPassword.addEventListener("keypress", function(event) {
+          if (event.key === "Enter") {
+            handleSubmit();
+          }
+        });
+
+      })
+    }
+
+    function GetParameters() {
+      
+      // get URL parameters from document.location.href and remove address domain to get only parameters
+      // this replaces are considerer all domains possible
+      var urlParameters = document.location.href.replace('https://homoapp.gojur.com.br/plugin/login?', '')
+      urlParameters = document.location.href.replace('http://homoapp.gojur.com.br/plugin/login?', '')
+      urlParameters = document.location.href.replace('http://gojur.com.br/plugin/login?', '')
+      urlParameters = document.location.href.replace('https://gojur.com.br/plugin/login?', '')
+      urlParameters = document.location.href.replace('http://localhost:3000/plugin/login?', '')
+
+      return urlParameters;
+    }
+
+    // handle sabe submission
+    const handleSubmit = async () => {
+
+      // get values from input hidden
+      const inputEmail = document.getElementById('email')
+      const inputPassword = document.getElementById('password')
+      const baseURL = document.getElementById('url')
+
+      if (inputEmail.value.length == 0 || inputPassword.value.length == 0) {
+        alert('Os campos usuário e senha devem ser preenchidos')
+        return;
+      }
+
+      try {
+
+        // default URL api endpoint
+        const URL = `${baseURL.value}/Usuario/Logar`
+        fetch(URL, {
+          method: 'POST',
+          body: JSON.stringify({ email: inputEmail.value, password: inputPassword.value }),
+          headers: {"Content-type": "application/json; charset=UTF-8"}
+        })
+        .then(response => response.json())
+        .then(data => {
+
+          // when login email exists, validated and redirect
+          if (data.email){
+            window.open(`/newUser?token=${data.token}`, '_parent');
+          }
+
+          // validate message when login is rejected
+          if (data.Message) {
+            alert(data.Message)
+          }
+        })
+      } catch (err) {
+
+        // if something wrong, redirect to login page
+        setTimeout(() => {
+          window.open(encodeURI(`/loginreject?logo=${logo}&message=${err.response.data.Message}`,),'_parent',);
+        }, 500);
+      }
+  }
+
+  </script>
+
+</head>
+
+<body>
+  <div id="content"></div>
+</body>

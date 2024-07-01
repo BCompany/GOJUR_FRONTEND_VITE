@@ -1,0 +1,6 @@
+import { string } from "yup";
+
+export interface OpposingParty {
+    id: string;
+    value: string;
+}
