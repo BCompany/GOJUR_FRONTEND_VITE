@@ -1,30 +1,30 @@
-# React + TypeScript + Vite
+<h1 align="center">
+GoJur - Software
+</h1>
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+<p align="center">Instruções básicas para execução do projeto</p>
 
-Currently, two official plugins are available:
+<hr>
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Dependencias
 
-## Expanding the ESLint configuration
+1. Node Js - versão 20 LTS
+2. Yarn ou NPM
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Instalação
 
-- Configure the top-level `parserOptions` property like this:
+1. Baixe o projeto.<br />
+2. Acesse o diretório do projeto e abra o mesmo no VScode.
+3. Execute o comando yarn ou npm install no terminal integrado do VScode.
+4. Após concluido a instalação dos pacotes do projeto, crie na raiz do projeto
+   um arquivo .env para setar as variaveis ambiente.
+5. Rode `yarn dev` para subir o servidor localmente
+6. Rode `yarn build` para gerar os arquivos de produção.
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
+## Variaveis Ambientes
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+REACT_APP_ENVIROMENT= 'DEVELOPMENT' ⇒ Ambiente que a aplicação esta executando
+
+REACT_APP_BASE_URL_API= 'http://homoapi.gojur.com.br' ⇒ URL Base para as chamadas a api
+
+REACT_APP_BASE_URL_REDIRECT= 'https://homo.gojur.com.br/' ⇒ Base URL para redirects da navegação
