@@ -8,6 +8,8 @@ Vite requires Node.js version 18+ or 20+. However, some templates require a high
 
 **Antes**:
 
+Node v16
+
 ```
 "react": "^17.0.1",
 "react-dom": "17.0.2",
@@ -15,6 +17,8 @@ Vite requires Node.js version 18+ or 20+. However, some templates require a high
 ```
 
 **Agora**:
+
+Node v20
 
 ```
 "react": "^18.3.1",
