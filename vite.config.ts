@@ -30,4 +30,7 @@ export default defineConfig({
       ...resolvedAliases,
     },
   },
+  define: {
+    global: 'window',
+  },
 });
