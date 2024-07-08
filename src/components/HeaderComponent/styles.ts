@@ -7,14 +7,13 @@ interface headerProps {
 
 export const Container = styled.div<headerProps>`
   width: 100%;
-  height: 1.2rem;
+  height: 1.5rem;
   background: rgba(0, 0, 0, 0.1);
   color: var(--primary);
   display: flex;
   align-items: center;
   justify-content: space-between;
   transition: 0.3s all;
-  /* cursor: ${props => (props.cursorMouse ? 'grabbing' : 'normal')}; */
 
   > section {
     flex: 1;

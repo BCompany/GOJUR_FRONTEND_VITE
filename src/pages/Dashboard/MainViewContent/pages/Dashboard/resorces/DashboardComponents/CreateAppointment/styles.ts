@@ -89,14 +89,12 @@ export const Container = styled.form`
 
 export const ModalContent = styled.form<DragProps>`
   flex: 1;
-  /* height: 32rem; */
   background-color: transparent;
   padding: 0.25rem 1rem;
   display: flex;
   flex-direction: column;
   max-height: 95vh;
   overflow: auto;
-  /* border: 1.5px solid black; */
 
   .autoComplete {
     font-size: 0.75rem;

@@ -14,14 +14,9 @@ interface HeaderProps extends AreaHTMLAttributes<HTMLAreaElement> {
   action?: any;
 }
 
-const HeaderComponent: React.FC<HeaderProps> = ({
-  title,
-  children,
-  cursor,
-  action,
-  ...rest
-}) => {
+const HeaderComponent: React.FC<HeaderProps> = ({title, children, cursor, action, ...rest}) => {
   const [haveAction, setHaveAction] = useState(false);
+
 
   useEffect(() => {
     if (action) {
@@ -29,11 +24,14 @@ const HeaderComponent: React.FC<HeaderProps> = ({
     }
   }, []);
 
+
   const handleClose = useCallback(() => {
     console.log('Fechar');
   }, []);
+
+
   return (
-    <Container cursorMouse={cursor} handleClose={haveAction}>
+    <Container id='Container' cursorMouse={cursor} handleClose={haveAction}>
       <section {...rest}>
         <p>{title}</p>
       </section>
