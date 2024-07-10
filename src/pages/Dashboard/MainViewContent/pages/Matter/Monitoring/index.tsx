@@ -1,10 +1,11 @@
-import React, { useState, useEffect, } from 'react';
+import React, { useState, useEffect, ChangeEvent, useCallback } from 'react';
 import { HeaderPage } from 'components/HeaderPage';
 import { useHistory } from 'react-router-dom';
 import api from 'services/api';
 import { Overlay } from 'Shared/styles/GlobalStyle';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import { AiOutlineArrowLeft } from 'react-icons/ai';
+import { BsFunnel } from 'react-icons/bs';
 import { FcApproval, FcCancel } from "react-icons/fc";
 import { MdWarning } from "react-icons/md";
 import { Container, Table, Center, TollBar } from './styles';
@@ -24,38 +25,108 @@ interface StatusOperationDTO {
 const Monitoring: React.FC = () => {
 
   const history = useHistory();
+  const [primaryInstanceListBase, setPrimaryInstanceListBase] = useState<StatusOperationDTO[]>([]);
   const [primaryInstanceList, setPrimaryInstanceList] = useState<StatusOperationDTO[]>([]);
   const [superiorInstanceList, setSuperiorInstanceList] = useState<StatusOperationDTO[]>([]);
   const token = localStorage.getItem("@GoJur:token");
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [desUF, setDesUF] = useState<string>("00")
+  const [secretJustice, setSecretJustice] = useState<string>("00")
 
   useEffect(() => {
-
     LoadStatusOperation()
-
   }, [])
 
-  async function LoadStatusOperation() {
 
+  async function LoadStatusOperation() {
     const response = await api.get<StatusOperationDTO[]>('/LegalData/StatusOperacao', {
-      params: {
-        token
-      }
+      params: {token}
     });
 
     // Get all 1º and 2º instance dataSources - remove all court that not correspond from 1º and 2º instance besidesa TJTO tha we do not covery
-    setPrimaryInstanceList(response.data.filter(x => x.isRelevant == "S" 
-                                                  && x.scrapperAlias != "TJTO"
-                                                  && x.scrapperAlias != "STF"
-                                                  && x.scrapperAlias != "STJ"
-                                                  && x.scrapperAlias != "TST"
-                                                ))
+    setPrimaryInstanceListBase(response.data.filter(x => x.isRelevant == "S" && x.scrapperAlias != "TJTO" && x.scrapperAlias != "STF" && x.scrapperAlias != "STJ" && x.scrapperAlias != "TST"))
+    setPrimaryInstanceList(response.data.filter(x => x.isRelevant == "S" && x.scrapperAlias != "TJTO" && x.scrapperAlias != "STF" && x.scrapperAlias != "STJ" && x.scrapperAlias != "TST"))
 
     // Get all superior dataSources (STF, STJ, TST)
-    setSuperiorInstanceList(response.data.filter(x => x.scrapperAlias == "STF"  || x.scrapperAlias == "TST"))
+    setSuperiorInstanceList(response.data.filter(x => x.scrapperAlias == "STF" || x.scrapperAlias == "TST"))
 
     setIsLoading(false);
   }
+
+
+  const Filter = useCallback(() => {
+    const filterList1: StatusOperationDTO[] = []
+
+      if(desUF === "00" && secretJustice === "00"){
+        primaryInstanceListBase.map(item => {
+          return filterList1.push({
+            id: item.id,
+            description: item.description,
+            enabled: item.enabled,
+            state: item.state,
+            secretJustice: item.secretJustice,
+            statusOperation: item.statusOperation,
+            scrapperAlias: item.scrapperAlias,
+            isRelevant: item.isRelevant,
+            instance: item.instance
+          })
+        })
+      }
+      else if(desUF !== "00" && secretJustice !== "00"){
+        primaryInstanceListBase.map(item => {
+          if(item.state === desUF && item.secretJustice === secretJustice){
+            return filterList1.push({
+              id: item.id,
+              description: item.description,
+              enabled: item.enabled,
+              state: item.state,
+              secretJustice: item.secretJustice,
+              statusOperation: item.statusOperation,
+              scrapperAlias: item.scrapperAlias,
+              isRelevant: item.isRelevant,
+              instance: item.instance
+            })
+          }
+        })
+      }
+      else if(desUF !== "00"){
+        primaryInstanceListBase.map(item => {
+          if(item.state === desUF){
+            return filterList1.push({
+              id: item.id,
+              description: item.description,
+              enabled: item.enabled,
+              state: item.state,
+              secretJustice: item.secretJustice,
+              statusOperation: item.statusOperation,
+              scrapperAlias: item.scrapperAlias,
+              isRelevant: item.isRelevant,
+              instance: item.instance
+            })
+          }
+        })
+      }
+      else{
+        primaryInstanceListBase.map(item => {
+          if(item.secretJustice === secretJustice){
+            return filterList1.push({
+              id: item.id,
+              description: item.description,
+              enabled: item.enabled,
+              state: item.state,
+              secretJustice: item.secretJustice,
+              statusOperation: item.statusOperation,
+              scrapperAlias: item.scrapperAlias,
+              isRelevant: item.isRelevant,
+              instance: item.instance
+            })
+          }
+        })
+      }
+      
+      setPrimaryInstanceList(filterList1)
+  }, [desUF, secretJustice]);
+
 
   if (isLoading) {
     return (
@@ -68,32 +139,88 @@ const Monitoring: React.FC = () => {
     );
   }
 
+
   return (
     <>
-      <Container>
+      <Container id='Container'>
         <HeaderPage />
+        <br />
 
-        <TollBar>
-
+        <TollBar id='TollBar'>
           <div className="buttonReturn">
-            <button
-              className="buttonLinkClick"
-              title="Clique para retornar a lista de processos"
-              onClick={() => history.push('../../../publication')}
-              type="submit"
-            >
+            <br />
+            <button type="submit" className="buttonLinkClick" title="Clique para retornar a lista de processos" onClick={() => history.push('../../../publication')}>
               <AiOutlineArrowLeft />
               Retornar
             </button>
           </div>
 
+          <div className="filters">
+            <label htmlFor="type" style={{float:"left", width:'150px'}}>
+              Segredo de Justiça
+              <select 
+                className='desUFSelect'
+                name="type"
+                value={secretJustice}
+                onChange={(e: ChangeEvent<HTMLSelectElement>) => setSecretJustice(e.target.value)}
+                style={{backgroundColor:"white"}}
+              >
+                <option value="00">AMBOS</option>
+                <option value="S">SIM</option>
+                <option value="N">NÃO</option>
+              </select>
+            </label>
+
+            <label htmlFor="type" style={{float:"left", width:'150px', marginLeft:'50px'}}>
+              Estado
+              <select 
+                className='desUFSelect'
+                name="type"
+                value={desUF}
+                onChange={(e: ChangeEvent<HTMLSelectElement>) => setDesUF(e.target.value)}
+                style={{backgroundColor:"white"}}
+              >
+                <option value="00">TODOS</option>
+                <option value="AC">ACRE</option>
+                <option value="AL">ALAGOAS</option>
+                <option value="AP">AMAPA</option>
+                <option value="AM">AMAZONAS</option>
+                <option value="BA">BAHIA</option>
+                <option value="CE">CEARÁ</option>
+                <option value="DF">DISTRITO FEDERAL</option>
+                <option value="ES">ESPÍRITO SANTO</option>
+                <option value="GO">GOIÁS</option>
+                <option value="MA">MARANHÃO</option>
+                <option value="MT">MATO GROSSO</option>
+                <option value="MS">MATO GROSSO DO SUL</option>
+                <option value="MG">MINAS GERAIS</option>
+                <option value="PA">PARÁ</option>
+                <option value="PB">PARAÍBA</option>
+                <option value="PR">PARANÁ</option>
+                <option value="PE">PERNAMBUCO</option>
+                <option value="PI">PIAUÍ</option>
+                <option value="RR">RORAIMA</option>
+                <option value="RO">RONDÔNIA</option>
+                <option value="RJ">RIO DE JANEIRO</option>
+                <option value="RN">RIO GRANDE DO NORTE</option>
+                <option value="RS">RIO GRANDE DO SUL</option>
+                <option value="SC">SANTA CATARINA</option>
+                <option value="SP">SÃO PAULO</option>
+                <option value="SE">SERGIPE</option>
+                <option value="TO">TOCANTINS</option>
+              </select>
+            </label>
+
+            <button className="buttonClick" type="button" onClick={() => Filter()} style={{marginTop:'18px', marginLeft:'40px'}}>
+              <BsFunnel />
+              Filtrar
+            </button>
+
+          </div>
         </TollBar>
 
-        <Center>
-
-          <br />
-          <br />
-
+        <Center id='Center'>
+          <br /><br />
           <div className="flex-box container-box">
             <div className="content-box">
               <p>
@@ -107,11 +234,8 @@ const Monitoring: React.FC = () => {
 
           {/* FIRST / SECOND INSTANCE TABLE */}
           <div className="flex-box container-box">
-
             <div className="content-box">
-
-              <Table>
-
+              <Table id='Table1'>
                 <table>
                   <tr>
                     <th style={{ width: '50%', textAlign: 'left' }}>Tribunal</th>
@@ -131,11 +255,8 @@ const Monitoring: React.FC = () => {
                     </tr>
                   ))}
                 </table>
-
               </Table>
-
             </div>
-
           </div>
 
           <br />
@@ -144,11 +265,8 @@ const Monitoring: React.FC = () => {
 
           {/* THIRDY AND FORTHY INSTANCE TABLE */}
           <div className="flex-box container-box">
-
             <div className="content-box">
-
-              <Table>
-
+              <Table id='Table2'>
                 <table>
                   <tr>
                     <th style={{ width: '50%', textAlign: 'left' }}>Tribunal</th>
@@ -168,31 +286,22 @@ const Monitoring: React.FC = () => {
                     </tr>
                   ))}
                 </table>
-
               </Table>
-
             </div>
-
           </div>
 
           <br />
 
           <div style={{ color: "red" }} className='title'>Tribunais não Atendidos</div>
-
           
           {/* OS TRIBUNAIS ABAIXO FORAM COLOCADOS DE FORMA FIXA POIS NO MOMENTO NÃO SÃO ATENDIDOS PELO LEGAL DATA
-
           FOI SUGERIDO A CRIAÇÃO DE UM STATUS ESPECÍFICO PARA ESTES CASOS, MAS FOI DEFINIDO COLOCAR DE FORMA FIXA NO CÓDIGO MESMO
-          
           CONFORME REUNIÃO REALIZADA EM 27/02/2024: MARCELO | MATHEUS | SIDNEY */}
 
           {/* INATIVE INSTANCES TABLE */}
           <div className="flex-box container-box">
-
             <div className="content-box">
-
-              <Table>
-
+              <Table id='Table3'>
                 <table>
                   <tr>
                     <th style={{ width: '50%', textAlign: 'left' }}>Tribunal</th>
@@ -201,7 +310,6 @@ const Monitoring: React.FC = () => {
                     <th style={{ width: '10%' }}>Segredo Justiça</th>
                     <th style={{ width: '10%' }}>Status</th>
                   </tr>
-
 
                   <tr>
                     <td style={{ width: '50%', textAlign: 'left' }}>Tribunal de Justiça TO - EProc</td> 
@@ -219,15 +327,10 @@ const Monitoring: React.FC = () => {
                     <td style={{ width: '10%' }}><FcCancel title="Esta fonte de dados não faz parte da cobertura de robôs do Gojur" /></td>
                   </tr>
                 </table>
-
               </Table>
-
             </div>
-
           </div>
-
         </Center>
-
       </Container>
     </>
   );

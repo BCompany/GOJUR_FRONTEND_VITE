@@ -343,17 +343,6 @@ const TopNavBar: React.FC<NavigationProps> = ({
         {chat ? <TiMessageTyping /> : <BiSupport />}
       </button>
 
-      {/* today is showing only by publication route */}
-      {/* {pathname === '/publication' && (
-        <button type="button" onClick={() => handleShowVideoTrainning(true)} title="Assista o video de treinamento deste módulo do GOJUR">
-          <BsFillCameraVideoFill />
-        </button>
-      )} */}
-
-      {/* <button type="button" onClick={handleSettings} title="Configurações">
-        <BsGearFill />
-      </button> */}
-
       <div className='buttonHamburguer'>
         <button
           type="button"

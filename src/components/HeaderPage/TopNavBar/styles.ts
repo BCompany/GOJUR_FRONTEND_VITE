@@ -87,7 +87,7 @@ export const Container = styled.div<NavigationProps>`
     padding-right:1rem;
     padding-top:0.5rem;
     position:relative;
-    width:50px;
+    width:36px;
     margin-left:7px;
     
     >div{

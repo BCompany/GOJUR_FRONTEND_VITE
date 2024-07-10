@@ -14,7 +14,7 @@ const APIDocumentation = () => {
 
 
   useEffect(() => {
-    const url = 'http://bcompany-homo.ddns.net:8083/swagger/docs/v1';
+    const url = 'https://api.gojur.com.br/swagger/docs/v1';
 
     fetch(url)
       .then(response => response.json())
