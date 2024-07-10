@@ -76,7 +76,7 @@ export const Container = styled.div`
                 flex: 1;
                 font-size: 0.675rem;
                 padding: 0.25rem;
-                background-color: rgba(255,255,255,0.25);
+                background-color: #FFFFFF;
                 width: 100%;
                 border-bottom: 1px solid rgba(0,0,0,0.15);
                 color: var(--secondary);

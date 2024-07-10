@@ -63,7 +63,7 @@ export const Container = styled.div`
             }
 
             textarea {
-                background-color: var(--white);
+                background-color: #FFFFFF;
                 border: 1px solid rgba(0, 0, 0, 0.15);
                 width: 100%;
                 @media (min-width: 480px) {

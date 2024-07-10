@@ -62,7 +62,7 @@ export const Container = styled.div`
                 .inputField {
 
                     font-size: 0.675rem;
-                    background-color: rgba(255,255,255,0.25);
+                    background-color: #FFFFFF;
                     width: 100%;
                     height:40px;
                     border-bottom: 1px solid rgba(0,0,0,0.15);
@@ -84,7 +84,7 @@ export const Container = styled.div`
             }
 
             .css-yk16xz-control{
-                background-color: rgba(255,255,255,0.25);
+                background-color: #FFFFFF;
             }
         }
 
@@ -157,7 +157,7 @@ export const Container = styled.div`
                     flex: 1;
                     font-size: 0.675rem;
                     padding: 0.25rem;
-                    background-color: rgba(255,255,255,0.25);
+                    background-color: #FFFFFF;
                     width: 100%;
                     border-bottom: 1px solid rgba(0,0,0,0.15);
                     color: var(--secondary);
@@ -215,11 +215,10 @@ export const Container = styled.div`
                 margin-top:10px;
                 border: 1px solid rgba(0,0,0, 0.15);
                 width: 100%;
-                background-color: rgba(255,255,255,0.25);
+                background-color: #FFFFFF;
                 min-height: 4rem;
                 height: auto;
                 padding: 0.5rem;
-                background-color: var(--white);
                 color: var(--secondary);
                 font-size: 0.75rem;
                 border-radius: 0.25rem;
