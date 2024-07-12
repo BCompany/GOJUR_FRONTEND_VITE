@@ -614,13 +614,11 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
 
   const handleDragControllMouseOver = useCallback(() => {
-    console.log('DRAG CONTROL OVER: ', dragControll)
     setDragControll(true);
   }, [dragControll]); // Controle do drag and drop
 
 
   const handleDragControllMouseOut = useCallback(() => {
-    console.log('DRAG CONTROL OUT: ', dragControll)
     setDragControll(false);
   }, [dragControll]); // Controle do drag and drop
 
@@ -1142,7 +1140,6 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     const newStartDate= new Date(startDateN);
     const newEndDate=new Date();
     const result = Math.ceil((newEndDate.getTime() - newStartDate.getTime()) / (1000*60*60*24))
-    console.log('DATE RESULT: ', result)
 
     if(!confirmSave && (result > 1)){
       setCheckMessage(true)
