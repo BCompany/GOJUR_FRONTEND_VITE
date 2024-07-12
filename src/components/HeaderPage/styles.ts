@@ -18,29 +18,18 @@ export const Container = styled.div`
     margin-left: 0.5rem;
     font-size: 0.675rem;
     width: 15rem;
-    /* z-index:9990; */
     border-radius: 25px;
   }
 
   #tipMesssage {
     background: transparent;
     color: var(--blue);
-    width: 2rem;
-    height: 2rem;
+    width: 3rem;
+    height: 3rem;
     margin-left: 0.3rem;
     color: var(--blue-twitter);
     cursor: pointer;
   }
-
-  /* .btn {
-    width: 120px;
-    background-color: var(--blue-twitter);
-    border: none;
-    color: #fff;
-    padding: 12px 15px;
-    border-radius: 5px;
-    margin-right: 10px;
-  } */
 
   .flash {
     animation-name: flash;
@@ -104,6 +93,7 @@ export const Container = styled.div`
     color: #fff;
   }
 `;
+
 
 export const ContainerMobile = styled.div`
   width: 100%;
@@ -208,6 +198,7 @@ export const ContainerMobile = styled.div`
   }
 `;
 
+
 export const Multi = styled(MultiSelect)`
   font-size: 0.7rem;
   background-color: var(--white);
@@ -218,11 +209,6 @@ export const Multi = styled(MultiSelect)`
     width: 13vw;
     height: 1.6rem;
   }
-  /*
-  svg:first-child{
-    width: 20px;
-    height: 20px;
-  } */
 
   &::placeholder {
     color: var(--primary);
@@ -232,6 +218,7 @@ export const Multi = styled(MultiSelect)`
     border: none;
   }
 `;
+
 
 export const User = styled.div`
   width: 100%;
@@ -249,6 +236,7 @@ export const User = styled.div`
     color: var(--orange);
   }
 `;
+
 
 export const Avatar = styled.img`
   width: 3rem;

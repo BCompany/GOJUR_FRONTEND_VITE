@@ -13,22 +13,41 @@ export const Container = styled.div`
 
 export const TollBar = styled.div`
   display:flex;
-  max-height:1.5rem;
   font-size:0.7rem;
   justify-content:space-between;
   color:#0177C0;
+  width:80%;
+  margin-left:10%;
 
   .buttonReturn {
-    display:flex;
-    flex:1;
     font-size:0.8rem;
-    justify-content:center;
+    width:10%;
   }
+
+  .filters {
+    font-size:0.8rem;
+    width:80%;
+
+    input, select {
+      flex: 1;
+      font-size: 0.675rem;
+      padding: 0.25rem;
+      background-color: rgba(255,255,255,0.25);
+      width: 99%;
+      border-bottom: 1px solid rgba(0,0,0,0.15);
+      color: var(--secondary);
+
+      &:focus {
+        border-bottom: 1px solid var(--orange);
+      }
+    }
+  }
+
 `;
+
 
 export const Table = styled.div`
   overflow: auto;
-
   width:80%;
   margin-left:10%;
 
@@ -71,13 +90,14 @@ export const Table = styled.div`
 
       svg
       {
-          width:1.1rem; 
-          height:1.1rem;
-          cursor:pointer;
+        width:1.1rem; 
+        height:1.1rem;
+        cursor:pointer;
       }
     }
   }
 `;
+
 
 export const Center = styled.div`
   .flex-box {
@@ -98,7 +118,6 @@ export const Center = styled.div`
       font-size:0.85rem;
       font-weigth:800;
       color: #0177C0;
-
   }
 
   .content-box {
@@ -106,5 +125,3 @@ export const Center = styled.div`
     width: 99%;
   }
 `;
-
-
