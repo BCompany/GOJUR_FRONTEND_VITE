@@ -16,6 +16,7 @@ import MatterPrintCover from 'pages/Printers/MatterCover';
 import PrinterLabel from 'pages/Printers/MatterLabel';
 import Publication from 'pages/Dashboard';
 import Covarages from 'pages/Coverages';
+import APIDocumentation from 'pages/APIDocumentation';
 import Subscriber from 'pages/Subscriber';
 import FinancialInformation from 'pages/FinancialInformation';
 import CustomerLawyer from 'pages/CustomerLawyer';
@@ -369,6 +370,7 @@ const Routes: React.FC = () => {
       />
       <Route path="/companyfiles" exact component={DashboardPath} isPrivate />
       <Route path="/matter/monitoring" exact component={Matter} isPrivate />
+      <Route path="/apidocumentation" exact component={APIDocumentation} isPrivate />
     </Switch>
   );
 };
