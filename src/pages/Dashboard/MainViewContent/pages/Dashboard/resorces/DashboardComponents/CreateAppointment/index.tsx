@@ -613,8 +613,15 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   } // mudança de data final
 
 
-  const handleDragControll = useCallback(() => {
-    setDragControll(!dragControll);
+  const handleDragControllMouseOver = useCallback(() => {
+    console.log('DRAG CONTROL OVER: ', dragControll)
+    setDragControll(true);
+  }, [dragControll]); // Controle do drag and drop
+
+
+  const handleDragControllMouseOut = useCallback(() => {
+    console.log('DRAG CONTROL OUT: ', dragControll)
+    setDragControll(false);
   }, [dragControll]); // Controle do drag and drop
 
 
@@ -1780,6 +1787,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   return (
     <DropArea
       visible={isClosed}
+      id="DropArea"
     >
       {big && (
         <ResponsiveGridLayout
@@ -1838,7 +1846,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                 <br />
               </ModalConfirm>
               
-              <ModalRecurrence show={openModalRecurrence}>
+              <ModalRecurrence id='ModalRecurrence' show={openModalRecurrence}>
                 <div style={{marginLeft:'15px', marginTop:'10px', marginRight:'10px'}}>
                   Regras de Recorrência
                   <br />
@@ -2049,14 +2057,15 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
               </ModalRecurrence>
 
               <HeaderComponent
+                id='HeaderComponent'
                 title="Agenda"
                 cursor
                 action={handleCloseModalLog}
-                onMouseOver={handleDragControll}
-                onMouseOut={handleDragControll}
+                onMouseOver={handleDragControllMouseOver}
+                onMouseOut={handleDragControllMouseOut}
               />
 
-              <ModalContent isDrag={onDrag}>
+              <ModalContent id='ModalContent' isDrag={onDrag}>
 
                 {(openReminderModal) && <Overlay /> }
                 {(openReminderModal) && <CalendarReminderModal callbackFunction={{ handleCloseReminderModal, setAppointmentNotifyMatterCustomer, setAppointmentRemindersList, appointmentRemindersList, appointmentNotifyMatterCustomer }} /> }
@@ -2505,7 +2514,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                 </WrapperResp>
               </ModalContent>
 
-              <Footer showButtons={isCreate}>
+              <Footer id='Footer' showButtons={isCreate}>
                 <section>
                   <button type="button" id="log" onClick={handleLogOnDisplay}>
                     <IoIosPaper title="Ver Historico" />
@@ -2608,7 +2617,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                 <br />
               </ModalConfirm>
 
-              <ModalRecurrence show={openModalRecurrence}>
+              <ModalRecurrence id='ModalRecurrence' show={openModalRecurrence}>
                 <div style={{marginLeft:'15px', marginTop:'10px', marginRight:'10px'}}>
                   Regras de Recorrência
                   <br />
@@ -2819,14 +2828,15 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
               </ModalRecurrence>
 
               <HeaderComponent
+                id='HeaderComponent'
                 title="Agenda"
                 cursor
                 action={handleCloseModalLog}
-                onMouseOver={handleDragControll}
-                onMouseOut={handleDragControll}
+                onMouseOver={handleDragControllMouseOver}
+                onMouseOut={handleDragControllMouseOut}
               />
 
-              <ModalContent isDrag={onDrag}>
+              <ModalContent id='ModalContent' isDrag={onDrag}>
                 <div className='autoComplete'>
                   <p>Assunto</p>
                   <Select
@@ -3279,7 +3289,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                 </WrapperResp>
               </ModalContent>
 
-              <Footer showButtons={isCreate}>
+              <Footer id='Footer' showButtons={isCreate}>
                 <section>
                   <button type="button" id="log" onClick={handleLogOnDisplay}>
                     <IoIosPaper title="Ver Historico" />
