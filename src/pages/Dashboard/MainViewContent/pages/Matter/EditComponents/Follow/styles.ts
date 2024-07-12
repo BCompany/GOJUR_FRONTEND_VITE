@@ -4,6 +4,7 @@ export const Container = styled.div`
     margin-top:10px;
     min-height: 15rem;
     margin-right:0.7rem;
+    margin-bottom:2rem;
     padding: 1rem 1rem;
     position:relative;
 
@@ -19,7 +20,6 @@ export const Container = styled.div`
         @media (min-width: 480px) {
           justify-content: end;
         }
-
         margin-bottom:0.5rem;
         margin-top:10px;
         margin-bottom:10px;
@@ -27,31 +27,18 @@ export const Container = styled.div`
 
     section {
         width:100%;
-        flex:1;
-        column-gap:1.5rem;
-        justify-content: space-around;
+        /* display:flex;             */
         @media (min-width: 480px) {
           display:flex;
         }
 
-        .linkButtons {
-          display:flex;
-          align-items:center;
-          gap:0.3rem;
-          cursor:pointer;
-          svg {
-            color: var(--blue-twitter);
-            width:0.9rem;
-            height:0.9rem;
-            &:hover {
-                color: var(--orange);
-            }
-          }
-        }
+        flex:1;
+        column-gap:1.5rem;
+        justify-content: space-around;
 
         .comboData {
           margin-top:0px;
-          flex:25%;
+          flex:50%;
         }
 
         >  label {

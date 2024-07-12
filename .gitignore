@@ -36,3 +36,8 @@ dist-ssr
 !node_modules
 /node_modules/*
 
+# ckeditor was used by custom configuration set directly on ckeditor node_modules folderName
+# that's why we pull request all folder to avoid some mistake version in the future
+# as decided on meeting - Marcelo|Airton|Sidney - 05/05/2022
+!/node_modules/@ckeditor/
+!/node_modules/ckeditor/

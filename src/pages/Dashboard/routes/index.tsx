@@ -16,6 +16,7 @@ import FinancialDeal from '../MainViewContent/pages/Financeiro/Deal';
 import Matter from '../MainViewContent/pages/Matter/List';
 import Publication from '../MainViewContent/pages/Publication';
 import Coverages from '../../Coverages';
+import APIDocumentation from '../../APIDocumentation';
 import Subscriber from '../../Subscriber';
 import FinancialInformation from '../../FinancialInformation';
 import DocumentModel from '../MainViewContent/pages/DocumentModel/List';
@@ -105,6 +106,7 @@ const Routes: React.FC = () => {
       <Route path="/matter/printer/cover" exact component={MatterPrint} isPrivate />
       <Route path="/publication" exact component={Publication} isPrivate />
       <Route path="/publication/coverages/" exact component={Coverages} isPrivate />
+      <Route path="/apidocumentation/" exact component={APIDocumentation} isPrivate />
       <Route path="/subscriber/" exact component={Subscriber} isPrivate />
       <Route path="/financialInformation" exact component={FinancialInformation} isPrivate />
       <Route path="/usuario" exact component={Usuario} isPrivate />
