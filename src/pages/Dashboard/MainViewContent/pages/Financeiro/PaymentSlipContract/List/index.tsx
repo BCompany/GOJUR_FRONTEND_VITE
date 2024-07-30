@@ -262,13 +262,13 @@ const PaymentSlipContractList = () => {
 
   // EDIT
   const handleEdit = async(id: number) => {
-    history.push(`/PaymentSlipContract/Edit/${id}`)
+    history.push(`/PaymentSlipContract/Config/${id}`)
   };
 
 
   // NEW
   const handleOpenEdit = () => {    
-    history.push(`/PaymentSlipContract/Edit/0`)
+    history.push(`/PaymentSlipContract/Config/0`)
   }
 
 

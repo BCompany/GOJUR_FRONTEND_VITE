@@ -45,9 +45,15 @@ import { IPayments } from '../Interfaces/IPayments';
 import FinancialPaymentModal from '../PaymentModal';
 import FinancialDocumentModal from '../DocumentModal';
 import { ModalDeleteOptions, OverlayFinancial } from '../styles';
-import { Container, Content, Process, GridSubContainer, ModalPaymentInformation } from './styles';
+import { Container, Content, Process, GridSubContainer, ModalPaymentInformation, ModalBankPaymentSlip } from './styles';
+
+export interface IBankPaymentSlip{
+  dueDate: string;
+  hasBankPaymentSlip: boolean;
+};
 
 const FinancialMovement: React.FC = () => {
+  // #region STATES
   const {isConfirmMessage, isCancelMessage, handleCancelMessage, handleConfirmMessage, caller} = useConfirmBox();
   const { handleStateType }  = useStateContext();
   const token = localStorage.getItem('@GoJur:token');
@@ -124,11 +130,19 @@ const FinancialMovement: React.FC = () => {
   const [totalRows, setTotalRows] = useState<number>(0);
   const [tokenContinuation, setTokenContinuation] = useState<string | null>('');
   const [showLog, setShowLog] = useState(false);
+
+  const [showBankPaymentSlipModal, setShowBankPaymentSlipModal] = useState<boolean>(false);
+  const [showBankPaymentSlipSecondCopyModal, setShowBankPaymentSlipSecondCopyModal] = useState<boolean>(false);
+  const [hasBankPaymentSlip, setHasBankPaymentSlip] = useState<boolean>(false);
+  const [bankPaymentSlipDate, setBankPaymentSlipDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
+  const [bankPaymentSlipLinkDate, setBankPaymentSlipLinkDate] = useState<string>('');
+  const [bankPaymentSlipLink, setBankPaymentSlipLink] = useState<string>('');
   const ref = useRef<any>(null);
   const DateFormatter = ({ value }) => format(new Date(value), 'dd/MM/yyyy HH:mm');
   const DateTypeProvider = props => (
     <DataTypeProvider formatterComponent={DateFormatter} {...props} />
   )
+  // #endregion
 
   
   useEffect(() => {
@@ -288,6 +302,10 @@ const FinancialMovement: React.FC = () => {
         setProcessTitle(`${response.data.num_Processo} - ${response.data.matterCustomerDesc} x ${response.data.matterOpposingDesc}`)
       }
 
+      if(response.data.hasBankPaymentSlip){
+        LoadBankPaymentSlip(movementId)
+      }
+
       await LoadPayments()
       await LoadDocuments()
 
@@ -300,32 +318,24 @@ const FinancialMovement: React.FC = () => {
   }
 
 
+  const LoadBankPaymentSlip = async (movementId:number) => {
+    try{
+      const response = await api.get<IBankPaymentSlip>('/Financeiro/ObterPagamentos', { params:{ token, movementId }});
+
+      setBankPaymentSlipLinkDate(response.data.dueDate)
+      setHasBankPaymentSlip(response.data.hasBankPaymentSlip)
+    }
+    catch (err:any) {
+      addToast({type: "info", title: "Operação não realizada", description: err.response.data})
+    }
+  }
+
+
   const LoadPayments = async () => {
     try {
-      const response = await api.get<IPayments[]>('/Financeiro/ObterPagamentos', { params:{ token, movementId }});
+      const response = await api.get<IPayments[]>('/BoletoBancario/ObterPorMovimento', { params:{ token, movementId }});
 
-      const paymentListReturn = response.data.map(payment => payment && {
-        ...payment,
-        action: 'UPDATE'
-      })
-
-      setPaymentList(paymentListReturn)
-
-      if(paymentListReturn.length == 1 && paymentListReturn[0].cod_MovimentoLiquidacao == '0')
-      {
-        const message = 'Nenhum pagamento foi realizado. Para incluir novas liquidações clique no botão acima.';
-        setPaymentMessage(message)
-      }
-      else if (paymentListReturn[0].total_Restante == 0) {
-        setShowPayments(true)
-        const message = paymentListReturn[0].tpo_Movimento == "D" ? 'Pago' : 'Recebido';
-        setPaymentMessage(message)
-      }
-      else{
-        setShowPayments(true)
-        const message = paymentListReturn[0].tpo_Movimento == "D" ? 'Saldo a pagar' : 'Saldo a receber';
-        setPaymentMessage(`${message} R$: ${FormatCurrency.format(paymentListReturn[0].total_Restante)}`)
-      }
+      
     }
     catch (err:any) {
       setIsLoading(false)
@@ -1104,6 +1114,11 @@ const FinancialMovement: React.FC = () => {
   }
 
 
+  const handleBankPaymentSlipDate = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    setBankPaymentSlipDate(event.target.value)
+  }, []);
+
+
   const GeneratePaymentSlip = useCallback(async(caller: string) => {
     try {
 
@@ -1137,6 +1152,7 @@ const FinancialMovement: React.FC = () => {
         flg_Reembolso: flgReembolso,
         cod_Processo: matterId,
         cod_Conta: accountId,
+        dta_VencimentoBoleto: bankPaymentSlipDate,
         token
       })
 
@@ -1150,7 +1166,7 @@ const FinancialMovement: React.FC = () => {
       addToast({type: "info", title: "Falha ao gerar boleto.", description: err.response.data.Message})
       setIsSaving(false)
     }
-  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp]);
+  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp, bankPaymentSlipDate]);
 
 
   return (
@@ -1474,6 +1490,12 @@ const FinancialMovement: React.FC = () => {
               </button>
             )}
           </Process>
+
+          {hasBankPaymentSlip &&(
+            <div>
+              {bankPaymentSlipLinkDate}
+            </div>
+          )}
         </div>
         <br />
 
@@ -1613,64 +1635,53 @@ const FinancialMovement: React.FC = () => {
           </div>
 
           <div style={{float:'right'}}>
-            <button
-              className="buttonClick"
-              type='button'
-              onClick={()=> Save('')}
-            >
+            <button className="buttonClick" type='button' onClick={()=> Save('')}>
               <BiSave />
               Salvar
             </button>
 
             {(movementId != '0' && invoice == 0) && (
-              <button
-                className="buttonClick"
-                type='button'
-                onClick={()=> Copy()}
-              >
+              <button className="buttonClick" type='button' onClick={()=> Copy()}>
                 <FaRegCopy />
                 Copiar
               </button>
             )}
 
-            {(!isMOBILE && movementId != '0' && movementType == "R") &&(
-              <button
-                className="buttonClick"
-                type='button'
-                onClick={()=> GeneratePaymentSlip('')}
-              >
-                <FaFileInvoiceDollar  />
-                Gerar Boleto
-              </button>
+            {hasBankPaymentSlip == true ? (
+              <>
+                {(!isMOBILE && movementId != '0' && movementType == "R") &&(
+                  <button className="buttonClick" type='button' onClick={()=> setShowBankPaymentSlipModal(true)}>
+                    <FaFileInvoiceDollar  />
+                    2ª Via Boleto
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                {(!isMOBILE && movementId != '0' && movementType == "R") &&(
+                  <button className="buttonClick" type='button' onClick={()=> setShowBankPaymentSlipModal(true)}>
+                    <FaFileInvoiceDollar  />
+                    Gerar Boleto
+                  </button>
+                )}
+              </>
             )}
 
             {(!isMOBILE && movementId != '0' && invoice == 0) &&(
-              <button
-                className="buttonClick"
-                type='button'
-                onClick={()=> GenerateDocument()}
-              >
+              <button className="buttonClick" type='button' onClick={()=> GenerateDocument()}>
                 <CgFileDocument />
                 Documento
               </button>
             )}
 
             {(movementId != '0' && invoice == 0) && (
-              <button
-                className="buttonClick"
-                type='button'
-                onClick={()=> CheckDeleteType(paymentQtd)}
-              >
+              <button className="buttonClick" type='button' onClick={()=> CheckDeleteType(paymentQtd)}>
                 <FiTrash />
                 Excluir
               </button>
             )}
 
-            <button
-              type='button'
-              className="buttonClick"
-              onClick={() => { handleStateType('Inactive'); history.push(`/financeiro`) }}
-            >
+            <button type='button' className="buttonClick" onClick={() => { handleStateType('Inactive'); history.push(`/financeiro`)}}>
               <FaRegTimesCircle />
               Fechar
             </button>
@@ -1797,8 +1808,7 @@ const FinancialMovement: React.FC = () => {
           </div>
           <div style={{marginLeft:'5%'}}>
             Você esta em um processo de inclusão do registo, para prosseguir é necessário salva-lo, deseja realizar este processo agora ?
-            <br />
-            <br />
+            <br /><br />
             <div style={{float:'right', marginRight:'7%', bottom:0}}>
               <div style={{float:'left'}}>
                 <button
@@ -1828,6 +1838,82 @@ const FinancialMovement: React.FC = () => {
 
         </ModalPaymentInformation>
       )}
+
+
+
+      {(showBankPaymentSlipModal) && <OverlayFinancial /> }
+      {showBankPaymentSlipModal && (
+        <ModalBankPaymentSlip>
+          <div className='menuSection'>
+            <FiX onClick={(e) => {setShowBankPaymentSlipModal(false)}} />
+          </div>
+          <div id='ModalContent' style={{textAlign:'-webkit-center'}}>
+            Informe a data de vencimento do boleto
+            <br /><br />
+
+            <div style={{width:'290px'}}>
+              <label htmlFor='Data'>
+                <DatePicker title="Vencimento" onChange={handleBankPaymentSlipDate} value={bankPaymentSlipDate} />
+              </label>
+            </div>
+            <br /><br />
+
+            <div id='Buttons' style={{marginLeft:'130px'}}>
+              <div style={{float:'left'}}>
+                <button className="buttonClick" type='button' onClick={()=> GeneratePaymentSlip} style={{width:'150px'}}>
+                  <FaCheck />
+                  Gerar Boleto
+                </button>
+              </div>
+
+              <div style={{float:'left'}}>
+                <button type='button' className="buttonClick" onClick={()=> {setShowBankPaymentSlipModal(false)}} style={{width:'150px'}}>
+                  <FaRegTimesCircle />
+                  Fechar
+                </button>
+              </div>
+            </div>
+          </div>
+        </ModalBankPaymentSlip>
+      )}
+
+      {(showBankPaymentSlipSecondCopyModal) && <OverlayFinancial /> }
+      {showBankPaymentSlipSecondCopyModal && (
+        <ModalBankPaymentSlip>
+          <div className='menuSection'>
+            <FiX onClick={(e) => {setShowBankPaymentSlipSecondCopyModal(false)}} />
+          </div>
+          <div id='ModalContent' style={{textAlign:'-webkit-center'}}>
+            Informe a data de vencimento da segunda via do boleto
+            <br /><br />
+
+            <div style={{width:'290px'}}>
+              <label htmlFor='Data'>
+                <DatePicker title="Vencimento" onChange={handleBankPaymentSlipDate} value={bankPaymentSlipDate} />
+              </label>
+            </div>
+            <br /><br />
+
+            <div id='Buttons' style={{marginLeft:'130px'}}>
+              <div style={{float:'left'}}>
+                <button className="buttonClick" type='button' onClick={()=> GeneratePaymentSlip} style={{width:'150px'}}>
+                  <FaCheck />
+                  Gerar 2ª Via
+                </button>
+              </div>
+
+              <div style={{float:'left'}}>
+                <button type='button' className="buttonClick" onClick={()=> {setShowBankPaymentSlipSecondCopyModal(false)}} style={{width:'150px'}}>
+                  <FaRegTimesCircle />
+                  Não
+                </button>
+              </div>
+            </div>
+          </div>
+        </ModalBankPaymentSlip>
+      )}
+
+
 
       {showChangeInstallments && (
         <ConfirmBoxModal

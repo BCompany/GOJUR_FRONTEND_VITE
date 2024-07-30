@@ -206,6 +206,7 @@ const Routes: React.FC = () => {
         component={DashboardPath}
         isPrivate
       />
+      <Route path="/PaymentSlipContract/config/:id" exact component={DashboardPath} isPrivate />
       <Route path="/Cities" exact component={DashboardPath} isPrivate />
       <Route path="/People/list" exact component={DashboardPath} isPrivate />
       <Route
