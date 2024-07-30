@@ -21,7 +21,7 @@ import { IoIosPaper } from 'react-icons/io';
 import { BiSave } from 'react-icons/bi'
 import { BsImage } from 'react-icons/bs';
 import { CgFileDocument } from 'react-icons/cg';
-import { FaCheck, FaRegTimesCircle, FaRegCopy, FaFileAlt, FaFilePdf, FaWhatsapp } from 'react-icons/fa';
+import { FaCheck, FaRegTimesCircle, FaRegCopy, FaFileAlt, FaFilePdf, FaWhatsapp, FaFileInvoiceDollar } from 'react-icons/fa';
 import { FiTrash, FiEdit, FiX, FiDownloadCloud, FiMail } from 'react-icons/fi';
 import { HiDocumentText } from 'react-icons/hi';
 import { MdHelp, MdAttachMoney } from 'react-icons/md';
@@ -1104,6 +1104,55 @@ const FinancialMovement: React.FC = () => {
   }
 
 
+  const GeneratePaymentSlip = useCallback(async(caller: string) => {
+    try {
+
+      setIsSaving(true)
+      setShowModalOptions(false)
+
+      let peopleIdsItems = '';
+      selectedPeopleList.map((people) => {
+        return peopleIdsItems += `${people.id},`
+      })
+
+      const response = await api.post('/BoletoBancario/Gerar', {
+        cod_Movimento: movementId,
+        dta_Movimento: movementDate,
+        vlr_Movimento: movementValue,
+        tpo_Movimento : movementType,
+        qtd_Parcelamento: movementParcelas,
+        Periodicidade: movementParcelasDatas,
+        cod_FormaPagamento: paymentFormId,
+        cod_Categoria: categoryId,
+        cod_CentroCusto: centerCostId,
+        num_NotaFiscal: taxInvoice,
+        des_Movimento: movementDescription,
+        peopleIds: peopleIdsItems,
+        flg_NotificaPessoa: flgNotifyPeople,
+        flg_NotificaEmail: flgNotifyEmail,
+        flg_NotificaWhatsApp: flgNotifyWhatsApp,
+        flg_Status: flgStatus,
+        Lembrete: reminders,
+        editChild: actionSave.length == 0 ? "justOne" : actionSave, // Action save is used to define if is save one, all or next, when is empty consider only one
+        flg_Reembolso: flgReembolso,
+        cod_Processo: matterId,
+        cod_Conta: accountId,
+        token
+      })
+
+      addToast({type: "success", title: "Operação realizada com sucess", description: "Boleto criado com sucesso"})
+      setIsSaving(false)
+
+      window.open(response.data, '_blank')
+
+    }
+    catch (err:any) {
+      addToast({type: "info", title: "Falha ao gerar boleto.", description: err.response.data.Message})
+      setIsSaving(false)
+    }
+  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp]);
+
+
   return (
 
     <Container>
@@ -1581,6 +1630,17 @@ const FinancialMovement: React.FC = () => {
               >
                 <FaRegCopy />
                 Copiar
+              </button>
+            )}
+
+            {(!isMOBILE && movementId != '0' && movementType == "R") &&(
+              <button
+                className="buttonClick"
+                type='button'
+                onClick={()=> GeneratePaymentSlip('')}
+              >
+                <FaFileInvoiceDollar  />
+                Gerar Boleto
               </button>
             )}
 
