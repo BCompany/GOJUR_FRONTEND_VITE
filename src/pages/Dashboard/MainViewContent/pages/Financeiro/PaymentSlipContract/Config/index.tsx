@@ -18,8 +18,8 @@ import { AutoCompleteSelect } from 'Shared/styles/GlobalStyle';
 import { useToast } from 'context/toast';
 import { HeaderPage } from 'components/HeaderPage';
 import { FiSave } from 'react-icons/fi';
-import {FaRegTimesCircle } from 'react-icons/fa';
-import {useHistory, useLocation  } from 'react-router-dom'
+import { FaRegTimesCircle, FaCheck } from 'react-icons/fa';
+import { useHistory, useLocation  } from 'react-router-dom'
 import Loader from 'react-spinners/PulseLoader';
 import { useForm } from 'react-hook-form';
 import { Container, Content, Form, Flags} from './styles';
@@ -32,8 +32,6 @@ export interface DefaultsProps {
 export interface IPaymentSlipContractData{
   paymentSlipContractId: string
   paymentSlipContractDescription: string
-  bankId: number
-  bankName: string
   penaltyPackages: string
   ratesPackage: string
   flg_Default: boolean
@@ -51,15 +49,14 @@ const PaymentSlipContractConfig: React.FC = () => {
   const { pathname } = useLocation()
   const [isSaving , setisSaving] = useState<boolean>()
   const [token] = useState(localStorage.getItem('@GoJur:token'))
-  const [bank, setBank] = useState('')
+  const [bank, setBank] = useState('AS')
   const [paymentSlipContractId, setPaymentSlipContractId] = useState<string>("")
   const [paymentSlipContractDescription, setPaymentSlipContractDescription] = useState<string>("")
-  const [bankId, setBankId] = useState<number>(0)
-  const [bankName, setBankName] = useState<string>("")
   const [penaltyPackages, setPenaltyPackages] = useState<string>("")
   const [ratesPackage, setRatesPackage] = useState<string>("")
   const [flg_Default, setFlg_Default] = useState<boolean>(false)
   const [bankToken, setBankToken] = useState<string>("")
+  const [isValid, setIsValid] = useState<boolean>(false)
 
   const bankList = [
     { id:'AS', label: 'Asaas' },
@@ -94,16 +91,10 @@ const PaymentSlipContractConfig: React.FC = () => {
     
       setPaymentSlipContractId (response.data.paymentSlipContractId)
       setPaymentSlipContractDescription(response.data.paymentSlipContractDescription)
-      setBankId(response.data.bankId)
-      setBankName(response.data.bankName)
       setPenaltyPackages(response.data.penaltyPackages)
       setRatesPackage(response.data.ratesPackage)
       setFlg_Default(response.data.flg_Default)
       setBankToken(response.data.bankToken)
-
-      if(response.data.bankId == 461){
-        setBank('AS')
-      }
     }
     catch (err) {
       console.log(err);
@@ -118,6 +109,11 @@ const PaymentSlipContractConfig: React.FC = () => {
         return;
       }
 
+      if (isValid == false) {
+        addToast({type: "info", title: "Operação NÃO realizada", description: `Necessário validar o token antes de salvar`})
+        return;
+      }
+
       const id = pathname.substr(28)
       const token = localStorage.getItem('@GoJur:token');
       setisSaving(true)
@@ -125,8 +121,6 @@ const PaymentSlipContractConfig: React.FC = () => {
       await api.post('/CarteiraDeCobrança/Salvar', {
         paymentSlipContractId: id,
         paymentSlipContractDescription,
-        bankId,
-        bankName,
         penaltyPackages,
         ratesPackage,
         flg_Default,
@@ -142,7 +136,7 @@ const PaymentSlipContractConfig: React.FC = () => {
       setisSaving(false)
       addToast({type: "error", title: "Falha ao salvar carteira de cobrança.", description: err.response.data.Message})
     }
-  }, [isSaving, paymentSlipContractId, paymentSlipContractDescription, bankId, bankName, penaltyPackages, ratesPackage, flg_Default, bankToken])
+  }, [isSaving, paymentSlipContractId, paymentSlipContractDescription, penaltyPackages, ratesPackage, flg_Default, bankToken])
 
 
   // Load default parameters by user
@@ -162,17 +156,34 @@ const PaymentSlipContractConfig: React.FC = () => {
 
 
   const ChangeBank = (item) => {
-    if (item){
-      if (item.id == 'AS'){
-        setBank(item.id)
-        setBankId(461)
-        setBankName('ASAAS Gestão Financeira Instituição de Pagamento S.A.')
-      }
-    }
-    else{
+    if (item)
+      setBank(item.id)
+    else
       setBank('')
-    }
   }
+
+
+  const ValidateToken = useCallback(async() => {
+    try {
+      setisSaving(true)
+      
+      const response = await api.post('/CarteiraDeCobrança/Validar', {
+        bankToken,
+        token
+      })
+      
+      if(response.data == true){
+        addToast({type: "success", title: "Operação realizada", description: "O token foi validado com sucesso."})
+        setIsValid(true)
+      }
+
+      setisSaving(false)
+    }
+    catch (err:any) {
+      setisSaving(false)
+      addToast({type: "error", title: "Falha ao validar o token.", description: err.response.data.Message})
+    }
+  }, [isSaving, bankToken])
   
 
   return (
@@ -208,34 +219,6 @@ const PaymentSlipContractConfig: React.FC = () => {
                 name="nameCarteira"
                 onChange={(e: ChangeEvent<HTMLInputElement>) => setPaymentSlipContractDescription(e.target.value)} 
                 required
-              />
-            </label>
-
-            <label htmlFor="codigoBanco">
-              Código Banco
-              <input 
-                maxLength={5}
-                type="text"
-                name="codigoBanco"
-                autoComplete="off"
-                value={bankId}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setBankId(Number(e.target.value))}
-                required
-                disabled
-              />
-            </label>
-
-            <label htmlFor="nomeBanco">
-              Nome Banco
-              <input 
-                maxLength={100}
-                type="text"
-                name="nomeBanco"
-                autoComplete="off"
-                value={bankName}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setBankName(e.target.value)}
-                required
-                disabled
               />
             </label>
 
@@ -278,10 +261,10 @@ const PaymentSlipContractConfig: React.FC = () => {
             <br />
 
             <label htmlFor="token">
-              Token
+              TOKEN (Valide o token antes de salvar)
               <input 
-                maxLength={100}
-                style={{width: '130%'}}
+                maxLength={150}
+                style={{width: '100%'}}
                 type="text"
                 name="msg1"
                 autoComplete="off"
@@ -289,6 +272,20 @@ const PaymentSlipContractConfig: React.FC = () => {
                 onChange={(e: ChangeEvent<HTMLInputElement>) => setBankToken(e.target.value)}
               />
             </label>
+            <div style={{float:'left', marginTop:'1px'}}>
+              <div style={{float:'left', marginTop:'16px'}}>
+                <button className="buttonClick" type='button' style={{width:'100px', height:'35px'}} onClick={()=> ValidateToken()}>
+                  <FaCheck />
+                  Validar
+                </button>
+              </div>
+
+              {isValid ? (
+                <div style={{float:'left', marginTop:'25px', color:'green'}}>Token válido</div>
+              ) : (
+                <div style={{float:'left', marginTop:'25px', color:'red'}}>Aguardando validação...</div>
+              )}
+            </div>
             <br />
 
             <div>
@@ -297,11 +294,11 @@ const PaymentSlipContractConfig: React.FC = () => {
 
             <div id="Buttons" style={{justifySelf:'right', marginRight:'10px'}}>
               <div style={{float:'left'}}>
-                <button className="buttonClick" type="submit">
+                <button className="buttonClick" type="submit" disabled={!isValid}>
                   <FiSave />
                   Salvar
                   {isSaving ? <Loader size={5} color="#f19000" /> : null}
-                </button>                 
+                </button>
               </div>
                     
               <div style={{float:'left'}}>
