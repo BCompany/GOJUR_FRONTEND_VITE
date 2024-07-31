@@ -1139,9 +1139,17 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
     const newStartDate= new Date(startDateN);
     const newEndDate=new Date();
-    const result = Math.ceil((newEndDate.getTime() - newStartDate.getTime()) / (1000*60*60*24))
 
-    if(!confirmSave && (result > 1)){
+    const diference = Math.floor(
+      (Date.UTC(newEndDate.getFullYear(), newEndDate.getMonth(), newEndDate.getDate()) 
+       - 
+       Date.UTC(newStartDate.getFullYear(), newStartDate.getMonth(), newStartDate.getDate())
+      ) 
+      /
+      (1000 * 60 * 60 * 24)
+    )
+
+    if(!confirmSave && (diference > 0)){
       setCheckMessage(true)
       return;
     }
@@ -1778,6 +1786,11 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         </div>
       </>
     )
+  }
+
+
+  const HandleCheckMessage = () => {
+    setCheckMessage(true)
   }
 
 
@@ -3335,6 +3348,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
       {openSaveModal ? (
         <SaveModal
+          handleCheckMessage={HandleCheckMessage}
           close={handleSaveModal}
           data={appointmentStore}
           closeModal={isClosed}
