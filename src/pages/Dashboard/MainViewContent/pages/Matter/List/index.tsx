@@ -2441,6 +2441,8 @@ const Matter: React.FC = () => {
                               <header>
                                 <RiCalendarCheckFill />
                                 Compromissos
+                                &nbsp;&nbsp;
+                                <FcAbout className='aboutMessage' title="Nesta seção são exibidos até 3 compromissos atrelados ao processo em ordem decrescente de data - Compromissos recorrentes são exibidos desde que o evento recorrente esteja no período de + ou - 30 dias a partir da data atual." />
                               </header>
 
                               <div>
@@ -2677,6 +2679,8 @@ const Matter: React.FC = () => {
                           <header>
                             <RiCalendarCheckFill />
                             Compromissos
+                            &nbsp;&nbsp;
+                            <FcAbout className='aboutMessage' title="Nesta seção são exibidos até 3 compromissos atrelados ao processo em ordem decrescente de data - Compromissos recorrentes são exibidos desde que o evento recorrente esteja no período de + ou - 30 dias a partir da data atual." />
                           </header>
 
                           <div>
@@ -3030,6 +3034,8 @@ const Matter: React.FC = () => {
                               <header>
                                 <RiCalendarCheckFill />
                                 Compromissos
+                                &nbsp;&nbsp;
+                                <FcAbout className='aboutMessage' title="Nesta seção são exibidos até 3 compromissos atrelados ao processo em ordem decrescente de data - Compromissos recorrentes são exibidos desde que o evento recorrente esteja no período de + ou - 30 dias a partir da data atual." />
                               </header>
 
                               <div>
@@ -3261,6 +3267,8 @@ const Matter: React.FC = () => {
                           <header>
                             <RiCalendarCheckFill />
                             Compromissos
+                            &nbsp;&nbsp;
+                            <FcAbout className='aboutMessage' title="Nesta seção são exibidos até 3 compromissos atrelados ao processo em ordem decrescente de data - Compromissos recorrentes são exibidos desde que o evento recorrente esteja no período de + ou - 30 dias a partir da data atual." />
                           </header>
 
                           <div>

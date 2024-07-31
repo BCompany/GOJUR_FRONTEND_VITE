@@ -38,17 +38,13 @@ interface AppointmentPropsSave {
 }
 
 interface ModalProps {
+  handleCheckMessage(): void;
   close(): void;
   closeModal(): void;
   data: AppointmentPropsSave;
 }
 
-const SaveModal: React.FC<ModalProps> = ({
-  close,
-  closeModal,
-  data,
-  ...rest
-}) => {
+const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal, data, ...rest}) => {
   const { addToast } = useToast();
   const [isSaveThis, setisSaveThis] = useState(false);
   const [isSaveNext, setisSaveNext] = useState(false);
@@ -67,23 +63,22 @@ const SaveModal: React.FC<ModalProps> = ({
       
       await api.put(`/Compromisso/Salvar`, data);
 
-      addToast({
-        type: 'success',
-        title: 'Compromisso Salvo',
-        description: 'Seu compromisso foi salvo com sucesso',
-      });
+      addToast({type: 'success', title: 'Compromisso Salvo', description: 'Seu compromisso foi salvo com sucesso'});
       close();
       closeModal();
       setisSaveThis(false)
       localStorage.removeItem('@GoJur:MatterId');
-
-    } catch (err:any) {
+    }
+    catch (err:any) {
       setisSaveThis(false)
-      addToast({
-        type: 'error',
-        title: 'Falha ao salvar o compromisso',
-        description: err.response.data.Message,
-      });
+
+      if (err.response.data.typeError.warning == "awareness"){
+        close();
+        handleCheckMessage()
+      }
+      else{
+        addToast({type: 'error', title: 'Falha ao salvar o compromisso', description: err.response.data.Message});
+      }
     }
   }, [addToast, close, closeModal, data]); // Salva apenas o compromisso de hoje
 
@@ -98,23 +93,21 @@ const SaveModal: React.FC<ModalProps> = ({
 
       await api.put(`/Compromisso/Salvar`, data);
 
-      addToast({
-        type: 'success',
-        title: 'Compromisso Salvo',
-        description: 'Seu compromisso foi salvo com sucesso',
-      });
-
+      addToast({type: 'success', title: 'Compromisso Salvo', description: 'Seu compromisso foi salvo com sucesso'});
       close();
       closeModal();
       setisSaveAll(false)
-      
-    } catch (err:any) {
+    }
+    catch (err:any) {
       setisSaveAll(false)
-      addToast({
-        type: 'error',
-        title: 'Falha ao salvar o compromisso',
-        description: err.response.data.Message,
-      });
+
+      if (err.response.data.typeError.warning == "awareness"){
+        close();
+        handleCheckMessage()
+      }
+      else{
+        addToast({type: 'error', title: 'Falha ao salvar o compromisso', description: err.response.data.Message});
+      }
     }
   }, [addToast, close, closeModal, data]); // Salva todo o compromisso usando a recorrencia
 
@@ -126,22 +119,21 @@ const SaveModal: React.FC<ModalProps> = ({
       
       await api.put(`/Compromisso/Salvar`, data);
 
-      addToast({
-        type: 'success',
-        title: 'Compromisso Salvo',
-        description: 'Seu compromisso foi salvo com sucesso',
-      });
-
+      addToast({type: 'success', title: 'Compromisso Salvo', description: 'Seu compromisso foi salvo com sucesso'});
       close();
       closeModal();
       setisSaveNext(false)
-    } catch (err:any) {
+    }
+    catch (err:any) {
       setisSaveNext(false)
-      addToast({
-        type: 'error',
-        title: 'Falha ao salvar o compromisso',
-        description: err.response.data.Message,
-      });
+
+      if (err.response.data.typeError.warning == "awareness"){
+        close();
+        handleCheckMessage()
+      }
+      else{
+        addToast({type: 'error', title: 'Falha ao salvar o compromisso', description: err.response.data.Message});
+      }
     }
   }, [addToast, close, closeModal, data]); // Salva o compromisso recorrente de hoje em diante
 
