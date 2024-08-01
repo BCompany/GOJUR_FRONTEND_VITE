@@ -84,6 +84,7 @@
     "react-use-device": "^1.0.11",
     "react-vertical-timeline-component": "^3.3.1",
     "styled-components": "^5.2.0",
+    "swagger-ui-react": "^5.17.14",
     "swr": "^0.5.5",
     "tslib": "^2.2.0",
     "uuid": "^8.3.2",
