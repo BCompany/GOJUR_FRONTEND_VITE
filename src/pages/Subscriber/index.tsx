@@ -236,7 +236,7 @@ import { Container, OverlaySubscriber, ModalAlert } from './styles';
                   <option value="Google, Yahoo, Bing">Google, Yahoo, Bing</option>
                   <option value="Facebook/Instagram">Facebook/Instagram</option>
                   <option value="CAASP-OAB">CAASP-OAB</option>
-                  <option value="Lorena20off">Lorena20off</option>
+                  <option value="MentoriaLorena">MentoriaLorena</option>
                   <option value="Outros">Outros</option>
                 </select>
                 <br /><br />
