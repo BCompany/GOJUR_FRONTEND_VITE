@@ -43,332 +43,99 @@ const Routes: React.FC = () => {
       <Route path="/validate" component={Validate} />
       <Route path="/plugin/login" component={LoginPlugin} isPrivate />
       <Route path="/loginreject" component={LoginWL} />
-      <Route
-        path="/clientRedirect"
-        exact
-        component={ClientRedirect}
-        isPrivate
-      />
+      <Route path="/clientRedirect" exact component={ClientRedirect} isPrivate />
       <Route path="/AbortAccess" exact component={AbortAccess} isPrivate />
       <Route path="/dashboard" exact component={Dashboard} isPrivate />
       <Route path="/agenda" exact component={Agenda} isPrivate />
       <Route path="/cadastro" exact component={Cadastro} isPrivate />
       <Route path="/conta" exact component={Conta} isPrivate />
       <Route path="/financeiro" exact component={Financeiro} isPrivate />
-      <Route
-        path="/financeiro/movement/:type/:account/:id"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/financeiro/deal/:account/:installment/:id"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
+      <Route path="/financeiro/movement/:type/:account/:id" exact component={DashboardPath} isPrivate />
+      <Route path="/financeiro/deal/:account/:installment/:id" exact component={DashboardPath} isPrivate />
       <Route path="/matter/list" exact component={Matter} isPrivate />
-      <Route
-        path="/matter/printer/cover"
-        exact
-        component={MatterPrintCover}
-        isPrivate
-      />
+      <Route path="/matter/printer/cover" exact component={MatterPrintCover} isPrivate />
       <Route path="/publication" exact component={Publication} isPrivate />
       <Route path="/documentModel/list" exact component={DashBoard} isPrivate />
-      <Route
-        path="/documentModel/edit/:cod_DocumentoModelo"
-        exact
-        component={DashBoard}
-        isPrivate
-      />
-      <Route
-        path="/documentModel/visualize/:id"
-        exact
-        component={DashBoard}
-        isPrivate
-      />
+      <Route path="/documentModel/edit/:cod_DocumentoModelo" exact component={DashBoard} isPrivate />
+      <Route path="/documentModel/visualize/:id" exact component={DashBoard} isPrivate />
       <Route path="/calendar" exact component={DashboardPath} isPrivate />
       <Route path="/cadastro" exact component={DashboardPath} isPrivate />
       <Route path="/conta" exact component={DashboardPath} isPrivate />
       <Route path="/financeiro" exact component={DashboardPath} isPrivate />
       <Route path="/processo" exact component={DashboardPath} isPrivate />
-      <Route
-        path="/publication/coverages"
-        exact
-        component={Covarages}
-        isPrivate
-      />
+      <Route path="/publication/coverages" exact component={Covarages} isPrivate />
       <Route path="/subscriber" exact component={Subscriber} isPrivate />
-      <Route
-        path="/financialInformation"
-        exact
-        component={FinancialInformation}
-        isPrivate
-      />
+      <Route path="/financialInformation" exact component={FinancialInformation} isPrivate />
       <Route path="/userlist" exact component={DashboardPath} isPrivate />
       <Route path="/user/:id" exact component={DashboardPath} isPrivate />
       <Route path="/usuario" exact component={DashboardPath} isPrivate />
       <Route path="/customer/list" exact component={DashboardPath} isPrivate />
-      <Route
-        path="/customer/edit/:id"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/customer/business/edit/:id"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/CRM/configuration/salesChannel"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/CRM/configuration/salesFunnelSteps"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/CRM/salesFunnel"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
+      <Route path="/customer/edit/:id" exact component={DashboardPath} isPrivate />
+      <Route path="/customer/business/edit/:id" exact component={DashboardPath} isPrivate />
+      <Route path="/CRM/configuration/salesChannel" exact component={DashboardPath} isPrivate />
+      <Route path="/CRM/configuration/salesFunnelSteps" exact component={DashboardPath} isPrivate />
+      <Route path="/CRM/salesFunnel" exact component={DashboardPath} isPrivate />
       <Route path="/CRM/dashboard" exact component={DashboardPath} isPrivate />
       <Route path="/Subject" exact component={DashboardPath} isPrivate />
       <Route path="/LegalNature" exact component={DashboardPath} isPrivate />
       <Route path="/Rite" exact component={DashboardPath} isPrivate />
       <Route path="/MatterPhase" exact component={DashboardPath} isPrivate />
       <Route path="/MatterStatus" exact component={DashboardPath} isPrivate />
-      <Route
-        path="/MatterProbability"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
+      <Route path="/MatterProbability" exact component={DashboardPath} isPrivate />
       <Route path="/MatterSolution" exact component={DashboardPath} isPrivate />
       <Route path="/CourtDept" exact component={DashboardPath} isPrivate />
       <Route path="/CustomerGroup" exact component={DashboardPath} isPrivate />
-      <Route
-        path="/MatterEventType"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
+      <Route path="/MatterEventType" exact component={DashboardPath} isPrivate />
       <Route path="/LegalCause" exact component={DashboardPath} isPrivate />
-      <Route
-        path="/MatterDemandType"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
+      <Route path="/MatterDemandType" exact component={DashboardPath} isPrivate />
       <Route path="/Position" exact component={DashboardPath} isPrivate />
       <Route path="/Court" exact component={DashboardPath} isPrivate />
       <Route path="/AdvisoryType" exact component={DashboardPath} isPrivate />
-      <Route
-        path="/ThirdPartyGroup"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
+      <Route path="/ThirdPartyGroup" exact component={DashboardPath} isPrivate />
       <Route path="/PaymentForm" exact component={DashboardPath} isPrivate />
       <Route path="/Category" exact component={DashboardPath} isPrivate />
-      <Route
-        path="/FinancialStatus"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
+      <Route path="/FinancialStatus" exact component={DashboardPath} isPrivate />
       <Route path="/Account" exact component={DashboardPath} isPrivate />
       <Route path="/matter/edit/legal/:id" exact component={Matter} isPrivate />
-      <Route
-        path="/matter/edit/advisory/:id"
-        exact
-        component={Matter}
-        isPrivate
-      />
+      <Route path="/matter/edit/advisory/:id" exact component={Matter} isPrivate />
       <Route path="/ServiceType" exact component={DashboardPath} isPrivate />
-      <Route
-        path="/PaymentSlipContract/list"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/PaymentSlipContract/edit/:id"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
+      <Route path="/PaymentSlipContract/list" exact component={DashboardPath} isPrivate />
+      <Route path="/PaymentSlipContract/edit/:id" exact component={DashboardPath} isPrivate />
       <Route path="/PaymentSlipContract/config/:id" exact component={DashboardPath} isPrivate />
+      <Route path="/FinancialIntegration/list" exact component={DashboardPath} isPrivate />
+      <Route path="/FinancialIntegration/edit/:id" exact component={DashboardPath} isPrivate />
       <Route path="/Cities" exact component={DashboardPath} isPrivate />
       <Route path="/People/list" exact component={DashboardPath} isPrivate />
-      <Route
-        path="/People/edit/:type/:id"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/EconomicIndexes/list"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/EconomicIndexes/edit/:id"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/Matter/report/simple"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/Matter/report/MatterDemand"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/Matter/report/BCO_ID4817"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
+      <Route path="/People/edit/:type/:id" exact component={DashboardPath} isPrivate />
+      <Route path="/EconomicIndexes/list" exact component={DashboardPath} isPrivate />
+      <Route path="/EconomicIndexes/edit/:id" exact component={DashboardPath} isPrivate />
+      <Route path="/Matter/report/simple" exact component={DashboardPath} isPrivate />
+      <Route path="/Matter/report/MatterDemand" exact component={DashboardPath} isPrivate />
+      <Route path="/Matter/report/BCO_ID4817" exact component={DashboardPath} isPrivate />
       <Route path="/Holiday" exact component={DashboardPath} isPrivate />
       <Route path="/DocumentType" exact component={DashboardPath} isPrivate />
-      <Route
-        path="/AccountInformation"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/financeiro/report/refundlist"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/financeiro/report/honorariumsummarylist"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/financeiro/report/honorariumlist"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/financeiro/report/incomeexpenselist"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/financeiro/report/cashflowlist"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/ReportParameters"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/CustomerLawyer"
-        exact
-        component={CustomerLawyer}
-        isPrivate
-      />
+      <Route path="/AccountInformation" exact component={DashboardPath} isPrivate />
+      <Route path="/financeiro/report/refundlist" exact component={DashboardPath} isPrivate />
+      <Route path="/financeiro/report/honorariumsummarylist" exact component={DashboardPath} isPrivate />
+      <Route path="/financeiro/report/honorariumlist" exact component={DashboardPath} isPrivate />
+      <Route path="/financeiro/report/incomeexpenselist" exact component={DashboardPath} isPrivate />
+      <Route path="/financeiro/report/cashflowlist" exact component={DashboardPath} isPrivate />
+      <Route path="/ReportParameters" exact component={DashboardPath} isPrivate />
+      <Route path="/CustomerLawyer" exact component={CustomerLawyer} isPrivate />
       <Route path="/CostCenter" exact component={DashboardPath} isPrivate />
-      <Route
-        path="/matter/printer/label"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/customer/configuration/:id"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/custom/BCO01PublicationNames/:id"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/financeiro/billingcontract/list"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/financeiro/billingcontract/edit/:id"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/financeiro/billinginvoice/list"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/financeiro/billinginvoice/edit/:id"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/EletronicIntimation"
-        exact
-        component={EletronicIntimation}
-        isPrivate
-      />
-      <Route
-        path="/PublicationConfiguration"
-        exact
-        component={PublicationConfiguration}
-        isPrivate
-      />
-      <Route
-        path="/customer/printer/label"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
+      <Route path="/matter/printer/label" exact component={DashboardPath} isPrivate />
+      <Route path="/customer/configuration/:id" exact component={DashboardPath} isPrivate />
+      <Route path="/custom/BCO01PublicationNames/:id" exact component={DashboardPath} isPrivate />
+      <Route path="/financeiro/billingcontract/list" exact component={DashboardPath} isPrivate />
+      <Route path="/financeiro/billingcontract/edit/:id" exact component={DashboardPath} isPrivate />
+      <Route path="/financeiro/billinginvoice/list" exact component={DashboardPath} isPrivate />
+      <Route path="/financeiro/billinginvoice/edit/:id" exact component={DashboardPath} isPrivate />
+      <Route path="/EletronicIntimation" exact component={EletronicIntimation} isPrivate />
+      <Route path="/PublicationConfiguration" exact component={PublicationConfiguration} isPrivate />
+      <Route path="/customer/printer/label" exact component={DashboardPath} isPrivate />
       <Route path="/changeplan" exact component={DashboardPath} isPrivate />
-      <Route
-        path="/matter/searchcnj"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
-      <Route
-        path="/companyinformation"
-        exact
-        component={DashboardPath}
-        isPrivate
-      />
+      <Route path="/matter/searchcnj" exact component={DashboardPath} isPrivate />
+      <Route path="/companyinformation" exact component={DashboardPath} isPrivate />
       <Route path="/companyfiles" exact component={DashboardPath} isPrivate />
       <Route path="/matter/monitoring" exact component={Matter} isPrivate />
       <Route path="/apidocumentation" exact component={APIDocumentation} isPrivate />

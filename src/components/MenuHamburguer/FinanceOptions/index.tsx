@@ -39,6 +39,7 @@ const FinanceOptionsMenu = () => {
   const { isMOBILE } = useDevice();
   const { addToast } = useToast();
 
+  const checkFinancialIntegration = permissionsSecurity.find(item => item.name === "FININTEG");
   const checkPaymentSlip = permissionsSecurity.find(item => item.name === "FINCARCO");
   const checkCategory = permissionsSecurity.find(item => item.name === "FINCATG");
   const checkCostCenter = permissionsSecurity.find(item => item.name === "FINCCUST");
@@ -97,9 +98,6 @@ const FinanceOptionsMenu = () => {
   }
 
 
-  const OldFinancialModule = () => {
-    handleRedirect(`${baseUrl}ReactRequest/Redirect?token=${token}&route=Financial/FinancialPanel`)
-  }
 
 
   const handleClickContracts = () => {
@@ -143,6 +141,14 @@ const FinanceOptionsMenu = () => {
     setShowConfigMenu(false)
     handleIsMenuOpen(false)
     handleRedirect(`/PaymentSlipContract/List`)
+  }, []);
+
+
+  const handleFinancialIntegration = useCallback(() => {
+    handleIsOpenMenuConfig(true)
+    setShowConfigMenu(false)
+    handleIsMenuOpen(false)
+    handleRedirect(`/FinancialIntegration/List`)
   }, []);
 
 
@@ -207,6 +213,18 @@ const FinanceOptionsMenu = () => {
             <>
               <div style={{display:(showConfigMenu?'grid':'none')}}>
                 <HeaderPageCustom callback={{handlePaymentSlip}} />
+              </div>
+            </>
+          )}
+
+          {checkFinancialIntegration &&(
+            <>
+              <div style={{display:(showConfigMenu?'grid':'none')}}>
+                <hr />
+                <button type="button" className="menuLink" onClick={() => {handleFinancialIntegration()}}
+                >
+                  Integração Financeira
+                </button>
               </div>
             </>
           )}

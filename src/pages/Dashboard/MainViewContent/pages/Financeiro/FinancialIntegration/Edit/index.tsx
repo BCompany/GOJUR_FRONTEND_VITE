@@ -30,17 +30,16 @@ export interface DefaultsProps {
 }
 
 export interface IPaymentSlipContractData{
-  paymentSlipContractId: string
-  paymentSlipContractDescription: string
+  id: string
+  name: string
+  partnerToken: string
+  partnerId: string
+  penaltyLevyDaysNumber: string
   penaltyPackages: string
   ratesPackage: string
-  flg_Default: boolean
-  bankToken: string
 }
 
-Modal.setAppElement('#root');
-
-const PaymentSlipContractConfig: React.FC = () => {
+const FinancialIntegrationEdit: React.FC = () => {
   const formRef = useRef<HTMLFormElement>(null)
   const history = useHistory()
   const { handleUserPermission } = useDefaultSettings()
@@ -52,91 +51,30 @@ const PaymentSlipContractConfig: React.FC = () => {
   const [bank, setBank] = useState("AS")
   const [paymentSlipContractId, setPaymentSlipContractId] = useState<string>("")
   const [paymentSlipContractDescription, setPaymentSlipContractDescription] = useState<string>("ASAAS Gestão Financeira Instituição de Pagamento S.A.")
+  const [penaltyLevyDaysNumber, setPenaltyLevyDaysNumber] = useState<string>("")
   const [penaltyPackages, setPenaltyPackages] = useState<string>("")
   const [ratesPackage, setRatesPackage] = useState<string>("")
-  const [flg_Default, setFlg_Default] = useState<boolean>(false)
   const [bankToken, setBankToken] = useState<string>("")
   const [isValid, setIsValid] = useState<boolean>(false)
 
   const bankList = [
     { id:'AS', label: 'Asaas' },
   ]
-  
+
+
+  useEffect(() => {
+    const id = pathname.substr(27)
+
+    console.log('id', id)
+
+    if ( id != '0')
+      LoadFinancialIntegration()
+  }, [])
+
 
   useEffect(() => {
     LoadDefaultProps();
   }, [handleUserPermission])
-
-
-  useEffect(() => {
-    const id = pathname.substr(28)
-    if ( id != '0')
-      LoadPaymentSlipContract()
-  }, [])
-
-
-  const Close = () => { 
-    history.push(`/PaymentSlipContract/List`)
-  }
-
-
-  const LoadPaymentSlipContract = async() => {
-    try {
-      const id = pathname.substr(28)
-
-      const response = await api.post<IPaymentSlipContractData>('/CarteiraDeCobrança/Editar', {
-        id,
-        token
-      });
-    
-      setPaymentSlipContractId (response.data.paymentSlipContractId)
-      setPaymentSlipContractDescription(response.data.paymentSlipContractDescription)
-      setPenaltyPackages(response.data.penaltyPackages)
-      setRatesPackage(response.data.ratesPackage)
-      setFlg_Default(response.data.flg_Default)
-      setBankToken(response.data.bankToken)
-    }
-    catch (err) {
-      console.log(err);
-    }
-  }
-
-  
-  const SavePaymentSlipContract = useCallback(async() => {
-    try {
-      if (isSaving) {
-        addToast({type: "info", title: "Operação NÃO realizada", description: `Já existe uma operação em andamento`})
-        return;
-      }
-
-      if (isValid == false) {
-        addToast({type: "info", title: "Operação NÃO realizada", description: `Necessário validar o token antes de salvar`})
-        return;
-      }
-
-      const id = pathname.substr(28)
-      const token = localStorage.getItem('@GoJur:token');
-      setisSaving(true)
-      
-      await api.post('/CarteiraDeCobrança/Salvar', {
-        paymentSlipContractId: id,
-        paymentSlipContractDescription,
-        penaltyPackages,
-        ratesPackage,
-        flg_Default,
-        bankToken,
-        token
-      })
-      
-      addToast({type: "success", title: "Carteira de cobrança salva", description: "A carteira de cobrança foi adicionada no sistema."})
-      setisSaving(false)
-      Close()
-    }
-    catch (err:any) {
-      setisSaving(false)
-      addToast({type: "error", title: "Falha ao salvar carteira de cobrança.", description: err.response.data.Message})
-    }
-  }, [isSaving, paymentSlipContractId, paymentSlipContractDescription, penaltyPackages, ratesPackage, flg_Default, bankToken])
 
 
   // Load default parameters by user
@@ -155,11 +93,28 @@ const PaymentSlipContractConfig: React.FC = () => {
   }
 
 
-  const ChangeBank = (item) => {
-    if (item)
-      setBank(item.id)
-    else
-      setBank('')
+  const LoadFinancialIntegration = async() => {
+    try {
+      const id = pathname.substr(27)
+
+      const response = await api.get<IPaymentSlipContractData>('/IntegracaoFinanceira/Editar', {
+        params:{id, token}
+      });
+    
+      setPaymentSlipContractId(response.data.id)
+      setPaymentSlipContractDescription(response.data.name)
+      setPenaltyLevyDaysNumber(response.data.penaltyLevyDaysNumber)
+      setPenaltyPackages(response.data.penaltyPackages)
+      setRatesPackage(response.data.ratesPackage)
+      setBankToken(response.data.partnerToken)
+
+      if(response.data.id)
+        setIsValid(true)
+
+    }
+    catch (err) {
+      console.log(err);
+    }
   }
 
 
@@ -167,10 +122,7 @@ const PaymentSlipContractConfig: React.FC = () => {
     try {
       setisSaving(true)
       
-      const response = await api.post('/CarteiraDeCobrança/Validar', {
-        bankToken,
-        token
-      })
+      const response = await api.post('/IntegracaoFinanceira/Validar', { partnerToken: bankToken, token })
       
       if(response.data == true){
         addToast({type: "success", title: "Operação realizada", description: "O token foi validado com sucesso."})
@@ -184,13 +136,69 @@ const PaymentSlipContractConfig: React.FC = () => {
       addToast({type: "error", title: "Falha ao validar o token.", description: err.response.data.Message})
     }
   }, [isSaving, bankToken])
-  
+
+
+  const SavePaymentSlipContract = useCallback(async() => {
+    try {
+      if (isSaving) {
+        addToast({type: "info", title: "Operação NÃO realizada", description: `Já existe uma operação em andamento`})
+        return;
+      }
+
+      if (isValid == false) {
+        addToast({type: "info", title: "Operação NÃO realizada", description: `Necessário validar o token antes de salvar`})
+        return;
+      }
+
+      const id = pathname.substr(27)
+      const token = localStorage.getItem('@GoJur:token');
+      setisSaving(true)
+      
+      await api.post('/IntegracaoFinanceira/Salvar', {
+        id,
+        name: paymentSlipContractDescription,
+        partnerId: bank,
+        penaltyLevyDaysNumber,
+        penaltyPackages,
+        ratesPackage,
+        partnerToken: bankToken,
+        token
+      })
+      
+      addToast({type: "success", title: "Carteira de cobrança salva", description: "A carteira de cobrança foi adicionada no sistema."})
+      setisSaving(false)
+      Close()
+    }
+    catch (err:any) {
+      setisSaving(false)
+      addToast({type: "error", title: "Falha ao salvar carteira de cobrança.", description: err.response.data.Message})
+    }
+  }, [isSaving, paymentSlipContractId, paymentSlipContractDescription, penaltyLevyDaysNumber, penaltyPackages, ratesPackage, bankToken])
+
+
+  const Close = () => { 
+    history.push(`/FinancialIntegration/List`)
+  }
+
+
+  const Alert = () => { 
+    addToast({type: "info", title: "Operação NÃO realizada", description: `É necessário validar o Token antes`})
+  }
+
+
+  const ChangeBank = (item) => {
+    if (item)
+      setBank(item.id)
+    else
+      setBank('')
+  }
+
 
   return (
     <Container>
       <HeaderPage />
       <br />
-     
+
       <Content>
         <Form ref={formRef} onSubmit={handleSubmit(SavePaymentSlipContract)}>
           <section id="dados">
@@ -224,6 +232,17 @@ const PaymentSlipContractConfig: React.FC = () => {
               />
             </label>
 
+            <label htmlFor="numDiasMulta">
+              Número Dias Multa
+              <input 
+                type="text"
+                name="numDiasMulta"
+                autoComplete="off"
+                value={penaltyLevyDaysNumber}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setPenaltyLevyDaysNumber(e.target.value)}
+              />
+            </label>
+
             <label htmlFor="multa%">
               Multa (%)
               <IntlCurrencyInput
@@ -245,22 +264,8 @@ const PaymentSlipContractConfig: React.FC = () => {
             </label>
 
             <div>
-              <div style={{float:'left', marginLeft: '0px', width: '90px'}}>
-                <Flags>
-                  Padrão
-                </Flags>
-              </div>
-              <div style={{float:'left', marginTop:'3px', width: '10px'}}>
-                <input
-                  type="checkbox"
-                  name="select"
-                  checked={flg_Default}
-                  onChange={() => setFlg_Default(!flg_Default)}
-                  style={{minWidth:'15px', minHeight:'15px'}}
-                />
-              </div>
+              &nbsp;
             </div>
-            <br />
 
             <label htmlFor="token">
               TOKEN (Valide o token antes de salvar)
@@ -275,6 +280,7 @@ const PaymentSlipContractConfig: React.FC = () => {
                 disabled={isValid}
               />
             </label>
+
             <div style={{float:'left', marginTop:'1px'}}>
               <div style={{float:'left', marginTop:'16px'}}>
                 <button className="buttonClick" type='button' style={{width:'100px', height:'35px'}} onClick={()=> ValidateToken()} disabled={isValid}>
@@ -297,11 +303,21 @@ const PaymentSlipContractConfig: React.FC = () => {
 
             <div id="Buttons" style={{justifySelf:'right', marginRight:'10px'}}>
               <div style={{float:'left'}}>
-                <button className="buttonClick" type="submit" disabled={!isValid}>
-                  <FiSave />
-                  Salvar
-                  {isSaving ? <Loader size={5} color="#f19000" /> : null}
-                </button>
+                
+                {isValid && (
+                  <button className="buttonClick" type="submit">
+                    <FiSave />
+                    Salvar
+                    {isSaving ? <Loader size={5} color="#f19000" /> : null}
+                  </button>
+                )}
+
+                {!isValid && (
+                  <button type='button' className="buttonClick" onClick={() => Alert()} style={{opacity:0.5}}>
+                    <FiSave />
+                    Salvar
+                  </button>
+                )}
               </div>
                     
               <div style={{float:'left'}}>
@@ -316,20 +332,8 @@ const PaymentSlipContractConfig: React.FC = () => {
           </section>
         </Form>
       </Content>
-
-      {isSaving && (
-        <>
-          <Overlay />
-          <div className='waitingMessage'>   
-            <LoaderWaiting size={15} color="var(--blue-twitter)" /> 
-            &nbsp;&nbsp;
-            Salvando  ...
-          </div>
-        </>
-      )}   
-          
     </Container>
-  );
-};
+  )
+}
 
-export default PaymentSlipContractConfig;
+export default FinancialIntegrationEdit;
