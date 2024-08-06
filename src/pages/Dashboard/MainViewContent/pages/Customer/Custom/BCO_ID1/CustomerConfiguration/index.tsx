@@ -92,6 +92,7 @@ export interface PublicationData {
   flg_AtivoString: string;
   hasLog: boolean;
   tpo_Status: string;
+  clearanceDate: string;
 }
 
 export interface PublicationDto extends PublicationData {
@@ -645,8 +646,8 @@ const CustomerConfiguration: React.FC = () => {
   const columnsPublication = [
     { name: 'matterNumber', title: 'Processo' },
     { name: 'customerName', title: 'Nome' },
-    { name: 'releaseDate', title: 'Dt. Disponib.' },
-    { name: 'publicationDate', title: 'Dt. Publicação' },
+    { name: 'releaseDate', title: 'Data Disponibi.' },
+    { name: 'publicationDate', title: 'Data Pub/Lib'},
     { name: 'description', title: 'Descrição' },
     { name: 'publicationId', title: 'ID' }
   ];
@@ -655,10 +656,10 @@ const CustomerConfiguration: React.FC = () => {
   const [tableColumnExtensionsPublication] = useState([
     { columnName: 'matterNumber', width: '23%' },
     { columnName: 'customerName', width: '15%' },
-    { columnName: 'releaseDate', width: '13%' },
-    { columnName: 'publicationDate', width: '13%' },
+    { columnName: 'releaseDate', width: '14%' },
+    { columnName: 'publicationDate', width: '14%' },
     { columnName: 'description', width: '25%' },
-    { columnName: 'publicationId', width: '10%' },
+    { columnName: 'publicationId', width: '8%' },
   ]);
 
 
@@ -939,6 +940,8 @@ const CustomerConfiguration: React.FC = () => {
         companyId,
         token: localStorage.getItem('@GoJur:token')
       });
+
+      console.log(response.data)
 
       // fill data values
       const newData = response.data.map(
@@ -1756,11 +1759,19 @@ const CustomerConfiguration: React.FC = () => {
         <Table.Cell {...props}>
 
           {(props.row.tpo_Status == "A") && (
-            <span style={{ color: 'black', fontWeight: 500 }}>{format(new Date(props.row.publicationDate), 'dd/MM/yyyy')}</span>
+            <div>
+              <span style={{ color: 'black', fontWeight: 500 }}>{format(new Date(props.row.publicationDate), 'dd/MM/yyyy')}</span>
+              <br />
+              <span style={{ color: 'black', fontWeight: 500 }}>{format(new Date(props.row.clearanceDate), 'dd/MM/yyyy')}</span>
+            </div>
           )}
 
           {(props.row.tpo_Status == "D") && (
-            <span style={{ color: '#a0a0a0' }}>{format(new Date(props.row.publicationDate), 'dd/MM/yyyy')}</span>
+            <div>
+              <span style={{ color: '#a0a0a0' }}>{format(new Date(props.row.publicationDate), 'dd/MM/yyyy')}</span>
+              <br />
+              <span style={{ color: '#a0a0a0' }}>{format(new Date(props.row.clearanceDate), 'dd/MM/yyyy')}</span>
+            </div>
           )}
 
         </Table.Cell>
