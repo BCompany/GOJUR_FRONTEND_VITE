@@ -18,6 +18,12 @@ export const Content = styled.div`
   box-shadow: 1px 1px 4px 0.5px rgba(0,0,0,0.15);
   overflow: auto;
 
+  > svg {
+    width: 24px;
+    height: 24px;
+    color: var(--blue-twitter);
+  }
+
   .log {
     float: left;
     margin-top: 10px;
@@ -139,9 +145,21 @@ export const Content = styled.div`
         }
     }
 
+    > svg {
+      width: 24px;
+      height: 24px;
+      color: var(--blue-twitter);
+    }
+
     .flexDiv {
       font-size: 12px;
       flex: 1;
+
+      > svg {
+        width: 24px;
+        height: 24px;
+        color: var(--blue-twitter);
+      }
     }
 
     .personList {
@@ -273,17 +291,25 @@ export const Content = styled.div`
       color: var(--grey);
     }
 
+    .erase {
+      height: 18px;
+      width: 18px;
+      color: var(--blue-twitter);
+    }
+
   }
 `;
 
 
 export const Process = styled.div`
   width: 33%;
+  height: 40px;
   background: transparent;
   padding-top: 0.5rem;
   padding-bottom: 0.25rem;
   display: flex;
   align-items: center;
+  float: left;
 
   @media (max-width: 480px) {
     width: 100%;
@@ -378,6 +404,42 @@ export const Process = styled.div`
       }
     }
   }
+`;
+
+
+export const BankPaymentSlip = styled.div`
+  width: 33%;
+  height: 40px;
+  background: transparent;
+  padding-top: 0.5rem;
+  padding-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  float: left;
+  margin-left: 40px;
+  cursor: pointer;
+  color: blue;
+
+  @media (max-width: 480px) {
+    width: 100%;
+  }
+
+  > label {
+    font-size: 12px;
+  }
+
+  > p {
+    font-size: 12px;
+  }
+
+  > div {
+    > svg {
+      width: 24px;
+      height: 24px;
+      color: var(--blue-twitter);
+    }
+  }
+
 `;
 
 

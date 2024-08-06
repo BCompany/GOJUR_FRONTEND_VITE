@@ -17,6 +17,7 @@ import { useConfirmBox } from 'context/confirmBox';
 import { useStateContext } from 'context/statesContext';
 import { useDelay, currencyConfig, selectStyles, FormatCurrency, FormatFileName, AmazonPost } from 'Shared/utils/commonFunctions';
 import { useModal } from 'context/modal';
+import { AiOutlineBarcode } from 'react-icons/ai';
 import { IoIosPaper } from 'react-icons/io';
 import { BiSave } from 'react-icons/bi'
 import { BsImage } from 'react-icons/bs';
@@ -45,11 +46,12 @@ import { IPayments } from '../Interfaces/IPayments';
 import FinancialPaymentModal from '../PaymentModal';
 import FinancialDocumentModal from '../DocumentModal';
 import { ModalDeleteOptions, OverlayFinancial } from '../styles';
-import { Container, Content, Process, GridSubContainer, ModalPaymentInformation, ModalBankPaymentSlip } from './styles';
+import { Container, Content, Process, GridSubContainer, ModalPaymentInformation, ModalBankPaymentSlip, BankPaymentSlip } from './styles';
 
 export interface IBankPaymentSlip{
   dueDate: string;
   hasBankPaymentSlip: boolean;
+  bankPaymentSlipLink: string;
 };
 
 const FinancialMovement: React.FC = () => {
@@ -302,12 +304,9 @@ const FinancialMovement: React.FC = () => {
         setProcessTitle(`${response.data.num_Processo} - ${response.data.matterCustomerDesc} x ${response.data.matterOpposingDesc}`)
       }
 
-      if(response.data.hasBankPaymentSlip){
-        LoadBankPaymentSlip(movementId)
-      }
-
       await LoadPayments()
       await LoadDocuments()
+      await LoadBankPaymentSlip(movementId)
 
       setIsLoading(false);
     }
@@ -320,10 +319,11 @@ const FinancialMovement: React.FC = () => {
 
   const LoadBankPaymentSlip = async (movementId:number) => {
     try{
-      const response = await api.get<IBankPaymentSlip>('/Financeiro/ObterPagamentos', { params:{ token, movementId }});
+      const response = await api.get<IBankPaymentSlip>('/BoletoBancario/ObterPorMovimento', { params:{ token, movementId }});
 
       setBankPaymentSlipLinkDate(response.data.dueDate)
       setHasBankPaymentSlip(response.data.hasBankPaymentSlip)
+      setBankPaymentSlipLink(response.data.bankPaymentSlipLink)
     }
     catch (err:any) {
       addToast({type: "info", title: "Operação não realizada", description: err.response.data})
@@ -333,9 +333,30 @@ const FinancialMovement: React.FC = () => {
 
   const LoadPayments = async () => {
     try {
-      const response = await api.get<IPayments[]>('/BoletoBancario/ObterPorMovimento', { params:{ token, movementId }});
+      const response = await api.get<IPayments[]>('/Financeiro/ObterPagamentos', { params:{ token, movementId }});
 
-      
+      const paymentListReturn = response.data.map(payment => payment && {
+        ...payment,
+        action: 'UPDATE'
+      })
+
+      setPaymentList(paymentListReturn)
+
+      if(paymentListReturn.length == 1 && paymentListReturn[0].cod_MovimentoLiquidacao == '0')
+      {
+        const message = 'Nenhum pagamento foi realizado. Para incluir novas liquidações clique no botão acima.';
+        setPaymentMessage(message)
+      }
+      else if (paymentListReturn[0].total_Restante == 0) {
+        setShowPayments(true)
+        const message = paymentListReturn[0].tpo_Movimento == "D" ? 'Pago' : 'Recebido';
+        setPaymentMessage(message)
+      }
+      else{
+        setShowPayments(true)
+        const message = paymentListReturn[0].tpo_Movimento == "D" ? 'Saldo a pagar' : 'Saldo a receber';
+        setPaymentMessage(`${message} R$: ${FormatCurrency.format(paymentListReturn[0].total_Restante)}`)
+      }
     }
     catch (err:any) {
       setIsLoading(false)
@@ -1169,6 +1190,11 @@ const FinancialMovement: React.FC = () => {
   }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp, bankPaymentSlipDate]);
 
 
+  const OpenBankPaymentSlip = (item) => {
+    window.open(item.bankPaymentSlipLink, '_blank')
+  }
+
+
   return (
 
     <Container>
@@ -1447,20 +1473,15 @@ const FinancialMovement: React.FC = () => {
         </section>
         <br />
 
-        <div id='AttachMatter'>
-          <Process>
+        <section id='SixthElements'>
+          <div id='AttachMatter' className="flexDiv" style={{marginLeft:'10px'}}>
             {processTitle === 'Associar Processo' && (
-              <button
-                type="button"
-                id="associar"
-                onClick={handleGridSelectProcess}
-              >
+              <button type="button" id="associar" onClick={handleGridSelectProcess}>
                 <p>{processTitle}</p>
               </button>
             )}
 
             {processTitle !== 'Associar Processo' && (
-              // <p style={{fontSize:'0.625rem', fontWeight:500, fontFamily:'montserrat'}}>{processTitle}</p>
               <>
                 <span style={{fontSize:'0.625rem', fontWeight:500, fontFamily:'montserrat'}}>Processo:&nbsp;</span>
                 <span style={{fontSize:'0.625rem', fontWeight:500, fontFamily:'montserrat'}}>{processTitle}</span>
@@ -1468,35 +1489,36 @@ const FinancialMovement: React.FC = () => {
             )}
 
             {processTitle === 'Associar Processo' && (
-              <button
-                type="button"
-                onClick={handleGridSelectProcess}
-              >
+              <button type="button" onClick={handleGridSelectProcess}>
                 <RiFolder2Fill />
               </button>
             )}
 
             {processTitle !== 'Associar Processo' && (
-              <button
-                type="button"
-                onClick={() => {
-                  setProcessTitle('Associar Processo');
-                  setAppointmentMatter(undefined);
-                  setMatterId('0');
-                }}
-              >
+              <button type="button" onClick={() => {setProcessTitle('Associar Processo'); setAppointmentMatter(undefined); setMatterId('0')}}>
                 &nbsp;&nbsp;
-                {!blockAssociateMatter && <RiEraserLine /> }
+                {!blockAssociateMatter && <RiEraserLine className='erase' /> }
               </button>
             )}
-          </Process>
-
-          {hasBankPaymentSlip &&(
-            <div>
-              {bankPaymentSlipLinkDate}
-            </div>
-          )}
-        </div>
+          </div>
+          <div id='BankPaymentSlip' className="flexDiv">
+            {hasBankPaymentSlip &&(
+              <div id='BankPaymentSlip'>
+                <div style={{float:'left'}}>
+                  <button type="button" onClick={(e) => OpenBankPaymentSlip({bankPaymentSlipLink})}>
+                    <AiOutlineBarcode style={{height:'30px', width:'25px', color:'blue'}} title={` Vencimento Boleto: ${(format(new Date(`${bankPaymentSlipDate}T00:00:00`), 'dd/MM/yyyy'))} `} />
+                  </button>
+                </div>
+                <div style={{float:'left', fontSize:'13px', marginLeft:'7px', marginTop:'6px'}} onClick={(e) => OpenBankPaymentSlip({bankPaymentSlipLink})}>
+                  Vencimento Boleto: {(format(new Date(`${bankPaymentSlipDate}T00:00:00`), 'dd/MM/yyyy'))}
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="flexDiv">
+            <></>
+          </div>
+        </section>
         <br />
 
         <div id='PaymentElements' className='paymentElements'>
