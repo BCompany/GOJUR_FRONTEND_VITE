@@ -646,8 +646,8 @@ const CustomerConfiguration: React.FC = () => {
   const columnsPublication = [
     { name: 'matterNumber', title: 'Processo' },
     { name: 'customerName', title: 'Nome' },
-    { name: 'releaseDate', title: 'Data Disponibi.' },
-    { name: 'publicationDate', title: 'Data Pub/Lib'},
+    { name: 'releaseDate', title: 'Data Disponib.' },
+    { name: 'publicationDate', title: 'Data Pub./Lib.'},
     { name: 'description', title: 'Descrição' },
     { name: 'publicationId', title: 'ID' }
   ];
