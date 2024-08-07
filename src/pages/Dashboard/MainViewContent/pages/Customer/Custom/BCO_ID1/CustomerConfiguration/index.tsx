@@ -1762,7 +1762,7 @@ const CustomerConfiguration: React.FC = () => {
             <div>
               <span style={{ color: 'black', fontWeight: 500 }}>{format(new Date(props.row.publicationDate), 'dd/MM/yyyy')}</span>
               <br />
-              <span style={{ color: 'black', fontWeight: 500 }}>{format(new Date(props.row.clearanceDate), 'dd/MM/yyyy HH:mm:ss')}</span>
+              <span style={{ color: 'black', fontWeight: 500 }}>{format(new Date(props.row.clearanceDate), 'dd/MM/yyyy HH:mm')}</span>
             </div>
           )}
 
@@ -1770,7 +1770,7 @@ const CustomerConfiguration: React.FC = () => {
             <div>
               <span style={{ color: '#a0a0a0' }}>{format(new Date(props.row.publicationDate), 'dd/MM/yyyy')}</span>
               <br />
-              <span style={{ color: '#a0a0a0' }}>{format(new Date(props.row.clearanceDate), 'dd/MM/yyyy HH:mm:ss')}</span>
+              <span style={{ color: '#a0a0a0' }}>{format(new Date(props.row.clearanceDate), 'dd/MM/yyyy HH:mm')}</span>
             </div>
           )}
 
