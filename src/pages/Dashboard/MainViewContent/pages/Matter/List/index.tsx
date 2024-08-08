@@ -18,7 +18,7 @@ import { useAlert } from 'context/alert';
 import Loader from 'react-spinners/PulseLoader';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import { FaRegEdit, FaExchangeAlt, FaPlus, FaFileAlt } from 'react-icons/fa';
-import { FiDatabase, FiPaperclip, FiPlus } from 'react-icons/fi';
+import { FiDatabase, FiKey, FiPaperclip, FiPlus } from 'react-icons/fi';
 import { AiOutlinePrinter, AiFillFolderOpen, AiOutlineFile } from 'react-icons/ai'
 import { useAuth } from 'context/AuthContext';
 import { VscTag } from 'react-icons/vsc';
@@ -66,6 +66,7 @@ import SearchOAB from '../SearchOAB/Index';
 import InvertParts from '../InvertParts/Index';
 import SearchCNJ from '../SearchCNJ/Index';
 import MatterFileModal from '../MatterFileModal/index';
+import CredentialModal from '../../Credentials/index';
 
 const Matter: React.FC = () => {
   const { signOut } = useAuth();
@@ -135,6 +136,8 @@ const Matter: React.FC = () => {
   const [matterFileId, setMatterFileId] = useState<number>(0)
   const [matterFilePlace, setMatterFilePlace] = useState<string>("")
   const [isEdit, setIsEdit] = useState<boolean>(false);
+
+  const [showCredentialModal , setShowCredentialModal] = useState<boolean>(false)
 
 
   useEffect(() => {
@@ -2041,12 +2044,23 @@ const Matter: React.FC = () => {
     setMatterFilePlace("")
   }
 
+  
+  const handleOpenCredentialModal = async () => {
+    setShowCredentialModal(true)
+  };
+
+  const handleCloseCredentialModal = async () => {
+    setShowCredentialModal(false)
+  };
+
 
   return (
 
     <Container onScroll={handleScrool} ref={scrollRef}>
 
       <HeaderPage />
+      {(showCredentialModal) && <Overlay />}
+      {(showCredentialModal) && <CredentialModal callbackFunction={{handleCloseCredentialModal}} /> }
 
       {/* MATTER FILTER AND INCLUDE */}
       <Filter>
@@ -2181,36 +2195,52 @@ const Matter: React.FC = () => {
       <Tabs>
 
         {/* MATTER TABS NAMES */}
-        <div style={{ marginLeft: '10px', marginTop: '5px', marginBottom: '-10px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginLeft: '10px', marginTop: '5px', marginBottom: '-10px' }}>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            {hasMatterLegal && (
+              <button
+                type='button'
+                className={tabActive('matterLegal')}
+                onClick={() => handleTabs('matterLegal')}
+                style={{ marginLeft: '20px' }} // Ajuste o valor conforme necessário
+              >
+                <FiDatabase />
+                <span style={{ marginLeft: '5px' }}>
+                  Jurídico
+                </span>
+              </button>
+            )}
 
-          {hasMatterLegal && (
-            <button
-              type='button'
-              className={tabActive('matterLegal')}
-              onClick={() => handleTabs('matterLegal')}
-            >
-              <FiDatabase />
-              Jurídico
-            </button>
-          )}
+            {hasmatterAdvisory && (
+              <button
+                type='button'
+                className={tabActive('matterAdvisory')}
+                onClick={() => handleTabs('matterAdvisory')}
+                style={{ marginLeft: '10px' }} // Ajuste o valor conforme necessário
+              >
+                <FiDatabase />
+                <span style={{ marginLeft: '5px' }}>Consultivo</span>
+              </button>
+            )}
+          </div>
 
           {hasmatterAdvisory && (
-            <button
-              type='button'
-              className={tabActive('matterAdvisory')}
-              onClick={() => handleTabs('matterAdvisory')}
-            >
-              <FiDatabase />
-              Consultivo
-            </button>
-          )}
+          <button
+            type='button'
+            className={tabActive('matterAdvisory')}
+            onClick={() => handleOpenCredentialModal()}
+            style={{ marginRight: '20px', marginTop: '-10px' }} // Ajuste o valor conforme necessário
+          >
+            <FiKey />
+            <span style={{ marginLeft: '1px' }}>Credenciais</span>
+          </button>
+        )}
 
           {/* {isLoading && (
             <div className="loadingMessage">
               <Loader size={6} color="var(--blue-twitter)" />
             </div>
           )} */}
-
         </div>
 
         {openMatterMonitorResourceModal && (
