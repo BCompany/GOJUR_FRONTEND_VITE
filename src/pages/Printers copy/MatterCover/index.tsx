@@ -26,6 +26,7 @@ export default function PrinterCover() {
 
     setHtml(response.data.content)
     setIsLoading(false)
+    localStorage.removeItem('@GoJur:matterCoverId');
   }
 
   const LoadDefaultProps = async () => {
