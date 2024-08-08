@@ -646,8 +646,8 @@ const CustomerConfiguration: React.FC = () => {
   const columnsPublication = [
     { name: 'matterNumber', title: 'Processo' },
     { name: 'customerName', title: 'Nome' },
-    { name: 'releaseDate', title: 'Data Disponibi.' },
-    { name: 'publicationDate', title: 'Data Pub/Lib'},
+    { name: 'releaseDate', title: 'Data Disponib.' },
+    { name: 'publicationDate', title: 'Data Pub./Lib.'},
     { name: 'description', title: 'Descrição' },
     { name: 'publicationId', title: 'ID' }
   ];
@@ -1762,7 +1762,7 @@ const CustomerConfiguration: React.FC = () => {
             <div>
               <span style={{ color: 'black', fontWeight: 500 }}>{format(new Date(props.row.publicationDate), 'dd/MM/yyyy')}</span>
               <br />
-              <span style={{ color: 'black', fontWeight: 500 }}>{format(new Date(props.row.clearanceDate), 'dd/MM/yyyy')}</span>
+              <span style={{ color: 'black', fontWeight: 500 }}>{format(new Date(props.row.clearanceDate), 'dd/MM/yyyy HH:mm')}</span>
             </div>
           )}
 
@@ -1770,7 +1770,7 @@ const CustomerConfiguration: React.FC = () => {
             <div>
               <span style={{ color: '#a0a0a0' }}>{format(new Date(props.row.publicationDate), 'dd/MM/yyyy')}</span>
               <br />
-              <span style={{ color: '#a0a0a0' }}>{format(new Date(props.row.clearanceDate), 'dd/MM/yyyy')}</span>
+              <span style={{ color: '#a0a0a0' }}>{format(new Date(props.row.clearanceDate), 'dd/MM/yyyy HH:mm')}</span>
             </div>
           )}
 
