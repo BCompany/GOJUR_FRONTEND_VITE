@@ -1186,8 +1186,11 @@ const FinancialMovement: React.FC = () => {
       })
 
       addToast({type: "success", title: "Operação realizada com sucess", description: "Boleto criado com sucesso"})
-      setIsSaving(false)
 
+      await LoadBankPaymentSlip(Number(movementId))
+      setIsSaving(false)
+      setShowBankPaymentSlipModal(false)
+      setShowBankPaymentSlipSecondCopyModal(false)
       window.open(response.data, '_blank')
     }
     catch (err:any) {
@@ -1497,7 +1500,8 @@ const FinancialMovement: React.FC = () => {
 
             {processTitle === 'Associar Processo' && (
               <button type="button" onClick={handleGridSelectProcess}>
-                <RiFolder2Fill />
+                &nbsp;&nbsp;
+                <RiFolder2Fill className='erase' />
               </button>
             )}
 
@@ -1870,7 +1874,7 @@ const FinancialMovement: React.FC = () => {
 
 
 
-      {(showBankPaymentSlipModal) && <OverlayFinancial /> }
+      {showBankPaymentSlipModal && <OverlayFinancial /> }
       {showBankPaymentSlipModal && (
         <ModalBankPaymentSlip>
           <div className='menuSection'>
@@ -1906,7 +1910,7 @@ const FinancialMovement: React.FC = () => {
         </ModalBankPaymentSlip>
       )}
 
-      {(showBankPaymentSlipSecondCopyModal) && <OverlayFinancial /> }
+      {showBankPaymentSlipSecondCopyModal && <OverlayFinancial /> }
       {showBankPaymentSlipSecondCopyModal && (
         <ModalBankPaymentSlip>
           <div className='menuSection'>
@@ -1934,7 +1938,7 @@ const FinancialMovement: React.FC = () => {
               <div style={{float:'left'}}>
                 <button type='button' className="buttonClick" onClick={()=> {setShowBankPaymentSlipSecondCopyModal(false)}} style={{width:'150px'}}>
                   <FaRegTimesCircle />
-                  Não
+                  Fechar
                 </button>
               </div>
             </div>
