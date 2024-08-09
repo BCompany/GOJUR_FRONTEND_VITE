@@ -41,16 +41,17 @@ const CredentialModal = (props) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [credentialId, setCredentialId] = useState<number>(0);
   const [des_User, setDes_User] = useState<string>('');
+  const [description, setDescription] = useState<string>('');
 
   const token = localStorage.getItem('@GoJur:token')
 
   const [credentialsList, setCredentialsList] = useState<ICredentialData[]>([]);
 
   useEffect(() => {
-    LoadCities()
+    LoadCredentials()
     },[])
 
-  const LoadCities = useCallback(async() => {
+  const LoadCredentials = useCallback(async() => {
 
     const response = await api.get<ICredentialData[]>('/Credenciais/Listar', { 
       params:{
@@ -101,28 +102,34 @@ const CredentialModal = (props) => {
     return <Table.Cell {...props} />;
   };
 
-  
+  const handleAddNewCredential = async () => {
+    setShowCredentialsDataSourceModal(true)
+  };
+ 
   const handleOpenEditModal = async (props) => {
-    setCredentialId(props.row.id_Credential)
-    setDes_User(props.row.des_User)
+    setCredentialId(props.row.Id_Credential)
+    setDes_User(props.row.Des_Username)
+    setDescription(props.row.Des_Credential)
     setShowCredentialsDataSourceModal(true)
   };
 
   const handleCloseEditModal = async () => {
     setShowCredentialsDataSourceModal(false)
     setCredentialId(0)
+    setDes_User('')
+    setDescription('')
   };
 
   return (
     <>
-      {showCredentialsDataSourceModal && <CredentialsDataSourceModal callbackFunction={{ handleCloseEditModal, credentialId, des_User }} />}
-  
+      {showCredentialsDataSourceModal && <CredentialsDataSourceModal callbackFunction={{ handleCloseEditModal, credentialId, des_User, description }} />}
+    
       {!isMOBILE && (
         <FileModal show style={{ width: '55%', height: '55%', display: 'flex', flexDirection: 'column', border: '1px solid var(--blue-twitter)' }}>
           <div className='header' style={{ flex: '0 0 auto', padding: '2px 5px' }}>
             <p className='headerLabel'>Credenciais</p>
           </div>
-  
+    
           <GridSubContainer style={{ flex: '1 1 auto', overflowY: 'auto' }}>
             <Grid
               rows={credentialsList}
@@ -140,7 +147,7 @@ const CredentialModal = (props) => {
               />
               <IntegratedPaging />
               <CustomPaging totalCount={totalRows} />
-  
+    
               <Table
                 cellComponent={CustomCellUserList}
                 columnExtensions={tableColumnExtensionsUserLists}
@@ -152,9 +159,9 @@ const CredentialModal = (props) => {
               />
             </Grid>
           </GridSubContainer>
-  
+    
           <div className='footer' style={{ flex: '0 0 auto', padding: '10px', borderTop: '1px solid var(--blue-twitter)' }}>
-            <div style={{ float: 'right', marginRight: '3%' }}>
+            <div style={{ float: 'right', marginRight: '1%' }}>
               <button
                 type='button'
                 className="buttonClick"
@@ -165,10 +172,22 @@ const CredentialModal = (props) => {
                 Fechar
               </button>
             </div>
+
+            <div style={{ float: 'right', marginRight: '10px' }}>
+              <button 
+                className="buttonClick" 
+                title="Clique para incluir uma ação judícial"
+                type="submit"
+                onClick={handleAddNewCredential}
+              >
+                <FaFileAlt />
+                Adicionar
+              </button>
+            </div>
           </div>
         </FileModal>
       )}
-    
+      
       {isLoading && (
         <>
           <OverlayFinancial />
