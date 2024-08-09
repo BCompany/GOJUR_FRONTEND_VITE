@@ -57,7 +57,6 @@ export default function CredentialsDataSourceModal(props) {
   const [isLoadingComboData, setIsLoadingComboData] = useState<boolean>(false);
   const [allCredentialsDataSourceListCombo, setAllCredentialsDataSourceList] = useState<ISelectData[]>([]);
   const [credentialsDataSourceList, setCredentialsDataSourceList] = useState<ISelectData[]>([]);
-  const [allCredentialsDataSourceUserTerm, setAllCredentialsDataSourceUserTerm] = useState<string>("")
   const [readOnly , setReadOnly] = useState<boolean>(true);
 
   const token = localStorage.getItem('@GoJur:token')
@@ -208,7 +207,6 @@ export default function CredentialsDataSourceModal(props) {
       handleListItemDestinationUser(item)
     }
     else {
-      setAllCredentialsDataSourceUserTerm("")
       LoadAllCredentialList()
     }
   }
@@ -318,7 +316,6 @@ export default function CredentialsDataSourceModal(props) {
                 value={null}
                 isClearable
                 placeholder=""
-                onInputChange={(term) => setAllCredentialsDataSourceUserTerm(term)}
                 isLoading={isLoadingComboData}
                 loadingMessage={loadingMessage}
                 noOptionsMessage={noOptionsMessage}
