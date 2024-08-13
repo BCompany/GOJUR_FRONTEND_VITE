@@ -42,12 +42,14 @@ import LogModal from 'components/LogModal';
 import { DataTypeProvider, PagingState, CustomPaging, IntegratedPaging, SortingState, IntegratedSorting } from '@devexpress/dx-react-grid';
 import { Grid, Table, TableHeaderRow, PagingPanel } from '@devexpress/dx-react-grid-material-ui';
 import GridSelectProcess from '../../Dashboard/resorces/DashboardComponents/CreateAppointment/GridSelectProcess';
-import { ISelectData, MatterData, IMovementUploadFile } from '../Interfaces/IFinancial';
+import { ISelectData, MatterData, IMovementUploadFile, IPaymentFormData } from '../Interfaces/IFinancial';
 import { IPayments } from '../Interfaces/IPayments';
 import FinancialPaymentModal from '../PaymentModal';
 import FinancialDocumentModal from '../DocumentModal';
+import BankPaymentSlipSecondCopyModal from '../BankPaymentSlipSecondCopy';
 import { ModalDeleteOptions, OverlayFinancial } from '../styles';
-import { Container, Content, Process, GridSubContainer, ModalPaymentInformation, ModalBankPaymentSlip, BankPaymentSlip } from './styles';
+import { Container, Content, Process, GridSubContainer, ModalPaymentInformation, ModalBankPaymentSlip, ModalBankPaymentSlipSecond } from './styles';
+
 
 export interface IBankPaymentSlip{
   paymentSlipId: string;
@@ -71,9 +73,10 @@ const FinancialMovement: React.FC = () => {
   const [accountId, setAccountId] = useState('');
   const [movementId, setMovementId] = useState('');
   const [movementType, setMovementType] = useState('');
-  const [paymentFormList, setPaymentFormList] = useState<ISelectData[]>([]);
+  const [paymentFormList, setPaymentFormList] = useState<IPaymentFormData[]>([]);
   const [paymentFormId, setPaymentFormId] = useState('');
   const [paymentFormDescription, setPaymentFormDescription] = useState<string>("")
+  const [paymentFormType, setPaymentFormType] = useState<string>("")
   const [paymentFormTerm, setPaymentFormTerm] = useState('');
   const [categoryList, setCategoryList] = useState<ISelectData[]>([]);
   const [categoryId, setCategoryId] = useState('');
@@ -146,6 +149,9 @@ const FinancialMovement: React.FC = () => {
   const [paymentSlipPartnerId, setPaymentSlipPartnerId] = useState<string>('');
   const [showModalBankPaymentSlipOptions, setShowModalBankPaymentSlipOptions] = useState<boolean>(false);
   const [actionGenerate, setActionGenerate] = useState<string>('');
+  const [flg_Juros, setFlg_Juros] = useState<boolean>(true)
+  const [paymentSlipValueAdditional, setPaymentSlipValueAdditional] = useState<string>("0")
+  const [paymentSlipValueTotal, setPaymentSlipValueTotal] = useState<string>("0");
   const ref = useRef<any>(null);
   const DateFormatter = ({ value }) => format(new Date(value), 'dd/MM/yyyy HH:mm');
   const DateTypeProvider = props => (
@@ -160,7 +166,7 @@ const FinancialMovement: React.FC = () => {
       setShowChangeInstallments(false)
       handleCancelMessage(false)
     }
-  }, [isCancelMessage, caller]);
+  }, [isCancelMessage, caller])
 
 
   useEffect(() => {
@@ -170,7 +176,7 @@ const FinancialMovement: React.FC = () => {
       setShowChangeInstallments(false)
       handleConfirmMessage(false)
     }
-  }, [isConfirmMessage, caller]);
+  }, [isConfirmMessage, caller])
 
 
   useEffect(() => {
@@ -281,6 +287,7 @@ const FinancialMovement: React.FC = () => {
       setMovementParcelasDatas(response.data.Periodicidade)
       setPaymentFormId(response.data.cod_FormaPagamento)
       setPaymentFormDescription(response.data.des_FormaPagamento)
+      setPaymentFormType(response.data.tpo_FormaPagamento)
       setCategoryId(response.data.cod_Categoria)
       setCategoryDescription(response.data.nom_Categoria)
       setCenterCostId(response.data.cod_CentroCusto)
@@ -316,6 +323,8 @@ const FinancialMovement: React.FC = () => {
       await LoadBankPaymentSlip(movementId)
 
       setIsLoading(false);
+
+      console.log(response.data)
     }
     catch (err:any) {
       setIsLoading(false)
@@ -376,7 +385,7 @@ const FinancialMovement: React.FC = () => {
 
   const LoadPaymentForm = async () => {
     try {
-      const  response = await api.get<ISelectData[]>('FormaDePagamento/ListarPorFiltro', { params:{filterClause: paymentFormTerm, token}})
+      const  response = await api.get<IPaymentFormData[]>('FormaDePagamento/ListarPorFiltro', { params:{filterClause: paymentFormTerm, token}})
       setPaymentFormList(response.data)
     }
     catch (err:any) {
@@ -426,13 +435,13 @@ const FinancialMovement: React.FC = () => {
 
   const handleMovementDate = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setMovementDate(event.target.value)
-  }, []);
+  }, [])
 
 
   const handleValue = (event, value, maskedValue) => {
     event.preventDefault();
     setMovementValue(value)
-  };
+  }
 
 
   const handleChangeParcelas = (id: string) => {
@@ -465,9 +474,12 @@ const FinancialMovement: React.FC = () => {
     if (item){
       setPaymentFormId(item.id)
       setPaymentFormDescription(item.label)
-    }else{
+      setPaymentFormType(item.type)
+    }
+    else{
       setPaymentFormId('')
       setPaymentFormDescription('')
+      setPaymentFormType('')
       LoadPaymentForm()
     }
   }
@@ -555,6 +567,7 @@ const FinancialMovement: React.FC = () => {
         qtd_Parcelamento: movementParcelas,
         Periodicidade: movementParcelasDatas,
         cod_FormaPagamento: paymentFormId,
+        tpo_FormaPagamento: paymentFormType,
         cod_Categoria: categoryId,
         cod_CentroCusto: centerCostId,
         num_NotaFiscal: taxInvoice,
@@ -592,7 +605,7 @@ const FinancialMovement: React.FC = () => {
       setIsSaving(false)
       setShowChangeInstallments(false)
     }
-  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp]);
+  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp, paymentFormType]);
 
 
   const Copy = useCallback(async() => {
@@ -929,7 +942,7 @@ const FinancialMovement: React.FC = () => {
     }
 
     return <Table.Cell {...props} />;
-  };
+  }
 
 
   const handleClick = (props: any) => {
@@ -1100,7 +1113,7 @@ const FinancialMovement: React.FC = () => {
     else{
       setShowPaymentModal(true)
     }
-  }, [movementId]);
+  }, [movementId])
 
 
   const handleConfirmChangeInstallments = async () => {
@@ -1136,7 +1149,7 @@ const FinancialMovement: React.FC = () => {
 
   const handleLogOnDisplay = useCallback(async () => {
     setShowLog(true);
-  }, []);
+  }, [])
 
 
   const handleCloseLog = () => {
@@ -1239,9 +1252,7 @@ const FinancialMovement: React.FC = () => {
 
 
   return (
-
     <Container>
-
       <HeaderPage />
 
       {matterAttachedModal &&(<OverlayFinancial />)}
@@ -1251,7 +1262,6 @@ const FinancialMovement: React.FC = () => {
       {(showDocumentModal) && <FinancialDocumentModal callbackFunction={{movementId, invoice, CloseDocumentModal}} /> }
 
       <Content>
-
         {isLoading || isSaving && (
           <>
             <Overlay />
@@ -1518,36 +1528,38 @@ const FinancialMovement: React.FC = () => {
 
         <section id='SixthElements'>
           <div id='AttachMatter' className="flexDiv" style={{marginLeft:'10px'}}>
-            {processTitle === 'Associar Processo' && (
-              <button type="button" id="associar" onClick={handleGridSelectProcess}>
-                <p>{processTitle}</p>
-              </button>
-            )}
+            <Process>
+              {processTitle === 'Associar Processo' && (
+                <button type="button" id="associar" onClick={handleGridSelectProcess}>
+                  <p>{processTitle}</p>
+                </button>
+              )}
 
-            {processTitle !== 'Associar Processo' && (
-              <>
-                <span style={{fontSize:'0.625rem', fontWeight:500, fontFamily:'montserrat'}}>Processo:&nbsp;</span>
-                <span style={{fontSize:'0.625rem', fontWeight:500, fontFamily:'montserrat'}}>{processTitle}</span>
-              </>
-            )}
+              {processTitle !== 'Associar Processo' && (
+                <>
+                  <span style={{fontSize:'0.625rem', fontWeight:500, fontFamily:'montserrat'}}>Processo:&nbsp;</span>
+                  <span style={{fontSize:'0.625rem', fontWeight:500, fontFamily:'montserrat'}}>{processTitle}</span>
+                </>
+              )}
 
-            {processTitle === 'Associar Processo' && (
-              <button type="button" onClick={handleGridSelectProcess}>
-                &nbsp;&nbsp;
-                <RiFolder2Fill className='erase' />
-              </button>
-            )}
+              {processTitle === 'Associar Processo' && (
+                <button type="button" onClick={handleGridSelectProcess}>
+                  &nbsp;&nbsp;
+                  <RiFolder2Fill className='erase' />
+                </button>
+              )}
 
-            {processTitle !== 'Associar Processo' && (
-              <button type="button" onClick={() => {setProcessTitle('Associar Processo'); setAppointmentMatter(undefined); setMatterId('0')}}>
-                &nbsp;&nbsp;
-                {!blockAssociateMatter && <RiEraserLine className='erase' /> }
-              </button>
-            )}
+              {processTitle !== 'Associar Processo' && (
+                <button type="button" onClick={() => {setProcessTitle('Associar Processo'); setAppointmentMatter(undefined); setMatterId('0')}}>
+                  &nbsp;&nbsp;
+                  {!blockAssociateMatter && <RiEraserLine className='erase' /> }
+                </button>
+              )}
+            </Process>
           </div>
           <div id='BankPaymentSlip' className="flexDiv">
             {hasBankPaymentSlip &&(
-              <div id='BankPaymentSlip'>
+              <div id='BankPaymentSlip' style={{marginTop:'6px'}}>
                 <div style={{float:'left'}}>
                   <button type="button" onClick={(e) => OpenBankPaymentSlip({bankPaymentSlipLink})}>
                     <AiOutlineBarcode 
@@ -1557,7 +1569,7 @@ const FinancialMovement: React.FC = () => {
                   </button>
                 </div>
                 <div style={{float:'left', fontSize:'13px', marginLeft:'7px', marginTop:'6px'}} onClick={(e) => OpenBankPaymentSlip({bankPaymentSlipLink})}>
-                  Vencimento Boleto: {(format(new Date(bankPaymentSlipLinkDate), 'dd/MM/yyyy'))}
+                  <a href={bankPaymentSlipLink} target="blank" style={{color:'blue'}}>Ver boleto - Venc.({(format(new Date(bankPaymentSlipLinkDate), 'dd/MM/yyyy'))})</a>
                 </div>
               </div>
             )}
@@ -1718,7 +1730,7 @@ const FinancialMovement: React.FC = () => {
 
             {hasBankPaymentSlip == true ? (
               <>
-                {(!isMOBILE && movementId != '0' && movementType == "R") &&(
+                {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B") &&(
                   <button className="buttonClick" type='button' onClick={()=> HandleGenerateBankPaymentSlipSecond()}>
                     <FaFileInvoiceDollar  />
                     2ª Via Boleto
@@ -1727,7 +1739,7 @@ const FinancialMovement: React.FC = () => {
               </>
             ) : (
               <>
-                {(!isMOBILE && movementId != '0' && movementType == "R") &&(
+                {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B") &&(
                   <button className="buttonClick" type='button' onClick={()=> HandleGenerateBankPaymentSlip()}>
                     <FaFileInvoiceDollar  />
                     Gerar Boleto
@@ -1954,19 +1966,50 @@ const FinancialMovement: React.FC = () => {
       )}
 
       {showBankPaymentSlipSecondCopyModal && <OverlayFinancial /> }
-      {showBankPaymentSlipSecondCopyModal && (
-        <ModalBankPaymentSlip>
+      {showBankPaymentSlipSecondCopyModal && <BankPaymentSlipSecondCopyModal callbackFunction={{setShowBankPaymentSlipSecondCopyModal, setBankPaymentSlipDate, setMovementValue, movementId, movementValue, GeneratePaymentSlip }} /> }
+      {/* {showBankPaymentSlipSecondCopyModal && (
+        <ModalBankPaymentSlipSecond>
           <div className='menuSection'>
             <FiX onClick={(e) => {setShowBankPaymentSlipSecondCopyModal(false)}} />
           </div>
-          <div id='ModalContent' style={{textAlign:'-webkit-center'}}>
+          <div id='ModalContent' style={{marginTop:'-25px', textAlign:'-webkit-center'}}>
             Informe a data de vencimento da segunda via do boleto
             <br /><br />
-
             <div style={{width:'290px'}}>
               <label htmlFor='Data'>
                 <DatePicker title="Vencimento" onChange={handleBankPaymentSlipDate} value={bankPaymentSlipDate} />
               </label>
+            </div>
+            <br />
+
+            <div style={{width:'290px'}}>
+              Valor
+              <br />
+              <input disabled value={FormatCurrency.format(Number(movementValue))} style={{backgroundColor:'white'}} />
+            </div>
+            <br />
+
+            <div style={{width:'290px'}}>
+              <div style={{width:'200px', float:'left'}}>
+                <span style={{width:"115px"}}>Multa/Juros ?</span>
+              </div>
+              <div className='flgDiv' style={{float:'left'}}>
+                <input type="checkbox" name="select" checked={flg_Juros} onChange={() => setFlg_Juros(!flg_Juros)}/>
+              </div>
+            </div>
+            <br /><br />
+            
+            <div style={{width:'290px'}}>
+              Multa/Juros R$:
+              <br />
+              <input disabled name="descricao" value={FormatCurrency.format(Number(paymentSlipValueAdditional))}/>
+            </div>
+            <br />
+
+            <div style={{width:'290px'}}>
+              Total:
+              <br />
+              <input disabled name="descricao" value={FormatCurrency.format(Number(paymentSlipValueTotal))}/>
             </div>
             <br /><br />
 
@@ -1986,8 +2029,8 @@ const FinancialMovement: React.FC = () => {
               </div>
             </div>
           </div>
-        </ModalBankPaymentSlip>
-      )}
+        </ModalBankPaymentSlipSecond>
+      )} */}
 
 
 
