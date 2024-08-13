@@ -9,7 +9,7 @@ import { FiTrash, FiDownloadCloud } from 'react-icons/fi';
 import { HiDocumentText } from 'react-icons/hi';
 import { SiMicrosoftexcel } from 'react-icons/si';
 import { useDevice } from "react-use-device";
-import { format } from 'date-fns';
+import { add, format } from 'date-fns';
 import { useToast } from 'context/toast';
 import { useDelay, currencyConfig, selectStyles, FormatCurrency, FormatFileName, AmazonPost } from 'Shared/utils/commonFunctions';
 import { languageGridEmpty, languageGridPagination } from 'Shared/utils/commonConfig';
@@ -32,6 +32,7 @@ export interface ICredentialData {
 }
 
 const CredentialModal = (props) => {
+  const { addToast } = useToast();
   const { handleCloseCredentialModal } = props.callbackFunction;
   const { isMOBILE } = useDevice();
   const [pageSize, setPageSize] = useState(10);
@@ -92,9 +93,9 @@ const CredentialModal = (props) => {
 
     if (column.name === 'bntExcluir') {
       return (
-        <Table.Cell onClick={(e) => console.log(props)} {...props}>
+        <Table.Cell onClick={(e) => handleDeleteCredential(props.row.Id_Credential)} {...props}>
           &nbsp;&nbsp;
-          <FiTrash title="Clique para excluir" />
+          <FiTrash />
         </Table.Cell>
       );
     }
@@ -119,6 +120,27 @@ const CredentialModal = (props) => {
     setDes_User('')
     setDescription('')
   };
+
+  const handleDeleteCredential = async (id: number) => {
+
+    try {
+      const response = await api.delete('/Credenciais/Excluir', { 
+        params:{
+            id,
+            token
+          }
+      })
+
+      LoadCredentials()
+    }
+    catch (error) {
+      addToast({
+        type: 'error',
+        title: 'Erro ao excluir a credencial',
+        description: 'Ocorreu um erro ao tentar excluir a credencial, tente novamente!'
+      });
+    }
+  }
 
   return (
     <>
