@@ -17,6 +17,7 @@ import { DataTypeProvider, PagingState, CustomPaging, IntegratedPaging, SortingS
 import { Grid, Table, TableHeaderRow, PagingPanel } from '@devexpress/dx-react-grid-material-ui';
 import { FileModal, FileModalMobile, GridSubContainer, OverlayFinancial } from './styles';
 import CredentialsDataSourceModal from './EditModal';
+import { OverlayPermission } from './EditModal/styles';
 
 interface SelectData {
   id: string;
@@ -43,6 +44,7 @@ const CredentialModal = (props) => {
   const [credentialId, setCredentialId] = useState<number>(0);
   const [des_User, setDes_User] = useState<string>('');
   const [description, setDescription] = useState<string>('');
+  const [isChanging, setIsChanging] = useState<boolean>(false);
 
   const token = localStorage.getItem('@GoJur:token')
 
@@ -119,6 +121,7 @@ const CredentialModal = (props) => {
     setCredentialId(0)
     setDes_User('')
     setDescription('')
+    LoadCredentials()
   };
 
   const handleDeleteCredential = async (id: number) => {
@@ -126,7 +129,7 @@ const CredentialModal = (props) => {
     try {
       const response = await api.delete('/Credenciais/Excluir', { 
         params:{
-            id,
+            id_Credential: id,
             token
           }
       })
@@ -144,6 +147,16 @@ const CredentialModal = (props) => {
 
   return (
     <>
+      {isChanging && (
+        <>
+          <OverlayPermission />
+          <div className='waitingMessage' style={{ zIndex: 999999999 }}>
+            <LoaderWaiting size={15} color="var(--blue-twitter)" />
+            &nbsp;&nbsp; Alterando Permissões...
+          </div>
+        </>
+      )}
+      
       {showCredentialsDataSourceModal && <CredentialsDataSourceModal callbackFunction={{ handleCloseEditModal, credentialId, des_User, description }} />}
     
       {!isMOBILE && (

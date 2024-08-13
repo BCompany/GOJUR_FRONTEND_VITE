@@ -77,6 +77,7 @@ export default function CredentialsDataSourceModal(props) {
 
   const LoadAllCredentialList = async () => {
     try {
+
       const response = await api.get<IDataSource[]>(
         '/Credenciais/ListarTodasFontes',
         {
@@ -99,6 +100,7 @@ export default function CredentialsDataSourceModal(props) {
       setAllCredentialsDataSourceList(listAllCredentialsDataSource)
 
       setIsLoadingComboData(false)
+
       
     } catch (err: any) {
       addToast({
@@ -106,6 +108,7 @@ export default function CredentialsDataSourceModal(props) {
         title: "Operação não realizada",
         description: err.response.data.Message
       })
+
     }
   }
 
@@ -170,7 +173,7 @@ export default function CredentialsDataSourceModal(props) {
 
     try {
       const response = await api.post<ICredentials>(
-        '/Credenciais/Criar',
+        '/Credenciais/Salvar',
         {
           IdCredential: credentialId,
           UserName: des_user,
@@ -239,7 +242,7 @@ export default function CredentialsDataSourceModal(props) {
           <OverlayPermission />
           <div className='waitingMessage' style={{ zIndex: 999999999 }}>
             <LoaderWaiting size={15} color="var(--blue-twitter)" />
-            &nbsp;&nbsp; Alterando Permissões...
+            &nbsp;&nbsp; Carregando...
           </div>
         </>
       )}
