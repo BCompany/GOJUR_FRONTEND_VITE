@@ -10,6 +10,7 @@ import DatePicker from 'components/DatePicker';
 import IntlCurrencyInput from "react-intl-currency-input";
 import Select from 'react-select';
 import ModalOptions from 'components/ModalOptions';
+import ModalBankPaymentSlipOptions from 'components/ModalBankPaymentSlipOptions';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import { languageGridEmpty} from 'Shared/utils/commonConfig';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
@@ -140,9 +141,11 @@ const FinancialMovement: React.FC = () => {
   const [hasBankPaymentSlip, setHasBankPaymentSlip] = useState<boolean>(false);
   const [paymentSlipId, setPaymentSlipId] = useState<string>('');
   const [bankPaymentSlipDate, setBankPaymentSlipDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
-  const [bankPaymentSlipLinkDate, setBankPaymentSlipLinkDate] = useState<string>('');
+  const [bankPaymentSlipLinkDate, setBankPaymentSlipLinkDate] = useState<string>("");
   const [bankPaymentSlipLink, setBankPaymentSlipLink] = useState<string>('');
   const [paymentSlipPartnerId, setPaymentSlipPartnerId] = useState<string>('');
+  const [showModalBankPaymentSlipOptions, setShowModalBankPaymentSlipOptions] = useState<boolean>(false);
+  const [actionGenerate, setActionGenerate] = useState<string>('');
   const ref = useRef<any>(null);
   const DateFormatter = ({ value }) => format(new Date(value), 'dd/MM/yyyy HH:mm');
   const DateTypeProvider = props => (
@@ -569,7 +572,7 @@ const FinancialMovement: React.FC = () => {
         token
       })
 
-      addToast({type: "success", title: "Operação realizada com sucess", description: `${  movementType == 'R'? 'Receita': 'Despesa'  } salva com sucesso`})
+      addToast({type: "success", title: "Operação realizada com sucesso", description: `${  movementType == 'R'? 'Receita': 'Despesa'  } salva com sucesso`})
 
       handleStateType('Inactive')
 
@@ -1146,7 +1149,7 @@ const FinancialMovement: React.FC = () => {
   }, []);
 
 
-  const GeneratePaymentSlip = useCallback(async(secondPayment: boolean) => {
+  const GeneratePaymentSlip = useCallback(async(actionGenerate: string, secondPayment: boolean) => {
     try {
       setIsSaving(true)
       setShowModalOptions(false)
@@ -1174,7 +1177,7 @@ const FinancialMovement: React.FC = () => {
         flg_NotificaWhatsApp: flgNotifyWhatsApp,
         flg_Status: flgStatus,
         Lembrete: reminders,
-        editChild: actionSave.length == 0 ? "justOne" : actionSave, // Action save is used to define if is save one, all or next, when is empty consider only one
+        editChild: actionGenerate,
         flg_Reembolso: flgReembolso,
         cod_Processo: matterId,
         cod_Conta: accountId,
@@ -1185,23 +1188,53 @@ const FinancialMovement: React.FC = () => {
         token
       })
 
-      addToast({type: "success", title: "Operação realizada com sucess", description: "Boleto criado com sucesso"})
+      addToast({type: "success", title: "Operação realizada com sucesso", description: "Boleto criado com sucesso"})
 
       await LoadBankPaymentSlip(Number(movementId))
       setIsSaving(false)
       setShowBankPaymentSlipModal(false)
+      setShowModalBankPaymentSlipOptions(false)
       setShowBankPaymentSlipSecondCopyModal(false)
       window.open(response.data, '_blank')
     }
     catch (err:any) {
       addToast({type: "info", title: "Falha ao gerar boleto.", description: err.response.data.Message})
       setIsSaving(false)
+      setShowBankPaymentSlipModal(false)
+      setShowModalBankPaymentSlipOptions(false)
+      setShowBankPaymentSlipSecondCopyModal(false)
     }
   }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp, bankPaymentSlipDate, paymentSlipPartnerId, paymentSlipId]);
 
 
   const OpenBankPaymentSlip = (item) => {
     window.open(item.bankPaymentSlipLink, '_blank')
+  }
+
+
+  const HandleGenerateBankPaymentSlip = () => {
+    if (movementParcelas !=  '1' && actionSave.length == 0 && movementId != '0'){
+      setShowModalBankPaymentSlipOptions(true)
+      return;
+    }
+
+    setShowBankPaymentSlipModal(true)
+  }
+
+
+  const HandleGenerateBankPaymentSlipSecond = () => {
+    if (movementParcelas !=  '1' && actionSave.length == 0 && movementId != '0'){
+      setShowModalBankPaymentSlipOptions(true)
+      return;
+    }
+
+    setShowBankPaymentSlipSecondCopyModal(true)
+  }
+
+
+  const CallbackModalBankPaymentSlip = (actionGenerate: string) => {
+    setActionGenerate(actionGenerate)
+    GeneratePaymentSlip(actionGenerate, false)
   }
 
 
@@ -1517,11 +1550,14 @@ const FinancialMovement: React.FC = () => {
               <div id='BankPaymentSlip'>
                 <div style={{float:'left'}}>
                   <button type="button" onClick={(e) => OpenBankPaymentSlip({bankPaymentSlipLink})}>
-                    <AiOutlineBarcode style={{height:'30px', width:'25px', color:'blue'}} title={` Vencimento Boleto: ${(format(new Date(`${bankPaymentSlipDate}T00:00:00`), 'dd/MM/yyyy'))} `} />
+                    <AiOutlineBarcode 
+                      style={{height:'30px', width:'25px', color:'blue'}} 
+                      title={`Vencimento do boleto em: ${(format(new Date(bankPaymentSlipLinkDate), 'dd/MM/yyyy'))} `}
+                    />
                   </button>
                 </div>
                 <div style={{float:'left', fontSize:'13px', marginLeft:'7px', marginTop:'6px'}} onClick={(e) => OpenBankPaymentSlip({bankPaymentSlipLink})}>
-                  Vencimento Boleto: {(format(new Date(`${bankPaymentSlipDate}T00:00:00`), 'dd/MM/yyyy'))}
+                  Vencimento Boleto: {(format(new Date(bankPaymentSlipLinkDate), 'dd/MM/yyyy'))}
                 </div>
               </div>
             )}
@@ -1683,7 +1719,7 @@ const FinancialMovement: React.FC = () => {
             {hasBankPaymentSlip == true ? (
               <>
                 {(!isMOBILE && movementId != '0' && movementType == "R") &&(
-                  <button className="buttonClick" type='button' onClick={()=> setShowBankPaymentSlipSecondCopyModal(true)}>
+                  <button className="buttonClick" type='button' onClick={()=> HandleGenerateBankPaymentSlipSecond()}>
                     <FaFileInvoiceDollar  />
                     2ª Via Boleto
                   </button>
@@ -1692,7 +1728,7 @@ const FinancialMovement: React.FC = () => {
             ) : (
               <>
                 {(!isMOBILE && movementId != '0' && movementType == "R") &&(
-                  <button className="buttonClick" type='button' onClick={()=> setShowBankPaymentSlipModal(true)}>
+                  <button className="buttonClick" type='button' onClick={()=> HandleGenerateBankPaymentSlip()}>
                     <FaFileInvoiceDollar  />
                     Gerar Boleto
                   </button>
@@ -1739,6 +1775,13 @@ const FinancialMovement: React.FC = () => {
           description="Este movimento está parcelado, deseja atualizar também as outras parcelas ?"
           close={() => setShowModalOptions(false)}
           callback={handleCallback}
+        />
+      )}
+
+      {showModalBankPaymentSlipOptions && (
+        <ModalBankPaymentSlipOptions
+          close={() => setShowModalBankPaymentSlipOptions(false)}
+          callback={CallbackModalBankPaymentSlip}
         />
       )}
 
@@ -1893,7 +1936,7 @@ const FinancialMovement: React.FC = () => {
 
             <div id='Buttons' style={{marginLeft:'130px'}}>
               <div style={{float:'left'}}>
-                <button className="buttonClick" type='button' onClick={()=> GeneratePaymentSlip(false)} style={{width:'150px'}}>
+                <button className="buttonClick" type='button' onClick={()=> GeneratePaymentSlip('justOne', false)} style={{width:'150px'}}>
                   <FaCheck />
                   Gerar Boleto
                 </button>
@@ -1929,7 +1972,7 @@ const FinancialMovement: React.FC = () => {
 
             <div id='Buttons' style={{marginLeft:'130px'}}>
               <div style={{float:'left'}}>
-                <button className="buttonClick" type='button' onClick={()=> GeneratePaymentSlip(true)} style={{width:'150px'}}>
+                <button className="buttonClick" type='button' onClick={()=> GeneratePaymentSlip('justOne', true)} style={{width:'150px'}}>
                   <FaCheck />
                   Gerar 2ª Via
                 </button>
