@@ -4,12 +4,12 @@ interface SearchProps {
   show: boolean;
 }
 
-export const CredentialsModal = styled.div<SearchProps>`
+export const ModalFollow = styled.div<SearchProps>`
   font-size: 0.665rem;
   border-radius: 10px;
   box-shadow: 1px 1px 4px 0.5px rgba(0, 0, 0, 0.15);
-  width: 57rem;
-  height: 35rem;
+  width: 42rem;
+  height: 15rem; /* Reduced height */
   background-color: var(--white);
   position: absolute;
   z-index: 99998;
@@ -50,48 +50,6 @@ export const CredentialsModal = styled.div<SearchProps>`
     float: right;
     border-top: 1px solid var(--blue-twitter);
     width: 100%;
-  }
-`;
-
-export const GridSubContainer = styled.div`
-  width: 100%;
-  font-family: Montserrat;
-  margin-top: 20px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  font-size: 13px;
-
-  big {
-    font-size: 0.675rem;
-    color: var(--blue-twitter);
-  }
-
-  span {
-    font-size: 0.65rem;
-    color: var(--blue-twitter);
-  }
-
-  text-decoration {
-    font-size: 0.70rem;
-    color: var(--blue-twitter);
-  }
-
-  table tr td {
-    white-space: inherit;
-    font-size: 0.70rem;
-  }
-
-  svg {
-    width: 1rem;
-    height: 1rem;
-    color: var(--blue-light);
-    cursor: pointer;
-
-    &:hover {
-      color: var(--orange);
-    }
-  }
-  & tbody tr:nth-of-type(odd) {
-    background-color: #d9ecec;
   }
 `;
 

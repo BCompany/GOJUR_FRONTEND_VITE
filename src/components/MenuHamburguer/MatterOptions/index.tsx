@@ -21,6 +21,7 @@ import { MenuHamburger, Container, WarningModal } from './styles';
 const MatterListOptionsMenu = () => {
 
   const [showConfigMenu, setShowConfigMenu] = useState<boolean>(false)
+  const [showCredentials, setShowCredentials] = useState<boolean>(false)
   const [showReportMenu, setShowReportMenu] = useState<boolean>(false)
   const [showWarning, setShowWarning] = useState<boolean>(false)
   const [redirectToOldVersion, setRedirectToOldVersion] = useState<boolean>(false)
@@ -269,6 +270,21 @@ const MatterListOptionsMenu = () => {
             }}
           >
             Parâmetros do Processo
+          </button>
+
+        </div>
+
+        <div style={{display:(showConfigMenu?'grid':'none')}}>
+          <hr />
+          <button
+            type="button"
+            className="menuLink"
+            onClick={() => {
+              handleIsOpenMenuConfig(!isOpenMenuConfig)
+              setShowConfigMenu(false)
+            }}
+          >
+            Credenciais
           </button>
 
         </div>

@@ -9,22 +9,41 @@ import { FiPlus, FiTrash } from 'react-icons/fi';
 import { MdBlock } from 'react-icons/md';
 import InputMask from 'components/InputMask';
 import api from 'services/api';
+import Select from 'react-select';
 import { useConfirmBox } from 'context/confirmBox';
 import  {BiSave} from 'react-icons/bi';
 import { useToast } from 'context/toast';
 import { Container } from './styles'
 import { ISearchCNJ } from '../Interfaces/IMatter';
+import { AutoCompleteSelect } from 'Shared/styles/GlobalStyle';
+import { loadingMessage, noOptionsMessage } from 'Shared/utils/commonConfig';
+import { selectStyles } from 'Shared/utils/commonFunctions';
+
+export interface ISelectData {
+  id: string;
+  label: string;
+}
+
+export interface ICredentials {
+  Id_Credential: string;
+  Des_Credential: string;
+}
 
 export default function SearchCNJ () {
 
   const { addToast } = useToast();
   const { handleCancelMessage, handleCaller } = useConfirmBox(); 
+  const [isLoadingComboData, setIsLoadingComboData] = useState<boolean>(false);
   const [isSecret, setIsSecret] = useState<boolean>(false)
   const [numberCNJ, setNumberCNJ] = useState<string>('')
   const [userCNJ, setUserCNJ] = useState<string>('')
   const [pswCNJ, setPswCNJ] = useState<string>('')
   const [listSearch, setlistSearch] = useState<ISearchCNJ[]>([])
   const [isSaving, setIsSaving] = useState<boolean>(false)
+  const [credentialsList, setCredentialsList] = useState<ISelectData[]>([]);
+  const [credentialTerm, setCredentialTerm] = useState('');
+  const [credentialId, setCredentialId] = useState<string>('');
+  const [credentialValue, setCredentialValue] = useState<string>('');
   const tokenApi = localStorage.getItem('@GoJur:token');
 
   useEffect(() => {
@@ -162,6 +181,47 @@ export default function SearchCNJ () {
 
   },[userCNJ, pswCNJ, numberCNJ, listSearch ])
 
+  const handleCredentialSelected = (item) => {
+    if (item) {
+      setCredentialValue(item.label);
+      setCredentialId(item.id);
+    } else {
+      setCredentialValue('');
+      LoadCredentials();
+      setCredentialId('');
+      setCredentialTerm('');
+    }
+  };
+
+  const LoadCredentials = async () => {
+    if (isLoadingComboData) {
+      return false;
+    }
+
+    try {
+      const response = await api.get<ICredentials[]>('/Credenciais/Listar', {
+        params: {
+          token: tokenApi,
+        },
+      });
+
+      const listCredentials: ISelectData[] = [];
+
+      response.data.map((item) => {
+        return listCredentials.push({
+          id: item.Id_Credential,
+          label: item.Des_Credential,
+        });
+      });
+
+      setCredentialsList(listCredentials);
+
+      setIsLoadingComboData(false);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   return (
 
     <Modal
@@ -194,23 +254,40 @@ export default function SearchCNJ () {
             <FcAbout title='Informe um numero de CNJ válido (máximo 25 digitos) para efetuar a busca automática' />
           </div>
 
-          <div className="passWord" style={{display: (isSecret?'flex':'none')}}>
-            <input 
-              type='text' 
-              value={userCNJ}
-              autoComplete='off'
-              onChange={(e) => setUserCNJ(e.target.value)}
-              placeholder='Usuário' 
-            />
+          {isSecret && (
+            <>
+              <br />
 
-            <input 
-              type='password' 
-              autoComplete='off'
-              value={pswCNJ}
-              onChange={(e) => setPswCNJ(e.target.value)}
-              placeholder='Senha' 
-            />
-          </div>
+              <div style={{ display: "flex", justifyContent: 'center', alignItems: 'center' }}>
+                <AutoCompleteSelect className="selectCredentials" style={{ width: '50%' }}>
+                  <p>Credenciais:</p>
+                  <Select
+                    isSearchable
+                    value={{ id: credentialId, label: credentialValue }}
+                    onChange={handleCredentialSelected}
+                    onInputChange={(term) => setCredentialTerm(term)}
+                    isClearable
+                    placeholder=""
+                    isLoading={isLoadingComboData}
+                    loadingMessage={loadingMessage}
+                    noOptionsMessage={noOptionsMessage}
+                    styles={selectStyles}
+                    options={credentialsList}
+                  />
+                </AutoCompleteSelect>
+
+                <button
+                  className="buttonLinkClick buttonInclude"
+                  title="Clique para incluir uma nova credencial"
+                  type="submit"
+                  style={{ marginLeft: '10px', marginTop: "1.5rem" }}
+                >
+                  <FcKey />
+                  <span>Criar Credencial</span>
+                </button>
+              </div>
+            </>
+          )}
 
         </div>
 

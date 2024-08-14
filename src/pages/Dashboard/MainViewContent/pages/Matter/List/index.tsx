@@ -67,6 +67,7 @@ import InvertParts from '../InvertParts/Index';
 import SearchCNJ from '../SearchCNJ/Index';
 import MatterFileModal from '../MatterFileModal/index';
 import CredentialModal from '../../Credentials/index';
+import FollowModal from '../FollowModal';
 
 const Matter: React.FC = () => {
   const { signOut } = useAuth();
@@ -137,7 +138,11 @@ const Matter: React.FC = () => {
   const [matterFilePlace, setMatterFilePlace] = useState<string>("")
   const [isEdit, setIsEdit] = useState<boolean>(false);
 
-  const [showCredentialModal , setShowCredentialModal] = useState<boolean>(false)
+  const [showCredentialModal, setShowCredentialModal] = useState<boolean>(false)
+  const [showFollowModal, setShowFollowModal] = useState<boolean>(false)
+  const [matterSelectedId, setMatterSelectedId] = useState<number>(0)
+  const [matterSelectedNumber, setMatterSelectedNumber] = useState<string>("")
+  const [isSecretJustice, setIsSecretJustice] = useState<boolean>(false);
 
 
   useEffect(() => {
@@ -781,8 +786,10 @@ const Matter: React.FC = () => {
     }
   }
 
-
+//
   const handleFollowButton = async (matterId: number) => {
+
+    handleCloseFollowModal()
 
     const matterFind = matterList.find(item => item.matterId === matterId);
 
@@ -2053,6 +2060,23 @@ const Matter: React.FC = () => {
     setShowCredentialModal(false)
   };
 
+  const handleOpenFollowModal = async (matter) => {
+    setMatterSelectedId(matter.matterId)
+    setMatterSelectedNumber(matter.matterNumber)
+    setShowFollowModal(true)
+  };
+
+  const handleCloseFollowModal = async () => {
+    setShowFollowModal(false)
+    setMatterSelectedId(0)
+    setIsSecretJustice(false)
+    setMatterSelectedNumber('')
+  };
+
+  const handleSecretJusticeChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setIsSecretJustice(event.target.checked);
+  }
+
 
   return (
 
@@ -2061,6 +2085,9 @@ const Matter: React.FC = () => {
       <HeaderPage />
       {(showCredentialModal) && <Overlay />}
       {(showCredentialModal) && <CredentialModal callbackFunction={{handleCloseCredentialModal}} /> }
+
+      {(showFollowModal) && <Overlay />}
+      {showFollowModal && <FollowModal callbackFunction={{ handleCloseFollowModal, matterSelectedId, matterSelectedNumber, handleSecretJusticeChange, isSecretJustice, handleFollowButton }} />}
 
       {/* MATTER FILTER AND INCLUDE */}
       <Filter>
@@ -2826,7 +2853,13 @@ const Matter: React.FC = () => {
                                         <SiSonarsource />
                                         <span>Seguir&nbsp;&nbsp;&nbsp;&nbsp;</span>
                                         <Switch
-                                          onChange={() => handleFollowButton(item.matterId)}
+                                          onChange={() => {
+                                            if (item.isFollowing) {
+                                              handleFollowButton(item.matterId);
+                                            } else {
+                                              handleOpenFollowModal(item);
+                                            }
+                                          }}
                                           checked={item.isFollowing}
                                           onColor="#86d3ff"
                                           onHandleColor="#2693e6"
@@ -2836,7 +2869,6 @@ const Matter: React.FC = () => {
                                           height={14}
                                           width={38}
                                         />
-
                                         {item.des_StatusUltimaAtualizacaoTribunal != null ? (
                                           <FcAbout style={{ marginLeft: '0.5rem' }} title={item.messageButton} />
                                         ) : (

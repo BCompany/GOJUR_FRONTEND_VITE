@@ -15,7 +15,7 @@ import { useDelay, currencyConfig, selectStyles, FormatCurrency, FormatFileName,
 import { languageGridEmpty, languageGridPagination } from 'Shared/utils/commonConfig';
 import { DataTypeProvider, PagingState, CustomPaging, IntegratedPaging, SortingState, IntegratedSorting } from '@devexpress/dx-react-grid';
 import { Grid, Table, TableHeaderRow, PagingPanel } from '@devexpress/dx-react-grid-material-ui';
-import { FileModal, FileModalMobile, GridSubContainer, OverlayFinancial } from './styles';
+import { CredentialsModal, GridSubContainer, Overlay } from './styles';
 import CredentialsDataSourceModal from './EditModal';
 import { OverlayPermission } from './EditModal/styles';
 
@@ -152,7 +152,7 @@ const CredentialModal = (props) => {
           <OverlayPermission />
           <div className='waitingMessage' style={{ zIndex: 999999999 }}>
             <LoaderWaiting size={15} color="var(--blue-twitter)" />
-            &nbsp;&nbsp; Alterando Permissões...
+            &nbsp;&nbsp; Carregando...
           </div>
         </>
       )}
@@ -160,7 +160,7 @@ const CredentialModal = (props) => {
       {showCredentialsDataSourceModal && <CredentialsDataSourceModal callbackFunction={{ handleCloseEditModal, credentialId, des_User, description }} />}
     
       {!isMOBILE && (
-        <FileModal show style={{ width: '55%', height: '55%', display: 'flex', flexDirection: 'column', border: '1px solid var(--blue-twitter)' }}>
+        <CredentialsModal show style={{ width: '55%', height: '55%', display: 'flex', flexDirection: 'column', border: '1px solid var(--blue-twitter)' }}>
           <div className='header' style={{ flex: '0 0 auto', padding: '2px 5px' }}>
             <p className='headerLabel'>Credenciais</p>
           </div>
@@ -195,7 +195,7 @@ const CredentialModal = (props) => {
             </Grid>
           </GridSubContainer>
     
-          <div className='footer' style={{ flex: '0 0 auto', padding: '10px', borderTop: '1px solid var(--blue-twitter)' }}>
+          <div style={{ flex: '0 0 auto', padding: '10px'}}>
             <div style={{ float: 'right', marginRight: '1%' }}>
               <button
                 type='button'
@@ -220,12 +220,12 @@ const CredentialModal = (props) => {
               </button>
             </div>
           </div>
-        </FileModal>
+        </CredentialsModal>
       )}
       
       {isLoading && (
         <>
-          <OverlayFinancial />
+          <Overlay />
           <div className='waitingMessage'>
             <LoaderWaiting size={15} color="var(--blue-twitter)" />
             Aguarde...
