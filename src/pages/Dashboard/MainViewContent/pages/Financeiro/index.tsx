@@ -44,8 +44,9 @@ import { format } from 'date-fns';
 import { IFinancialTotal, IAccount, ISelectData, IFinancial, IFinancialDeal } from './Interfaces/IFinancial';
 import FinancialDocumentModal from './DocumentModal';
 import FinancialPaymentModal from './PaymentModal';
-import { Container, Content, GridContainerFinancial, ModalDeleteOptions, OverlayFinancial, HamburguerHeader } from './styles';
 import DealDefaultModal from './Category/Modal/DealDefaultModal';
+import FinanceOptionsMenu from 'components/MenuHamburguer/FinanceOptions';
+import { Container, Content, GridContainerFinancial, ModalDeleteOptions, OverlayFinancial, HamburguerHeader } from './styles';
 
 const Financeiro: React.FC = () => {
   const { addToast } = useToast();
@@ -1291,6 +1292,20 @@ const Financeiro: React.FC = () => {
   }, [accountId, year, month, captureText, captureType, visualizeType, currentPage, pageSize]);
 
 
+  const handleMarkedPaid = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      
+      await api.post(`/BoletoBancario/RealizarBaixar`, {token: token});
+     
+
+    }
+    catch (err) {
+      addToast({type: 'error', title: 'Falha ao baixar os pagamentos', description: 'Não foi possivel realizar a baixa dos pagamentos'});
+    }
+  }, []);
+
+
   return (
     <Container>
 
@@ -1306,7 +1321,12 @@ const Financeiro: React.FC = () => {
           </button>
 
           {isMenuOpen ? (
-            <MenuHamburguer name='financeOptions' />
+            
+            <FinanceOptionsMenu callbackList={{
+              handleMarkedPaid
+            }} />
+            
+
           ) : null}
         </div>
       </HamburguerHeader>

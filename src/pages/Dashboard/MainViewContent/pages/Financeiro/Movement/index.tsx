@@ -1208,7 +1208,7 @@ const FinancialMovement: React.FC = () => {
       setShowBankPaymentSlipModal(false)
       setShowModalBankPaymentSlipOptions(false)
       setShowBankPaymentSlipSecondCopyModal(false)
-      window.open(response.data, '_blank')
+      // window.open(response.data, '_blank')
     }
     catch (err:any) {
       addToast({type: "info", title: "Falha ao gerar boleto.", description: err.response.data.Message})

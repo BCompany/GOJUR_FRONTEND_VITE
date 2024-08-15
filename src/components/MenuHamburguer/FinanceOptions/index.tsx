@@ -28,7 +28,8 @@ export interface ISelectData{
   label: string;
 };
 
-const FinanceOptionsMenu = () => {
+const FinanceOptionsMenu = (props) => {
+  const { handleMarkedPaid } = props.callbackList;
   const { handleIsOpenMenuConfig, handleIsMenuOpen, handleCaller, handleIsOpenMenuDealDefaultCategory, isOpenMenuDealDefaultCategory } = useMenuHamburguer();
   const [showConfigMenu, setShowConfigMenu] = useState<boolean>(false);
   const [showReportMenu, setShowReportMenu] = useState<boolean>(false);
@@ -40,6 +41,7 @@ const FinanceOptionsMenu = () => {
   const { addToast } = useToast();
 
   const checkFinancialIntegration = permissionsSecurity.find(item => item.name === "FININTEG");
+  const markedPaid = permissionsSecurity.find(item => item.name === "FINBXPAG");
   const checkPaymentSlip = permissionsSecurity.find(item => item.name === "FINCARCO");
   const checkCategory = permissionsSecurity.find(item => item.name === "FINCATG");
   const checkCostCenter = permissionsSecurity.find(item => item.name === "FINCCUST");
@@ -98,8 +100,6 @@ const FinanceOptionsMenu = () => {
   }
 
 
-
-
   const handleClickContracts = () => {
     handleRedirect(`/financeiro/billingcontract/list`)
   }
@@ -142,6 +142,7 @@ const FinanceOptionsMenu = () => {
     handleIsMenuOpen(false)
     handleRedirect(`/PaymentSlipContract/List`)
   }, []);
+  
 
 
   const handleFinancialIntegration = useCallback(() => {
@@ -223,7 +224,19 @@ const FinanceOptionsMenu = () => {
                 <hr />
                 <button type="button" className="menuLink" onClick={() => {handleFinancialIntegration()}}
                 >
-                  Integração Financeira
+                  Integrador Financeiro
+                </button>
+              </div>
+            </>
+          )}
+
+          {markedPaid && (
+            <>
+              <div style={{display:(showConfigMenu?'grid':'none')}}>
+                <hr />
+                <button type="button" className="menuLink" onClick={() => {handleMarkedPaid()}}
+                >
+                  Realizar baixas
                 </button>
               </div>
             </>
