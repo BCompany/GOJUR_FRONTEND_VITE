@@ -48,7 +48,7 @@ import FinancialPaymentModal from '../PaymentModal';
 import FinancialDocumentModal from '../DocumentModal';
 import BankPaymentSlipSecondCopyModal from '../BankPaymentSlipSecondCopy';
 import { ModalDeleteOptions, OverlayFinancial } from '../styles';
-import { Container, Content, Process, GridSubContainer, ModalPaymentInformation, ModalBankPaymentSlip, ModalBankPaymentSlipSecond } from './styles';
+import { Container, Content, Process, GridSubContainer, ModalPaymentInformation, ModalBankPaymentSlip, ModalBankPaymentSlipErrors } from './styles';
 
 
 export interface IBankPaymentSlip{
@@ -149,9 +149,8 @@ const FinancialMovement: React.FC = () => {
   const [paymentSlipPartnerId, setPaymentSlipPartnerId] = useState<string>('');
   const [showModalBankPaymentSlipOptions, setShowModalBankPaymentSlipOptions] = useState<boolean>(false);
   const [actionGenerate, setActionGenerate] = useState<string>('');
-  const [flg_Juros, setFlg_Juros] = useState<boolean>(true)
-  const [paymentSlipValueAdditional, setPaymentSlipValueAdditional] = useState<string>("0")
-  const [paymentSlipValueTotal, setPaymentSlipValueTotal] = useState<string>("0");
+  const [hasBankPaymentSlipErrors, setHasBankPaymentSlipErrors] = useState<boolean>(false);
+  const [bankPaymentSlipErrors, setBankPaymentSlipErrors] = useState<string>('');
   const ref = useRef<any>(null);
   const DateFormatter = ({ value }) => format(new Date(value), 'dd/MM/yyyy HH:mm');
   const DateTypeProvider = props => (
@@ -307,6 +306,7 @@ const FinancialMovement: React.FC = () => {
       setPaymentQtd(response.data.qtd_Parcelamento)
       setInvoice(response.data.cod_FaturaParcela)
       setSequence(response.data.num_SequenciaFatura)
+      setBankPaymentSlipDate(format(new Date(response.data.dta_Movimento), "yyyy-MM-dd"))
 
       if(response.data.qtd_Parcelamento != "1"){
         setEnablePayments(false)
@@ -323,8 +323,6 @@ const FinancialMovement: React.FC = () => {
       await LoadBankPaymentSlip(movementId)
 
       setIsLoading(false);
-
-      console.log(response.data)
     }
     catch (err:any) {
       setIsLoading(false)
@@ -337,11 +335,13 @@ const FinancialMovement: React.FC = () => {
     try{
       const response = await api.get<IBankPaymentSlip>('/BoletoBancario/ObterPorMovimento', { params:{ token, movementId }});
 
-      setPaymentSlipId(response.data.paymentSlipId)
-      setBankPaymentSlipLinkDate(response.data.dueDate)
-      setHasBankPaymentSlip(response.data.hasBankPaymentSlip)
-      setBankPaymentSlipLink(response.data.bankPaymentSlipLink)
-      setPaymentSlipPartnerId(response.data.paymentSlipPartnerId)
+      if (response.data.paymentSlipId != "0"){
+        setPaymentSlipId(response.data.paymentSlipId)
+        setBankPaymentSlipLinkDate(response.data.dueDate)
+        setHasBankPaymentSlip(response.data.hasBankPaymentSlip)
+        setBankPaymentSlipLink(response.data.bankPaymentSlipLink)
+        setPaymentSlipPartnerId(response.data.paymentSlipPartnerId)
+      }
     }
     catch (err:any) {
       addToast({type: "info", title: "Operação não realizada", description: err.response.data})
@@ -1211,11 +1211,19 @@ const FinancialMovement: React.FC = () => {
       // window.open(response.data, '_blank')
     }
     catch (err:any) {
-      addToast({type: "info", title: "Falha ao gerar boleto.", description: err.response.data.Message})
       setIsSaving(false)
       setShowBankPaymentSlipModal(false)
       setShowModalBankPaymentSlipOptions(false)
       setShowBankPaymentSlipSecondCopyModal(false)
+
+      if (err.response.data.typeError.warning == "awareness"){
+        console.log('ERROR: ', err.response.data)
+        setBankPaymentSlipErrors(err.response.data.Message)
+        setHasBankPaymentSlipErrors(true)
+      }
+      else {
+        addToast({type: "info", title: "Falha ao gerar boleto.", description: err.response.data.Message})
+      }
     }
   }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp, bankPaymentSlipDate, paymentSlipPartnerId, paymentSlipId]);
 
@@ -1967,70 +1975,28 @@ const FinancialMovement: React.FC = () => {
 
       {showBankPaymentSlipSecondCopyModal && <OverlayFinancial /> }
       {showBankPaymentSlipSecondCopyModal && <BankPaymentSlipSecondCopyModal callbackFunction={{setShowBankPaymentSlipSecondCopyModal, setBankPaymentSlipDate, setMovementValue, movementId, movementValue, GeneratePaymentSlip }} /> }
-      {/* {showBankPaymentSlipSecondCopyModal && (
-        <ModalBankPaymentSlipSecond>
+      
+      {hasBankPaymentSlipErrors && <OverlayFinancial /> }
+      {hasBankPaymentSlipErrors && (
+        <ModalBankPaymentSlipErrors>
+          <div className='menuTitle'>
+            &nbsp;&nbsp;&nbsp;&nbsp;ATENÇÃO
+          </div>
           <div className='menuSection'>
-            <FiX onClick={(e) => {setShowBankPaymentSlipSecondCopyModal(false)}} />
+            <FiX onClick={(e) => {setHasBankPaymentSlipErrors(false)}} />
           </div>
-          <div id='ModalContent' style={{marginTop:'-25px', textAlign:'-webkit-center'}}>
-            Informe a data de vencimento da segunda via do boleto
-            <br /><br />
-            <div style={{width:'290px'}}>
-              <label htmlFor='Data'>
-                <DatePicker title="Vencimento" onChange={handleBankPaymentSlipDate} value={bankPaymentSlipDate} />
-              </label>
-            </div>
-            <br />
+          <br />
 
-            <div style={{width:'290px'}}>
-              Valor
-              <br />
-              <input disabled value={FormatCurrency.format(Number(movementValue))} style={{backgroundColor:'white'}} />
-            </div>
-            <br />
+          <div id='Message' style={{marginLeft:'30px', marginTop:'20px', height:'110px'}} dangerouslySetInnerHTML={{ __html: bankPaymentSlipErrors }} />
 
-            <div style={{width:'290px'}}>
-              <div style={{width:'200px', float:'left'}}>
-                <span style={{width:"115px"}}>Multa/Juros ?</span>
-              </div>
-              <div className='flgDiv' style={{float:'left'}}>
-                <input type="checkbox" name="select" checked={flg_Juros} onChange={() => setFlg_Juros(!flg_Juros)}/>
-              </div>
-            </div>
-            <br /><br />
-            
-            <div style={{width:'290px'}}>
-              Multa/Juros R$:
-              <br />
-              <input disabled name="descricao" value={FormatCurrency.format(Number(paymentSlipValueAdditional))}/>
-            </div>
-            <br />
-
-            <div style={{width:'290px'}}>
-              Total:
-              <br />
-              <input disabled name="descricao" value={FormatCurrency.format(Number(paymentSlipValueTotal))}/>
-            </div>
-            <br /><br />
-
-            <div id='Buttons' style={{marginLeft:'130px'}}>
-              <div style={{float:'left'}}>
-                <button className="buttonClick" type='button' onClick={()=> GeneratePaymentSlip('justOne', true)} style={{width:'150px'}}>
-                  <FaCheck />
-                  Gerar 2ª Via
-                </button>
-              </div>
-
-              <div style={{float:'left'}}>
-                <button type='button' className="buttonClick" onClick={()=> {setShowBankPaymentSlipSecondCopyModal(false)}} style={{width:'150px'}}>
-                  <FaRegTimesCircle />
-                  Fechar
-                </button>
-              </div>
-            </div>
+          <div id='Button' style={{textAlign:'center'}}>
+            <button type='button' className="buttonClick" onClick={()=> {setHasBankPaymentSlipErrors(false)}} style={{width:'150px'}}>
+              <FaRegTimesCircle />
+              Fechar
+            </button>
           </div>
-        </ModalBankPaymentSlipSecond>
-      )} */}
+        </ModalBankPaymentSlipErrors>
+      )}
 
 
 
