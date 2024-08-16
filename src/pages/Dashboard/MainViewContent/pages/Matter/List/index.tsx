@@ -142,7 +142,7 @@ const Matter: React.FC = () => {
   const [matterSelectedId, setMatterSelectedId] = useState<number>(0)
   const [matterSelectedNumber, setMatterSelectedNumber] = useState<string>("")
   const [isSecretJustice, setIsSecretJustice] = useState<boolean>(false);
-  const [selectedCredentialid, setSelectedCredentialid] = useState<string>('');
+  const [selectedCredentialid, setSelectedCredentialid] = useState<number>(0);
 
 
   useEffect(() => {
@@ -795,7 +795,7 @@ const Matter: React.FC = () => {
       return
     }
 
-    if (isSecretJustice && selectedCredentialid === '') {
+    if (isSecretJustice && selectedCredentialid === 0) {
       addToast({
         type: 'info',
         title: 'Operação NÃO realizada',
@@ -825,7 +825,8 @@ const Matter: React.FC = () => {
         params: {
           token,
           matterId,
-          enable: action
+          enable: action,
+          credentialId: selectedCredentialid
         }
       });
 
@@ -2071,7 +2072,7 @@ const Matter: React.FC = () => {
     setIsSecretJustice(false)
     setMatterSelectedId(0)
     setMatterSelectedNumber('')
-    setSelectedCredentialid("")
+    setSelectedCredentialid(0)
   };
 
   const handleSecretJusticeChange = (event: ChangeEvent<HTMLInputElement>) => {
