@@ -18,6 +18,8 @@ import { ISearchCNJ } from '../Interfaces/IMatter';
 import { AutoCompleteSelect } from 'Shared/styles/GlobalStyle';
 import { loadingMessage, noOptionsMessage } from 'Shared/utils/commonConfig';
 import { selectStyles } from 'Shared/utils/commonFunctions';
+import CredentialModal from '../../Credentials';
+import CredentialsDataSourceModal from '../../Credentials/EditModal';
 
 export interface ISelectData {
   id: string;
@@ -44,6 +46,7 @@ export default function SearchCNJ () {
   const [credentialTerm, setCredentialTerm] = useState('');
   const [credentialId, setCredentialId] = useState<string>('');
   const [credentialValue, setCredentialValue] = useState<string>('');
+  const [showNewCredentials, setShowNewCredentials] = useState<boolean>(false)
   const tokenApi = localStorage.getItem('@GoJur:token');
 
   useEffect(() => {
@@ -54,6 +57,10 @@ export default function SearchCNJ () {
     }
 
   },[isSecret])
+
+  useEffect(() => {
+    LoadCredentials();
+  },[])
 
   const Validate = () => {
 
@@ -76,16 +83,6 @@ export default function SearchCNJ () {
 
       return false;
   }
-
-    if (isSecret && (pswCNJ.length == 0 || userCNJ.length === 0)){
-      addToast({
-        type: 'info',
-        title: 'Operação não realizada',
-        description: 'Defina o usuário e senha para a busca automática de processo em segredo de justiça',
-      });
-
-      return false;
-    }
 
     const hasAdd = listSearch.find(item => item.matterNumberCNJ === numberCNJ);
     if (hasAdd){
@@ -159,7 +156,7 @@ export default function SearchCNJ () {
 
       return false;
     }
-    
+     
     try
     {
       await api.post('/Processo/SalvarBuscaPorCNJ', {
@@ -222,7 +219,25 @@ export default function SearchCNJ () {
     }
   };
 
+  
+  const handleCloseEditModal = async () => {
+    setShowNewCredentials(false)
+  };
+
+  const openNewCredentialModal = useCallback(() => {
+    setShowNewCredentials(true)
+  }, [showNewCredentials]);
+
+  const handleIsNewCredential = (id, description) => {
+    LoadCredentials();
+    setCredentialId(id);
+    setCredentialValue(description);
+  }
+
   return (
+    <>
+
+   {showNewCredentials && <CredentialsDataSourceModal callbackFunction={{ handleCloseEditModal, handleIsNewCredential }} />}
 
     <Modal
       isOpen
@@ -258,8 +273,8 @@ export default function SearchCNJ () {
             <>
               <br />
 
-              <div style={{ display: "flex", justifyContent: 'center', alignItems: 'center' }}>
-                <AutoCompleteSelect className="selectCredentials" style={{ width: '50%' }}>
+              <div style={{ display: "flex", justifyContent: 'center', alignItems: 'center', marginLeft: "5%" }}>
+                <AutoCompleteSelect className="selectCredentials" style={{ width: '65%' }}>
                   <p>Credenciais:</p>
                   <Select
                     isSearchable
@@ -281,6 +296,7 @@ export default function SearchCNJ () {
                   title="Clique para incluir uma nova credencial"
                   type="submit"
                   style={{ marginLeft: '10px', marginTop: "1.5rem" }}
+                  onClick={openNewCredentialModal}
                 >
                   <FcKey />
                   <span>Criar Credencial</span>
@@ -351,6 +367,7 @@ export default function SearchCNJ () {
       </Container>
       
     </Modal>
+    </>
 
   )
 }

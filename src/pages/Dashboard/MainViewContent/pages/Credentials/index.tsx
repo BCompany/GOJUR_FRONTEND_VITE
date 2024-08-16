@@ -160,67 +160,70 @@ const CredentialModal = (props) => {
       {showCredentialsDataSourceModal && <CredentialsDataSourceModal callbackFunction={{ handleCloseEditModal, credentialId, des_User, description }} />}
     
       {!isMOBILE && (
-        <CredentialsModal show style={{ width: '55%', height: '55%', display: 'flex', flexDirection: 'column', border: '1px solid var(--blue-twitter)' }}>
-          <div className='header' style={{ flex: '0 0 auto', padding: '2px 5px' }}>
-            <p className='headerLabel'>Credenciais</p>
-          </div>
-    
-          <GridSubContainer style={{ flex: '1 1 auto', overflowY: 'auto' }}>
-            <Grid
-              rows={credentialsList}
-              columns={columnsUsrList}
-            >
-              <SortingState
-                defaultSorting={[{ columnName: 'flg_Ativo', direction: 'asc' }]}
-              />
-              <IntegratedSorting />
-              <PagingState
-                currentPage={currentPage}
-                pageSize={pageSize}
-                onCurrentPageChange={setCurrentPage}
-                onPageSizeChange={setPageSize}
-              />
-              <IntegratedPaging />
-              <CustomPaging totalCount={totalRows} />
-    
-              <Table
-                cellComponent={CustomCellUserList}
-                columnExtensions={tableColumnExtensionsUserLists}
-                messages={languageGridEmpty}
-              />
-              <TableHeaderRow showSortingControls />
-              <PagingPanel
-                messages={languageGridPagination}
-              />
-            </Grid>
-          </GridSubContainer>
-    
-          <div style={{ flex: '0 0 auto', padding: '10px'}}>
-            <div style={{ float: 'right', marginRight: '1%' }}>
-              <button
-                type='button'
-                className="buttonClick"
-                onClick={() => handleCloseCredentialModal()}
-                style={{ width: '100px' }}
-              >
-                <FaRegTimesCircle />
-                Fechar
-              </button>
+        <>
+          <Overlay />
+          <CredentialsModal show style={{ width: '55%', height: '55%', display: 'flex', flexDirection: 'column', border: '1px solid var(--blue-twitter)' }}>
+            <div className='header' style={{ flex: '0 0 auto', padding: '2px 5px' }}>
+              <p className='headerLabel'>Credenciais</p>
             </div>
-
-            <div style={{ float: 'right', marginRight: '10px' }}>
-              <button 
-                className="buttonClick" 
-                title="Clique para incluir uma ação judícial"
-                type="submit"
-                onClick={handleAddNewCredential}
+      
+            <GridSubContainer style={{ flex: '1 1 auto', overflowY: 'auto' }}>
+              <Grid
+                rows={credentialsList}
+                columns={columnsUsrList}
               >
-                <FaFileAlt />
-                Adicionar
-              </button>
+                <SortingState
+                  defaultSorting={[{ columnName: 'flg_Ativo', direction: 'asc' }]}
+                />
+                <IntegratedSorting />
+                <PagingState
+                  currentPage={currentPage}
+                  pageSize={pageSize}
+                  onCurrentPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize}
+                />
+                <IntegratedPaging />
+                <CustomPaging totalCount={totalRows} />
+      
+                <Table
+                  cellComponent={CustomCellUserList}
+                  columnExtensions={tableColumnExtensionsUserLists}
+                  messages={languageGridEmpty}
+                />
+                <TableHeaderRow showSortingControls />
+                <PagingPanel
+                  messages={languageGridPagination}
+                />
+              </Grid>
+            </GridSubContainer>
+      
+            <div style={{ flex: '0 0 auto', padding: '10px'}}>
+              <div style={{ float: 'right', marginRight: '1%' }}>
+                <button
+                  type='button'
+                  className="buttonClick"
+                  onClick={() => handleCloseCredentialModal()}
+                  style={{ width: '100px' }}
+                >
+                  <FaRegTimesCircle />
+                  Fechar
+                </button>
+              </div>
+  
+              <div style={{ float: 'right', marginRight: '10px' }}>
+                <button 
+                  className="buttonClick" 
+                  title="Clique para incluir uma ação judícial"
+                  type="submit"
+                  onClick={handleAddNewCredential}
+                >
+                  <FaFileAlt />
+                  Adicionar
+                </button>
+              </div>
             </div>
-          </div>
-        </CredentialsModal>
+          </CredentialsModal>
+        </>
       )}
       
       {isLoading && (

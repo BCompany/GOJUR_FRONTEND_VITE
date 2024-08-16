@@ -4,15 +4,16 @@ interface SearchProps {
   show: boolean;
 }
 
-export const ModalFollow = styled.div<SearchProps>`
+export const FModal = styled.div<SearchProps>`
   font-size: 0.665rem;
   border-radius: 10px;
   box-shadow: 1px 1px 4px 0.5px rgba(0, 0, 0, 0.15);
   width: 42rem;
-  height: 15rem; /* Reduced height */
+  min-height: 10rem; /* Reduced height */
+  max-height: 30rem; /* Reduced height */
   background-color: var(--white);
   position: absolute;
-  z-index: 99998;
+  z-index: 999;
   justify-content: center;
   display: ${props => (props.show ? 'block' : 'none')};
   overflow: auto;
@@ -23,6 +24,15 @@ export const ModalFollow = styled.div<SearchProps>`
   .header {
     background-color: rgba(0, 0, 0, 0.1);
   }
+
+  h5 {
+        font-size:0.6rem; 
+        font-weight:300;
+        color: var(--blue-twitter);        
+        text-align: center;
+        margin-bottom:0.5rem;
+        margin-top:1rem;
+    }
 
   .headerLabel {
     text-align: center;

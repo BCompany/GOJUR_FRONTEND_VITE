@@ -11,8 +11,8 @@ export const CredentialsModal = styled.div<SearchProps>`
   width: 57rem;
   height: 35rem;
   background-color: var(--white);
-  position: absolute;
-  z-index: 99998;
+  position: fixed; /* Alterado de absolute para fixed */
+  z-index: 100000; /* Aumentado o valor do z-index */
   justify-content: center;
   display: ${props => (props.show ? 'block' : 'none')};
   overflow: auto;
@@ -97,12 +97,12 @@ export const GridSubContainer = styled.div`
 
 export const Overlay = styled.div`
   background-color: rgba(0, 0, 0, 0.4);
-  position: absolute;
+  position: fixed; /* Alterado de absolute para fixed */
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 99999999999;
+  z-index: 99; /* Diminuído o valor do z-index */
 
   /* text inside overlay */
   > div {

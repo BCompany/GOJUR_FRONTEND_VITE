@@ -47,8 +47,9 @@ export const Container = styled.div`
 
 export const Content = styled.div`
     display:flex;
-    min-height:30vh;
-    width:83%;
+    min-height:20vh;
+    width:97%;
+    margin:auto;
 `
 
 export const Box = styled.div`

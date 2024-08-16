@@ -138,11 +138,11 @@ const Matter: React.FC = () => {
   const [matterFilePlace, setMatterFilePlace] = useState<string>("")
   const [isEdit, setIsEdit] = useState<boolean>(false);
 
-  const [showCredentialModal, setShowCredentialModal] = useState<boolean>(false)
   const [showFollowModal, setShowFollowModal] = useState<boolean>(false)
   const [matterSelectedId, setMatterSelectedId] = useState<number>(0)
   const [matterSelectedNumber, setMatterSelectedNumber] = useState<string>("")
   const [isSecretJustice, setIsSecretJustice] = useState<boolean>(false);
+  const [selectedCredentialid, setSelectedCredentialid] = useState<string>('');
 
 
   useEffect(() => {
@@ -789,12 +789,19 @@ const Matter: React.FC = () => {
 //
   const handleFollowButton = async (matterId: number) => {
 
-    handleCloseFollowModal()
-
     const matterFind = matterList.find(item => item.matterId === matterId);
 
     if (!matterFind) {
       return
+    }
+
+    if (isSecretJustice && selectedCredentialid === '') {
+      addToast({
+        type: 'info',
+        title: 'Operação NÃO realizada',
+        description: "Para um processo em segredo de justiça, selecione uma credencial para prosseguir."
+      });
+      return;
     }
 
     const action = !matterFind.isFollowing;
@@ -828,6 +835,7 @@ const Matter: React.FC = () => {
         newData = matterList.filter(item => item.matterId != matterFind.matterId);
         setMatterList(newData)
       }
+      handleCloseFollowModal()
 
       setIsLoading(false)
 
@@ -847,6 +855,8 @@ const Matter: React.FC = () => {
       }
     }
     catch (err: any) {
+
+      handleCloseFollowModal()
 
       setIsLoading(false)
 
@@ -946,7 +956,6 @@ const Matter: React.FC = () => {
       }
     }
     catch (err: any) {
-
       setIsLoading(false)
 
       // disable follow button if something wrong going on
@@ -2051,15 +2060,6 @@ const Matter: React.FC = () => {
     setMatterFilePlace("")
   }
 
-  
-  const handleOpenCredentialModal = async () => {
-    setShowCredentialModal(true)
-  };
-
-  const handleCloseCredentialModal = async () => {
-    setShowCredentialModal(false)
-  };
-
   const handleOpenFollowModal = async (matter) => {
     setMatterSelectedId(matter.matterId)
     setMatterSelectedNumber(matter.matterNumber)
@@ -2068,26 +2068,32 @@ const Matter: React.FC = () => {
 
   const handleCloseFollowModal = async () => {
     setShowFollowModal(false)
-    setMatterSelectedId(0)
     setIsSecretJustice(false)
+    setMatterSelectedId(0)
     setMatterSelectedNumber('')
+    setSelectedCredentialid("")
   };
 
   const handleSecretJusticeChange = (event: ChangeEvent<HTMLInputElement>) => {
     setIsSecretJustice(event.target.checked);
   }
 
+  const handleFollowMatter = async () => {
+    handleFollowButton(matterSelectedId)
+  }
+
+  const handleSelectCredentialId = (id) => {
+    setSelectedCredentialid(id)
+  }
 
   return (
 
     <Container onScroll={handleScrool} ref={scrollRef}>
 
       <HeaderPage />
-      {(showCredentialModal) && <Overlay />}
-      {(showCredentialModal) && <CredentialModal callbackFunction={{handleCloseCredentialModal}} /> }
 
       {(showFollowModal) && <Overlay />}
-      {showFollowModal && <FollowModal callbackFunction={{ handleCloseFollowModal, matterSelectedId, matterSelectedNumber, handleSecretJusticeChange, isSecretJustice, handleFollowButton }} />}
+      {showFollowModal && <FollowModal callbackFunction={{ handleCloseFollowModal, matterSelectedNumber, handleSecretJusticeChange, isSecretJustice, handleFollowMatter, handleSelectCredentialId }} />}
 
       {/* MATTER FILTER AND INCLUDE */}
       <Filter>
@@ -2250,18 +2256,6 @@ const Matter: React.FC = () => {
               </button>
             )}
           </div>
-
-          {hasmatterAdvisory && (
-          <button
-            type='button'
-            className={tabActive('matterAdvisory')}
-            onClick={() => handleOpenCredentialModal()}
-            style={{ marginRight: '20px', marginTop: '-10px' }} // Ajuste o valor conforme necessário
-          >
-            <FiKey />
-            <span style={{ marginLeft: '1px' }}>Credenciais</span>
-          </button>
-        )}
 
           {/* {isLoading && (
             <div className="loadingMessage">
@@ -2855,7 +2849,7 @@ const Matter: React.FC = () => {
                                         <Switch
                                           onChange={() => {
                                             if (item.isFollowing) {
-                                              handleFollowButton(item.matterId);
+                                              handleFollowButton(item.matterId);                                            
                                             } else {
                                               handleOpenFollowModal(item);
                                             }

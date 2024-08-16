@@ -15,7 +15,7 @@ import { MdBlock } from 'react-icons/md';
 import { useToast } from 'context/toast';
 import { Box, Container, Content, OverlayPermission, ItemBox } from './styles';
 import { set } from 'date-fns';
-import { FaIdCard } from 'react-icons/fa';
+import { FaIdCard, FaRegTimesCircle } from 'react-icons/fa';
 
 
 export interface ISelectData {
@@ -48,7 +48,7 @@ export interface ICredentials {
 }
 
 export default function CredentialsDataSourceModal(props) {
-  const { handleCloseEditModal, credentialId, des_User, description } = props.callbackFunction;
+  const { handleCloseEditModal, credentialId, des_User, description, handleIsNewCredential } = props.callbackFunction;
   const { addToast } = useToast();
   const [isChanging, setIsChanging] = useState<boolean>(false);
   const [des_user, setDes_user] = useState<string>('');
@@ -191,6 +191,7 @@ export default function CredentialsDataSourceModal(props) {
       })
 
       setIsChanging(false)
+      handleIsNewCredential(response.data.IdCredential, descriptionEditModal)
       handleCloseEditModal()
 
     } catch (err: any) {
@@ -249,17 +250,18 @@ export default function CredentialsDataSourceModal(props) {
       <Modal
         isOpen
         overlayClassName="react-modal-overlay"
-        className="react-modal-content-large"
+        className="react-modal-content-medium"
+        style={{ overlay: { zIndex: 99999 } }}
       >
         <Container>
           <header>
             <h1>Tribunais</h1>
             <h5>Selecione os tribunais aonde será utilizada a credencial.</h5>
           </header>
-
+  
           <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
             <div style={{ flex: 1 }}>
-              <label htmlFor="txt" style={{ marginBottom: '8px', display: 'block', marginLeft : '16%' }}>
+              <label htmlFor="txt" style={{ marginBottom: '8px', display: 'block', marginLeft : '5%' }}>
                 Usuário
                 <input
                   maxLength={50}
@@ -270,11 +272,11 @@ export default function CredentialsDataSourceModal(props) {
                   readOnly={readOnly}
                   onFocus={() => setReadOnly(false)}
                   required
-                  style={{ display: 'block', width: '80%', backgroundColor: 'white', height: '30px' }}
+                  style={{ display: 'block', width: '94%', backgroundColor: 'white', height: '30px' }}
                 />
               </label>
             </div>
-
+  
             <div style={{ flex: 1 }}>
               <label htmlFor="password" style={{ marginBottom: '8px', display: 'white' }}>
                 Senha
@@ -287,13 +289,13 @@ export default function CredentialsDataSourceModal(props) {
                   readOnly={readOnly}
                   onFocus={() => setReadOnly(false)}
                   required
-                  style={{ display: 'block', width: '80%', backgroundColor: 'white',  height: '30px' }}
+                  style={{ display: 'block', width: '94%', backgroundColor: 'white',  height: '30px' }}
                 />
               </label>
             </div>
           </div>
-
-          <div style={{ marginLeft: '8%'}}>
+  
+          <div style={{ marginLeft: '2.5%'}}>
             <label htmlFor="text" style={{ marginBottom: '8px', display: 'white' }}>
               Descrição
               <input
@@ -305,13 +307,13 @@ export default function CredentialsDataSourceModal(props) {
                 readOnly={readOnly}
                 onFocus={() => setReadOnly(false)}
                 required
-                style={{ display: 'block', width: '89%', backgroundColor: 'white',  height: '30px' }}
+                style={{ display: 'block', width: '97%', backgroundColor: 'white',  height: '30px' }}
               />
             </label>
           </div>
-
-          <div style={{ display: 'flex', marginLeft: '7%' }}>
-            <AutoCompleteSelect className="selectDestinationUsers" style={{ width: '89%' }}>
+  
+          <div style={{ display: 'flex', marginLeft: '1%' }}>
+            <AutoCompleteSelect className="selectDestinationUsers" style={{ width: '96.5%' }}>
               Tribunais
               <Select
                 isSearchable
@@ -327,9 +329,9 @@ export default function CredentialsDataSourceModal(props) {
               />
             </AutoCompleteSelect>
           </div>
-
+  
           <br />
-
+  
           <Content>
             <Box>
               <header>                          
@@ -345,36 +347,41 @@ export default function CredentialsDataSourceModal(props) {
                   {user.label}
                 </ItemBox>
               ))}
-
+  
               {(credentialsDataSourceList.length == 0) && (
                 <div className='messageEmpty'> 
                   Nenhum Tribunal selecionado
                 </div>
               )}
-
+  
             </Box>
           </Content>
-
-          <footer>
-            <button 
-              className="buttonLinkClick" 
-              type="button"
-              onClick={() => handleSaveCredentials()}
-              title="Clique para alterar as permissões dos usuários destino"
-            >
-              <FaIdCard />
-              Salvar            
-            </button>  
-
-            <button
-              className="buttonLinkClick"
-              type="button"
-              onClick={() => handleCloseEditModal()}
-            >
-              <MdBlock />
-              Fechar
-            </button>
-          </footer>
+  
+          <div style={{ flex: '0 0 auto', padding: '5px', width: '100%', textAlign: 'center', marginTop: "2%" }}>
+            <div style={{ display: 'inline-block', marginRight: '10px' }}>
+              <button
+                type='button'
+                className="buttonClick"
+                onClick={() => handleSaveCredentials()}
+                style={{ width: '100px' }}
+              >
+                <FaIdCard  />
+                Salvar
+              </button>
+            </div>
+  
+            <div style={{ display: 'inline-block', marginRight: '10px' }}>
+              <button 
+                className="buttonClick" 
+                title="Clique para incluir uma ação judícial"
+                type="submit"
+                onClick={() => handleCloseEditModal()}
+              >
+                <FaRegTimesCircle />
+                Cancelar
+              </button>
+            </div>
+          </div>
         </Container>
       </Modal>
     </>
