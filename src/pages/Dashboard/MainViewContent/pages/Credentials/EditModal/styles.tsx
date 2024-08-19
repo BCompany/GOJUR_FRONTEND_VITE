@@ -5,7 +5,7 @@ export const Container = styled.div`
     font-size:0.765rem;    
     flex-direction: column;
     font-family: Montserrat;
-    min-height:40vh;
+    min-height:35vh;
     z-index:9999;
 
     header {

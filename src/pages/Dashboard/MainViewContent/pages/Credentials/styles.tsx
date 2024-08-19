@@ -12,7 +12,7 @@ export const CredentialsModal = styled.div<SearchProps>`
   height: 35rem;
   background-color: var(--white);
   position: fixed; /* Alterado de absolute para fixed */
-  z-index: 100000; /* Aumentado o valor do z-index */
+  z-index: 1000; /* Aumentado o valor do z-index */
   justify-content: center;
   display: ${props => (props.show ? 'block' : 'none')};
   overflow: auto;

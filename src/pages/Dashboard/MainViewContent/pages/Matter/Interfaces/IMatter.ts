@@ -299,8 +299,7 @@ export interface ILawyerList {
 
 export interface ISearchCNJ {
   matterNumberCNJ: string;
-  userCourt: string;
-  passwordCourt: string;
+  id_Credential: string;
   isSecret: boolean;
   index: number;
 }

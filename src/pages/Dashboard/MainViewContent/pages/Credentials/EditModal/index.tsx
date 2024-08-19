@@ -5,7 +5,7 @@
 import React, { ChangeEvent, useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import { AutoCompleteSelect } from 'Shared/styles/GlobalStyle';
-import { selectStyles, useDelay } from 'Shared/utils/commonFunctions';
+import { customStyles, selectStyles, useDelay } from 'Shared/utils/commonFunctions';
 import api from 'services/api';
 import { loadingMessage, noOptionsMessage } from 'Shared/utils/commonConfig';
 import { FiTrash } from 'react-icons/fi';
@@ -21,43 +21,35 @@ import { FaIdCard, FaRegTimesCircle } from 'react-icons/fa';
 export interface ISelectData {
   id: string;
   label: string;
-  des_Instance: string;
 }
 
 export interface IDataSource {
-  id_CourtDataSource: string;
-  des_Information: string;
-  des_Instance: string;
+  id_Court: string;
+  courtName: string;
 }
 
-export interface ICredentialDataSource {
-  id_CredentialDataSource: string;
+export interface ICredential {
   id_Credential: string;
-  id_CourtDataSource: string;
-  tpo_Validation: string;
-  des_Instance: string;
-  des_Information: string;
-}
-
-export interface ICredentials {
-  IdCredential: string;
-  UserName: string;
+  des_Username: string;
   UserPassword: string;
-  Description: string;
-  DataSourceIds: number[];
+  des_Credential: string;
+  id_Court: string;
+  courtName: string;
 }
 
 export default function CredentialsDataSourceModal(props) {
-  const { handleCloseEditModal, credentialId, des_User, description, handleIsNewCredential } = props.callbackFunction;
+  const { handleCloseEditModal, credentialId, handleIsNewCredential } = props.callbackFunction;
   const { addToast } = useToast();
   const [isChanging, setIsChanging] = useState<boolean>(false);
   const [des_user, setDes_user] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const [descriptionEditModal, setDescriptionEditModal] = useState<string>('');
+  const [description, setDescription ] = useState<string>('');
   const [isLoadingComboData, setIsLoadingComboData] = useState<boolean>(false);
-  const [allCredentialsDataSourceListCombo, setAllCredentialsDataSourceList] = useState<ISelectData[]>([]);
-  const [credentialsDataSourceList, setCredentialsDataSourceList] = useState<ISelectData[]>([]);
+  const [listCourt, setListCourt] = useState<ISelectData[]>([]);
   const [readOnly , setReadOnly] = useState<boolean>(true);
+  const [id_Court, setCourtId] = useState<string>('');
+  const [des_Court, setDes_Court] = useState<string>('');
+  const [courtTerm, setCourtTerm] = useState<string>('');
 
   const token = localStorage.getItem('@GoJur:token')
 
@@ -68,9 +60,7 @@ export default function CredentialsDataSourceModal(props) {
     useEffect(() => {
       if(credentialId > 0){   
 
-        setDes_user(des_User)
-        setDescriptionEditModal(description)
-        LoadCredentialDataSourceList()
+        GetCredential(credentialId)
 
       }
     },[credentialId])
@@ -87,17 +77,16 @@ export default function CredentialsDataSourceModal(props) {
         },
       );
 
-      const listAllCredentialsDataSource: ISelectData[] = []
+      const listCourts: ISelectData[] = []
 
       response.data.map(item => {
-        return listAllCredentialsDataSource.push({
-          id: item.id_CourtDataSource,
-          label: item.des_Information,
-          des_Instance: item.des_Instance
+        return listCourts.push({
+          id: item.id_Court,
+          label: item.courtName,
         })
       })
       
-      setAllCredentialsDataSourceList(listAllCredentialsDataSource)
+      setListCourt(listCourts)
 
       setIsLoadingComboData(false)
 
@@ -109,41 +98,6 @@ export default function CredentialsDataSourceModal(props) {
         description: err.response.data.Message
       })
 
-    }
-  }
-
-  const LoadCredentialDataSourceList = async () => {
-    try {
-      const response = await api.get<ICredentialDataSource[]>(
-        '/Credenciais/ListarFonteCredencial',
-        {
-          params: {
-            id_Credential : credentialId,
-            token,
-          },
-        },
-      );
-
-      const credentialDataSources: ISelectData[] = []
-
-      response.data.map(item => {
-        return credentialDataSources.push({
-          id: item.id_CourtDataSource,
-          label: item.des_Information,
-          des_Instance: item.des_Instance
-        })
-      })
-      
-      setCredentialsDataSourceList(credentialDataSources)
-
-      setIsLoadingComboData(false)
-      
-    } catch (err: any) {
-      addToast({
-        type: "info",
-        title: "Operação não realizada",
-        description: err.response.data.Message
-      })
     }
   }
 
@@ -158,7 +112,7 @@ export default function CredentialsDataSourceModal(props) {
       return;
     }
 
-    if (credentialsDataSourceList.length == 0){
+    if (listCourt.length == 0){
       addToast({
         type: "info",
         title: "Operação não realizada",
@@ -166,20 +120,16 @@ export default function CredentialsDataSourceModal(props) {
       })
       return;
     }
-
-    setIsChanging(true)
-
-    const dataSourceIds = credentialsDataSourceList.map(item => item.id);
-
+    
     try {
-      const response = await api.post<ICredentials>(
+      const response = await api.post<ICredential>(
         '/Credenciais/Salvar',
         {
           IdCredential: credentialId,
           UserName: des_user,
           UserPassword: password,
-          Description: descriptionEditModal,
-          DataSourceIds: dataSourceIds,
+          Description: description,
+          id_Court: id_Court,
           token,
         },
       );
@@ -187,12 +137,12 @@ export default function CredentialsDataSourceModal(props) {
       addToast({
         type: "success",
         title: "Operação realizada",
-        description: "Tribunais vinculados a credencial com sucesso."
+        description: "Credencial criada com sucesso."
       })
 
-      setIsChanging(false)
-      handleIsNewCredential(response.data.IdCredential, descriptionEditModal)
       handleCloseEditModal()
+      setIsChanging(false)
+      handleIsNewCredential(response.data.id_Credential, description)
 
     } catch (err: any) {
       addToast({
@@ -200,41 +150,47 @@ export default function CredentialsDataSourceModal(props) {
         title: "Operação não realizada",
         description: err.response.data.Message
       })
-      setIsChanging(false)
+
     }
 }
 
-  const handleAllCredentialsDataSourceSelected = (item) => { 
+const GetCredential = async (id: number) => {
+  try {
+    const response = await api.get<ICredential>(
+      '/Credenciais/Editar',
+      {
+        params: {
+          id_Credential: id,
+          token,
+        },
+      },
+    );
+
+    setDes_user(response.data.des_Username)
+    setDescription(response.data.des_Credential)
+    setCourtId(response.data.id_Court)
+    setDes_Court(response.data.courtName)
+
+  } catch (err: any) {
+    addToast({
+      type: "info",
+      title: "Operação não realizada",
+      description: err.response.data.Message
+    })
+  }
+}
+
+const handleCourtSelected = (item) => { 
       
-    if (item){
-      console.log(item)
-      handleListItemDestinationUser(item)
-    }
-    else {
-      LoadAllCredentialList()
-    }
+  if (item){
+    setDes_Court(item.label)
+    setCourtId(item.id)
+  }else{
+    setDes_Court('')
+    setCourtId('')
+    setCourtTerm("")
   }
-
-  const handleListItemDestinationUser = (credentialDataSource) => {
-
-    const existItem = credentialsDataSourceList.filter(item => item.id == credentialDataSource.id);
-    if (existItem.length > 0){
-      addToast({
-        type: "info",
-        title: "Operação não realizada",
-        description: "Tribunal já esta presente na lista."
-      })
-      return;
-    }
-  
-    setCredentialsDataSourceList(previousValues => [...previousValues, credentialDataSource])
-  }
-
-  const handleRemoveItemCredentialDataSource = (credentialDataSource) => {
-
-    const credentialDataSourceListUpdate = credentialsDataSourceList.filter(item => item.id != credentialDataSource.id);
-    setCredentialsDataSourceList(credentialDataSourceListUpdate)
-  }
+}
 
   return (
     <>
@@ -256,7 +212,7 @@ export default function CredentialsDataSourceModal(props) {
         <Container>
           <header>
             <h1>Tribunais</h1>
-            <h5>Selecione os tribunais aonde será utilizada a credencial.</h5>
+            <h5>Selecione um tribunal onde será utilizada a credencial.</h5>
           </header>
   
           <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
@@ -302,8 +258,8 @@ export default function CredentialsDataSourceModal(props) {
                 maxLength={100}
                 type="text"
                 name="txt"
-                value={descriptionEditModal}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setDescriptionEditModal(e.target.value)}
+                value={description}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setDescription(e.target.value)}
                 readOnly={readOnly}
                 onFocus={() => setReadOnly(false)}
                 required
@@ -316,47 +272,25 @@ export default function CredentialsDataSourceModal(props) {
             <AutoCompleteSelect className="selectDestinationUsers" style={{ width: '96.5%' }}>
               Tribunais
               <Select
-                isSearchable
-                onChange={handleAllCredentialsDataSourceSelected}
-                value={null}
+                isSearchable   
+                value={{ id: id_Court, label: des_Court }}
+                onChange={handleCourtSelected}
+                onInputChange={(term) => setCourtTerm(term)}
                 isClearable
                 placeholder=""
                 isLoading={isLoadingComboData}
                 loadingMessage={loadingMessage}
-                noOptionsMessage={noOptionsMessage}
-                styles={selectStyles}
-                options={allCredentialsDataSourceListCombo}         
+                noOptionsMessage={noOptionsMessage}           
+                options={listCourt}
+                styles={customStyles}
+                menuPortalTarget={document.body}
+                menuPosition={'fixed'}
               />
             </AutoCompleteSelect>
           </div>
   
           <br />
-  
-          <Content>
-            <Box>
-              <header>                          
-                &nbsp;&nbsp;Tribunais Selecionados
-              </header>
-        
-              {credentialsDataSourceList.map((user) => (
-                <ItemBox>
-                  <FiTrash 
-                    onClick={(e) => handleRemoveItemCredentialDataSource(user)} 
-                    title='Clique para excluir este tribunal'
-                  />
-                  {user.label}
-                </ItemBox>
-              ))}
-  
-              {(credentialsDataSourceList.length == 0) && (
-                <div className='messageEmpty'> 
-                  Nenhum Tribunal selecionado
-                </div>
-              )}
-  
-            </Box>
-          </Content>
-  
+
           <div style={{ flex: '0 0 auto', padding: '5px', width: '100%', textAlign: 'center', marginTop: "2%" }}>
             <div style={{ display: 'inline-block', marginRight: '10px' }}>
               <button

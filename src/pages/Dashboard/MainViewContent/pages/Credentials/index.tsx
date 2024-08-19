@@ -25,11 +25,12 @@ interface SelectData {
 }
 
 export interface ICredentialData {
-  Id_Credential: string;
-  Id_Company: string;
-  Des_Credential: string;
-  Des_Username: string;
-  id_Reference: string;
+  id_Credential: string;
+  des_Credential: string;
+  des_Username: string;
+  flg_Status: string;
+  id_Court: string;
+  courtName: string;
 }
 
 const CredentialModal = (props) => {
@@ -42,8 +43,6 @@ const CredentialModal = (props) => {
   const [totalRows, setTotalRows] = useState<number>(1);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [credentialId, setCredentialId] = useState<number>(0);
-  const [des_User, setDes_User] = useState<string>('');
-  const [description, setDescription] = useState<string>('');
   const [isChanging, setIsChanging] = useState<boolean>(false);
 
   const token = localStorage.getItem('@GoJur:token')
@@ -68,15 +67,15 @@ const CredentialModal = (props) => {
 
   
   const [tableColumnExtensionsUserLists] = useState([
-    { columnName: 'Des_Credential', width: '45%' },
-    { columnName: 'Des_Username', width: '40%' },
+    { columnName: 'des_Credential', width: '45%' },
+    { columnName: 'des_Username', width: '40%' },
     { columnName: 'bntEditar', width: '4%' },
     { columnName: 'bntExcluir', width: '4%' },
   ]);
 
   const columnsUsrList = [
-    { name: 'Des_Credential', title: 'Descrição' },
-    { name: 'Des_Username', title: 'Usuario' },
+    { name: 'des_Credential', title: 'Descrição' },
+    { name: 'des_Username', title: 'Usuario' },
     { name: 'bntEditar', title: ' ' },
     { name: 'bntExcluir', title: ' ' },
   ];
@@ -95,7 +94,7 @@ const CredentialModal = (props) => {
 
     if (column.name === 'bntExcluir') {
       return (
-        <Table.Cell onClick={(e) => handleDeleteCredential(props.row.Id_Credential)} {...props}>
+        <Table.Cell onClick={(e) => handleDeleteCredential(props.row.id_Credential)} {...props}>
           &nbsp;&nbsp;
           <FiTrash />
         </Table.Cell>
@@ -110,17 +109,13 @@ const CredentialModal = (props) => {
   };
  
   const handleOpenEditModal = async (props) => {
-    setCredentialId(props.row.Id_Credential)
-    setDes_User(props.row.Des_Username)
-    setDescription(props.row.Des_Credential)
+    setCredentialId(props.row.id_Credential)
     setShowCredentialsDataSourceModal(true)
   };
 
   const handleCloseEditModal = async () => {
     setShowCredentialsDataSourceModal(false)
     setCredentialId(0)
-    setDes_User('')
-    setDescription('')
     LoadCredentials()
   };
 
@@ -133,6 +128,12 @@ const CredentialModal = (props) => {
             token
           }
       })
+
+      addToast({
+        type: 'success',
+        title: 'Credencial excluída',
+        description: 'A credencial foi excluída com sucesso!'
+      });
 
       LoadCredentials()
     }
@@ -157,7 +158,7 @@ const CredentialModal = (props) => {
         </>
       )}
       
-      {showCredentialsDataSourceModal && <CredentialsDataSourceModal callbackFunction={{ handleCloseEditModal, credentialId, des_User, description }} />}
+      {showCredentialsDataSourceModal && <CredentialsDataSourceModal callbackFunction={{ handleCloseEditModal, credentialId}} />}
     
       {!isMOBILE && (
         <>

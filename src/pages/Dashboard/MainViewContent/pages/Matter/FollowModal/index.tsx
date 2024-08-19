@@ -16,8 +16,8 @@ import CredentialModal from '../../Credentials';
 import CredentialsDataSourceModal from '../../Credentials/EditModal';
 
 export interface ICredentials {
-  Id_Credential: string;
-  Des_Credential: string;
+  id_Credential: string;
+  des_Credential: string;
 }
 
 export interface ISelectData {
@@ -86,8 +86,8 @@ export default function FollowModal(props) {
 
       response.data.map((item) => {
         return listCredentials.push({
-          id: item.Id_Credential,
-          label: item.Des_Credential,
+          id: item.id_Credential,
+          label: item.des_Credential,
         });
       });
 

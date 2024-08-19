@@ -27,8 +27,8 @@ export interface ISelectData {
 }
 
 export interface ICredentials {
-  Id_Credential: string;
-  Des_Credential: string;
+  id_Credential: string;
+  des_Credential: string;
 }
 
 export default function SearchCNJ () {
@@ -109,8 +109,7 @@ export default function SearchCNJ () {
     newData.push({
       index: listSearch.length+1,
       matterNumberCNJ: numberCNJ,
-      userCourt: isSecret? userCNJ: '',
-      passwordCourt: isSecret? pswCNJ : '',
+      id_Credential: credentialId,
       isSecret
     })
 
@@ -206,8 +205,8 @@ export default function SearchCNJ () {
 
       response.data.map((item) => {
         return listCredentials.push({
-          id: item.Id_Credential,
-          label: item.Des_Credential,
+          id: item.id_Credential,
+          label: item.des_Credential,
         });
       });
 
