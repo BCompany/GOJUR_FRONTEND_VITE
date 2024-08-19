@@ -23,8 +23,8 @@ const ModalBankPaymentSlipOptions: React.FC<ModalProps> = ({close, callback}) =>
       <HeaderComponent title="Escolha a opção desejada" cursor action={close} />
       
       <Content id='Content'>
-        Este movimento está parcelado.
-        <br />
+        Este movimento está parcelado. Não são gerados boletos para as movimentações anteriores a data atual.
+        <br /><br />
         Deseja gerar os boletos também para as outras parcelas ?
       </Content>
 

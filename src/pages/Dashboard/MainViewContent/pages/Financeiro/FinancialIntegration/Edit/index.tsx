@@ -34,7 +34,6 @@ export interface IPaymentSlipContractData{
   name: string
   partnerToken: string
   partnerId: string
-  penaltyLevyDaysNumber: string
   penaltyPackages: string
   ratesPackage: string
 }
@@ -51,7 +50,6 @@ const FinancialIntegrationEdit: React.FC = () => {
   const [bank, setBank] = useState("AS")
   const [paymentSlipContractId, setPaymentSlipContractId] = useState<string>("")
   const [paymentSlipContractDescription, setPaymentSlipContractDescription] = useState<string>("ASAAS Gestão Financeira Instituição de Pagamento S.A.")
-  const [penaltyLevyDaysNumber, setPenaltyLevyDaysNumber] = useState<string>("")
   const [penaltyPackages, setPenaltyPackages] = useState<string>("")
   const [ratesPackage, setRatesPackage] = useState<string>("")
   const [bankToken, setBankToken] = useState<string>("")
@@ -64,9 +62,6 @@ const FinancialIntegrationEdit: React.FC = () => {
 
   useEffect(() => {
     const id = pathname.substr(27)
-
-    console.log('id', id)
-
     if ( id != '0')
       LoadFinancialIntegration()
   }, [])
@@ -103,14 +98,12 @@ const FinancialIntegrationEdit: React.FC = () => {
     
       setPaymentSlipContractId(response.data.id)
       setPaymentSlipContractDescription(response.data.name)
-      setPenaltyLevyDaysNumber(response.data.penaltyLevyDaysNumber)
       setPenaltyPackages(response.data.penaltyPackages)
       setRatesPackage(response.data.ratesPackage)
       setBankToken(response.data.partnerToken)
 
       if(response.data.id)
         setIsValid(true)
-
     }
     catch (err) {
       console.log(err);
@@ -150,6 +143,16 @@ const FinancialIntegrationEdit: React.FC = () => {
         return;
       }
 
+      if(penaltyPackages == '0' || penaltyPackages == ''){
+        addToast({type: "info", title: "Operação NÃO realizada", description: `O valor da multa não pode ser zero`})
+        return;
+      }
+
+      if(ratesPackage == '0' || ratesPackage == ''){
+        addToast({type: "info", title: "Operação NÃO realizada", description: `O valor dos juros não pode ser zero`})
+        return;
+      }
+
       const id = pathname.substr(27)
       const token = localStorage.getItem('@GoJur:token');
       setisSaving(true)
@@ -158,7 +161,6 @@ const FinancialIntegrationEdit: React.FC = () => {
         id,
         name: paymentSlipContractDescription,
         partnerId: bank,
-        penaltyLevyDaysNumber,
         penaltyPackages,
         ratesPackage,
         partnerToken: bankToken,
@@ -173,7 +175,7 @@ const FinancialIntegrationEdit: React.FC = () => {
       setisSaving(false)
       addToast({type: "error", title: "Falha ao salvar carteira de cobrança.", description: err.response.data.Message})
     }
-  }, [isSaving, paymentSlipContractId, paymentSlipContractDescription, penaltyLevyDaysNumber, penaltyPackages, ratesPackage, bankToken])
+  }, [isSaving, paymentSlipContractId, paymentSlipContractDescription, penaltyPackages, ratesPackage, bankToken])
 
 
   const Close = () => { 
@@ -232,17 +234,6 @@ const FinancialIntegrationEdit: React.FC = () => {
               />
             </label>
 
-            <label htmlFor="numDiasMulta">
-              Número Dias Multa
-              <input 
-                type="text"
-                name="numDiasMulta"
-                autoComplete="off"
-                value={penaltyLevyDaysNumber}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setPenaltyLevyDaysNumber(e.target.value)}
-              />
-            </label>
-
             <label htmlFor="multa%">
               Multa (%)
               <IntlCurrencyInput
@@ -250,6 +241,7 @@ const FinancialIntegrationEdit: React.FC = () => {
                 config={currencyConfig}
                 value={penaltyPackages}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => setPenaltyPackages(e.target.value)}
+                required
               />
             </label>
 
@@ -260,12 +252,9 @@ const FinancialIntegrationEdit: React.FC = () => {
                 config={currencyConfig}
                 value={ratesPackage}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => setRatesPackage(e.target.value)}
+                required
               />
             </label>
-
-            <div>
-              &nbsp;
-            </div>
 
             <label htmlFor="token">
               TOKEN (Valide o token antes de salvar)

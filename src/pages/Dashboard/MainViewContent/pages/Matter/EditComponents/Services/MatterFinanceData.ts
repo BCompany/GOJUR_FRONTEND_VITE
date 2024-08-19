@@ -45,6 +45,7 @@ export const DeleteMatterFinance = async (id: number, deleteAll: boolean) => {
     params: {
       id,
       deleteAll,
+      validateFinancialIntegration: false,
       token
     }
 

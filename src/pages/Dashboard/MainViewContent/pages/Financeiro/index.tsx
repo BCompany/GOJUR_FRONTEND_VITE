@@ -21,6 +21,8 @@ import { FiTrash, FiEdit, FiX } from 'react-icons/fi';
 import { FaRegTimesCircle, FaCheck, FaFileContract, FaFileInvoiceDollar, FaHandshake } from 'react-icons/fa';
 import { CgFileDocument } from 'react-icons/cg';
 import { RiMoneyDollarBoxFill } from 'react-icons/ri';
+import ConfirmBoxModal from 'components/ConfirmBoxModal';
+import { useConfirmBox } from 'context/confirmBox';
 import { useDevice } from "react-use-device";
 import { useToast } from 'context/toast';
 import { envProvider } from 'services/hooks/useEnv';
@@ -51,6 +53,7 @@ import { Container, Content, GridContainerFinancial, ModalDeleteOptions, Overlay
 const Financeiro: React.FC = () => {
   const { addToast } = useToast();
   const { signOut } = useAuth();
+  const {isConfirmMessage, isCancelMessage, handleCancelMessage, handleConfirmMessage, caller} = useConfirmBox();
   const { isMenuOpen, handleIsMenuOpen, isOpenMenuDealDefaultCategory, handleIsOpenMenuDealDefaultCategory } = useMenuHamburguer();
   const baseUrl = envProvider.redirectUrl;
   const { handleJsonStateObject, handleStateType, jsonStateObject, stateType }  = useStateContext();
@@ -85,6 +88,7 @@ const Financeiro: React.FC = () => {
   const [checkBillingContract, setCheckBillingContract] = useState<boolean>(false);
   const [parcelaAtual, setParcelaAtual] = useState('');
   const [isDeal, setIsDeal] = useState<boolean>(false);
+  const [showValidateFinancialIntegration, setShowValidateFinancialIntegration] = useState<boolean>(false);
 
   // GRID
   const [pageSizes] = useState([10, 20, 30, 50]);
@@ -111,6 +115,33 @@ const Financeiro: React.FC = () => {
     {
       setCheckBillingContract(true)
     }
+  }, [])
+
+    
+  useEffect(() => {
+    if (isCancelMessage)
+    {
+      if(caller == "validateFinancialIntegration"){
+        setShowValidateFinancialIntegration(false)
+        handleCancelMessage(false)
+      }
+    }
+  }, [isCancelMessage, caller])
+
+
+  useEffect(() => {
+    if(isConfirmMessage)
+    {
+      if (caller == "validateFinancialIntegration"){
+        handleConfirmMessage(false)
+        Delete(true, false)
+      }
+    }
+  }, [isConfirmMessage, caller])
+
+
+  useEffect(() => {
+    Initialize()
   }, [])
 
 
@@ -887,7 +918,7 @@ const Financeiro: React.FC = () => {
   }
 
 
-  const Delete = useCallback(async (deleteAll) => {
+  const Delete = useCallback(async (deleteAll: boolean, validateFinancialIntegration: boolean) => {
     try {
       setIsDeleting(true)
 
@@ -895,7 +926,8 @@ const Financeiro: React.FC = () => {
         params:{
           token,
           id: movementId,
-          deleteAll
+          deleteAll,
+          validateFinancialIntegration
         }
       });
 
@@ -906,12 +938,19 @@ const Financeiro: React.FC = () => {
       setShowConfirmDelete(false)
       setIsLoading(true)
       setIsDeleting(false)
-
-    } catch (err) {
+      setShowValidateFinancialIntegration(false)
+    } 
+    catch (err:any) {
       setShowDeleteOptions(false)
       setShowDeleteDealOptions(false)
       setShowConfirmDelete(false)
-      console.log(err);
+      
+      if (err.response.data.typeError.warning == "awareness"){
+        setShowValidateFinancialIntegration(true)
+      }
+      else{
+        console.log(err.response.data);
+      }
     }
   }, [movementId, token]);
 
@@ -2044,6 +2083,15 @@ const Financeiro: React.FC = () => {
         </Content>
       )}
 
+      {showValidateFinancialIntegration && (
+        <ConfirmBoxModal
+          title="Integrador Financeiro"
+          caller="validateFinancialIntegration"
+          useCheckBoxConfirm
+          message="Não existe um integrador financeiro para o boleto vinculado a este movimento. Ao confirmar, o movimento será excluído mas o boleto permanecera existente em seu banco."
+        />
+      )}
+
       {(showPaymentModal) && <OverlayFinancial /> }
       {(showPaymentModal) && <FinancialPaymentModal callbackFunction={{movementId, invoice, visualizeType, ClosePaymentModal, LoadMovementsByPeriod, LoadTotalByPeriod, LoadMovementsByExtract, LoadTotalByExtract }} /> }
 
@@ -2064,7 +2112,7 @@ const Financeiro: React.FC = () => {
                 <button
                   className="buttonClick"
                   type='button'
-                  onClick={()=> Delete(false)}
+                  onClick={()=> Delete(false, true)}
                   style={{width:'120px'}}
                 >
                   Excluir este
@@ -2075,7 +2123,7 @@ const Financeiro: React.FC = () => {
                 <button
                   className="buttonClick"
                   type='button'
-                  onClick={()=> Delete(true)}
+                  onClick={()=> Delete(true, true)}
                   style={{width:'120px'}}
                 >
                   Excluir todos
@@ -2191,7 +2239,7 @@ const Financeiro: React.FC = () => {
                 <button
                   className="buttonClick"
                   type='button'
-                  onClick={()=> Delete(false)}
+                  onClick={()=> Delete(false, true)}
                   style={{width:'100px'}}
                 >
                   <FaCheck />

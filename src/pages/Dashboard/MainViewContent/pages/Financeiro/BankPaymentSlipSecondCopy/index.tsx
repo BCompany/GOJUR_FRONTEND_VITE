@@ -49,14 +49,12 @@ const BankPaymentSlipSecondCopyModal = (props) => {
 
   const LoadBankPaymentSlip = async () => {
     try{
-      const response = await api.get<IBankPaymentSlip>('/BoletoBancario/ObterPorMovimento', { params:{ token, movementId }});
+      const response = await api.get<IBankPaymentSlip>('/BoletoBancario/ObterPorMovimento', { params:{ movementId, partnerId: 'AS', token }});
 
       setPaymentSlipDate(FormatDate(new Date(response.data.dueDate), 'yyyy-MM-dd'))
       setPaymentSlipValue(response.data.value)
       setPct_Juros(response.data.pct_Juros)
       setPct_Multa(response.data.pct_Multa)
-
-      console.log(response.data)
     }
     catch (err:any) {
       addToast({type: "info", title: "Operação não realizada", description: err.response.data})
@@ -76,7 +74,7 @@ const BankPaymentSlipSecondCopyModal = (props) => {
     setPaymentSlipValueAdditional(String(taxInterestValue?.toFixed(2)))
     setPaymentSlipValueTotal(totalValue)
     setMovementValue(totalValue)
-    }
+  }
 
 
   function CalcTaxInterest(installmentDueDate, installmentValue, taxPercent, interestPercent, installmentNewDate) {

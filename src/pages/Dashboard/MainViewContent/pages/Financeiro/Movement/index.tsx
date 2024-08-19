@@ -57,6 +57,7 @@ export interface IBankPaymentSlip{
   hasBankPaymentSlip: boolean;
   bankPaymentSlipLink: string;
   paymentSlipPartnerId: string;
+  hasFinancialIntegration: boolean;
 };
 
 const FinancialMovement: React.FC = () => {
@@ -138,9 +139,12 @@ const FinancialMovement: React.FC = () => {
   const [totalRows, setTotalRows] = useState<number>(0);
   const [tokenContinuation, setTokenContinuation] = useState<string | null>('');
   const [showLog, setShowLog] = useState(false);
+  const [showChangePaymentForm, setShowChangePaymentForm] = useState<boolean>(false);
+  const [changePaymentForm, setChangePaymentForm] = useState<boolean>(false);
 
   const [showBankPaymentSlipModal, setShowBankPaymentSlipModal] = useState<boolean>(false);
   const [showBankPaymentSlipSecondCopyModal, setShowBankPaymentSlipSecondCopyModal] = useState<boolean>(false);
+  const [hasFinancialIntegration, setHasFinancialIntegration] = useState<boolean>(false);
   const [hasBankPaymentSlip, setHasBankPaymentSlip] = useState<boolean>(false);
   const [paymentSlipId, setPaymentSlipId] = useState<string>('');
   const [bankPaymentSlipDate, setBankPaymentSlipDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
@@ -151,6 +155,8 @@ const FinancialMovement: React.FC = () => {
   const [actionGenerate, setActionGenerate] = useState<string>('');
   const [hasBankPaymentSlipErrors, setHasBankPaymentSlipErrors] = useState<boolean>(false);
   const [bankPaymentSlipErrors, setBankPaymentSlipErrors] = useState<string>('');
+  const [showValidateFinancialIntegration, setShowValidateFinancialIntegration] = useState<boolean>(false);
+
   const ref = useRef<any>(null);
   const DateFormatter = ({ value }) => format(new Date(value), 'dd/MM/yyyy HH:mm');
   const DateTypeProvider = props => (
@@ -162,8 +168,18 @@ const FinancialMovement: React.FC = () => {
   useEffect(() => {
     if (isCancelMessage)
     {
-      setShowChangeInstallments(false)
-      handleCancelMessage(false)
+      if(caller == "changeDefaultHeader"){
+        setShowChangeInstallments(false)
+        handleCancelMessage(false)
+      }
+      if(caller == "changePaymentForm"){
+        setShowChangePaymentForm(false)
+        handleCancelMessage(false)
+      }
+      if(caller == "validateFinancialIntegration"){
+        setShowValidateFinancialIntegration(false)
+        handleCancelMessage(false)
+      }
     }
   }, [isCancelMessage, caller])
 
@@ -171,9 +187,22 @@ const FinancialMovement: React.FC = () => {
   useEffect(() => {
     if(isConfirmMessage)
     {
-      handleConfirmChangeInstallments()
-      setShowChangeInstallments(false)
-      handleConfirmMessage(false)
+      if(caller == "changeDefaultHeader"){
+        handleConfirmMessage(false)
+        handleConfirmChangeInstallments()
+        setShowChangeInstallments(false)
+      }
+
+      if (caller == "changePaymentForm"){
+        handleConfirmMessage(false)
+        setChangePaymentForm(true)
+        Save('', true)
+      }
+
+      if (caller == "validateFinancialIntegration"){
+        handleConfirmMessage(false)
+        Delete(true, false)
+      }
     }
   }, [isConfirmMessage, caller])
 
@@ -241,7 +270,7 @@ const FinancialMovement: React.FC = () => {
 
   useEffect (() => {
     if (actionSave.length > 0){
-      Save('');
+      Save('', false);
     }
   }, [actionSave])
 
@@ -333,7 +362,9 @@ const FinancialMovement: React.FC = () => {
 
   const LoadBankPaymentSlip = async (movementId:number) => {
     try{
-      const response = await api.get<IBankPaymentSlip>('/BoletoBancario/ObterPorMovimento', { params:{ token, movementId }});
+      const response = await api.get<IBankPaymentSlip>('/BoletoBancario/ObterPorMovimento', { params:{ movementId, partnerId: 'AS', token }});
+
+      setHasFinancialIntegration(response.data.hasFinancialIntegration)
 
       if (response.data.paymentSlipId != "0"){
         setPaymentSlipId(response.data.paymentSlipId)
@@ -546,13 +577,14 @@ const FinancialMovement: React.FC = () => {
   }
 
 
-  const Save = useCallback(async(caller: string) => {
+  const Save = useCallback(async(caller: string, changePaymentForm: boolean) => {
     try {
 
       if (!Validate()) return;
 
       setIsSaving(true)
       setShowModalOptions(false)
+      setChangePaymentForm(false)
 
       let peopleIdsItems = '';
       selectedPeopleList.map((people) => {
@@ -582,6 +614,7 @@ const FinancialMovement: React.FC = () => {
         flg_Reembolso: flgReembolso,
         cod_Processo: matterId,
         cod_Conta: accountId,
+        changePaymentForm,
         token
       })
 
@@ -601,9 +634,15 @@ const FinancialMovement: React.FC = () => {
         setShowPaymentModal(true)
       }
     } catch (err:any) {
-      addToast({type: "info", title: "Falha ao salvar movimento.", description: err.response.data.Message})
       setIsSaving(false)
       setShowChangeInstallments(false)
+
+      if (err.response.data.typeError.warning == "awareness"){
+        setShowChangePaymentForm(true)
+      }
+      else {
+        addToast({type: "info", title: "Falha ao salvar movimento.", description: err.response.data.Message})
+      }
     }
   }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp, paymentFormType]);
 
@@ -668,7 +707,7 @@ const FinancialMovement: React.FC = () => {
   }
 
 
-  const Delete = useCallback(async (deleteAll) => {
+  const Delete = useCallback(async (deleteAll: boolean, validateFinancialIntegration: boolean) => {
     try {
       if (movementId == '0') {
         addToast({type: "info", title: "Operação NÃO realizada", description: `O movimento ainda não foi salvo no sistema`})
@@ -676,7 +715,7 @@ const FinancialMovement: React.FC = () => {
         return;
       }
 
-      const response = await api.delete('/Financeiro/Deletar', { params:{ token, id: movementId, deleteAll }});
+      const response = await api.delete('/Financeiro/Deletar', { params:{ token, id: movementId, deleteAll, validateFinancialIntegration }});
 
       handleStateType('Inactive')
       setShowDeleteOptions(false)
@@ -684,7 +723,12 @@ const FinancialMovement: React.FC = () => {
       history.push(`/financeiro`)
     }
     catch (err:any) {
-      addToast({type: "info", title: "Operação não realizada", description: err.response.data})
+      if (err.response.data.typeError.warning == "awareness"){
+        setShowValidateFinancialIntegration(true)
+      }
+      else{
+        addToast({type: "info", title: "Operação não realizada", description: err.response.data})
+      }
     }
   }, [movementId]);
 
@@ -1124,7 +1168,7 @@ const FinancialMovement: React.FC = () => {
 
   const SaveByPaymentInformation = () => {
     setShowPaymentInformation(false)
-    Save('payment')
+    Save('payment', false)
   }
 
 
@@ -1197,7 +1241,7 @@ const FinancialMovement: React.FC = () => {
         dta_VencimentoBoleto: bankPaymentSlipDate,
         secondPayment,
         paymentSlipId,
-        paymentSlipPartnerId, 
+        paymentSlipPartnerId: 'AS',
         token
       })
 
@@ -1208,7 +1252,6 @@ const FinancialMovement: React.FC = () => {
       setShowBankPaymentSlipModal(false)
       setShowModalBankPaymentSlipOptions(false)
       setShowBankPaymentSlipSecondCopyModal(false)
-      // window.open(response.data, '_blank')
     }
     catch (err:any) {
       setIsSaving(false)
@@ -1217,7 +1260,6 @@ const FinancialMovement: React.FC = () => {
       setShowBankPaymentSlipSecondCopyModal(false)
 
       if (err.response.data.typeError.warning == "awareness"){
-        console.log('ERROR: ', err.response.data)
         setBankPaymentSlipErrors(err.response.data.Message)
         setHasBankPaymentSlipErrors(true)
       }
@@ -1565,6 +1607,7 @@ const FinancialMovement: React.FC = () => {
               )}
             </Process>
           </div>
+
           <div id='BankPaymentSlip' className="flexDiv">
             {hasBankPaymentSlip &&(
               <div id='BankPaymentSlip' style={{marginTop:'6px'}}>
@@ -1576,7 +1619,7 @@ const FinancialMovement: React.FC = () => {
                     />
                   </button>
                 </div>
-                <div style={{float:'left', fontSize:'13px', marginLeft:'7px', marginTop:'6px'}} onClick={(e) => OpenBankPaymentSlip({bankPaymentSlipLink})}>
+                <div style={{float:'left', fontSize:'13px', marginLeft:'7px', marginTop:'6px'}}>
                   <a href={bankPaymentSlipLink} target="blank" style={{color:'blue'}}>Ver boleto - Venc.({(format(new Date(bankPaymentSlipLinkDate), 'dd/MM/yyyy'))})</a>
                 </div>
               </div>
@@ -1724,7 +1767,7 @@ const FinancialMovement: React.FC = () => {
           </div>
 
           <div id='Buttons' style={{float:'right'}}>
-            <button className="buttonClick" type='button' onClick={()=> Save('')}>
+            <button className="buttonClick" type='button' onClick={()=> Save('', false)}>
               <BiSave />
               Salvar
             </button>
@@ -1736,25 +1779,29 @@ const FinancialMovement: React.FC = () => {
               </button>
             )}
 
-            {hasBankPaymentSlip == true ? (
+            {hasFinancialIntegration && (
               <>
-                {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B") &&(
-                  <button className="buttonClick" type='button' onClick={()=> HandleGenerateBankPaymentSlipSecond()}>
-                    <FaFileInvoiceDollar  />
-                    2ª Via Boleto
-                  </button>
-                )}
+                {hasBankPaymentSlip == true ? (
+                  <>
+                    {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B") &&(
+                      <button className="buttonClick" type='button' onClick={()=> HandleGenerateBankPaymentSlipSecond()}>
+                        <FaFileInvoiceDollar  />
+                        2ª Via Boleto
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B") &&(
+                      <button className="buttonClick" type='button' onClick={()=> HandleGenerateBankPaymentSlip()}>
+                        <FaFileInvoiceDollar  />
+                        Gerar Boleto
+                      </button>
+                    )}
+                  </>
+                )}              
               </>
-            ) : (
-              <>
-                {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B") &&(
-                  <button className="buttonClick" type='button' onClick={()=> HandleGenerateBankPaymentSlip()}>
-                    <FaFileInvoiceDollar  />
-                    Gerar Boleto
-                  </button>
-                )}
-              </>
-            )}
+            )}            
 
             {(!isMOBILE && movementId != '0' && invoice == 0) &&(
               <button className="buttonClick" type='button' onClick={()=> GenerateDocument()}>
@@ -1814,14 +1861,20 @@ const FinancialMovement: React.FC = () => {
           <div style={{marginLeft:'5%'}}>
             Este movimento está parcelado, deseja excluir também as outras parcelas ?
             <br />
-            <br />
+            {hasBankPaymentSlip == true ? (
+              <>
+                Os boletos também serão removidos.
+                <br />
+              </>
+            ) : <br />}
+            
             <br />
             <div style={{float:'right', marginRight:'7%', bottom:0}}>
               <div style={{float:'left'}}>
                 <button
                   className="buttonClick"
                   type='button'
-                  onClick={()=> Delete(false)}
+                  onClick={()=> Delete(false, true)}
                   style={{width:'120px'}}
                 >
                   Excluir este
@@ -1832,7 +1885,7 @@ const FinancialMovement: React.FC = () => {
                 <button
                   className="buttonClick"
                   type='button'
-                  onClick={()=> Delete(true)}
+                  onClick={()=> Delete(true, true)}
                   style={{width:'120px'}}
                 >
                   Excluir todos
@@ -1871,7 +1924,7 @@ const FinancialMovement: React.FC = () => {
                 <button
                   className="buttonClick"
                   type='button'
-                  onClick={()=> Delete(false)}
+                  onClick={()=> Delete(false, true)}
                   style={{width:'100px'}}
                 >
                   <FaCheck />
@@ -1935,8 +1988,6 @@ const FinancialMovement: React.FC = () => {
         </ModalPaymentInformation>
       )}
 
-
-
       {showBankPaymentSlipModal && <OverlayFinancial /> }
       {showBankPaymentSlipModal && (
         <ModalBankPaymentSlip>
@@ -1998,14 +2049,30 @@ const FinancialMovement: React.FC = () => {
         </ModalBankPaymentSlipErrors>
       )}
 
-
-
       {showChangeInstallments && (
         <ConfirmBoxModal
           title="Alterar parcelas do movimento"
           caller="changeDefaultHeader"
           useCheckBoxConfirm
           message="Foi alterado o número de parcelas do movimento, o reparcelamento implica em alterar todas as parcelas considerando os dados do movimento atual. Eventuais liquidações serão mantidas desde que a parcela não seja removida (no caso de redução de parcelas)."
+        />
+      )}
+
+      {showChangePaymentForm && (
+        <ConfirmBoxModal
+          title="Alterar forma de pagamento"
+          caller="changePaymentForm"
+          useCheckBoxConfirm
+          message="Você está alterando a forma de pagamento de um movimento com boleto cadastrado. Ao confirmar o boleto será excluído."
+        />
+      )}
+
+      {showValidateFinancialIntegration && (
+        <ConfirmBoxModal
+          title="Integrador Financeiro"
+          caller="validateFinancialIntegration"
+          useCheckBoxConfirm
+          message="Não existe um integrador financeiro para o boleto vinculado a este movimento. Ao confirmar, o movimento será excluído mas o boleto permanecera existente em seu banco."
         />
       )}
 

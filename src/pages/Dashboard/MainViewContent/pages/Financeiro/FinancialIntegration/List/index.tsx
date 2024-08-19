@@ -6,16 +6,18 @@
 /* eslint-disable no-alert */
 import React, { useCallback, useEffect, useState, UIEvent, ChangeEvent, useRef } from 'react';
 import api from 'services/api';
+import LoaderWaiting from 'react-spinners/ClipLoader';
 import { FaFileAlt } from 'react-icons/fa'
 import { FiEdit, FiTrash, FiArrowLeft } from 'react-icons/fi'
 import { Grid, Table } from '@devexpress/dx-react-grid-material-ui';
 import { useAuth } from 'context/AuthContext';
 import { useModal } from 'context/modal';
+import { useConfirmBox } from 'context/confirmBox';
 import { useHeader } from 'context/headerContext';
 import { useHistory } from 'react-router-dom';
 import { Overlay } from 'Shared/styles/GlobalStyle';
 import { GridContainer } from 'Shared/styles/GlobalStyle';
-import LoaderWaiting from 'react-spinners/ClipLoader';
+import ConfirmBoxModal from 'components/ConfirmBoxModal';
 import { useToast } from 'context/toast';
 import { languageGridEmpty } from 'Shared/utils/commonConfig';
 import { useDefaultSettings } from 'context/defaultSettings';
@@ -30,12 +32,15 @@ export interface IFinancialIntegrationData{
 }
 
 const FinancialIntegrationList = () => {
+  const token = localStorage.getItem('@GoJur:token')
   const { addToast } = useToast()
+  const { signOut } = useAuth()
   const history = useHistory()
   const scrollRef = useRef<HTMLDivElement>(null)
   const { handleUserPermission } = useDefaultSettings()
   const {captureText, handleLoadingData} = useHeader()
-  const { handleCaller, handleModalActive, handleModalActiveId, caller, modalActive } = useModal()
+  const {isConfirmMessage, isCancelMessage, handleCancelMessage, handleConfirmMessage, caller} = useConfirmBox();
+  const { handleCaller, handleModalActiveId } = useModal()
   const [financialIntegrationList, setFinancialIntegrationList] = useState<IFinancialIntegrationData[]>([])
   const [totalPageCount, setTotalPageCount] = useState<number>(0)
   const [isLoadingSearch, setIsLoadingSearch]= useState<boolean>(false)
@@ -44,8 +49,9 @@ const FinancialIntegrationList = () => {
   const [isEndPage, setIsEndPage] = useState(false)
   const [isPagination, setIsPagination] = useState(false)
   const [isDeleting , setIsDeleting] = useState<boolean>()
-  const { signOut } = useAuth()
-  const token = localStorage.getItem('@GoJur:token')
+  const [showDeleteFinancialIntegration, setShowDeleteFinancialIntegration] = useState<boolean>(false);
+  const [deleteId, setDeleteId] = useState<number>(0)
+  
 
   const columns = [
     { name: 'name', title: ' '},
@@ -79,6 +85,29 @@ const FinancialIntegrationList = () => {
   useEffect(() => {
     LoadFinancialIntegration();
   },[pageNumber])
+
+
+  useEffect(() => {
+    if (isCancelMessage)
+    {
+      if(caller == "handleDelete"){
+        setShowDeleteFinancialIntegration(false)
+        handleCancelMessage(false)
+      }
+    }
+  }, [isCancelMessage, caller])
+
+
+  useEffect(() => {
+    if(isConfirmMessage)
+    {
+      if (caller == "handleDelete"){
+        setShowDeleteFinancialIntegration(true)
+        handleConfirmMessage(false)
+        Delete(deleteId, true)
+      }
+    }
+  }, [isConfirmMessage, caller])
 
 
   const LoadDefaultProps = async() => {
@@ -138,8 +167,8 @@ const FinancialIntegrationList = () => {
       handleLoadingData(false)
       setIsLoadingSearch(false)
       setIsLoading(false)
-      handleCaller('')
-      handleModalActiveId(0)
+      // handleCaller('')
+      // handleModalActiveId(0)
     }
     catch (err:any)
     {
@@ -184,27 +213,35 @@ const FinancialIntegrationList = () => {
     }
 
     if (props.column.name === 'remove'){
-      Delete(props.row.id)
+      setDeleteId(props.row.id)
+      Delete(props.row.id, false)
     }
   }
 
 
-  const Delete = async(id: number) => {
+  const Delete = async(id: number, confirmDelete: boolean) => {
     try {
       const token = localStorage.getItem('@GoJur:token');
       setIsDeleting(true)
       
       await api.delete('/IntegracaoFinanceira/Apagar', {
-        params:{ id, token }
+        params:{ id, confirmDelete, token }
       })
       
-      addToast({type: "success", title: "Carteira de cobrança consultivo excluída", description: "A carteira de cobrança foi excluído no sistema."})
+      addToast({type: "success", title: "Operação realizada", description: "O integrador financeiro foi excluído no sistema."})
+      setShowDeleteFinancialIntegration(false)
       LoadFinancialIntegration('initialize')
       setIsDeleting(false)
+      setDeleteId(0)
     }
     catch (err: any) {
       setIsDeleting(false)
-      addToast({type: "error", title: "Falha ao excluir carteira de cobrança.", description:  err.response.data.Message})
+      if (err.response.data.typeError.warning == "awareness"){
+        setShowDeleteFinancialIntegration(true)
+      }
+      else {
+        addToast({type: "info", title: "Falha ao excluir integrador financeiro.", description:  err.response.data.Message})
+      }
     }
   };
 
@@ -260,13 +297,13 @@ const FinancialIntegrationList = () => {
 
       <div style={{width:'100%', marginTop:'20px'}}>
         <div style={{float:'left', marginLeft:'150px', marginTop:'12px', fontSize:'13px'}}>
-          Número de integradores financeiros:&nbsp;
+          Integradores financeiros:&nbsp;
           {totalPageCount}
         </div>
 
         <div style={{float:'right', marginRight:'170px'}}>
           <div style={{float:'left'}}>
-            <button className="buttonClick" title="Clique para incluir uma carteira de cobrança" type="submit" onClick={handleOpenEdit}>
+            <button className="buttonClick" title="Clique para incluir um integrador financeiro" type="submit" onClick={handleOpenEdit}>
               <FaFileAlt />
               Adicionar
             </button>
@@ -298,12 +335,21 @@ const FinancialIntegrationList = () => {
         </GridContainer>
       </Content>
 
+      {showDeleteFinancialIntegration && (
+        <ConfirmBoxModal
+          title="Excluir o integrador financeiro"
+          caller="handleDelete"
+          useCheckBoxConfirm
+          message="Você possui boletos gerados com este integrador financeiro. Ao remover não poderá mais gerar ou excluir os boletos vinculados ao integrador."
+        />
+      )}
+
       {isDeleting && (
         <>
           <Overlay />
           <div className='waitingMessage'>   
             <LoaderWaiting size={15} color="var(--blue-twitter)" /> 
-            &nbsp;&nbsp; Deletando ...
+            &nbsp;&nbsp; Apagando ...
           </div>
         </>
       )}
