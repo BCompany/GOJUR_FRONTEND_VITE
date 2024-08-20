@@ -54,6 +54,7 @@ export default function SearchCNJ () {
     if (!isSecret){
       setUserCNJ('')
       setPswCNJ('')
+      setCredentialId('')
     }
 
   },[isSecret])
@@ -83,6 +84,16 @@ export default function SearchCNJ () {
 
       return false;
   }
+
+    if (isSecret && credentialId.length == 0){
+      addToast({
+        type: 'info',
+        title: 'Operação não realizada',
+        description: 'É necessario informar uma credencial para realizar a busca em segredo de justiça',
+      });
+
+      return false;
+    }
 
     const hasAdd = listSearch.find(item => item.matterNumberCNJ === numberCNJ);
     if (hasAdd){
@@ -323,7 +334,7 @@ export default function SearchCNJ () {
               <p key={item.index}>
                 <FiTrash title='Clique para excluir este CNJ' onClick={() => handleDelete(item.index)} />
                 {item.matterNumberCNJ}
-                {(item.userCourt.length > 0 && item.passwordCourt.length > 0) && (
+                {(item.id_Credential) && (
                   <>
                     &nbsp;
                     <FcKey title='Este processo será procurado por nossos robôs na forma de segredo de justiça, com base no usuário e senha informados' />

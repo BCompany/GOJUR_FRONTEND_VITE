@@ -1,23 +1,17 @@
 import React, { useCallback, useState, ChangeEvent, useEffect, useRef } from 'react';
 import api from 'services/api';
-import Select from 'react-select';
 import LoaderWaiting from 'react-spinners/ClipLoader';
-import { BiSearchAlt } from 'react-icons/bi';
-import { BsImage } from 'react-icons/bs';
-import { FaRegTimesCircle, FaFilePdf, FaFileAlt, FaKey, FaRegEdit } from 'react-icons/fa';
-import { FiTrash, FiDownloadCloud } from 'react-icons/fi';
-import { HiDocumentText } from 'react-icons/hi';
-import { SiMicrosoftexcel } from 'react-icons/si';
+import { FaRegTimesCircle, FaFileAlt, FaRegEdit, FaAddressCard  } from 'react-icons/fa';
+import { FiTrash} from 'react-icons/fi';
 import { useDevice } from "react-use-device";
-import { add, format } from 'date-fns';
 import { useToast } from 'context/toast';
-import { useDelay, currencyConfig, selectStyles, FormatCurrency, FormatFileName, AmazonPost } from 'Shared/utils/commonFunctions';
 import { languageGridEmpty, languageGridPagination } from 'Shared/utils/commonConfig';
-import { DataTypeProvider, PagingState, CustomPaging, IntegratedPaging, SortingState, IntegratedSorting } from '@devexpress/dx-react-grid';
+import { PagingState, CustomPaging, IntegratedPaging, SortingState, IntegratedSorting } from '@devexpress/dx-react-grid';
 import { Grid, Table, TableHeaderRow, PagingPanel } from '@devexpress/dx-react-grid-material-ui';
 import { CredentialsModal, GridSubContainer, Overlay } from './styles';
 import CredentialsDataSourceModal from './EditModal';
 import { OverlayPermission } from './EditModal/styles';
+import { MdCancel, MdCheckCircle, MdNewReleases } from 'react-icons/md';
 
 interface SelectData {
   id: string;
@@ -61,14 +55,17 @@ const CredentialModal = (props) => {
         }
     })
 
-    setCredentialsList(response.data)   
+    setCredentialsList(response.data)
+
+    console.log(response.data)
   
   }, [])
 
   
   const [tableColumnExtensionsUserLists] = useState([
-    { columnName: 'des_Credential', width: '45%' },
-    { columnName: 'des_Username', width: '40%' },
+    { columnName: 'des_Credential', width: '40%' },
+    { columnName: 'des_Username', width: '35%' },
+    { columnName: 'flg_Status', width: '10%' },
     { columnName: 'bntEditar', width: '4%' },
     { columnName: 'bntExcluir', width: '4%' },
   ]);
@@ -76,13 +73,14 @@ const CredentialModal = (props) => {
   const columnsUsrList = [
     { name: 'des_Credential', title: 'Descrição' },
     { name: 'des_Username', title: 'Usuario' },
+    { name: 'flg_Status', title: 'Status' },
     { name: 'bntEditar', title: ' ' },
     { name: 'bntExcluir', title: ' ' },
   ];
 
   const CustomCellUserList = (props) => {
-    const { column } = props;
-
+    const { column, row } = props;
+  
     if (column.name === 'bntEditar') {
       return (
         <Table.Cell onClick={(e) => handleOpenEditModal(props)} {...props}>
@@ -91,16 +89,41 @@ const CredentialModal = (props) => {
         </Table.Cell>
       );
     }
-
+  
     if (column.name === 'bntExcluir') {
       return (
-        <Table.Cell onClick={(e) => handleDeleteCredential(props.row.id_Credential)} {...props}>
+        <Table.Cell onClick={(e) => handleDeleteCredential(row.id_Credential)} {...props}>
           &nbsp;&nbsp;
           <FiTrash />
         </Table.Cell>
       );
     }
-
+  
+    if (column.name === 'flg_Status') {
+      let icon;
+  
+      switch (row.flg_Status) {
+        case 'D':
+          icon = <FaAddressCard style={{ color: 'red', height: '20px' }} title="Credencial negada pelo tribunal" />;
+          break;
+        case 'N':
+          icon = <FaAddressCard style={{ color: 'blue', height: '20px' }} title="Em processo de autenticação de credencial" />;
+          break;
+        case 'S':
+          icon = <FaAddressCard style={{ color: 'green', height: '20px' }} title="Credencial autenticada com sucesso" />;
+          break;
+        default:
+          icon = null;
+      }
+  
+      return (
+        <Table.Cell {...props}>
+          &nbsp;&nbsp;
+          {icon}
+        </Table.Cell>
+      );
+    }
+  
     return <Table.Cell {...props} />;
   };
 
@@ -163,7 +186,7 @@ const CredentialModal = (props) => {
       {!isMOBILE && (
         <>
           <Overlay />
-          <CredentialsModal show style={{ width: '55%', height: '55%', display: 'flex', flexDirection: 'column', border: '1px solid var(--blue-twitter)' }}>
+          <CredentialsModal show style={{ width: '65%', height: '55%', display: 'flex', flexDirection: 'column', border: '1px solid var(--blue-twitter)' }}>
             <div className='header' style={{ flex: '0 0 auto', padding: '2px 5px' }}>
               <p className='headerLabel'>Credenciais</p>
             </div>
