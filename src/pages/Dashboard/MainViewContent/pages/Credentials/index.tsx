@@ -8,7 +8,7 @@ import { useToast } from 'context/toast';
 import { languageGridEmpty, languageGridPagination } from 'Shared/utils/commonConfig';
 import { PagingState, CustomPaging, IntegratedPaging, SortingState, IntegratedSorting } from '@devexpress/dx-react-grid';
 import { Grid, Table, TableHeaderRow, PagingPanel } from '@devexpress/dx-react-grid-material-ui';
-import { CredentialsModal, GridSubContainer, Overlay } from './styles';
+import { CredentialsModal, GridSubContainer, Overlay, Overlay2 } from './styles';
 import CredentialsDataSourceModal from './EditModal';
 import { OverlayPermission } from './EditModal/styles';
 import { MdCancel, MdCheckCircle, MdNewReleases } from 'react-icons/md';
@@ -48,24 +48,38 @@ const CredentialModal = (props) => {
     },[])
 
   const LoadCredentials = useCallback(async() => {
+    try{
+      
+      setIsLoading(true)
 
-    const response = await api.get<ICredentialData[]>('/Credenciais/Listar', { 
-      params:{
-          token
-        }
-    })
-
-    setCredentialsList(response.data)
-
-    console.log(response.data)
+      const response = await api.get<ICredentialData[]>('/Credenciais/Listar', { 
+        params:{
+            token
+          }
+      })
   
+      setCredentialsList(response.data)
+
+      setIsLoading(false)
+
+    }
+    catch (error) {
+      addToast({
+        type: 'error',
+        title: 'Erro ao carregar as credenciais',
+        description: 'Ocorreu um erro ao tentar carregar as credenciais, tente novamente!'
+      });
+    }
+
+    setIsLoading(false)
+ 
   }, [])
 
   
   const [tableColumnExtensionsUserLists] = useState([
     { columnName: 'des_Credential', width: '40%' },
-    { columnName: 'des_Username', width: '35%' },
-    { columnName: 'flg_Status', width: '10%' },
+    { columnName: 'des_Username', width: '30%' },
+    { columnName: 'flg_Status', width: '17%' },
     { columnName: 'bntEditar', width: '4%' },
     { columnName: 'bntExcluir', width: '4%' },
   ]);
@@ -104,13 +118,28 @@ const CredentialModal = (props) => {
   
       switch (row.flg_Status) {
         case 'D':
-          icon = <FaAddressCard style={{ color: 'red', height: '20px' }} title="Credencial negada pelo tribunal" />;
+          icon = (
+            <div style={{ display: 'flex' , marginBottom: "12px"}}>
+              <FaAddressCard style={{ color: 'red', height: '20px' }} title="Credencial negada pelo tribunal" />
+              <span style={{ color: 'red', marginLeft: '5px' }}>Recusada</span>
+            </div>
+          );
           break;
         case 'N':
-          icon = <FaAddressCard style={{ color: 'blue', height: '20px' }} title="Em processo de autenticação de credencial" />;
+          icon = (
+            <div style={{ display: 'flex' , marginBottom: "12px"}}>
+              <FaAddressCard style={{ color: 'blue', height: '20px' }} title="Em processo de autenticação de credencial" />
+              <span style={{ color: 'blue', marginLeft: '5px' }}>Em Validação</span>
+            </div>
+          );
           break;
         case 'S':
-          icon = <FaAddressCard style={{ color: 'green', height: '20px' }} title="Credencial autenticada com sucesso" />;
+          icon = (
+            <div style={{ display: 'flex', marginBottom: "12px"}}>
+              <FaAddressCard style={{ color: 'green', height: '20px' }} title="Credencial autenticada com sucesso" />
+              <span style={{ color: 'green', marginLeft: '5px' }}>Válida</span>
+            </div>
+          );
           break;
         default:
           icon = null;
@@ -145,6 +174,7 @@ const CredentialModal = (props) => {
   const handleDeleteCredential = async (id: number) => {
 
     try {
+      setIsLoading(true)
       const response = await api.delete('/Credenciais/Excluir', { 
         params:{
             id_Credential: id,
@@ -158,6 +188,8 @@ const CredentialModal = (props) => {
         description: 'A credencial foi excluída com sucesso!'
       });
 
+      setIsLoading(false)
+
       LoadCredentials()
     }
     catch (error) {
@@ -167,14 +199,16 @@ const CredentialModal = (props) => {
         description: 'Ocorreu um erro ao tentar excluir a credencial, tente novamente!'
       });
     }
+
+    setIsLoading(false)
   }
 
   return (
     <>
-      {isChanging && (
+      {isLoading && (
         <>
-          <OverlayPermission />
-          <div className='waitingMessage' style={{ zIndex: 999999999 }}>
+          <Overlay2 />
+          <div className='waitingMessage' style={{ position: 'fixed', bottom: '10px', right: '10px', zIndex: 999999999 }}>
             <LoaderWaiting size={15} color="var(--blue-twitter)" />
             &nbsp;&nbsp; Carregando...
           </div>
@@ -248,17 +282,7 @@ const CredentialModal = (props) => {
             </div>
           </CredentialsModal>
         </>
-      )}
-      
-      {isLoading && (
-        <>
-          <Overlay />
-          <div className='waitingMessage'>
-            <LoaderWaiting size={15} color="var(--blue-twitter)" />
-            Aguarde...
-          </div>
-        </>
-      )}
+      )}      
     </>
   );
 };

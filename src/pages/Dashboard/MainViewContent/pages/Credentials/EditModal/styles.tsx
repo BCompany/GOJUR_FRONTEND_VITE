@@ -108,11 +108,26 @@ export const ItemBox = styled.div`
 `;
 
 export const OverlayPermission = styled.div `
-    background-color: rgba(0, 0, 0, 0.4);
-    top: 0;
-    left: 0;
-    position: absolute;
-    width: 600vh;
-    height: 200vh;
-    z-index: 99999999;
+      background-color: rgba(0, 0, 0, 0.4);
+  position: fixed; /* Alterado de absolute para fixed */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999999; /* Diminuído o valor do z-index */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* text inside overlay */
+  > div {
+    background: var(--white-card);
+    height: 3rem;
+    color: var(--blue-twitter);
+    font-size: 0.765rem;
+    text-align: center;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    box-shadow: 1px 1px 4px 0.5px rgba(0, 0, 0, 0.15);
+  }
 `;

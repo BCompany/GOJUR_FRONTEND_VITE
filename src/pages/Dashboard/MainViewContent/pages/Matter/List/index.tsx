@@ -795,6 +795,7 @@ const Matter: React.FC = () => {
       return
     }
 
+
     if (isSecretJustice && selectedCredentialid === 0) {
       addToast({
         type: 'info',

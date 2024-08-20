@@ -29,7 +29,7 @@ export interface IDataSource {
 }
 
 export interface ICredential {
-  id_Credential: string;
+  IdCredential: string;
   des_Username: string;
   UserPassword: string;
   des_Credential: string;
@@ -139,10 +139,12 @@ export default function CredentialsDataSourceModal(props) {
         title: "Operação realizada",
         description: "Credencial criada com sucesso."
       })
+      setIsChanging(false)
+
+      console.log(response.data)
+      handleIsNewCredential(response.data.IdCredential, description)
 
       handleCloseEditModal()
-      setIsChanging(false)
-      handleIsNewCredential(response.data.id_Credential, description)
 
     } catch (err: any) {
       addToast({
@@ -194,15 +196,6 @@ const handleCourtSelected = (item) => {
 
   return (
     <>
-      {isChanging && (
-        <>
-          <OverlayPermission />
-          <div className='waitingMessage' style={{ zIndex: 999999999 }}>
-            <LoaderWaiting size={15} color="var(--blue-twitter)" />
-            &nbsp;&nbsp; Carregando...
-          </div>
-        </>
-      )}
       <Modal
         isOpen
         overlayClassName="react-modal-overlay"

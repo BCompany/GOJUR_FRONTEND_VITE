@@ -23,64 +23,62 @@ const RobotLogs: React.FC<IRobotLog> = (props) => {
   }
   
   return (
-
     <Modal
       isOpen
       overlayClassName="react-modal-overlay"
       className="react-modal-content"
     >
-
       <Container>
-
         <h1> Log de Operações (on/off - Pesquisa Tribunal</h1>
-
-        <div>    
+  
+        <div>
           {robotLogs.map(log => {
-            return(
+            return (
               <div>
                 {log.nom_PessoaFimPesquisa == null && (
                   <div>
-                    {`Inicio Em: ${  FormatDate(new Date(log.dta_InicioPesquisa), 'dd/MM/yyyy') } ligado por: ${log.nom_PessoaInicioPesquisa }`}
+                    {`Inicio Em: ${FormatDate(new Date(log.dta_InicioPesquisa), 'dd/MM/yyyy')} ligado por: ${log.nom_PessoaInicioPesquisa}`}
                   </div>
                 )}
-
+  
                 {log.nom_PessoaFimPesquisa != null && (
                   <div>
-                    {`Inicio Em: ${  FormatDate(new Date(log.dta_InicioPesquisa), 'dd/MM/yyyy') } ligado por: ${log.nom_PessoaInicioPesquisa } - fim em: ${FormatDate(new Date(log.dta_FimPesquisa), "dd/MM/yyyy") } desligado por: ${log.nom_PessoaFimPesquisa}`}
-                  </div> 
+                    {`Inicio Em: ${FormatDate(new Date(log.dta_InicioPesquisa), 'dd/MM/yyyy')} ligado por: ${log.nom_PessoaInicioPesquisa} - fim em: ${FormatDate(new Date(log.dta_FimPesquisa), "dd/MM/yyyy")} desligado por: ${log.nom_PessoaFimPesquisa}`}
+                  </div>
                 )}
-              </div>    
-            )                            
+  
+                {log.nom_Credencial && log.nom_Usuario && (
+                  <div>
+                    {`Credencial: ${log.nom_Credencial}, Usuário: ${log.nom_Usuario}`}
+                  </div>
+                )}
+              </div>
+            );
           })}
-
         </div>
-
+  
         {robotLogs.length === 0 && (
           <div>
             <div>
               Este processo nunca foi pesquisado nos tribunais. A pesquisa não foi habilitada
-            </div>            
+            </div>
           </div>
         )}
-
+  
         <footer>
-
-          <button 
-            className="buttonClick" 
+          <button
+            className="buttonClick"
             type="button"
             onClick={handleCloseModal}
             title="Clique para retornar a listagem de processos"
           >
             <MdBlock />
-            Fechar            
-          </button>  
-
+            Fechar
+          </button>
         </footer>
-
       </Container>
-    
     </Modal>
-  )
+  );
 }
 
 export default RobotLogs

@@ -119,3 +119,28 @@ export const Overlay = styled.div`
     box-shadow: 1px 1px 4px 0.5px rgba(0, 0, 0, 0.15);
   }
 `;
+
+export const Overlay2 = styled.div`
+  background-color: rgba(0, 0, 0, 0.4);
+  position: fixed; /* Alterado de absolute para fixed */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 99999; /* Diminuído o valor do z-index */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* text inside overlay */
+  > div {
+    background: var(--white-card);
+    height: 3rem;
+    color: var(--blue-twitter);
+    font-size: 0.765rem;
+    text-align: center;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    box-shadow: 1px 1px 4px 0.5px rgba(0, 0, 0, 0.15);
+  }
+`;
