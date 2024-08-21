@@ -271,7 +271,7 @@ const CredentialModal = (props) => {
               <div style={{ float: 'right', marginRight: '10px' }}>
                 <button 
                   className="buttonClick" 
-                  title="Clique para incluir uma ação judícial"
+                  title="Clique para incluir uma nova credencial"
                   type="submit"
                   onClick={handleAddNewCredential}
                 >

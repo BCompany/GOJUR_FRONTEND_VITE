@@ -203,7 +203,7 @@ export default function FollowModal(props) {
           <div style={{ float: 'right', marginRight: '10px' }}>
             <button 
               className="buttonClick" 
-              title="Clique para incluir uma ação judícial"
+              title="Clique para monitorar o processo"
               type="submit"
               onClick={handleFollowMatter}
             >
