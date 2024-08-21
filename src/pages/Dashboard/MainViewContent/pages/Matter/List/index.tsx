@@ -144,6 +144,8 @@ const Matter: React.FC = () => {
   const [isSecretJustice, setIsSecretJustice] = useState<boolean>(false);
   const [selectedCredentialid, setSelectedCredentialid] = useState<number>(0);
 
+  const [isChanging, setIsChanging] = useState<boolean>(false);
+
 
   useEffect(() => {
     handleIsOpenMenuConfig(false)
@@ -837,6 +839,7 @@ const Matter: React.FC = () => {
         newData = matterList.filter(item => item.matterId != matterFind.matterId);
         setMatterList(newData)
       }
+      setIsChanging(false)
       handleCloseFollowModal()
 
       setIsLoading(false)
@@ -861,6 +864,7 @@ const Matter: React.FC = () => {
       handleCloseFollowModal()
 
       setIsLoading(false)
+      setIsChanging(false)
 
       // disable follow button if something wrong going on
       const newData = matterList.map(matter =>
@@ -2081,6 +2085,7 @@ const Matter: React.FC = () => {
   }
 
   const handleFollowMatter = async () => {
+    setIsChanging(true)
     handleFollowButton(matterSelectedId)
   }
 
@@ -2095,7 +2100,7 @@ const Matter: React.FC = () => {
       <HeaderPage />
 
       {(showFollowModal) && <Overlay />}
-      {showFollowModal && <FollowModal callbackFunction={{ handleCloseFollowModal, matterSelectedNumber, handleSecretJusticeChange, isSecretJustice, handleFollowMatter, handleSelectCredentialId }} />}
+      {showFollowModal && <FollowModal callbackFunction={{ handleCloseFollowModal, matterSelectedNumber, handleSecretJusticeChange, isSecretJustice, handleFollowMatter, handleSelectCredentialId, isChanging }} />}
 
       {/* MATTER FILTER AND INCLUDE */}
       <Filter>

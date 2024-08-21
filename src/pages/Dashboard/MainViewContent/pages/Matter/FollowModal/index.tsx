@@ -32,11 +32,11 @@ export default function FollowModal(props) {
     handleSecretJusticeChange,
     isSecretJustice,
     handleFollowMatter,
-    handleSelectCredentialId
+    handleSelectCredentialId,
+    isChanging
   } = props.callbackFunction;
   const [isLoadingComboData, setIsLoadingComboData] = useState<boolean>(false);
   const { addToast } = useToast();
-  const [isChanging, setIsChanging] = useState<boolean>(false);
   const [credentialTerm, setCredentialTerm] = useState('');
   const [credentialId, setCredentialId] = useState<string>('');
   const [credentialValue, setCredentialValue] = useState<string>('');

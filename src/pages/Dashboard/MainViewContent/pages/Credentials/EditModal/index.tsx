@@ -141,10 +141,9 @@ export default function CredentialsDataSourceModal(props) {
       })
       setIsChanging(false)
 
-      console.log(response.data)
-      handleIsNewCredential(response.data.IdCredential, description)
-
       handleCloseEditModal()
+
+      handleIsNewCredential(response.data.IdCredential, description)
 
     } catch (err: any) {
       addToast({
