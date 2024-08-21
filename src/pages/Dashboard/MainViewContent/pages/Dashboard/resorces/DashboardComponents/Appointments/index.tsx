@@ -32,10 +32,12 @@ interface CompromissosData {
 
 interface AppointmentProps {
   title: string;
+  idElement: string;
+  visible: string;
 }
 
 // DECLARAÇÃO DO COMPONENTE
-const Appointments: React.FC<AppointmentProps> = ({ title, ...rest }) => {
+const Appointments: React.FC<AppointmentProps> = ({ title, idElement, visible, ...rest }) => {
   // STATES & HOOKS
   const [activeReload, setActiveReload] = useState(false);
   const { isOpenModal, handleReload, reload } = useModal();
@@ -105,8 +107,8 @@ const Appointments: React.FC<AppointmentProps> = ({ title, ...rest }) => {
   }
   return (
     <ModalProvider>
-      <Container {...rest}>
-        <HeaderComponent title={title} cursor />
+      <Container {...rest} style={{opacity:(visible === 'N' ? '0.5' : '1')}}>
+        <HeaderComponent title={title} idElement={idElement} visible={visible} cursor />
         <AppointmentContent>
           <div>
             <h2>

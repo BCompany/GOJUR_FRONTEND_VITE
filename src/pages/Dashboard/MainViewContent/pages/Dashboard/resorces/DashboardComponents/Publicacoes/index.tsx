@@ -11,7 +11,7 @@ import { FiBell } from 'react-icons/fi';
 import { AlertsData, AlertsDataDTO, PublicacaoProps, PublicationData } from 'pages/Dashboard/MainViewContent/pages/Interfaces/IPublication';
 import {Container, PublicationContent,AlertBox,AlertCard,PublicationBox,PublicationCard } from './styles';
 
-const Publicacoes: React.FC<PublicacaoProps> = ({ title, ...rest }) => {
+const Publicacoes: React.FC<PublicacaoProps> = ({ title, idElement, visible, ...rest }) => {
   const { isOpenModal } = useModal();
   const { handleDetails, reloadTrigger, handleReload } = usePublication();
   const { handleTotalPublition } = useIndicators();
@@ -124,8 +124,8 @@ const Publicacoes: React.FC<PublicacaoProps> = ({ title, ...rest }) => {
 
 
   return (
-    <Container {...rest}>
-      <HeaderComponent title={title} cursor />
+    <Container {...rest} style={{opacity:(visible === 'N' ? '0.5' : '1')}}>
+      <HeaderComponent title={title} idElement={idElement} visible={visible} cursor />
       <PublicationContent>
         {/* RENDERIZAÇÃO DOS CARDS DE COMPROMISSO */}
 

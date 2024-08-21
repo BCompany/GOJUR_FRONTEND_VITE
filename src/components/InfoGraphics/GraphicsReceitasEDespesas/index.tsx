@@ -25,6 +25,8 @@ interface Conta {
 
 interface GraphicProps {
   title: string;
+  idElement: string;
+  visible: string;
 }
 
 interface DefaultsListData {
@@ -54,7 +56,7 @@ const optionsGraphic = [
   {id: 1, description: 'Realizado' }
 ];
 
-const GraphicsReceitasEDespesas: React.FC<GraphicProps> = ({title, ...rest }) => {
+const GraphicsReceitasEDespesas: React.FC<GraphicProps> = ({title, idElement, visible, ...rest }) => {
   const [monthValues, setMonthValues] = useState<string[]>([]);
   const [incomes, setIncomes] = useState<number[]>([]);
   const [outcomes, setOutcomes] = useState<number[]>([]);
@@ -186,8 +188,8 @@ const GraphicsReceitasEDespesas: React.FC<GraphicProps> = ({title, ...rest }) =>
   };
 
   return (
-    <Container {...rest}>
-      <HeaderComponent title={metterName} cursor />
+    <Container {...rest} style={{opacity:(visible === 'N' ? '0.5' : '1')}}>
+      <HeaderComponent title={metterName} idElement={idElement} visible={visible} cursor />
       <div>
         <label htmlFor="carteira" />
         <select

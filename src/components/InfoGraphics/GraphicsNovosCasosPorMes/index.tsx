@@ -23,10 +23,14 @@ interface Data {
 }
 interface GraphicProps {
   title: string;
+  idElement: string;
+  visible: string;
 }
 
 const GraphicsNovosCasosPorMes: React.FC<GraphicProps> = ({
   title,
+  idElement,
+  visible,
   ...rest
 }) => {
   const [monthValues, setMonthValues] = useState<string[]>([]);
@@ -110,8 +114,8 @@ const GraphicsNovosCasosPorMes: React.FC<GraphicProps> = ({
   };
 
   return (
-    <Container {...rest}>
-      <HeaderComponent title={metterName} cursor />
+    <Container {...rest} style={{opacity:(visible === 'N' ? '0.5' : '1')}}>
+      <HeaderComponent title={metterName} idElement={idElement} visible={visible} cursor />
       <Content>
         {endMetters.length === 0 ? (
           <p

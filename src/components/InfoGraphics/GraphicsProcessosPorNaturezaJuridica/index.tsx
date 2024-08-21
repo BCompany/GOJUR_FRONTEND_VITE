@@ -22,10 +22,14 @@ interface Data {
 }
 interface GraphicProps {
   title: string;
+  idElement: string;
+  visible: string;
 }
 
 const GraphicsProcessosPorNaturezaJuridica: React.FC<GraphicProps> = ({
   title,
+  idElement,
+  visible,
   ...rest
 }) => {
   const [metterNature, setMetterNature] = useState<string[]>([]);
@@ -92,8 +96,8 @@ const GraphicsProcessosPorNaturezaJuridica: React.FC<GraphicProps> = ({
     },
   };
   return (
-    <Container {...rest}>
-      <HeaderComponent title={title} cursor />
+    <Container {...rest} style={{opacity:(visible === 'N' ? '0.5' : '1')}}>
+      <HeaderComponent title={title} idElement={idElement} visible={visible} cursor />
       <Content>
         {metterValues.length === 0 ? (
           <p

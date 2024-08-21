@@ -1,6 +1,8 @@
 
 export interface PublicacaoProps {
   title: string;
+  idElement: string;
+  visible: string;
 }
 
 export interface PublicationData {

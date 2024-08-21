@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { AreaHTMLAttributes, useCallback, useEffect, useState } from 'react';
 import { Pie } from 'react-chartjs-2';
 import api from 'services/api';
 
@@ -9,7 +9,11 @@ import {
 } from 'Shared/dataComponents/graphicsColors';
 import HeaderComponent from '../../HeaderComponent';
 
-import { Container, Content } from './styles';
+import { Container, Content, ContainerHeader } from './styles';
+import { useHeader } from 'context/headerContext';
+
+import { FaEye } from "react-icons/fa";
+import {  FiX } from 'react-icons/fi';
 
 interface Data {
   resultName: string;
@@ -23,10 +27,28 @@ interface Data {
 
 interface GraphicProps {
   title: string;
+  idElement: string;
+  visible: string;
+  activePropagation: any;
+  stopPropagation: any;
+  handleClose: any;
+  cursor: boolean;
+}
+
+interface HeaderProps extends AreaHTMLAttributes<HTMLAreaElement> {
+  title: string;
+  cursor: boolean;
+  action?: any;
 }
 
 const GraphicsProcessosPorAcao: React.FC<GraphicProps> = ({
   title,
+  idElement,
+  visible,
+  activePropagation,
+  stopPropagation,
+  handleClose,
+  cursor,
   ...rest
 }) => {
   const [metterValues, setMetterValues] = useState<number[]>([]);
@@ -36,6 +58,7 @@ const GraphicsProcessosPorAcao: React.FC<GraphicProps> = ({
   const [labelSettings, setLabelSettings] = useState(false);
   const [metterName, setMetterName] = useState<string>(title);
   const [metterMessage, setMetterMessage] = useState<string>('');
+  const [haveAction, setHaveAction] = useState(false);
 
   useEffect(() => {
     if (screenWitdh >= 1366) {
@@ -83,6 +106,7 @@ const GraphicsProcessosPorAcao: React.FC<GraphicProps> = ({
       },
     ],
   };
+  const {  handleDragOn } = useHeader();
 
   const option = {
     responsive: true,
@@ -96,9 +120,32 @@ const GraphicsProcessosPorAcao: React.FC<GraphicProps> = ({
   };
 
   return (
-    <Container {...rest}>
-      <HeaderComponent title={metterName} cursor />
-      <Content>
+
+    // <div style={{display:(showReportConfig?'grid':'none')}}></div>
+    <Container id='Container' {...rest} style={{opacity:(visible === 'N' ? '0.5' : '1')}}>
+      <ContainerHeader style={{display:'inline-block'}} cursorMouse={cursor} handleClose={haveAction}>
+        <div style= {{ display:'inline-block', width:"90%", height:"90%",...rest}}>
+          <p style={{width:"100%", height:"100%"}}>{title}</p>
+        </div>
+        <div onMouseOut={activePropagation} onMouseOver={stopPropagation} style={{display:'inline-block', width: "10%", height:"10%", cursor:"pointer"}}>
+          {visible == 'N' ? (
+             <button
+             onClick={() => { handleClose("S", idElement) }}
+             style={{display:'inline-block'}} 
+             >
+               <FaEye title='Ativar gráfico' />
+           </button>
+            ) : (
+              <button 
+              onClick={() => { handleClose("N", idElement)  }}
+              style={{display:'inline-block'}}
+              >
+                <FiX title='Desativar gráfico' />
+              </button>  
+            )}
+        </div>
+      </ContainerHeader>
+      <Content id='Content'>
         {metterValues.length === 0 ? (
           <p
             style={{
@@ -128,3 +175,4 @@ const GraphicsProcessosPorAcao: React.FC<GraphicProps> = ({
 };
 
 export default GraphicsProcessosPorAcao;
+

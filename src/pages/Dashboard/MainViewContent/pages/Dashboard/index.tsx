@@ -28,14 +28,14 @@ import Indicators from './resorces/DashboardComponents/Indicators';
 import HighliteModal from './resorces/DashboardComponents/HighliteModal';
 import FirstAccessModal from '../Cadastro/FirstAccessModal';
 import {Container, Wrapper, Content, OverlayDashboard } from './styles';
-import { dataProps, DefaultsProps, keyProps } from '../Interfaces/IGraphics';
+import { ChangeElementsVisibleProps, dataProps, DefaultsProps, keyProps } from '../Interfaces/IGraphics';
 
 const Dashboard: React.FC = () => {
   const ref = useRef(null);
 
   const { addToast } = useToast();
   const { handleShowVideoTrainning } = useModal();
-  const {  handleShowListSearch, dragOn, handleLoadingData, handleCaptureText } = useHeader();
+  const {  handleShowListSearch, dragOn, handleDragOn, handleLoadingData, handleCaptureText } = useHeader();
   const { alertData, openProcessModal } = useAlert();
   const history = useHistory();
   const { tpoUser } = useAuth();
@@ -49,13 +49,11 @@ const Dashboard: React.FC = () => {
   const firstAcces = localStorage.getItem('@GoJur:firstAccess');
   const [firstAccessModal, setFirstAccessModal] = useState<boolean>(false);
 
-
   useEffect(() => {
     if (tpoUser === 'C') {
       history.push('/clientRedirect');
     }
   }, [history, tpoUser]);
-
 
   useEffect(() => {
     // Save navigation log
@@ -64,12 +62,18 @@ const Dashboard: React.FC = () => {
         module: 'MEN_DASHBOARD'
     });
 
+    let screenVisibilityStatus = "";
+
+    if (!dragOn)  
+      screenVisibilityStatus = "S";
+
     async function handleGraphics() {
       const response = await api.post<dataProps[]>(
         '/Dashboard/ListarPosicionamentos',
         {
           token,
-          type: 'homeDashBoard'
+          type: 'homeDashBoard',
+          visible: screenVisibilityStatus
         },
         { headers: { 'Access-Control-Max-Age': 600 } },
       );
@@ -87,7 +91,7 @@ const Dashboard: React.FC = () => {
     if(firstAcces == 'true')
       setFirstAccessModal(true);
 
-  }, []);
+  }, [dragOn]);
 
 
   // If user was blocked or company has flag as suspense or canceled, remove store from current user and block his access
@@ -150,6 +154,7 @@ const Dashboard: React.FC = () => {
       setOpenHighlite(true);
     }
   }, [alertData, handleBlockMenu]);
+  
 
 
   const handleNewPosition = useCallback((e: GridLayout.Layout[]) => {
@@ -198,6 +203,37 @@ const Dashboard: React.FC = () => {
     setFirstAccessModal(false);
   }
 
+  const handleClose = useCallback(async (visible: string, idElement: string) => {
+ 
+    handleDragOn(true);
+
+    const response = await api.post<ChangeElementsVisibleProps[]>(
+      '/Dashboard/AlterarElemento',
+      {
+        token,
+        type: 'homeDashBoard',
+        idElement: idElement,
+        visible: visible
+      },
+      { headers: { 'Access-Control-Max-Age': 600 } },
+    );
+
+    window.location.reload();
+
+  },[]);
+
+  const activePropagation = (event) => {
+    // console.log(event)
+    // // if (cadeado aberto)
+    // handleDragOn(true)
+  };
+
+
+  const stopPropagation = (event) => {
+    // console.log(event)
+    // handleDragOn(false)
+  };
+
 
   return (
     <Container>
@@ -231,13 +267,13 @@ const Dashboard: React.FC = () => {
             {layoutComp?.map(item => (
               <Content key={item.positions.i} ref={ref} isDraggable={dragOn}>
 
-                {item.type === 'homeDashBoard_procAcao' && <GraphicsProcessosPorAcao title={item.name} /> }
-                {item.type === 'homeDashBoard_procMesAno' && <GraphicsNovosCasosPorMes title={item.name} /> }
-                {item.type === 'homeDashBoard_procPubAlerta' && <Publicacoes title={item.name} />}
-                {item.type === 'homeDashBoard_compromissos' && <Appointment title={item.name} />}
-                {item.type === 'homeDashBoard_contasPorMes'  && <GraphicsReceitasEDespesas title={item.name} /> }
-                {item.type === 'homeDashBoard_procNatureza' && <GraphicsProcessosPorNaturezaJuridica title={item.name} /> }
-                {item.type === 'homeDashBoard_procDecisao'  && <GraphicsProcessosDecisaoJudicial title={item.name} /> }
+                {item.type === 'homeDashBoard_procAcao' && <GraphicsProcessosPorAcao title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={activePropagation} stopPropagation={stopPropagation} handleClose={handleClose} cursor/> }
+                {item.type === 'homeDashBoard_procMesAno' && <GraphicsNovosCasosPorMes title={item.name} idElement={item.idElement} visible={item.visible}/> }
+                {item.type === 'homeDashBoard_procPubAlerta' && <Publicacoes title={item.name} idElement={item.idElement} visible={item.visible}/>}
+                {item.type === 'homeDashBoard_compromissos' && <Appointment title={item.name} idElement={item.idElement} visible={item.visible}/>}
+                {item.type === 'homeDashBoard_contasPorMes'  && <GraphicsReceitasEDespesas title={item.name} idElement={item.idElement} visible={item.visible}/> }
+                {item.type === 'homeDashBoard_procNatureza' && <GraphicsProcessosPorNaturezaJuridica title={item.name} idElement={item.idElement} visible={item.visible}/> }
+                {item.type === 'homeDashBoard_procDecisao'  && <GraphicsProcessosDecisaoJudicial title={item.name} idElement={item.idElement} visible={item.visible}/> }
 
               </Content>
             ))}
