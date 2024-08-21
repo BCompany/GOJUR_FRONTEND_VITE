@@ -28,13 +28,19 @@ const RobotLogs: React.FC<IRobotLog> = (props) => {
       overlayClassName="react-modal-overlay"
       className="react-modal-content"
     >
-      <Container>
+      <Container style={{ maxHeight: '80vh', overflowY: 'auto' }}>
         <h1> Log de Operações (on/off - Pesquisa Tribunal</h1>
   
         <div>
+          {robotLogs.some(log => log.nom_Credencial && log.nom_Usuario) && (
+            <div>
+              {`Credencial: ${robotLogs.find(log => log.nom_Credencial && log.nom_Usuario).nom_Credencial}, Usuário: ${robotLogs.find(log => log.nom_Credencial && log.nom_Usuario).nom_Usuario}`}
+            </div>
+          )}
+  
           {robotLogs.map(log => {
             return (
-              <div>
+              <div key={log.id}>
                 {log.nom_PessoaFimPesquisa == null && (
                   <div>
                     {`Inicio Em: ${FormatDate(new Date(log.dta_InicioPesquisa), 'dd/MM/yyyy')} ligado por: ${log.nom_PessoaInicioPesquisa}`}
@@ -44,12 +50,6 @@ const RobotLogs: React.FC<IRobotLog> = (props) => {
                 {log.nom_PessoaFimPesquisa != null && (
                   <div>
                     {`Inicio Em: ${FormatDate(new Date(log.dta_InicioPesquisa), 'dd/MM/yyyy')} ligado por: ${log.nom_PessoaInicioPesquisa} - fim em: ${FormatDate(new Date(log.dta_FimPesquisa), "dd/MM/yyyy")} desligado por: ${log.nom_PessoaFimPesquisa}`}
-                  </div>
-                )}
-  
-                {log.nom_Credencial && log.nom_Usuario && (
-                  <div>
-                    {`Credencial: ${log.nom_Credencial}, Usuário: ${log.nom_Usuario}`}
                   </div>
                 )}
               </div>
