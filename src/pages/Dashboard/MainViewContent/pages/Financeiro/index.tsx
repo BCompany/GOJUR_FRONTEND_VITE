@@ -48,7 +48,7 @@ import FinancialDocumentModal from './DocumentModal';
 import FinancialPaymentModal from './PaymentModal';
 import DealDefaultModal from './Category/Modal/DealDefaultModal';
 import FinanceOptionsMenu from 'components/MenuHamburguer/FinanceOptions';
-import { Container, Content, GridContainerFinancial, ModalDeleteOptions, OverlayFinancial, HamburguerHeader } from './styles';
+import { Container, Content, GridContainerFinancial, ModalDeleteOptions, OverlayFinancial, HamburguerHeader, ModalMarkedPaid } from './styles';
 
 const Financeiro: React.FC = () => {
   const { addToast } = useToast();
@@ -89,6 +89,9 @@ const Financeiro: React.FC = () => {
   const [parcelaAtual, setParcelaAtual] = useState('');
   const [isDeal, setIsDeal] = useState<boolean>(false);
   const [showValidateFinancialIntegration, setShowValidateFinancialIntegration] = useState<boolean>(false);
+  const [showMarkedPaidModal, setShowMarkedPaidModal] = useState<boolean>(false);
+  const [endMarkedPaid, setEndMarkedPaid] = useState<boolean>(false);
+  const [countMarkedPaid, setCountMarkedPaid] = useState<number>(0);
 
   // GRID
   const [pageSizes] = useState([10, 20, 30, 50]);
@@ -1331,16 +1334,27 @@ const Financeiro: React.FC = () => {
   }, [accountId, year, month, captureText, captureType, visualizeType, currentPage, pageSize]);
 
 
-  const handleMarkedPaid = useCallback(async () => {
+  const handleMarkedPaid = async () => {
+    setEndMarkedPaid(false)
+    setCountMarkedPaid(0)
+    setShowMarkedPaidModal(true)
+    handleIsMenuOpen(false)
+  };
+  
+  
+  const ConfirmMarkedPaid = useCallback(async () => {
     try {
       setIsLoading(true)
       
-      await api.post(`/BoletoBancario/RealizarBaixar`, {token: token});
+      const response = await api.post(`/BoletoBancario/RealizarBaixar`, {token: token});
      
-
+      setEndMarkedPaid(true)
+      setCountMarkedPaid(response.data)
     }
     catch (err) {
       addToast({type: 'error', title: 'Falha ao baixar os pagamentos', description: 'Não foi possivel realizar a baixa dos pagamentos'});
+      setEndMarkedPaid(false)
+      setCountMarkedPaid(0)
     }
   }, []);
 
@@ -1360,12 +1374,9 @@ const Financeiro: React.FC = () => {
           </button>
 
           {isMenuOpen ? (
-            
             <FinanceOptionsMenu callbackList={{
               handleMarkedPaid
             }} />
-            
-
           ) : null}
         </div>
       </HamburguerHeader>
@@ -2263,6 +2274,72 @@ const Financeiro: React.FC = () => {
 
         </ModalDeleteOptions>
       )}
+
+
+
+      {showMarkedPaidModal && <OverlayFinancial /> }
+      {showMarkedPaidModal && (
+        <ModalMarkedPaid>
+          <div className='menuSection'>
+            <FiX onClick={(e) => {setShowMarkedPaidModal(false)}} />
+          </div>
+
+          {endMarkedPaid == true ? (
+            <>
+              <div style={{marginLeft:'5%'}}>
+                <label>Foi realizada a baixa de {totalCount} pagamentos.</label>
+              </div>
+              <div style={{float:'left', width:'100px'}}>
+                <button
+                  type='button'
+                  className="buttonClick"
+                  onClick={() => {setShowMarkedPaidModal(false)}}
+                  style={{width:'100px'}}
+                >
+                  <FaRegTimesCircle />
+                  Fechar
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{marginLeft:'5%'}}>
+                Realizar a baixa dos pagamentos ?
+                <br /><br /><br />
+                <div style={{float:'right', marginRight:'32%', bottom:0}}>
+                  <div style={{float:'left'}}>
+                    <button
+                      className="buttonClick"
+                      type='button'
+                      onClick={()=> ConfirmMarkedPaid()}
+                      style={{width:'100px'}}
+                    >
+                      <FaCheck />
+                      Sim
+                    </button>
+                  </div>
+
+                  <div style={{float:'left', width:'100px'}}>
+                    <button
+                      type='button'
+                      className="buttonClick"
+                      onClick={() => {setShowMarkedPaidModal(false)}}
+                      style={{width:'100px'}}
+                    >
+                      <FaRegTimesCircle />
+                      Não
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          
+
+        </ModalMarkedPaid>
+      )}
+
 
       {(isLoading || isDeleting) && (
         <>
