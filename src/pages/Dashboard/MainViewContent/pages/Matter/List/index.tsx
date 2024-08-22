@@ -66,7 +66,7 @@ import SearchOAB from '../SearchOAB/Index';
 import InvertParts from '../InvertParts/Index';
 import SearchCNJ from '../SearchCNJ/Index';
 import MatterFileModal from '../MatterFileModal/index';
-import CredentialModal from '../../Credentials/index';
+import CredentialModal from '../Credentials/index';
 import FollowModal from '../FollowModal';
 
 const Matter: React.FC = () => {
@@ -860,8 +860,6 @@ const Matter: React.FC = () => {
       }
     }
     catch (err: any) {
-
-      handleCloseFollowModal()
 
       setIsLoading(false)
       setIsChanging(false)

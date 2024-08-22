@@ -12,8 +12,8 @@ import { FModal, Overlay } from './styles';
 import { FaFileAlt, FaIdCard, FaRegTimesCircle } from 'react-icons/fa';
 import { FcKey, FcSearch } from 'react-icons/fc';
 import { SiSonarsource } from 'react-icons/si';
-import CredentialModal from '../../Credentials';
-import CredentialsDataSourceModal from '../../Credentials/EditModal';
+import CredentialModal from '../Credentials';
+import CredentialsDataSourceModal from '../Credentials/EditModal';
 
 export interface ICredentials {
   id_Credential: string;

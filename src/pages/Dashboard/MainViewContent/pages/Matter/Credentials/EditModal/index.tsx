@@ -112,6 +112,15 @@ export default function CredentialsDataSourceModal(props) {
       return;
     }
 
+    if (description == ''){
+      addToast({
+        type: "info",
+        title: "Operação não realizada",
+        description: "Descrição é obrigatória."
+      })
+      return;
+    }
+
     if (listCourt.length == 0){
       addToast({
         type: "info",

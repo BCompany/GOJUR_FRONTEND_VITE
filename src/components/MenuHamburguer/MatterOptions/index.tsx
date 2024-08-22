@@ -17,7 +17,7 @@ import { useSecurity } from 'context/securityContext';
 import { SecurityModule } from 'context/Interfaces/ISecurity';
 import { FcBadDecision, FcApproval} from 'react-icons/fc'
 import { MenuHamburger, Container, WarningModal } from './styles';
-import CredentialModal from 'pages/Dashboard/MainViewContent/pages/Credentials';
+import CredentialModal from 'pages/Dashboard/MainViewContent/pages/Matter/Credentials';
 import { Overlay } from 'Shared/styles/GlobalStyle';
 
 const MatterListOptionsMenu = () => {
