@@ -1,7 +1,7 @@
 import React, { useCallback, useState, ChangeEvent, useEffect, useRef } from 'react';
 import api from 'services/api';
 import LoaderWaiting from 'react-spinners/ClipLoader';
-import { FaRegTimesCircle, FaFileAlt, FaRegEdit, FaAddressCard  } from 'react-icons/fa';
+import { FaRegTimesCircle, FaFileAlt, FaRegEdit, FaAddressCard, FaSyncAlt  } from 'react-icons/fa';
 import { FiTrash} from 'react-icons/fi';
 import { useDevice } from "react-use-device";
 import { useToast } from 'context/toast';
@@ -203,88 +203,96 @@ const CredentialModal = (props) => {
     setIsLoading(false)
   }
 
-  return (
-    <>
-      {isLoading && (
-        <>
-          <Overlay2 />
-          <div className='waitingMessage' style={{ position: 'fixed', bottom: '10px', right: '10px', zIndex: 999999999 }}>
-            <LoaderWaiting size={15} color="var(--blue-twitter)" />
-            &nbsp;&nbsp; Carregando...
-          </div>
-        </>
-      )}
-      
+ const handleRefreshModal = () => {
+  LoadCredentials()
+};
+
+return (
+  <>
+    {isLoading && (
+      <>
+        <Overlay2 />
+        <div className='waitingMessage' style={{ position: 'fixed', bottom: '10px', right: '10px', zIndex: 999999999 }}>
+          <LoaderWaiting size={15} color="var(--blue-twitter)" />
+          &nbsp;&nbsp; Carregando...
+        </div>
+      </>
+    )}
+
+    <CredentialsModal show style={{ width: '65%', height: '55%', display: 'flex', flexDirection: 'column', border: '1px solid var(--blue-twitter)' }}>
+      <div className='header' style={{ flex: '0 0 auto', padding: '2px 5px' }}>
+        <p className='headerLabel'>Credenciais</p>
+      </div>
+
       {showCredentialsDataSourceModal && <CredentialsDataSourceModal callbackFunction={{ handleCloseEditModal, credentialId}} />}
-    
-      {!isMOBILE && (
-        <>
-          <Overlay />
-          <CredentialsModal show style={{ width: '65%', height: '55%', display: 'flex', flexDirection: 'column', border: '1px solid var(--blue-twitter)' }}>
-            <div className='header' style={{ flex: '0 0 auto', padding: '2px 5px' }}>
-              <p className='headerLabel'>Credenciais</p>
-            </div>
-      
-            <GridSubContainer style={{ flex: '1 1 auto', overflowY: 'auto' }}>
-              <Grid
-                rows={credentialsList}
-                columns={columnsUsrList}
-              >
-                <SortingState
-                  defaultSorting={[{ columnName: 'flg_Ativo', direction: 'asc' }]}
-                />
-                <IntegratedSorting />
-                <PagingState
-                  currentPage={currentPage}
-                  pageSize={pageSize}
-                  onCurrentPageChange={setCurrentPage}
-                  onPageSizeChange={setPageSize}
-                />
-                <IntegratedPaging />
-                <CustomPaging totalCount={totalRows} />
-      
-                <Table
-                  cellComponent={CustomCellUserList}
-                  columnExtensions={tableColumnExtensionsUserLists}
-                  messages={languageGridEmpty}
-                />
-                <TableHeaderRow showSortingControls />
-                <PagingPanel
-                  messages={languageGridPagination}
-                />
-              </Grid>
-            </GridSubContainer>
-      
-            <div style={{ flex: '0 0 auto', padding: '10px'}}>
-              <div style={{ float: 'right', marginRight: '1%' }}>
-                <button
-                  type='button'
-                  className="buttonClick"
-                  onClick={() => handleCloseCredentialModal()}
-                  style={{ width: '100px' }}
-                >
-                  <FaRegTimesCircle />
-                  Fechar
-                </button>
-              </div>
-  
-              <div style={{ float: 'right', marginRight: '10px' }}>
-                <button 
-                  className="buttonClick" 
-                  title="Clique para incluir uma nova credencial"
-                  type="submit"
-                  onClick={handleAddNewCredential}
-                >
-                  <FaFileAlt />
-                  Adicionar
-                </button>
-              </div>
-            </div>
-          </CredentialsModal>
-        </>
-      )}      
-    </>
-  );
+
+      <div style={{ flex: '0 0 auto', padding: '5px', display: 'flex', justifyContent: 'flex-end', marginRight: '10px' }}>
+        <FaSyncAlt
+          className='refresh'
+          title='Clique para atualizar a lista de credenciais'
+          onClick={handleRefreshModal} 
+          style={{ cursor: 'pointer', fontSize: '20px' }} 
+        />
+      </div>
+
+      <GridSubContainer style={{ flex: '1 1 auto', overflowY: 'auto' }}>
+        <Grid
+          rows={credentialsList}
+          columns={columnsUsrList}
+        >
+          <SortingState
+            defaultSorting={[{ columnName: 'flg_Ativo', direction: 'asc' }]}
+          />
+          <IntegratedSorting />
+          <PagingState
+            currentPage={currentPage}
+            pageSize={pageSize}
+            onCurrentPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+          />
+          <IntegratedPaging />
+          <CustomPaging totalCount={totalRows} />
+
+          <Table
+            cellComponent={CustomCellUserList}
+            columnExtensions={tableColumnExtensionsUserLists}
+            messages={languageGridEmpty}
+          />
+          <TableHeaderRow showSortingControls />
+          <PagingPanel
+            messages={languageGridPagination}
+          />
+        </Grid>
+      </GridSubContainer>
+
+      <div style={{ flex: '0 0 auto', padding: '10px' }}>
+        <div style={{ float: 'right', marginRight: '1%' }}>
+          <button
+            type='button'
+            className="buttonClick"
+            onClick={() => handleCloseCredentialModal()}
+            style={{ width: '100px' }}
+          >
+            <FaRegTimesCircle />
+            Fechar
+          </button>
+        </div>
+
+        <div style={{ float: 'right', marginRight: '10px' }}>
+          <button 
+            className="buttonClick" 
+            title="Clique para incluir uma nova credencial"
+            type="submit"
+            onClick={handleAddNewCredential}
+          >
+            <FaFileAlt />
+            Adicionar
+          </button>
+        </div>
+      </div>
+    </CredentialsModal>
+  </>
+);
 };
 
 export default CredentialModal;

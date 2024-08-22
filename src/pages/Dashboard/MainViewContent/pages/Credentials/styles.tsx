@@ -51,12 +51,23 @@ export const CredentialsModal = styled.div<SearchProps>`
     border-top: 1px solid var(--blue-twitter);
     width: 100%;
   }
+
+  .refresh {
+    color: #72a6ef;
+
+    
+    cursor:pointer;
+    &:hover {
+      color: var(--orange)
+    }
+    
+  }
 `;
 
 export const GridSubContainer = styled.div`
   width: 100%;
   font-family: Montserrat;
-  margin-top: 20px;
+  margin-top: 5px;
   border: 1px solid rgba(0, 0, 0, 0.15);
   font-size: 13px;
 
