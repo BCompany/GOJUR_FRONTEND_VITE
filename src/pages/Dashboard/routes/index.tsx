@@ -61,7 +61,6 @@ import ServiceTypeList from '../MainViewContent/pages/Financeiro/ServiceType/Lis
 import CitiesList from '../MainViewContent/pages/Cities/List';
 import PaymentSlipContractList from '../MainViewContent/pages/Financeiro/PaymentSlipContract/List';
 import PaymentSlipContractEdit from '../MainViewContent/pages/Financeiro/PaymentSlipContract/Edit';
-import PaymentSlipContractConfig from '../MainViewContent/pages/Financeiro/PaymentSlipContract/Config';
 import FinancialIntegrationList from '../MainViewContent/pages/Financeiro/FinancialIntegration/List';
 import FinancialIntegrationEdit from '../MainViewContent/pages/Financeiro/FinancialIntegration/Edit';
 import PeoplesList from '../MainViewContent/pages/Peoples/List';
@@ -153,7 +152,6 @@ const Routes: React.FC = () => {
       <Route path="/Cities" exact component={CitiesList} isPrivate />
       <Route path="/PaymentSlipContract/list" exact component={PaymentSlipContractList} isPrivate />
       <Route path="/PaymentSlipContract/edit/:id" component={PaymentSlipContractEdit} isPrivate />
-      <Route path="/PaymentSlipContract/config/:id" component={PaymentSlipContractConfig} isPrivate />
       <Route path="/FinancialIntegration/list" exact component={FinancialIntegrationList} isPrivate />
       <Route path="/FinancialIntegration/edit/:id" component={FinancialIntegrationEdit} isPrivate />
       <Route path="/People/List" exact component={PeoplesList} isPrivate />

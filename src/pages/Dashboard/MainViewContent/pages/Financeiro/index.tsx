@@ -2275,8 +2275,6 @@ const Financeiro: React.FC = () => {
         </ModalDeleteOptions>
       )}
 
-
-
       {showMarkedPaidModal && <OverlayFinancial /> }
       {showMarkedPaidModal && (
         <ModalMarkedPaid>
@@ -2339,7 +2337,6 @@ const Financeiro: React.FC = () => {
 
         </ModalMarkedPaid>
       )}
-
 
       {(isLoading || isDeleting) && (
         <>

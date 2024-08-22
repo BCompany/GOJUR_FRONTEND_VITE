@@ -101,7 +101,6 @@ const Routes: React.FC = () => {
       <Route path="/ServiceType" exact component={DashboardPath} isPrivate />
       <Route path="/PaymentSlipContract/list" exact component={DashboardPath} isPrivate />
       <Route path="/PaymentSlipContract/edit/:id" exact component={DashboardPath} isPrivate />
-      <Route path="/PaymentSlipContract/config/:id" exact component={DashboardPath} isPrivate />
       <Route path="/FinancialIntegration/list" exact component={DashboardPath} isPrivate />
       <Route path="/FinancialIntegration/edit/:id" exact component={DashboardPath} isPrivate />
       <Route path="/Cities" exact component={DashboardPath} isPrivate />
