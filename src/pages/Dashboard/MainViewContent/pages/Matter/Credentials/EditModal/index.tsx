@@ -121,11 +121,11 @@ export default function CredentialsDataSourceModal(props) {
       return;
     }
 
-    if (listCourt.length == 0){
+    if (id_Court == ''){
       addToast({
         type: "info",
         title: "Operação não realizada",
-        description: "Selecione ao menos um tribunal."
+        description: "Selecione um tribunal."
       })
       return;
     }
