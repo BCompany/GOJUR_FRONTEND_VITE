@@ -1,17 +1,15 @@
-import React, { useCallback, useState, ChangeEvent, useEffect, useRef } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import api from 'services/api';
 import LoaderWaiting from 'react-spinners/ClipLoader';
-import { FaRegTimesCircle, FaFileAlt, FaRegEdit, FaAddressCard, FaSyncAlt  } from 'react-icons/fa';
-import { FiTrash} from 'react-icons/fi';
+import { FaRegTimesCircle, FaFileAlt, FaRegEdit, FaAddressCard, FaSyncAlt } from 'react-icons/fa';
+import { FiTrash } from 'react-icons/fi';
 import { useDevice } from "react-use-device";
 import { useToast } from 'context/toast';
-import { languageGridEmpty, languageGridPagination } from 'Shared/utils/commonConfig';
-import { PagingState, CustomPaging, IntegratedPaging, SortingState, IntegratedSorting } from '@devexpress/dx-react-grid';
-import { Grid, Table, TableHeaderRow, PagingPanel } from '@devexpress/dx-react-grid-material-ui';
-import { CredentialsModal, GridSubContainer, Overlay, Overlay2 } from './styles';
+import { languageGridEmpty } from 'Shared/utils/commonConfig';
+import { SortingState, IntegratedSorting } from '@devexpress/dx-react-grid';
+import { Grid, Table, TableHeaderRow } from '@devexpress/dx-react-grid-material-ui';
+import { CredentialsModal, GridSubContainer, Overlay2 } from './styles';
 import CredentialsDataSourceModal from './EditModal';
-import { OverlayPermission } from './EditModal/styles';
-import { MdCancel, MdCheckCircle, MdNewReleases } from 'react-icons/md';
 
 interface SelectData {
   id: string;
@@ -31,51 +29,39 @@ const CredentialModal = (props) => {
   const { addToast } = useToast();
   const { handleCloseCredentialModal } = props.callbackFunction;
   const { isMOBILE } = useDevice();
-  const [pageSize, setPageSize] = useState(10);
-  const [showCredentialsDataSourceModal , setShowCredentialsDataSourceModal] = useState<boolean>(false)
-  const [currentPage, setCurrentPage] = useState(0);
-  const [totalRows, setTotalRows] = useState<number>(1);
+  const [showCredentialsDataSourceModal, setShowCredentialsDataSourceModal] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [credentialId, setCredentialId] = useState<number>(0);
-  const [isChanging, setIsChanging] = useState<boolean>(false);
-
-  const token = localStorage.getItem('@GoJur:token')
-
   const [credentialsList, setCredentialsList] = useState<ICredentialData[]>([]);
 
+  const token = localStorage.getItem('@GoJur:token');
+
   useEffect(() => {
-    LoadCredentials()
-    },[])
+    LoadCredentials();
+  }, []);
 
-  const LoadCredentials = useCallback(async() => {
-    try{
-      
-      setIsLoading(true)
+  const LoadCredentials = useCallback(async () => {
+    try {
+      setIsLoading(true);
 
-      const response = await api.get<ICredentialData[]>('/Credenciais/Listar', { 
-        params:{
-            token
-          }
-      })
-  
-      setCredentialsList(response.data)
+      const response = await api.get<ICredentialData[]>('/Credenciais/Listar', {
+        params: {
+          token
+        }
+      });
 
-      setIsLoading(false)
-
-    }
-    catch (error) {
+      setCredentialsList(response.data);
+      setIsLoading(false);
+    } catch (error) {
       addToast({
         type: 'error',
         title: 'Erro ao carregar as credenciais',
         description: 'Ocorreu um erro ao tentar carregar as credenciais, tente novamente!'
       });
+      setIsLoading(false);
     }
+  }, [token, addToast]);
 
-    setIsLoading(false)
- 
-  }, [])
-
-  
   const [tableColumnExtensionsUserLists] = useState([
     { columnName: 'des_Credential', width: '40%' },
     { columnName: 'des_Username', width: '30%' },
@@ -94,7 +80,7 @@ const CredentialModal = (props) => {
 
   const CustomCellUserList = (props) => {
     const { column, row } = props;
-  
+
     if (column.name === 'bntEditar') {
       return (
         <Table.Cell onClick={(e) => handleOpenEditModal(props)} {...props}>
@@ -103,7 +89,7 @@ const CredentialModal = (props) => {
         </Table.Cell>
       );
     }
-  
+
     if (column.name === 'bntExcluir') {
       return (
         <Table.Cell onClick={(e) => handleDeleteCredential(row.id_Credential)} {...props}>
@@ -112,14 +98,14 @@ const CredentialModal = (props) => {
         </Table.Cell>
       );
     }
-  
+
     if (column.name === 'flg_Status') {
       let icon;
-  
+
       switch (row.flg_Status) {
         case 'D':
           icon = (
-            <div style={{ display: 'flex' , marginBottom: "12px"}}>
+            <div style={{ display: 'flex', marginBottom: "12px" }}>
               <FaAddressCard style={{ color: 'red', height: '20px' }} title="Credencial negada pelo tribunal" />
               <span style={{ color: 'red', marginLeft: '5px' }}>Recusada</span>
             </div>
@@ -127,7 +113,7 @@ const CredentialModal = (props) => {
           break;
         case 'N':
           icon = (
-            <div style={{ display: 'flex' , marginBottom: "12px"}}>
+            <div style={{ display: 'flex', marginBottom: "12px" }}>
               <FaAddressCard style={{ color: 'blue', height: '20px' }} title="Em processo de autenticação de credencial" />
               <span style={{ color: 'blue', marginLeft: '5px' }}>Em Validação</span>
             </div>
@@ -135,7 +121,7 @@ const CredentialModal = (props) => {
           break;
         case 'S':
           icon = (
-            <div style={{ display: 'flex', marginBottom: "12px"}}>
+            <div style={{ display: 'flex', marginBottom: "12px" }}>
               <FaAddressCard style={{ color: 'green', height: '20px' }} title="Credencial autenticada com sucesso" />
               <span style={{ color: 'green', marginLeft: '5px' }}>Válida</span>
             </div>
@@ -144,7 +130,7 @@ const CredentialModal = (props) => {
         default:
           icon = null;
       }
-  
+
       return (
         <Table.Cell {...props}>
           &nbsp;&nbsp;
@@ -152,35 +138,34 @@ const CredentialModal = (props) => {
         </Table.Cell>
       );
     }
-  
+
     return <Table.Cell {...props} />;
   };
 
   const handleAddNewCredential = async () => {
-    setShowCredentialsDataSourceModal(true)
+    setShowCredentialsDataSourceModal(true);
   };
- 
+
   const handleOpenEditModal = async (props) => {
-    setCredentialId(props.row.id_Credential)
-    setShowCredentialsDataSourceModal(true)
+    setCredentialId(props.row.id_Credential);
+    setShowCredentialsDataSourceModal(true);
   };
 
   const handleCloseEditModal = async () => {
-    setShowCredentialsDataSourceModal(false)
-    setCredentialId(0)
-    LoadCredentials()
+    setShowCredentialsDataSourceModal(false);
+    setCredentialId(0);
+    LoadCredentials();
   };
 
   const handleDeleteCredential = async (id: number) => {
-
     try {
-      setIsLoading(true)
-      const response = await api.delete('/Credenciais/Excluir', { 
-        params:{
-            id_Credential: id,
-            token
-          }
-      })
+      setIsLoading(true);
+      await api.delete('/Credenciais/Excluir', {
+        params: {
+          id_Credential: id,
+          token
+        }
+      });
 
       addToast({
         type: 'success',
@@ -188,111 +173,97 @@ const CredentialModal = (props) => {
         description: 'A credencial foi excluída com sucesso!'
       });
 
-      setIsLoading(false)
-
-      LoadCredentials()
-    }
-    catch (error) {
+      setIsLoading(false);
+      LoadCredentials();
+    } catch (error) {
       addToast({
         type: 'error',
         title: 'Erro ao excluir a credencial',
         description: 'Ocorreu um erro ao tentar excluir a credencial, tente novamente!'
       });
+      setIsLoading(false);
     }
+  };
 
-    setIsLoading(false)
-  }
+  const handleRefreshModal = () => {
+    LoadCredentials();
+  };
 
- const handleRefreshModal = () => {
-  LoadCredentials()
-};
+  return (
+    <>
+      {isLoading && (
+        <>
+          <Overlay2 />
+          <div className='waitingMessage' style={{ position: 'fixed', bottom: '10px', right: '10px', zIndex: 999999999 }}>
+            <LoaderWaiting size={15} color="var(--blue-twitter)" />
+            &nbsp;&nbsp; Carregando...
+          </div>
+        </>
+      )}
 
-return (
-  <>
-    {isLoading && (
-      <>
-        <Overlay2 />
-        <div className='waitingMessage' style={{ position: 'fixed', bottom: '10px', right: '10px', zIndex: 999999999 }}>
-          <LoaderWaiting size={15} color="var(--blue-twitter)" />
-          &nbsp;&nbsp; Carregando...
+      <CredentialsModal show style={{ width: '65%', height: '60%', display: 'flex', flexDirection: 'column', border: '1px solid var(--blue-twitter)' }}>
+        <div className='header' style={{ flex: '0 0 auto', padding: '2px 5px' }}>
+          <p className='headerLabel'>Credenciais</p>
         </div>
-      </>
-    )}
 
-    <CredentialsModal show style={{ width: '65%', height: '55%', display: 'flex', flexDirection: 'column', border: '1px solid var(--blue-twitter)' }}>
-      <div className='header' style={{ flex: '0 0 auto', padding: '2px 5px' }}>
-        <p className='headerLabel'>Credenciais</p>
-      </div>
+        {showCredentialsDataSourceModal && <CredentialsDataSourceModal callbackFunction={{ handleCloseEditModal, credentialId }} />}
 
-      {showCredentialsDataSourceModal && <CredentialsDataSourceModal callbackFunction={{ handleCloseEditModal, credentialId}} />}
-
-      <div style={{ flex: '0 0 auto', padding: '5px', display: 'flex', justifyContent: 'flex-end', marginRight: '10px' }}>
-        <FaSyncAlt
-          className='refresh'
-          title='Clique para atualizar a lista de credenciais'
-          onClick={handleRefreshModal} 
-          style={{ cursor: 'pointer', fontSize: '20px' }} 
-        />
-      </div>
-
-      <GridSubContainer style={{ flex: '1 1 auto', overflowY: 'auto' }}>
-        <Grid
-          rows={credentialsList}
-          columns={columnsUsrList}
-        >
-          <SortingState
-            defaultSorting={[{ columnName: 'flg_Ativo', direction: 'asc' }]}
+        <div style={{ flex: '0 0 auto', padding: '5px', display: 'flex', justifyContent: 'flex-end', marginRight: '10px' }}>
+          <FaSyncAlt
+            className='refresh'
+            title='Clique para atualizar a lista de credenciais'
+            onClick={handleRefreshModal}
+            style={{ cursor: 'pointer', fontSize: '20px' }}
           />
-          <IntegratedSorting />
-          <PagingState
-            currentPage={currentPage}
-            pageSize={pageSize}
-            onCurrentPageChange={setCurrentPage}
-            onPageSizeChange={setPageSize}
-          />
-          <IntegratedPaging />
-          <CustomPaging totalCount={totalRows} />
+        </div>
 
-          <Table
-            cellComponent={CustomCellUserList}
-            columnExtensions={tableColumnExtensionsUserLists}
-            messages={languageGridEmpty}
-          />
-          <TableHeaderRow showSortingControls />
-          <PagingPanel
-            messages={languageGridPagination}
-          />
-        </Grid>
-      </GridSubContainer>
-
-      <div style={{ flex: '0 0 auto', padding: '10px' }}>
-        <div style={{ float: 'right', marginRight: '1%' }}>
-          <button
-            type='button'
-            className="buttonClick"
-            onClick={() => handleCloseCredentialModal()}
-            style={{ width: '100px' }}
+        <GridSubContainer style={{ flex: '1 1 auto', overflowY: 'auto' }}>
+          <Grid
+            rows={credentialsList}
+            columns={columnsUsrList}
           >
-            <FaRegTimesCircle />
-            Fechar
-          </button>
-        </div>
+            <SortingState
+              defaultSorting={[{ columnName: 'flg_Ativo', direction: 'asc' }]}
+            />
+            <IntegratedSorting />
 
-        <div style={{ float: 'right', marginRight: '10px' }}>
-          <button 
-            className="buttonClick" 
-            title="Clique para incluir uma nova credencial"
-            type="submit"
-            onClick={handleAddNewCredential}
-          >
-            <FaFileAlt />
-            Adicionar
-          </button>
+            <Table
+              cellComponent={CustomCellUserList}
+              columnExtensions={tableColumnExtensionsUserLists}
+              messages={languageGridEmpty}
+            />
+            <TableHeaderRow showSortingControls />
+          </Grid>
+        </GridSubContainer>
+
+        <div style={{ flex: '0 0 auto', padding: '10px' }}>
+          <div style={{ float: 'right', marginRight: '1%' }}>
+            <button
+              type='button'
+              className="buttonClick"
+              onClick={() => handleCloseCredentialModal()}
+              style={{ width: '100px' }}
+            >
+              <FaRegTimesCircle />
+              Fechar
+            </button>
+          </div>
+
+          <div style={{ float: 'right', marginRight: '10px' }}>
+            <button
+              className="buttonClick"
+              title="Clique para incluir uma nova credencial"
+              type="submit"
+              onClick={handleAddNewCredential}
+            >
+              <FaFileAlt />
+              Adicionar
+            </button>
+          </div>
         </div>
-      </div>
-    </CredentialsModal>
-  </>
-);
+      </CredentialsModal>
+    </>
+  );
 };
 
 export default CredentialModal;
