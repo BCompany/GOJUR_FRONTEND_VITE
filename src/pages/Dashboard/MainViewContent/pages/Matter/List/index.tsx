@@ -892,6 +892,8 @@ const Matter: React.FC = () => {
         });
       }
 
+      console.log(err)
+
       if (!err.response.data.typeError.warning) {
         addToast({
           type: 'info',

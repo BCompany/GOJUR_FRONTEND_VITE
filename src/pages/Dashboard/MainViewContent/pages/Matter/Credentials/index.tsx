@@ -8,7 +8,7 @@ import { useToast } from 'context/toast';
 import { languageGridEmpty } from 'Shared/utils/commonConfig';
 import { SortingState, IntegratedSorting } from '@devexpress/dx-react-grid';
 import { Grid, Table, TableHeaderRow } from '@devexpress/dx-react-grid-material-ui';
-import { CredentialsModal, GridSubContainer, Overlay2 } from './styles';
+import { CredentialsModal, GridSubContainer, Overlay, Overlay2 } from './styles';
 import CredentialsDataSourceModal from './EditModal';
 
 interface SelectData {
@@ -160,7 +160,7 @@ const CredentialModal = (props) => {
   const handleDeleteCredential = async (id: number) => {
     try {
       setIsLoading(true);
-      await api.delete('/Credenciais/Excluir', {
+      const response = await api.delete('/Credenciais/Excluir', {
         params: {
           id_Credential: id,
           token
@@ -175,11 +175,11 @@ const CredentialModal = (props) => {
 
       setIsLoading(false);
       LoadCredentials();
-    } catch (error) {
+    } catch (error: any) {
       addToast({
-        type: 'error',
-        title: 'Erro ao excluir a credencial',
-        description: 'Ocorreu um erro ao tentar excluir a credencial, tente novamente!'
+        type: 'info',
+        title: 'Operação não realizada',
+        description: error.response.data.Message || 'Ocorreu um erro ao tentar excluir a credencial, tente novamente!'
       });
       setIsLoading(false);
     }
@@ -201,6 +201,8 @@ const CredentialModal = (props) => {
         </>
       )}
 
+      <Overlay />
+      
       <CredentialsModal show style={{ width: '65%', height: '60%', display: 'flex', flexDirection: 'column', border: '1px solid var(--blue-twitter)' }}>
         <div className='header' style={{ flex: '0 0 auto', padding: '2px 5px' }}>
           <p className='headerLabel'>Credenciais</p>
