@@ -116,7 +116,7 @@ export default function CredentialsDataSourceModal(props) {
       addToast({
         type: "info",
         title: "Operação não realizada",
-        description: "Descrição é obrigatória."
+        description: "A Descrição é obrigatória."
       })
       return;
     }
