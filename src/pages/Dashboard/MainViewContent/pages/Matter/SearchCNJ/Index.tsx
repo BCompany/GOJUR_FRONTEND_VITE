@@ -299,6 +299,7 @@ export default function SearchCNJ () {
                     menuPortalTarget={document.body}
                     menuPosition={'fixed'}
                     styles={customStyles}
+                    options={credentialsList}
                   />
                 </AutoCompleteSelect>
 
