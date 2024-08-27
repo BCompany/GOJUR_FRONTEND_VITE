@@ -64,7 +64,7 @@ export const Container = styled.div`
 
             textarea {
                 background-color: #FFFFFF;
-                border: 1px solid rgba(0, 0, 0, 0.15);
+                border: 1px solid rgba(0, 0, 0, 0.5);
                 width: 100%;
                 @media (min-width: 480px) {
                     width: 100%;

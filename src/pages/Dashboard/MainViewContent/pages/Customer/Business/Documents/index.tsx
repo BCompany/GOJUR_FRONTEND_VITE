@@ -276,7 +276,7 @@ const BusinessDocument = () => {
       setCurrentFileName(fileName)
       setUploadingStatus('executing')
 
-      const response = await api.post('/NegocioDocumento/Deletar', {
+      const response = await api.delete('/NegocioDocumento/Deletar', {
         params:{referenceId:businessId, fileName: fileName.toLowerCase(), token: tokenapi}
       })
 
