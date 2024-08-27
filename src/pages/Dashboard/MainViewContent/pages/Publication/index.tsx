@@ -1727,13 +1727,13 @@ const Publication: React.FC = () => {
                 <article>
                   <ImHammer2 title='Andamento capturado no site do tribunal' />
                   <p>
-                    Captura: &nbsp;
-                    {format(new Date(item.meDta_Inclusao), 'dd/MM/yyyy')}
+                    Acompanhamento: &nbsp;
+                    {format(new Date(item.meDta_Acompanhamento), 'dd/MM/yyyy')}
                   </p>
 
                   <p>
-                    Acompanhamento: &nbsp;
-                    {format(new Date(item.meDta_Acompanhamento), 'dd/MM/yyyy')}
+                    Captura: &nbsp;
+                    {format(new Date(item.meDta_Inclusao), 'dd/MM/yyyy')}
                   </p>
 
                   <p>

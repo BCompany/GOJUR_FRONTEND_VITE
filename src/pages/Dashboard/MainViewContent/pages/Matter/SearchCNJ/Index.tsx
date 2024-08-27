@@ -9,22 +9,44 @@ import { FiPlus, FiTrash } from 'react-icons/fi';
 import { MdBlock } from 'react-icons/md';
 import InputMask from 'components/InputMask';
 import api from 'services/api';
+import Select from 'react-select';
 import { useConfirmBox } from 'context/confirmBox';
 import  {BiSave} from 'react-icons/bi';
 import { useToast } from 'context/toast';
 import { Container } from './styles'
 import { ISearchCNJ } from '../Interfaces/IMatter';
+import { AutoCompleteSelect } from 'Shared/styles/GlobalStyle';
+import { loadingMessage, noOptionsMessage } from 'Shared/utils/commonConfig';
+import { selectStyles } from 'Shared/utils/commonFunctions';
+import CredentialModal from '../Credentials';
+import CredentialsDataSourceModal from '../Credentials/EditModal';
+
+export interface ISelectData {
+  id: string;
+  label: string;
+}
+
+export interface ICredentials {
+  id_Credential: string;
+  des_Credential: string;
+}
 
 export default function SearchCNJ () {
 
   const { addToast } = useToast();
   const { handleCancelMessage, handleCaller } = useConfirmBox(); 
+  const [isLoadingComboData, setIsLoadingComboData] = useState<boolean>(false);
   const [isSecret, setIsSecret] = useState<boolean>(false)
   const [numberCNJ, setNumberCNJ] = useState<string>('')
   const [userCNJ, setUserCNJ] = useState<string>('')
   const [pswCNJ, setPswCNJ] = useState<string>('')
   const [listSearch, setlistSearch] = useState<ISearchCNJ[]>([])
   const [isSaving, setIsSaving] = useState<boolean>(false)
+  const [credentialsList, setCredentialsList] = useState<ISelectData[]>([]);
+  const [credentialTerm, setCredentialTerm] = useState('');
+  const [credentialId, setCredentialId] = useState<string>('');
+  const [credentialValue, setCredentialValue] = useState<string>('');
+  const [showNewCredentials, setShowNewCredentials] = useState<boolean>(false)
   const tokenApi = localStorage.getItem('@GoJur:token');
 
   useEffect(() => {
@@ -32,9 +54,14 @@ export default function SearchCNJ () {
     if (!isSecret){
       setUserCNJ('')
       setPswCNJ('')
+      setCredentialId('')
     }
 
   },[isSecret])
+
+  useEffect(() => {
+    LoadCredentials();
+  },[])
 
   const Validate = () => {
 
@@ -58,11 +85,11 @@ export default function SearchCNJ () {
       return false;
   }
 
-    if (isSecret && (pswCNJ.length == 0 || userCNJ.length === 0)){
+    if (isSecret && credentialId.length == 0){
       addToast({
         type: 'info',
         title: 'Operação não realizada',
-        description: 'Defina o usuário e senha para a busca automática de processo em segredo de justiça',
+        description: 'É necessario informar uma credencial para realizar a busca em segredo de justiça',
       });
 
       return false;
@@ -93,8 +120,7 @@ export default function SearchCNJ () {
     newData.push({
       index: listSearch.length+1,
       matterNumberCNJ: numberCNJ,
-      userCourt: isSecret? userCNJ: '',
-      passwordCourt: isSecret? pswCNJ : '',
+      id_Credential: credentialId,
       isSecret
     })
 
@@ -140,7 +166,7 @@ export default function SearchCNJ () {
 
       return false;
     }
-    
+     
     try
     {
       await api.post('/Processo/SalvarBuscaPorCNJ', {
@@ -162,7 +188,66 @@ export default function SearchCNJ () {
 
   },[userCNJ, pswCNJ, numberCNJ, listSearch ])
 
+  const handleCredentialSelected = (item) => {
+    if (item) {
+      setCredentialValue(item.label);
+      setCredentialId(item.id);
+    } else {
+      setCredentialValue('');
+      LoadCredentials();
+      setCredentialId('');
+      setCredentialTerm('');
+    }
+  };
+
+  const LoadCredentials = async () => {
+    if (isLoadingComboData) {
+      return false;
+    }
+
+    try {
+      const response = await api.get<ICredentials[]>('/Credenciais/Listar', {
+        params: {
+          token: tokenApi,
+        },
+      });
+
+      const listCredentials: ISelectData[] = [];
+
+      response.data.map((item) => {
+        return listCredentials.push({
+          id: item.id_Credential,
+          label: item.des_Credential,
+        });
+      });
+
+      setCredentialsList(listCredentials);
+
+      setIsLoadingComboData(false);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  
+  const handleCloseEditModal = async () => {
+    setShowNewCredentials(false)
+  };
+
+  const openNewCredentialModal = useCallback(() => {
+    setShowNewCredentials(true)
+  }, [showNewCredentials]);
+
+  const handleIsNewCredential = (id, description) => {
+    LoadCredentials();
+    setCredentialId(id);
+    setCredentialValue(description);
+  }
+
   return (
+    <>
+
+   {showNewCredentials && <CredentialsDataSourceModal callbackFunction={{ handleCloseEditModal, handleIsNewCredential }} />}
 
     <Modal
       isOpen
@@ -194,23 +279,41 @@ export default function SearchCNJ () {
             <FcAbout title='Informe um numero de CNJ válido (máximo 25 digitos) para efetuar a busca automática' />
           </div>
 
-          <div className="passWord" style={{display: (isSecret?'flex':'none')}}>
-            <input 
-              type='text' 
-              value={userCNJ}
-              autoComplete='off'
-              onChange={(e) => setUserCNJ(e.target.value)}
-              placeholder='Usuário' 
-            />
+          {isSecret && (
+            <>
+              <br />
 
-            <input 
-              type='password' 
-              autoComplete='off'
-              value={pswCNJ}
-              onChange={(e) => setPswCNJ(e.target.value)}
-              placeholder='Senha' 
-            />
-          </div>
+              <div style={{ display: "flex", justifyContent: 'center', alignItems: 'center', marginLeft: "5%" }}>
+                <AutoCompleteSelect className="selectCredentials" style={{ width: '65%' }}>
+                  <p>Credenciais:</p>
+                  <Select
+                    isSearchable
+                    value={{ id: credentialId, label: credentialValue }}
+                    onChange={handleCredentialSelected}
+                    onInputChange={(term) => setCredentialTerm(term)}
+                    isClearable
+                    placeholder=""
+                    isLoading={isLoadingComboData}
+                    loadingMessage={loadingMessage}
+                    noOptionsMessage={noOptionsMessage}
+                    styles={selectStyles}
+                    options={credentialsList}
+                  />
+                </AutoCompleteSelect>
+
+                <button
+                  className="buttonLinkClick buttonInclude"
+                  title="Clique para incluir uma nova credencial"
+                  type="submit"
+                  style={{ marginLeft: '10px', marginTop: "1.5rem" }}
+                  onClick={openNewCredentialModal}
+                >
+                  <FcKey />
+                  <span>Criar Credencial</span>
+                </button>
+              </div>
+            </>
+          )}
 
         </div>
 
@@ -231,7 +334,7 @@ export default function SearchCNJ () {
               <p key={item.index}>
                 <FiTrash title='Clique para excluir este CNJ' onClick={() => handleDelete(item.index)} />
                 {item.matterNumberCNJ}
-                {(item.userCourt.length > 0 && item.passwordCourt.length > 0) && (
+                {(item.id_Credential) && (
                   <>
                     &nbsp;
                     <FcKey title='Este processo será procurado por nossos robôs na forma de segredo de justiça, com base no usuário e senha informados' />
@@ -274,6 +377,7 @@ export default function SearchCNJ () {
       </Container>
       
     </Modal>
+    </>
 
   )
 }
