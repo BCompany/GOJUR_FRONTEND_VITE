@@ -299,7 +299,8 @@ export interface ILawyerList {
 
 export interface ISearchCNJ {
   matterNumberCNJ: string;
-  id_Credential: string;
+  userCourt: string;
+  passwordCourt: string;
   isSecret: boolean;
   index: number;
 }
@@ -389,6 +390,4 @@ export interface IMatterFollowRobotLog{
   dta_FimPesquisa: Date;
   nom_PessoaInicioPesquisa: string;
   nom_PessoaFimPesquisa: string;
-  nom_Credencial: string;
-  nom_Usuario: string;
 }

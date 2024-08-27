@@ -17,13 +17,10 @@ import { useSecurity } from 'context/securityContext';
 import { SecurityModule } from 'context/Interfaces/ISecurity';
 import { FcBadDecision, FcApproval} from 'react-icons/fc'
 import { MenuHamburger, Container, WarningModal } from './styles';
-import CredentialModal from 'pages/Dashboard/MainViewContent/pages/Matter/Credentials';
-import { Overlay } from 'Shared/styles/GlobalStyle';
 
 const MatterListOptionsMenu = () => {
 
   const [showConfigMenu, setShowConfigMenu] = useState<boolean>(false)
-  const [showCredentials, setShowCredentials] = useState<boolean>(false)
   const [showReportMenu, setShowReportMenu] = useState<boolean>(false)
   const [showWarning, setShowWarning] = useState<boolean>(false)
   const [redirectToOldVersion, setRedirectToOldVersion] = useState<boolean>(false)
@@ -250,381 +247,405 @@ const MatterListOptionsMenu = () => {
     window.location.href = urlRedirect;
   }
 
-  const handleCloseCredentialModal = async () => {
-    setShowCredentials(false)
-    setShowConfigMenu(false)
-    handleIsMenuOpen(false)
-  };
-
-  const openCredentialModal = useCallback(() => {
-    setShowCredentials(true)
-  }, [showCredentials]);
 
   return (
     <Container>
-      
-      {showCredentials && <CredentialModal callbackFunction={{ handleCloseCredentialModal }} />}
-  
-      {!showCredentials && (
-        <MenuHamburger>
-          <div className="menuSection" onClick={() => setShowConfigMenu(!showConfigMenu)}>
-            <FaTools />
-            &nbsp;&nbsp;Configurações
-          </div>
-  
-          <div style={{ display: showConfigMenu ? 'grid' : 'none' }}>
-            <hr />
-            <button
-              type="button"
-              className="menuLink"
-              onClick={() => {
-                handleIsOpenMenuConfig(!isOpenMenuConfig);
-                setShowConfigMenu(false);
-              }}
-            >
-              Parâmetros do Processo
-            </button>
-          </div>
-  
-          <div style={{ display: showConfigMenu ? 'grid' : 'none' }}>
-            <hr />
-            <button
-              type="button"
-              className="menuLink"
-              onClick={() => {
-                openCredentialModal();
-              }}
-            >
-              Credenciais
-            </button>
-          </div>
-  
-          {checkLegalCause && (
-            <>
-              <div style={{ display: showConfigMenu ? 'grid' : 'none' }}>
-                <hr />
-                <button
-                  type="button"
-                  className="menuLink"
-                  onClick={() => {
-                    handleLegalCauseList();
-                  }}
-                >
-                  Ação Judicial
-                </button>
-              </div>
-            </>
-          )}
-  
-          {checkAdvisoryType && (
-            <>
-              <div style={{ display: showConfigMenu ? 'grid' : 'none' }}>
-                <hr />
-                <button
-                  type="button"
-                  className="menuLink"
-                  onClick={() => {
-                    handleAdvisoryTypeList();
-                  }}
-                >
-                  Assunto Consultivo
-                </button>
-              </div>
-            </>
-          )}
-  
-          {checkMatterPhase && (
-            <>
-              <div style={{ display: showConfigMenu ? 'grid' : 'none' }}>
-                <hr />
-                <button
-                  type="button"
-                  className="menuLink"
-                  onClick={() => {
-                    handleMatterPhaseList();
-                  }}
-                >
-                  Fase Processual
-                </button>
-              </div>
-            </>
-          )}
-  
-          {checkCourt && (
-            <>
-              <div style={{ display: showConfigMenu ? 'grid' : 'none' }}>
-                <hr />
-                <button
-                  type="button"
-                  className="menuLink"
-                  onClick={() => {
-                    handleCourtList();
-                  }}
-                >
-                  Fórum
-                </button>
-              </div>
-            </>
-          )}
-  
-          {checkLegalNature && (
-            <>
-              <div style={{ display: showConfigMenu ? 'grid' : 'none' }}>
-                <hr />
-                <button
-                  type="button"
-                  className="menuLink"
-                  onClick={() => {
-                    handleLegalNatureList();
-                  }}
-                >
-                  Natureza Jurídica
-                </button>
-              </div>
-            </>
-          )}
-  
-          {checkPosition && (
-            <>
-              <div style={{ display: showConfigMenu ? 'grid' : 'none' }}>
-                <hr />
-                <button
-                  type="button"
-                  className="menuLink"
-                  onClick={() => {
-                    handlePositionList();
-                  }}
-                >
-                  Posição no Processo
-                </button>
-              </div>
-            </>
-          )}
-  
-          {checkMatterProbability && (
-            <>
-              <div style={{ display: showConfigMenu ? 'grid' : 'none' }}>
-                <hr />
-                <button
-                  type="button"
-                  className="menuLink"
-                  onClick={() => {
-                    handleMatterProbabilityList();
-                  }}
-                >
-                  Probabilidade do Processo
-                </button>
-              </div>
-            </>
-          )}
-  
-          {checkRite && (
-            <>
-              <div style={{ display: showConfigMenu ? 'grid' : 'none' }}>
-                <hr />
-                <button
-                  type="button"
-                  className="menuLink"
-                  onClick={() => {
-                    handleRiteList();
-                  }}
-                >
-                  Rito
-                </button>
-              </div>
-            </>
-          )}
-  
-          {checkMatterSolution && (
-            <>
-              <div style={{ display: showConfigMenu ? 'grid' : 'none' }}>
-                <hr />
-                <button
-                  type="button"
-                  className="menuLink"
-                  onClick={() => {
-                    handleMatterSolutionList();
-                  }}
-                >
-                  Solução do Processo
-                </button>
-              </div>
-            </>
-          )}
-  
-          {checkMatterStatus && (
-            <>
-              <div style={{ display: showConfigMenu ? 'grid' : 'none' }}>
-                <hr />
-                <button
-                  type="button"
-                  className="menuLink"
-                  onClick={() => {
-                    handleMatterStatusList();
-                  }}
-                >
-                  Status do Processo
-                </button>
-              </div>
-            </>
-          )}
-  
-          {checkMatterEventType && (
-            <>
-              <div style={{ display: showConfigMenu ? 'grid' : 'none' }}>
-                <hr />
-                <button
-                  type="button"
-                  className="menuLink"
-                  onClick={() => {
-                    handleMatterEventTypeList();
-                  }}
-                >
-                  Tipo de Acompanhamento
-                </button>
-              </div>
-            </>
-          )}
-  
-          {checkDocumentType && (
-            <>
-              <div style={{ display: showConfigMenu ? 'grid' : 'none' }}>
-                <hr />
-                <button
-                  type="button"
-                  className="menuLink"
-                  onClick={() => {
-                    handleDocumentTypeList();
-                  }}
-                >
-                  Tipo de Documento
-                </button>
-              </div>
-            </>
-          )}
-  
-          {checkMatterDemandType && (
-            <>
-              <div style={{ display: showConfigMenu ? 'grid' : 'none' }}>
-                <hr />
-                <button
-                  type="button"
-                  className="menuLink"
-                  onClick={() => {
-                    handleMatterDemandTypeList();
-                  }}
-                >
-                  Tipo de Pedido do Processo
-                </button>
-              </div>
-            </>
-          )}
-  
-          {checkCourtDept && (
-            <>
-              <div style={{ display: showConfigMenu ? 'grid' : 'none' }}>
-                <hr />
-                <button
-                  type="button"
-                  className="menuLink"
-                  onClick={() => {
-                    handleCourtDeptList();
-                  }}
-                >
-                  Vara
-                </button>
-              </div>
-            </>
-          )}
-  
+
+      <MenuHamburger>
+
+        <div className="menuSection" onClick={() => setShowConfigMenu(!showConfigMenu)}>
+          <FaTools />
+          &nbsp;&nbsp;Configurações
+        </div>
+
+        <div style={{display:(showConfigMenu?'grid':'none')}}>
           <hr />
-  
-          <div className="menuSection" onClick={() => setShowReportMenu(!showReportMenu)}>
-            <AiOutlinePrinter />
-            &nbsp;Relatórios
-          </div>
-  
-          <div style={{ display: showReportMenu ? 'grid' : 'none' }}>
-            <hr />
-            {hasMatterReport && (
-              <>
-                <button
-                  type="button"
-                  className="menuLink"
-                  onClick={() => {
-                    handleMatterReportSimpleList();
-                  }}
-                >
-                  Relatório de Processos
-                </button>
-  
-                <button
-                  type="button"
-                  className="menuLink"
-                  onClick={() => {
-                    handleMatterDemandReportList();
-                  }}
-                >
-                  Relatório - Proc x Pedidos
-                </button>
-              </>
-            )}
-  
-            <CustomerCustomMatter />
-          </div>
-  
-          <hr />
-  
-          <div className="menuSection" onClick={() => setSearchMenu(!searchMenu)}>
-            <HiOutlineSearch />
-            &nbsp;Buscas
-          </div>
-  
-          <div style={{ display: searchMenu ? 'grid' : 'none' }}>
-            <hr />
-            <button
-              type="button"
-              className="menuLink"
-              onClick={() => {
-                handleIsOpenMenuSearch(!isOpenMenuSearch);
-                handleIsMenuOpen(false);
-              }}
-            >
-              Criar nova busca por OAB
-            </button>
-          </div>
-  
-          {pathname.includes('/matter/list') && (
-            <>
+          <button
+            type="button"
+            className="menuLink"
+            onClick={() => {
+              handleIsOpenMenuConfig(!isOpenMenuConfig)
+              setShowConfigMenu(false)
+            }}
+          >
+            Parâmetros do Processo
+          </button>
+
+        </div>
+
+        {checkLegalCause &&(
+          <>
+            <div style={{display:(showConfigMenu?'grid':'none')}}>
               <hr />
-              <div
-                className="menuSection"
+              <button
+                type="button"
+                className="menuLink"
                 onClick={() => {
-                  handleIsOpenMenuHelp(true);
-                  handleIsMenuOpen(false);
+                  handleLegalCauseList()
                 }}
               >
-                <BsFillCameraVideoFill />
-                &nbsp;&nbsp;Video de Treinamento
-              </div>
-            </>
-          )}
-        </MenuHamburger>
-      )}
-  
+                Ação Judicial
+              </button>
+            </div>
+          </>
+        )}
+
+        {checkAdvisoryType &&(
+          <>
+            <div style={{display:(showConfigMenu?'grid':'none')}}>
+              <hr />
+              <button
+                type="button"
+                className="menuLink"
+                onClick={() => {
+                  handleAdvisoryTypeList()
+                }}
+              >
+                Assunto Consultivo
+              </button>
+            </div>
+          </>
+        )}
+
+        {checkMatterPhase &&(
+          <>
+            <div style={{display:(showConfigMenu?'grid':'none')}}>
+              <hr />
+              <button
+                type="button"
+                className="menuLink"
+                onClick={() => {
+                  handleMatterPhaseList()
+                }}
+              >
+                Fase Processual
+              </button>
+            </div>
+          </>
+        )}
+
+        {checkCourt &&(
+          <>
+            <div style={{display:(showConfigMenu?'grid':'none')}}>
+              <hr />
+              <button
+                type="button"
+                className="menuLink"
+                onClick={() => {
+                  handleCourtList()
+                }}
+              >
+                Fórum
+              </button>
+            </div>
+          </>
+        )}
+
+
+        {checkLegalNature &&(
+        <>
+          <div style={{display:(showConfigMenu?'grid':'none')}}>
+            <hr />
+            <button
+              type="button"
+              className="menuLink"
+              onClick={() => {
+              handleLegalNatureList()
+                }}
+            >
+              Natureza Jurídica
+            </button>
+          </div>
+        </>
+        )}
+
+        {checkPosition &&(
+        <>
+          <div style={{display:(showConfigMenu?'grid':'none')}}>
+            <hr />
+            <button
+              type="button"
+              className="menuLink"
+              onClick={() => {
+              handlePositionList()
+                }}
+            >
+              Posição no Processo
+            </button>
+          </div>
+        </>
+        )}
+
+        {checkMatterProbability &&(
+        <>
+          <div style={{display:(showConfigMenu?'grid':'none')}}>
+            <hr />
+            <button
+              type="button"
+              className="menuLink"
+              onClick={() => {
+              handleMatterProbabilityList()
+                }}
+            >
+              Probabilidade do Processo
+            </button>
+          </div>
+        </>
+        )}
+
+        {checkRite &&(
+          <>
+            <div style={{display:(showConfigMenu?'grid':'none')}}>
+              <hr />
+              <button
+                type="button"
+                className="menuLink"
+                onClick={() => {
+                  handleRiteList()
+                }}
+              >
+                Rito
+              </button>
+            </div>
+          </>
+        )}
+
+        {checkMatterSolution &&(
+          <>
+            <div style={{display:(showConfigMenu?'grid':'none')}}>
+              <hr />
+              <button
+                type="button"
+                className="menuLink"
+                onClick={() => {
+                  handleMatterSolutionList()
+                }}
+              >
+                Solução do Processo
+              </button>
+            </div>
+          </>
+        )}
+
+        {checkMatterStatus &&(
+          <>
+            <div style={{display:(showConfigMenu?'grid':'none')}}>
+              <hr />
+              <button
+                type="button"
+                className="menuLink"
+                onClick={() => {
+                  handleMatterStatusList()
+                }}
+              >
+                Status do Processo
+              </button>
+            </div>
+          </>
+        )}
+
+        {checkMatterEventType &&(
+          <>
+            <div style={{display:(showConfigMenu?'grid':'none')}}>
+              <hr />
+              <button
+                type="button"
+                className="menuLink"
+                onClick={() => {
+                  handleMatterEventTypeList()
+                }}
+              >
+                Tipo de Acompanhamento
+              </button>
+            </div>
+          </>
+        )}
+
+        {checkDocumentType &&(
+          <>
+            <div style={{display:(showConfigMenu?'grid':'none')}}>
+              <hr />
+              <button
+                type="button"
+                className="menuLink"
+                onClick={() => {
+                  handleDocumentTypeList()
+                }}
+              >
+                Tipo de Documento
+              </button>
+            </div>    
+          </>
+        )}
+
+        {checkMatterDemandType &&(
+          <>
+            <div style={{display:(showConfigMenu?'grid':'none')}}>
+              <hr />
+              <button
+                type="button"
+                className="menuLink"
+                onClick={() => {
+                  handleMatterDemandTypeList()
+                }}
+              >
+                Tipo de Pedido do Processo
+              </button>
+            </div>
+          </>
+        )}
+
+        {checkCourtDept &&(
+          <>
+            <div style={{display:(showConfigMenu?'grid':'none')}}>
+              <hr />
+              <button
+                type="button"
+                className="menuLink"
+                onClick={() => {
+                  handleCourtDeptList()
+                }}
+              >
+                Vara
+              </button>
+            </div>
+          </>
+        )}
+
+
+
+
+        <hr />
+
+
+        <div className="menuSection" onClick={() => setShowReportMenu(!showReportMenu)}>
+          <AiOutlinePrinter />
+          &nbsp;Relatórios
+        </div>
+
+        <div style={{display:(showReportMenu?'grid':'none')}}>
+          <hr />
+          {hasMatterReport && (
+          <>
+            <button
+              type="button"
+              className="menuLink"
+              onClick={() => {
+                    // handleIsOpenMenuReport(!isOpenMenuReport)
+                    // handleIsMenuOpen(false)
+                    // window.open(`${envProvider.redirectUrl}reports/matter/list?listType=simple&token=${token}`)
+                    handleMatterReportSimpleList()
+                  }
+                  }
+            >
+              Relatório de Processos
+            </button>
+
+            <button
+              type="button"
+              className="menuLink"
+              onClick={() => {
+                    // handleIsOpenMenuReport(!isOpenMenuReport)
+                    // handleIsMenuOpen(false)
+                    // window.open(`${envProvider.redirectUrl}reports/matter/list?listType=matterDemand&token=${token}`)
+                    handleMatterDemandReportList()
+                  }
+                  }
+            >
+              Relatório - Proc x Pedidos
+            </button>
+          </>
+            )}
+
+          {/* CUSTOM REPORT - PETROBRAS */}
+          <CustomerCustomMatter />
+
+        </div>
+
+        <hr />
+
+        <div className="menuSection" onClick={() => setSearchMenu(!searchMenu)}>
+          <HiOutlineSearch />
+          &nbsp;Buscas
+        </div>
+
+        <div style={{display:(searchMenu?'grid':'none')}}>
+          <hr />
+          <button
+            type="button"
+            className="menuLink"
+            onClick={() => {
+              handleIsOpenMenuSearch(!isOpenMenuSearch)
+              handleIsMenuOpen(false)
+            }}
+          >
+            Criar nova busca por OAB
+          </button>
+        </div>
+        {/* <div style={{display:(searchMenu?'grid':'none')}}>
+          <hr />
+          <button
+            type="button"
+            className="menuLink"
+            onClick={() => handleMatterStatusOperation()}
+          >
+            Lista de Abrangências Tribunais
+          </button>
+        </div> */}
+
+        {/* show trainning video only in list viuew */}
+        {pathname.includes('/matter/list') && (
+          <>
+            <hr />
+            <div
+              className="menuSection"
+              onClick={() => {
+              handleIsOpenMenuHelp(true)
+              handleIsMenuOpen(false)
+              // handleOpenCustomerListModal()
+            }}
+            >
+              <BsFillCameraVideoFill />
+              &nbsp;&nbsp;Video de Treinamento
+            </div>
+          </>
+        )}
+
+        {/* show redirect to old details version only in edit view */}
+        {/* {pathname.includes('/matter/edit') && (
+          <>
+            <hr />
+            <div
+              className="menuSection"
+              onClick={() => setShowWarning(true)}
+              // onClick={handleMatterDetailsOld}
+            >
+              <AiOutlineEnter />
+                &nbsp;&nbsp;Acessar versão anterior
+            </div>
+          </>
+        )} */}
+
+      </MenuHamburger>
+
       {showWarning && (
+
         <WarningModal>
+
           <div>
             <h2>Aviso</h2>
           </div>
-  
+
           <hr />
-  
+
           <div>
-            Recomendamos utilizar a versão nova, a versão antiga será desativada em <b>15/06</b>
+            Recomendamos utilizar a versão nova, a versão antiga será desativada em
+            {' '}
+            <b>15/06</b>
           </div>
-  
+
           <footer>
+
             <div>
               <button
                 className="buttonLinkClick"
@@ -636,7 +657,7 @@ const MatterListOptionsMenu = () => {
                 Acessar
               </button>
             </div>
-  
+
             <div>
               <button
                 className="buttonLinkClick"
@@ -647,14 +668,19 @@ const MatterListOptionsMenu = () => {
                 <FcBadDecision />
                 Cancelar
               </button>
+
               <br />
             </div>
+
             <br />
+
           </footer>
+
         </WarningModal>
       )}
+
     </Container>
-  );
+  )
 }
 
 export default MatterListOptionsMenu

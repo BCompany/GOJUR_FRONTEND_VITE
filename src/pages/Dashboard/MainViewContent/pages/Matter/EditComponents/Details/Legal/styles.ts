@@ -16,15 +16,6 @@ export const Container = styled.div`
         border-bottom: solid 1px var(--gray);
     }
 
-    .personIcon {
-    color: var(--blue-twitter);
-    &:hover {
-        color: var(--orange);
-    }
-    width: 1.5rem;
-    height: 1.2rem;
-}
-
     .content {
 
         margin-top:10px;

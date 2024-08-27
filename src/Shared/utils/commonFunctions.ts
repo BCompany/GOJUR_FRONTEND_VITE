@@ -417,42 +417,8 @@ export const ValidateAuthenticationError = (err: any) => {
   }
 };
 
-
+// remove token and reload page
 function SignOut() {
   localStorage.removeItem("@GoJur:token");
   window.location.reload();
 }
-
-export const customStyles = {
-  menu: (provided) => ({
-    ...provided,
-    zIndex: 999999,
-    backgroundColor: 'white',
-    color: 'black',
-    fontSize: '12px'
-  }),
-  option: (provided, state) => ({
-    ...provided,
-    backgroundColor: 'white',
-    color: 'black',
-    '&:hover': {
-      backgroundColor: '#d4e4fc',
-    },
-  }),
-  control: (provided) => ({
-    ...provided,
-    borderColor: 'gray',
-    '&:hover': {
-      borderColor: 'darkgray',
-    },
-  }),
-  singleValue: (provided) => ({
-    ...provided,
-    color: 'black',
-  }),
-  menuPortal: (provided) => ({
-    ...provided,
-    zIndex: 999999999,
-  }),
-};
-

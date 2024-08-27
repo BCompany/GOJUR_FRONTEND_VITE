@@ -1524,7 +1524,7 @@ const Matter = (props) => {
 
           <section>
 
-            {/* <label>
+            <label>
               Usuário Tribunal
               <input
                 className='inputField'
@@ -1536,9 +1536,9 @@ const Matter = (props) => {
                 value={matterUserCourt}
               />
               <MdHelp className='infoMessage' title="Preencha se o processo for segredo de justiça e desejar habilitar a busca automática nos tribunais" />
-            </label> */}
+            </label>
 
-            {/* <label>
+            <label>
               Senha :
               <input
                 className='inputField'
@@ -1548,20 +1548,18 @@ const Matter = (props) => {
                 onChange={(e) => setMatterUserCourtPsw(e.target.value)}
                 value={matterUserCourtPsw}
               />
-            </label> */}
+            </label>
 
-            <label className="inputLabel">
-              <p>Responsável</p>
-              <div className="inputContainer">
-                <input
-                  className='inputField'
-                  type="text"
-                  title={matterResponsibleDescription}
-                  value={(matterResponsibleDescription ?? "").length <= 50 ? matterResponsibleDescription : `${matterResponsibleDescription.substring(0, 50)} ...`}
-                  style={{ cursor: 'pointer', opacity: '0.5', width: '31.5%' }}
-                />
-                <BsPersonLinesFill className='personIcon' onClick={() => setShowResponsible(true)} style={{ marginLeft: '8px', cursor: 'pointer'}} />
-              </div>
+            <label>
+              Responsável
+              <input
+                className='inputField'
+                type="text"
+                title={matterResponsibleDescription}
+                value={(matterResponsibleDescription??"").length <= 50? matterResponsibleDescription: `${matterResponsibleDescription.substring(0, 50)} ...`}
+                style={{cursor: 'pointer', opacity: '0.5'}}
+              />
+              <BsPersonLinesFill onClick={() => setShowResponsible(true)} style={{marginTop: '15px'}} />
             </label>
 
           </section>
