@@ -1346,15 +1346,22 @@ const Financeiro: React.FC = () => {
     try {
       setIsLoading(true)
       
-      const response = await api.post(`/BoletoBancario/RealizarBaixas`, {token: token});
+      const response = await api.post(`/BoletoBancario/RealizarBaixar`, {token: token, paymentSlipPartnerId: 'AS'});
      
       setEndMarkedPaid(true)
       setCountMarkedPaid(response.data)
     }
-    catch (err) {
-      addToast({type: 'error', title: 'Falha ao baixar os pagamentos', description: 'Não foi possivel realizar a baixa dos pagamentos'});
+    catch (err:any) {
       setEndMarkedPaid(false)
       setCountMarkedPaid(0)
+
+      if (err.response.data.typeError.warning == "awareness"){
+        setShowMarkedPaidModal(false)
+        addToast({type: 'error', title: 'Falha ao baixar os pagamentos', description: err.response.data.Message});
+      }
+      else{
+        addToast({type: 'error', title: 'Falha ao baixar os pagamentos', description: err.response.data.Message});
+      }
     }
   }, []);
 
@@ -2286,7 +2293,8 @@ const Financeiro: React.FC = () => {
               <div style={{marginLeft:'5%'}}>
                 <label>Foi realizada a baixa de {totalCount} pagamentos.</label>
               </div>
-              <div style={{float:'left', width:'100px'}}>
+              <br /><br />
+              <div style={{float:'left', width:'100px', marginLeft:'40%'}}>
                 <button
                   type='button'
                   className="buttonClick"
