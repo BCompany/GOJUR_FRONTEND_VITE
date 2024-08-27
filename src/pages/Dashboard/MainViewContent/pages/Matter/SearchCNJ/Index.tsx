@@ -17,7 +17,7 @@ import { Container } from './styles'
 import { ISearchCNJ } from '../Interfaces/IMatter';
 import { AutoCompleteSelect } from 'Shared/styles/GlobalStyle';
 import { loadingMessage, noOptionsMessage } from 'Shared/utils/commonConfig';
-import { selectStyles } from 'Shared/utils/commonFunctions';
+import { customStyles, selectStyles } from 'Shared/utils/commonFunctions';
 import CredentialModal from '../Credentials';
 import CredentialsDataSourceModal from '../Credentials/EditModal';
 
@@ -296,8 +296,9 @@ export default function SearchCNJ () {
                     isLoading={isLoadingComboData}
                     loadingMessage={loadingMessage}
                     noOptionsMessage={noOptionsMessage}
-                    styles={selectStyles}
-                    options={credentialsList}
+                    menuPortalTarget={document.body}
+                    menuPosition={'fixed'}
+                    styles={customStyles}
                   />
                 </AutoCompleteSelect>
 
