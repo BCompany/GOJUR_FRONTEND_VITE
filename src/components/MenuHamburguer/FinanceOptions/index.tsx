@@ -36,6 +36,7 @@ const FinanceOptionsMenu = (props) => {
   const {permissionsSecurity, handleValidateSecurity } = useSecurity();
   const token = localStorage.getItem('@GoJur:token');
   const MDLFAT = localStorage.getItem('@GoJur:moduleCode');
+  const companyPlan = localStorage.getItem('@GoJur:companyPlan')
   const baseUrl = envProvider.redirectUrl;
   const { isMOBILE } = useDevice();
   const { addToast } = useToast();
@@ -218,7 +219,7 @@ const FinanceOptionsMenu = (props) => {
             </>
           )}
 
-          {checkFinancialIntegration &&(
+          {(checkFinancialIntegration && companyPlan != 'GOJURFR') &&(
             <>
               <div style={{display:(showConfigMenu?'grid':'none')}}>
                 <hr />
@@ -230,7 +231,7 @@ const FinanceOptionsMenu = (props) => {
             </>
           )}
 
-          {markedPaid && (
+          {(markedPaid && companyPlan != 'GOJURFR') && (
             <>
               <div style={{display:(showConfigMenu?'grid':'none')}}>
                 <hr />
@@ -440,6 +441,30 @@ const FinanceOptionsMenu = (props) => {
             <>
               <div style={{display:(showConfigMenu?'grid':'none')}}>
                 <HeaderPageCustom callback={{handlePaymentSlip}} />
+              </div>
+            </>
+          )}
+
+          {(checkFinancialIntegration && companyPlan != 'GOJURFR') &&(
+            <>
+              <div style={{display:(showConfigMenu?'grid':'none')}}>
+                <hr />
+                <button type="button" className="menuLink" onClick={() => {handleFinancialIntegration()}}
+                >
+                  Integrador Financeiro
+                </button>
+              </div>
+            </>
+          )}
+
+          {(markedPaid && companyPlan != 'GOJURFR') && (
+            <>
+              <div style={{display:(showConfigMenu?'grid':'none')}}>
+                <hr />
+                <button type="button" className="menuLink" onClick={() => {handleMarkedPaid()}}
+                >
+                  Realizar baixas
+                </button>
               </div>
             </>
           )}

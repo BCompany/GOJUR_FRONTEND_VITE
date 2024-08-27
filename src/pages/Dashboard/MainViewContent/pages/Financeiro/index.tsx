@@ -1346,7 +1346,7 @@ const Financeiro: React.FC = () => {
     try {
       setIsLoading(true)
       
-      const response = await api.post(`/BoletoBancario/RealizarBaixar`, {token: token});
+      const response = await api.post(`/BoletoBancario/RealizarBaixas`, {token: token});
      
       setEndMarkedPaid(true)
       setCountMarkedPaid(response.data)
@@ -1361,7 +1361,6 @@ const Financeiro: React.FC = () => {
 
   return (
     <Container>
-
       <HeaderPage />
 
       <HamburguerHeader>
@@ -2351,7 +2350,7 @@ const Financeiro: React.FC = () => {
       )}
 
       {(isOpenMenuDealDefaultCategory) && <OverlayFinancial /> }
-      {isOpenMenuDealDefaultCategory && <DealDefaultModal />}
+      {isOpenMenuDealDefaultCategory && <DealDefaultModal /> }
 
     </Container>
   );

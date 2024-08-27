@@ -156,6 +156,8 @@ const FinancialMovement: React.FC = () => {
   const [hasBankPaymentSlipErrors, setHasBankPaymentSlipErrors] = useState<boolean>(false);
   const [bankPaymentSlipErrors, setBankPaymentSlipErrors] = useState<string>('');
   const [showValidateFinancialIntegration, setShowValidateFinancialIntegration] = useState<boolean>(false);
+  const [isTotalPaid, setIsTotalPaid] = useState<boolean>(false);
+  const companyPlan = localStorage.getItem('@GoJur:companyPlan')
 
   const ref = useRef<any>(null);
   const DateFormatter = ({ value }) => format(new Date(value), 'dd/MM/yyyy HH:mm');
@@ -400,6 +402,7 @@ const FinancialMovement: React.FC = () => {
         setShowPayments(true)
         const message = paymentListReturn[0].tpo_Movimento == "D" ? 'Pago' : 'Recebido';
         setPaymentMessage(message)
+        setIsTotalPaid(true)
       }
       else{
         setShowPayments(true)
@@ -1783,7 +1786,7 @@ const FinancialMovement: React.FC = () => {
               <>
                 {hasBankPaymentSlip == true ? (
                   <>
-                    {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B") &&(
+                    {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B" && companyPlan != 'GOJURFR' && !isTotalPaid) &&(
                       <button className="buttonClick" type='button' onClick={()=> HandleGenerateBankPaymentSlipSecond()}>
                         <FaFileInvoiceDollar  />
                         2ª Via Boleto
@@ -1792,7 +1795,7 @@ const FinancialMovement: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B") &&(
+                    {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B" && companyPlan != 'GOJURFR') &&(
                       <button className="buttonClick" type='button' onClick={()=> HandleGenerateBankPaymentSlip()}>
                         <FaFileInvoiceDollar  />
                         Gerar Boleto
