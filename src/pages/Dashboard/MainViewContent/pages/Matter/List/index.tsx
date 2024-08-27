@@ -18,7 +18,7 @@ import { useAlert } from 'context/alert';
 import Loader from 'react-spinners/PulseLoader';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import { FaRegEdit, FaExchangeAlt, FaPlus, FaFileAlt } from 'react-icons/fa';
-import { FiDatabase, FiPaperclip, FiPlus } from 'react-icons/fi';
+import { FiDatabase, FiKey, FiPaperclip, FiPlus } from 'react-icons/fi';
 import { AiOutlinePrinter, AiFillFolderOpen, AiOutlineFile } from 'react-icons/ai'
 import { useAuth } from 'context/AuthContext';
 import { VscTag } from 'react-icons/vsc';
@@ -66,6 +66,8 @@ import SearchOAB from '../SearchOAB/Index';
 import InvertParts from '../InvertParts/Index';
 import SearchCNJ from '../SearchCNJ/Index';
 import MatterFileModal from '../MatterFileModal/index';
+import CredentialModal from '../Credentials/index';
+import FollowModal from '../FollowModal';
 
 const Matter: React.FC = () => {
   const { signOut } = useAuth();
@@ -135,6 +137,14 @@ const Matter: React.FC = () => {
   const [matterFileId, setMatterFileId] = useState<number>(0)
   const [matterFilePlace, setMatterFilePlace] = useState<string>("")
   const [isEdit, setIsEdit] = useState<boolean>(false);
+
+  const [showFollowModal, setShowFollowModal] = useState<boolean>(false)
+  const [matterSelectedId, setMatterSelectedId] = useState<number>(0)
+  const [matterSelectedNumber, setMatterSelectedNumber] = useState<string>("")
+  const [isSecretJustice, setIsSecretJustice] = useState<boolean>(false);
+  const [selectedCredentialid, setSelectedCredentialid] = useState<number>(0);
+
+  const [isChanging, setIsChanging] = useState<boolean>(false);
 
 
   useEffect(() => {
@@ -778,13 +788,23 @@ const Matter: React.FC = () => {
     }
   }
 
-
+//
   const handleFollowButton = async (matterId: number) => {
 
     const matterFind = matterList.find(item => item.matterId === matterId);
 
     if (!matterFind) {
       return
+    }
+
+
+    if (isSecretJustice && selectedCredentialid === 0) {
+      addToast({
+        type: 'info',
+        title: 'Operação NÃO realizada',
+        description: "Para um processo em segredo de justiça, selecione uma credencial para prosseguir."
+      });
+      return;
     }
 
     const action = !matterFind.isFollowing;
@@ -808,7 +828,8 @@ const Matter: React.FC = () => {
         params: {
           token,
           matterId,
-          enable: action
+          enable: action,
+          credentialId: selectedCredentialid
         }
       });
 
@@ -818,6 +839,8 @@ const Matter: React.FC = () => {
         newData = matterList.filter(item => item.matterId != matterFind.matterId);
         setMatterList(newData)
       }
+      setIsChanging(false)
+      handleCloseFollowModal()
 
       setIsLoading(false)
 
@@ -839,6 +862,7 @@ const Matter: React.FC = () => {
     catch (err: any) {
 
       setIsLoading(false)
+      setIsChanging(false)
 
       // disable follow button if something wrong going on
       const newData = matterList.map(matter =>
@@ -867,6 +891,8 @@ const Matter: React.FC = () => {
           description: err.response.data.Message
         });
       }
+
+      console.log(err)
 
       if (!err.response.data.typeError.warning) {
         addToast({
@@ -936,7 +962,6 @@ const Matter: React.FC = () => {
       }
     }
     catch (err: any) {
-
       setIsLoading(false)
 
       // disable follow button if something wrong going on
@@ -2041,12 +2066,41 @@ const Matter: React.FC = () => {
     setMatterFilePlace("")
   }
 
+  const handleOpenFollowModal = async (matter) => {
+    setMatterSelectedId(matter.matterId)
+    setMatterSelectedNumber(matter.matterNumber)
+    setShowFollowModal(true)
+  };
+
+  const handleCloseFollowModal = async () => {
+    setShowFollowModal(false)
+    setIsSecretJustice(false)
+    setMatterSelectedId(0)
+    setMatterSelectedNumber('')
+    setSelectedCredentialid(0)
+  };
+
+  const handleSecretJusticeChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setIsSecretJustice(event.target.checked);
+  }
+
+  const handleFollowMatter = async () => {
+    setIsChanging(true)
+    handleFollowButton(matterSelectedId)
+  }
+
+  const handleSelectCredentialId = (id) => {
+    setSelectedCredentialid(id)
+  }
 
   return (
 
     <Container onScroll={handleScrool} ref={scrollRef}>
 
       <HeaderPage />
+
+      {(showFollowModal) && <Overlay />}
+      {showFollowModal && <FollowModal callbackFunction={{ handleCloseFollowModal, matterSelectedNumber, handleSecretJusticeChange, isSecretJustice, handleFollowMatter, handleSelectCredentialId, isChanging }} />}
 
       {/* MATTER FILTER AND INCLUDE */}
       <Filter>
@@ -2181,36 +2235,40 @@ const Matter: React.FC = () => {
       <Tabs>
 
         {/* MATTER TABS NAMES */}
-        <div style={{ marginLeft: '10px', marginTop: '5px', marginBottom: '-10px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginLeft: '10px', marginTop: '5px', marginBottom: '-10px' }}>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            {hasMatterLegal && (
+              <button
+                type='button'
+                className={tabActive('matterLegal')}
+                onClick={() => handleTabs('matterLegal')}
+                style={{ marginLeft: '20px' }} // Ajuste o valor conforme necessário
+              >
+                <FiDatabase />
+                <span style={{ marginLeft: '5px' }}>
+                  Jurídico
+                </span>
+              </button>
+            )}
 
-          {hasMatterLegal && (
-            <button
-              type='button'
-              className={tabActive('matterLegal')}
-              onClick={() => handleTabs('matterLegal')}
-            >
-              <FiDatabase />
-              Jurídico
-            </button>
-          )}
-
-          {hasmatterAdvisory && (
-            <button
-              type='button'
-              className={tabActive('matterAdvisory')}
-              onClick={() => handleTabs('matterAdvisory')}
-            >
-              <FiDatabase />
-              Consultivo
-            </button>
-          )}
+            {hasmatterAdvisory && (
+              <button
+                type='button'
+                className={tabActive('matterAdvisory')}
+                onClick={() => handleTabs('matterAdvisory')}
+                style={{ marginLeft: '10px' }} // Ajuste o valor conforme necessário
+              >
+                <FiDatabase />
+                <span style={{ marginLeft: '5px' }}>Consultivo</span>
+              </button>
+            )}
+          </div>
 
           {/* {isLoading && (
             <div className="loadingMessage">
               <Loader size={6} color="var(--blue-twitter)" />
             </div>
           )} */}
-
         </div>
 
         {openMatterMonitorResourceModal && (
@@ -2796,7 +2854,13 @@ const Matter: React.FC = () => {
                                         <SiSonarsource />
                                         <span>Seguir&nbsp;&nbsp;&nbsp;&nbsp;</span>
                                         <Switch
-                                          onChange={() => handleFollowButton(item.matterId)}
+                                          onChange={() => {
+                                            if (item.isFollowing) {
+                                              handleFollowButton(item.matterId);                                            
+                                            } else {
+                                              handleOpenFollowModal(item);
+                                            }
+                                          }}
                                           checked={item.isFollowing}
                                           onColor="#86d3ff"
                                           onHandleColor="#2693e6"
@@ -2806,7 +2870,6 @@ const Matter: React.FC = () => {
                                           height={14}
                                           width={38}
                                         />
-
                                         {item.des_StatusUltimaAtualizacaoTribunal != null ? (
                                           <FcAbout style={{ marginLeft: '0.5rem' }} title={item.messageButton} />
                                         ) : (
