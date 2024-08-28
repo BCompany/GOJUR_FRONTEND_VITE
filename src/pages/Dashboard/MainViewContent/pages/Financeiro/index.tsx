@@ -1346,7 +1346,7 @@ const Financeiro: React.FC = () => {
     try {
       setIsLoading(true)
       
-      const response = await api.post(`/BoletoBancario/RealizarBaixar`, {token: token, paymentSlipPartnerId: 'AS'});
+      const response = await api.post(`/BoletoBancario/RealizarBaixas`, {token: token, paymentSlipPartnerId: 'AS'});
      
       setEndMarkedPaid(true)
       setCountMarkedPaid(response.data)

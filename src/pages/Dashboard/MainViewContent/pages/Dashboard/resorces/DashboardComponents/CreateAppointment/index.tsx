@@ -16,6 +16,8 @@
 // IMPORTACOES
 import React, {ChangeEvent,useCallback,useEffect,useState } from 'react';
 import { Responsive as ResponsiveGridLayout } from 'react-grid-layout';
+import ConfirmBoxModal from 'components/ConfirmBoxModal';
+import { useConfirmBox } from 'context/confirmBox';
 import { RiFolder2Fill, RiEraserLine } from 'react-icons/ri';
 import { IoIosPaper } from 'react-icons/io';
 import { FiClock, FiTrash, FiSave, FiMail } from 'react-icons/fi';
@@ -147,6 +149,25 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   const [small, setSmall] = useState<boolean>(false);
   const [checkMessage, setCheckMessage] = useState(false)
   const [confirmSave, setConfirmSave] = useState(false)
+
+  const [confirmDeleteCalendarEvent, setConfirmDeleteCalendarEvent] = useState<boolean>(false)
+  const { handleCancelMessage, handleConfirmMessage, isCancelMessage, isConfirmMessage } = useConfirmBox();
+
+  useEffect(() => {
+    if (isCancelMessage) {
+      alert("CANCELA")
+      handleCancelMessage(false)
+    }
+  }, [isCancelMessage]);
+
+
+  useEffect(() => {
+    if (isConfirmMessage) {
+      alert("CONFIRMA")
+      handleConfirmMessage(false)
+      // handleDeleteModal()
+    }
+  }, [isConfirmMessage]);
 
 
   useEffect(() => {
@@ -1326,6 +1347,12 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       const recurrenceDate = localStorage.getItem('@GoJur:RecurrenceDate');
 
       if (appointmentRecurrent === 'N') {
+
+        if (confirmDeleteCalendarEvent == false)
+        {
+          setConfirmDeleteCalendarEvent(true);
+          return;
+        }
 
         await api.post(`/Compromisso/Deletar`, {
           eventId: appointment,
@@ -3384,6 +3411,14 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
             <Loader size={4} color="var(--blue-twitter)" />
           </div>
         </>
+      )}
+
+      {confirmDeleteCalendarEvent && (
+        <ConfirmBoxModal
+          title="Confirmar exclusão deste compromisso?"  
+          useCheckBoxConfirm
+          message="Deseja realmente excluir esse compromisso ?"
+        />
       )}
 
     </DropArea>
