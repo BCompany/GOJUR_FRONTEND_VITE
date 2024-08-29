@@ -15,14 +15,14 @@ import React, { ChangeEvent, useState, useEffect, useRef, useCallback } from 're
 import api from 'services/api'
 import { BiSave } from 'react-icons/bi'
 import { BsClipboardData } from "react-icons/bs";
-import { FaCheck, FaRegEye } from 'react-icons/fa';
-import { ImOffice } from "react-icons/im";
+import { FaCheck, FaRegEye, FaRegFileImage } from 'react-icons/fa';
+import { MdCloudUpload } from "react-icons/md";
 import { Overlay } from 'Shared/styles/GlobalStyle';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import { useToast } from 'context/toast'
 import { useHistory } from 'react-router-dom'
 import { HeaderPage } from 'components/HeaderPage';
-import { Container, Content, InvoiceHeader, InvoiceHeaderImage, InvoiceHeaderText, CircleLine, Circle, Buttons } from './styles'
+import { Container, Content, InvoiceHeader, InvoiceHeaderImage, InsertImage, InvoiceHeaderText, CircleLine, Circle, Buttons } from './styles'
 
 export interface ICompanyData{
   companyId: number;
@@ -39,15 +39,19 @@ export interface ICompanyData{
 }
 
 const ConfigureInvoice: React.FC = () => {
+  // #region STATES
   const token = localStorage.getItem('@GoJur:token')
   const { addToast } = useToast()
   const history = useHistory()
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isSaving, setIsSaving] = useState<boolean>(false)
-  const [hasInvoiceHeaderImage, setHasInvoiceHeaderImage] = useState<string>('S')
-  const [imageBackGround, setImageBackGround] = useState('#EEEEEE')
-  const [textBackGround, setTextBackGround] = useState('#FFFFFF')
+  const [hasMark, setHasMark] = useState<string>('S')
+  const [imageBackground, setImageBackground] = useState('#EEEEEE')
+  const [textBackground, setTextBackground] = useState('#FFFFFF')
   const [fontColor, setFontColor] = useState('#000000')
+  const [hasImage, setHasImage] = useState<string>("N")
+  const [imageLink, setImageLink] = useState<string>("")
+  const [filesName, setFilesName] = useState<string>("")
 
   const [companyName, setCompanyName] = useState<string>("")
   const [numTelefone, setNumTelefone] = useState<string>("")
@@ -70,6 +74,7 @@ const ConfigureInvoice: React.FC = () => {
   const [checkCircle10, setCheckCircle10] = useState<boolean>(false)
   const [checkCircle11, setCheckCircle11] = useState<boolean>(false)
   const [checkCircle12, setCheckCircle12] = useState<boolean>(false)
+  // #endregion
 
 
   useEffect(() => {
@@ -92,6 +97,29 @@ const ConfigureInvoice: React.FC = () => {
       setEndereco(response.data.des_Endereco)
       setMunicipioDesc(response.data.nom_Municipio)
 
+      LoadBillingInvoiceModel()
+
+      setIsLoading(false);
+    }
+    catch (err:any) {
+      setIsLoading(false)
+      addToast({type: "error", title: "Operação não realizada", description: err.response.data.Message})
+    }
+  }
+
+
+  const LoadBillingInvoiceModel = async () => {
+    try {
+      setIsLoading(true);
+
+      const response = await api.get('/Financeiro/Faturamento/EditarModeloFatura', {params: {token}})
+
+      setHasMark(response.data.hasMark)
+      setHasImage(response.data.hasImage)
+      setImageLink(response.data.imageLink)
+      setImageBackground(response.data.imageBackground)
+      setTextBackground(response.data.textBackground)
+
       setIsLoading(false);
     }
     catch (err:any) {
@@ -102,7 +130,7 @@ const ConfigureInvoice: React.FC = () => {
 
 
   const handleOptionButtion = (e, option) => {
-    setHasInvoiceHeaderImage(option)
+    setHasMark(option)
   }
 
 
@@ -111,74 +139,74 @@ const ConfigureInvoice: React.FC = () => {
     
     if(item == "#0030B9"){
       setCheckCircle01(true)
-      setTextBackGround(item)
-      setImageBackGround("#001074")
+      setTextBackground(item)
+      setImageBackground("#001074")
       setFontColor("#FFFFFF")
     }
     if(item == "#FFFFFF"){
       setCheckCircle02(true)
-      setTextBackGround(item)
-      setImageBackGround("#EEEEEE")
+      setTextBackground(item)
+      setImageBackground("#EEEEEE")
       setFontColor("#000000")
     }
     if(item == "#1DA9DA"){
       setCheckCircle03(true)
-      setTextBackGround(item)
-      setImageBackGround("#007AB4")
+      setTextBackground(item)
+      setImageBackground("#007AB4")
       setFontColor("#FFFFFF")
     }
     if(item == "#FF4E7A"){
       setCheckCircle04(true)
-      setTextBackGround(item)
-      setImageBackGround("#D62B5D")
+      setTextBackground(item)
+      setImageBackground("#D62B5D")
       setFontColor("#FFFFFF")
     }
     if(item == "#EEEEEE"){
       setCheckCircle05(true)
-      setTextBackGround(item)
-      setImageBackGround("#FFFFFF")
+      setTextBackground(item)
+      setImageBackground("#FFFFFF")
       setFontColor("#000000")
     }
     if(item == "#00D071"){
       setCheckCircle06(true)
-      setTextBackGround(item)
-      setImageBackGround("#00B865")
+      setTextBackground(item)
+      setImageBackground("#00B865")
       setFontColor("#FFFFFF")
     }
     if(item == "#C5381A"){
       setCheckCircle07(true)
-      setTextBackGround(item)
-      setImageBackGround("#AB3116")
+      setTextBackground(item)
+      setImageBackground("#AB3116")
       setFontColor("#FFFFFF")
     }
     if(item == "#FF9A0A"){
       setCheckCircle08(true)
-      setTextBackGround(item)
-      setImageBackGround("#E68A09")
+      setTextBackground(item)
+      setImageBackground("#E68A09")
       setFontColor("#FFFFFF")
     }
     if(item == "#FFD33F"){
       setCheckCircle09(true)
-      setTextBackGround(item)
-      setImageBackGround("#e6BD39")
+      setTextBackground(item)
+      setImageBackground("#e6BD39")
       setFontColor("#000000")
     }
     if(item == "#8D72CF"){
       setCheckCircle10(true)
-      setTextBackGround(item)
-      setImageBackGround("#735DA8")
+      setTextBackground(item)
+      setImageBackground("#735DA8")
       setFontColor("#FFFFFF")
     }
     if(item == "#B0B0B0"){
       setCheckCircle11(true)
-      setTextBackGround(item)
-      setImageBackGround("#969696")
+      setTextBackground(item)
+      setImageBackground("#969696")
       setFontColor("#FFFFFF")
     }
     if(item == "#333333"){
       setCheckCircle12(true)
-      setTextBackGround(item)
-      setImageBackGround("#000000")
+      setTextBackground(item)
+      setImageBackground("#000000")
       setFontColor("#FFFFFF")
     }
   }
@@ -203,8 +231,10 @@ const ConfigureInvoice: React.FC = () => {
   const Generate = useCallback ( async() => {
     try{
       setIsLoading(true)
-      alert('VISUALIZAR FATURA')
+      Save('')
 
+
+      
       setIsLoading(false)
     }
     catch(err:any){
@@ -214,18 +244,68 @@ const ConfigureInvoice: React.FC = () => {
   }, [])
 
 
-  const Save = useCallback ( async() => {
+  const Save = useCallback ( async(caller:string) => {
     try{
-      setIsSaving(true)
-      alert('SALVAR MODELO')
+      if(caller == "save")
+        setIsSaving(true)
+      
+      const response = await api.post('/Financeiro/Faturamento/SalvarModeloFatura', {
+        hasMark,
+        hasImage,
+        imageLink,
+        imageBackground,
+        textBackground,
+        token
+      })
 
-      setIsSaving(false)
+      if(caller == "save"){
+        addToast({type: "success", title: "Operação realizada com sucesso.", description: "O modelo de fatura foi salvo no sistema."})
+        setIsSaving(false)
+      }
     }
     catch(err:any){
       setIsSaving(false)
       addToast({type: "error", title: "Falha ao salvar modelo de fatura.", description: err.response.data.Message})
     }
-  }, [])
+  }, [hasMark, hasImage, imageLink, imageBackground, textBackground])
+
+
+  const onFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      await UploadImage(file, e.target.files[0].name)
+    }
+  }
+
+
+  const UploadImage = async (image: any, fileName: string) => {
+    try{
+      setIsLoading(true)
+
+      const payload = {token: token, fileName: fileName}
+      const file = new File([image], image)
+
+      const headerImage = new FormData()
+      headerImage.append('headerImage', file)
+      headerImage.append('payload',  JSON.stringify(payload))  
+      
+      const response = await api.post('/Financeiro/Faturamento/UploadImagemModelo', headerImage)
+
+      setImageLink(response.data)
+      setHasImage("S")
+      setIsLoading(false)
+    }
+    catch (err:any) {
+      setIsLoading(false)
+      addToast({type: "error", title: "Falha ao carregar imagem.", description: err.response.data.Message})
+    }
+  }
+
+
+  const ChangeImage = () => {
+    setHasImage("N")
+    setImageLink("")
+  }
 
 
   return (
@@ -237,23 +317,39 @@ const ConfigureInvoice: React.FC = () => {
         <br />
 
         <div className="chartToolBar" style={{marginTop:'-10px'}}>
-          <input type="radio" checked={hasInvoiceHeaderImage === 'S'} onClick={(e) => handleOptionButtion(e,'S')}  />
+          <input type="radio" checked={hasMark === 'S'} onClick={(e) => handleOptionButtion(e,'S')}  />
           {' '}
-          <span style={{fontSize:'16px'}}>Com Marca</span>
+          <span style={{fontSize:'16px'}}>Com Logo</span>
           &nbsp;&nbsp;&nbsp;&nbsp;
-          <input type="radio" checked={hasInvoiceHeaderImage === 'N'} onClick={(e) => handleOptionButtion(e,'N')}  />
+          <input type="radio" checked={hasMark === 'N'} onClick={(e) => handleOptionButtion(e,'N')}  />
           {' '}
-          <span style={{fontSize:'16px'}}>Sem Marca</span>
+          <span style={{fontSize:'16px'}}>Sem Logo</span>
         </div>
         
         <InvoiceHeader id='InvoiceHeader'>
-          {hasInvoiceHeaderImage == 'S' && (
-            <InvoiceHeaderImage id='InvoiceHeaderImage' style={{backgroundColor:(imageBackGround)}}>
+          {hasMark == 'S' && (
+            <InvoiceHeaderImage id='InvoiceHeaderImage' style={{backgroundColor:(imageBackground)}}>
+              {hasImage == 'S' ? (
+                <>
+                  <img src={imageLink} alt="logo" style={{maxHeight:'200px', maxWidth:'200px'}} />
+                </>
+              ) : (
+                <>
+                  <InsertImage>
+                    <label htmlFor="upload">
+                      <MdCloudUpload />
+                      <br />
+                      Inserir imagem
+                    </label>
+                    <input id="upload" type="file" style={{display:'none'}} accept="image/*" onChange={onFileChange} />
+                  </InsertImage>
+                </>
+              )}
 
             </InvoiceHeaderImage>
           )}
 
-          <InvoiceHeaderText id='InvoiceHeaderText' style={{backgroundColor:(textBackGround), width:(hasInvoiceHeaderImage == "N" ? '100%' : '80%')}}>
+          <InvoiceHeaderText id='InvoiceHeaderText' style={{backgroundColor:(textBackground), width:(hasMark == "N" ? '100%' : '80%')}}>
             <p>&nbsp;</p>
             <p style={{fontSize:'20px', fontWeight:600, color:(fontColor)}}>{companyName}</p>
             <p style={{fontSize:'18px', fontWeight:500, color:(fontColor)}}>{documentNumber}</p>
@@ -288,17 +384,24 @@ const ConfigureInvoice: React.FC = () => {
         <br />
 
         <Buttons id='Buttons'>
-        <button className="buttonClick" type='button' onClick={() => history.push('/companyinformation')}>
+          {hasImage == "S" && (
+            <button className="buttonClick" type='button' onClick={()=> ChangeImage()}>
+              <FaRegFileImage />
+              Trocar Imagem
+            </button>
+          )}
+          
+          <button className="buttonClick" type='button' onClick={() => history.push('/companyinformation')}>
             <BsClipboardData />
             Dados Empresa
           </button>
           
           <button className="buttonClick" type='button' onClick={()=> Generate()}>
-            <FaRegEye  />
+            <FaRegEye />
             Visualizar Fatura
           </button>
           
-          <button className="buttonClick" type='button' onClick={()=> Save()}>
+          <button className="buttonClick" type='button' onClick={()=> Save('save')}>
             <BiSave />
             Salvar Modelo
           </button>

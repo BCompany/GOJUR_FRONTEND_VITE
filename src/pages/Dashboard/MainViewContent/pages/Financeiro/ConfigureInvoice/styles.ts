@@ -60,6 +60,37 @@ export const InvoiceHeaderImage = styled.div`
   float: left;
   height: 100%;
   width: 20%;
+  align-content: center;
+  text-align: center;
+`;
+
+
+export const InsertImage = styled.div`
+  font-size: 14px;
+  height: 100%;
+  width: 100%;
+  align-content: center;
+  text-align: center;
+
+  > div {
+    cursor: pointer;
+
+    > svg {
+      width: 24px;
+      height: 24px;
+      color: var(--blue-twitter);
+    }
+  }
+
+  > label {
+    cursor: pointer;
+
+    > svg {
+      width: 24px;
+      height: 24px;
+      color: var(--blue-twitter);
+    }
+  }
 `;
 
 
