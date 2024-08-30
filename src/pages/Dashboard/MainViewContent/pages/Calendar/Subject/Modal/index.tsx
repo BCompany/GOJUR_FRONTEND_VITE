@@ -412,7 +412,7 @@ const SubjectEdit = () => {
                   style={{width:'100px'}}
                 >
                   <FiSave />
-                  Salvar 
+                  Salvar
                 </button>
               </div>
                         

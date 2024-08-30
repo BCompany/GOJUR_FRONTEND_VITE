@@ -1867,7 +1867,7 @@ const CalendarReport: React.FC = () => {
                   onClick={()=> handleSaveFilter()}
                 >
                   <FiSave />
-                  Salvar 
+                  Salvar
                 </button>
               </div>
                         
