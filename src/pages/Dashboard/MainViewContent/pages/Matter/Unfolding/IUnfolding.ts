@@ -3,4 +3,5 @@ export interface IUnfolding {
     matterNumber: string;
     description: string;
     flgCourt: string;
+    credentialId: string;
   }

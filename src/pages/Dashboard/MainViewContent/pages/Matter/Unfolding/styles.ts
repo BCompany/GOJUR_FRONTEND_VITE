@@ -14,10 +14,10 @@ export const Modal = styled.div<SearchProps>`
   overflow: auto;
   background-color: var(--white);
   position: absolute;
-  z-index: 99998;
+  z-index: 99;
   justify-content: center;
   margin-left: 4%;
-  margin-top: -6%;
+  margin-top: -2%;
 
   input, select {
     flex: 1;
@@ -64,6 +64,31 @@ export const Modal = styled.div<SearchProps>`
     &:hover {
       color: var(--orange);
     }
+  }
+`;
+
+export const OverlayUnfolding = styled.div`
+  background-color: rgba(0, 0, 0, 0.4);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 991;
+
+  /* text inside overlay */
+  > div {
+    background: var(--white-card);
+    height: 3rem;
+    color: var(--blue-twitter);
+    font-size: 0.765rem;
+    text-align: center;
+    padding: 1rem;
+    margin-left: 30vw;
+    margin-right: 25vw;
+    margin-top: 20%;
+    border-radius: 0.25rem;
+    box-shadow: 1px 1px 4px 0.5px rgba(0, 0, 0, 0.15);
   }
 `;
 
