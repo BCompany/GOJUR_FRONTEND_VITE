@@ -768,7 +768,7 @@ const CustomerList: React.FC = () => {
       {isDeleting && (
 
         <ConfirmBoxModal
-          title="Deletar Registro"
+          title="Excluir Registro"
           caller="customerList"
           message="Confirma a exclusão deste cliente ?"
         />
@@ -782,7 +782,7 @@ const CustomerList: React.FC = () => {
           <Overlay />
           <div className='waitingMessage'>
             <LoaderWaiting size={15} color="var(--blue-twitter)" />
-            &nbsp;&nbsp; Deletando Cliente...
+            &nbsp;&nbsp; Excluindo Cliente...
           </div>
         </>
       )}

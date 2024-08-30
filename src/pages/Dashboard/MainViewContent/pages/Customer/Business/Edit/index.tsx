@@ -596,7 +596,7 @@ export default function BusinessCardEdit( ) {
             
       {isDeleting && (
         <ConfirmBoxModal
-          title="Deletar Registro"
+          title="Excluir Registro"
           useCheckBoxConfirm
           caller="businessList"
           message="Confirma a exclusão desta oportunidade de negócio ?"

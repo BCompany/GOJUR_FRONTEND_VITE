@@ -1,63 +1,22 @@
 import styled from 'styled-components'
 
 export const Container = styled.div`
+  z-index:99999,
+  flex-direction: column;
+  font-family: Montserrat;
+  min-height:80vh;
 
-    z-index:99999,
-    flex-direction: column;
-    font-family: Montserrat;
-    min-height:80vh;
+  header {
+    color: var(--blue-twitter);
+    text-align: center;
+    margin-bottom:1rem;
 
-    header {
-        color: var(--blue-twitter);
-        text-align: center;
-        margin-bottom:1rem;
-
-        h1 {
-            font-size:0.8rem;
-            font-weight:300;
-           margin-bottom:0.5rem;
-            //border-bottom:2px solid var(--gray);
-        }
-
-      
+    h1 {
+      font-size:0.8rem;
+      font-weight:300;
+      margin-bottom:0.5rem;
     }
-
-
-//      div {
-//     display: flex;
-//     align-items: center;
-//     justify-content: center;
-//     padding: 0.8rem 2rem;
-//     font-family: Montserrat;
-//     p {
-//       font-size: 0.75rem;
-//       color: var(--primary);
-
-//       .checkMessage{
-//         color:red;
-//         font-size:0.7rem;
-//       }
-
-//       .checkMessageWarnning{
-//         color:red;
-//         font-size:0.7rem;
-//         font-weight:600;
-//       }
-//     }
-//   }
-
-
-        // input {
-        //     border:1px solid var(--gray);
-        //     background-color: rgba(255,255,255,0.25);
-        //     border-bottom: 1px solid rgba(0,0,0,0.15);
-        //     color: var(--secondary);
-        //     margin-right:0.1rem;
-        //     padding:0.2rem;
-        //     font-size:0.75rem;
-        //     width:40%;
-        // }
-    }
+  }
 `;
 
 export const ContainerDetails = styled.div `
@@ -75,7 +34,7 @@ export const ContainerDetails = styled.div `
   left: 32%;
   position: absolute;
 
-  //mídia para dispositivos móveis
+  // mídia para dispositivos móveis
   @media (max-width: 768px) {
     width: 90%;
     height: auto;
@@ -93,12 +52,14 @@ export const ContainerDetails = styled.div `
     padding-top: 0.25rem;
     background-color: rgba(0, 0, 0, 0.06);
     color: var(--orange);
+
     > button {
       width: 24px;
       height: 24px;
       display: flex;
       align-items: center;
       justify-content: center;
+
       > svg {
         width: 24px;
         height: 24px;
@@ -119,6 +80,7 @@ export const ContainerDetails = styled.div `
     justify-content: center;
     padding: 0.8rem 2rem;
     font-family: Montserrat;
+
     p {
       font-size: 0.75rem;
       color: var(--primary);
@@ -127,7 +89,6 @@ export const ContainerDetails = styled.div `
       .checkMessage{
         color:red;
         font-size:0.7rem;
-
       }
 
       .checkMessageWarnning{

@@ -2414,7 +2414,7 @@ export default function Customer() {
           <Overlay />
           <div className='waitingMessage'>
             <LoaderWaiting size={15} color="var(--blue-twitter)" />
-            &nbsp;&nbsp; Deletando Cliente...
+            &nbsp;&nbsp; Excluindo Cliente...
           </div>
         </>
       )}
