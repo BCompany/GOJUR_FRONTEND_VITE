@@ -508,7 +508,7 @@ const CustomerList: React.FC = () => {
                 type="submit"
               >
                 <BsFunnel />
-                 Funil de Vendas
+                Funil de Vendas
               </button>
             )}
 
@@ -520,7 +520,7 @@ const CustomerList: React.FC = () => {
                 type="submit"
               >
                 <RiDashboardLine />
-                 DashBoard
+                DashBoard
               </button>
             )}
 
@@ -769,6 +769,7 @@ const CustomerList: React.FC = () => {
 
         <ConfirmBoxModal
           title="Deletar Registro"
+          useCheckBoxConfirm
           caller="customerList"
           message="Confirma a exclusão deste cliente ?"
         />

@@ -131,7 +131,6 @@ const LoginScreen: React.FC = () => {
             advocacia, departamentos jurídicos de empresas, imobiliárias e
             escritórios de cobrança.
           </p>
-          
           <Contrate>
             <a href="https://www.bcompany.com.br/planos/">Contrate Agora</a>
           </Contrate>

@@ -23,8 +23,6 @@ import { FaRegTimesCircle, FaWhatsapp } from 'react-icons/fa';
 import { BsCheckBox } from 'react-icons/bs';
 import { TiCancel } from 'react-icons/ti';
 import { FcSearch } from 'react-icons/fc';
-import ConfirmBoxModal from 'components/ConfirmBoxModal';
-import { useConfirmBox } from 'context/confirmBox';
 import { format } from 'date-fns';
 import { isMobile } from 'react-device-detect'
 import { useModal } from 'context/modal';
@@ -43,7 +41,6 @@ import { useLocation } from 'react-router-dom';
 import { AppointmentPropsSave, AppointmentPropsDelete, SelectValues, Data, dataProps, LembretesData, MatterData, ModalProps, ResponsibleDTO, Settings, ShareListDTO, userListData } from 'pages/Dashboard/MainViewContent/pages/Interfaces/ICalendar';
 import { IMatterData } from 'pages/Dashboard/MainViewContent/pages/Interfaces/IMatter';
 import LogModal from '../../../../../../../../components/LogModal';
-import ConfirmDeleteModal from 'components/ConfirmDeleteModal';
 import GridSelectProcess from './GridSelectProcess';
 import SaveModal from './SaveModal';
 import DeleteModal from './DeleteModal';
@@ -51,9 +48,6 @@ import { selectedDayProps, selectedWeekProps } from './Interfaces/ICalendar';
 import { dayRecurrence, optionsLembrete, weekRecurrence } from './ListValues/List';
 import CalendarReminderModal from './CustomizeCalendarReminderModal';
 import { Container2, Container, ModalContent, ModalDateSettings, Wrapper, WrapperResp, Process, DropArea, Footer, Lembrete, Responsavel, ResponsibleList, ReminderList, ShareList, Privacidade, Share, ModalRecurrence, Multi, ConfirmOverlay, ModalConfirm} from './styles';
-
-
-
 
 export interface IParameterData {
   parameterId: number;
@@ -153,25 +147,6 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   const [small, setSmall] = useState<boolean>(false);
   const [checkMessage, setCheckMessage] = useState(false)
   const [confirmSave, setConfirmSave] = useState(false)
-  const [confirmDeleteCalendarEvent, setConfirmDeleteCalendarEvent] = useState<boolean>(false)
-  const { handleCancelMessage, handleConfirmMessage, isCancelMessage, isConfirmMessage } = useConfirmBox();
-
-
-  useEffect(() => {
-    if (isCancelMessage) {
-      alert("CANCELA")
-      handleCancelMessage(false)
-    }
-  }, [isCancelMessage]);
-
-
-  useEffect(() => {
-    if (isConfirmMessage) {
-      alert("CONFIRMA")
-      handleConfirmMessage(false)
-      // handleDeleteModal()
-    }
-  }, [isConfirmMessage]);
 
 
   useEffect(() => {
@@ -1349,15 +1324,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       const userToken = localStorage.getItem('@GoJur:token');
       const appointment = modalActiveId
       const recurrenceDate = localStorage.getItem('@GoJur:RecurrenceDate');
-      
+
       if (appointmentRecurrent === 'N') {
-
-
-        if (confirmDeleteCalendarEvent == false)
-        {
-          setConfirmDeleteCalendarEvent(true);
-          return;
-        }
 
         await api.post(`/Compromisso/Deletar`, {
           eventId: appointment,
@@ -1365,7 +1333,6 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
           dateRecurrence: recurrenceDate,
           serieRecurrenceChange: 'one',
         });
-
 
         addToast({
           type: 'success',
@@ -1376,7 +1343,6 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         isClosed()
         handleModalActiveId(0)
         handleModalActive(false)
-        setConfirmDeleteCalendarEvent(false);
       }
       else{
         const data: AppointmentPropsDelete = {
@@ -1398,7 +1364,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
           'Não foi possivel deletar seu comprimisso, tente novamente!',
       });
     }
-  }, [appointmentRecurrent, openDeleteModal, addToast, confirmDeleteCalendarEvent]);
+  }, [appointmentRecurrent, openDeleteModal, addToast]);
 
 
   const handleUserDragInDrop = (e: any, origin: string) => {
@@ -1825,17 +1791,6 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
   const HandleCheckMessage = () => {
     setCheckMessage(true)
-  }
-
-
-  const handleCloseConfirmDelete = () => {
-    setConfirmDeleteCalendarEvent(false);
-  }
-
-
-  const handleConfirmDelete = () => {
-    setConfirmDeleteCalendarEvent(false);
-    handleDeleteModal();
   }
 
 
@@ -2592,6 +2547,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                     id="delete"
                     disabled={appointmentBlockUpdate}
                     onClick={() => {
+                      // handleDeleteAppointment();
                       handleDeleteModal();
                       setLoadingDelete(!loadingDelete);
                     }}
@@ -2599,7 +2555,6 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                     Excluir
                     {loadingDelete ? <Loader size={20} color="#f19000" /> : null}
                   </button>
-         
                   <button type="button" id="done" onClick={handleDoneOrReopen}>
                     {textButton}
                     {loadingDone ? <Loader size={20} color="#f19000" /> : null}
@@ -2610,13 +2565,11 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                 </div>
               </Footer>
 
-
             </Container2>
           ))}
 
         </ResponsiveGridLayout>
       )}
-      
 
       {small && (
         <ResponsiveGridLayout
@@ -3389,7 +3342,6 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
             </Container2>
           ))}
-        
 
         </ResponsiveGridLayout>
       )}
@@ -3431,15 +3383,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
             Aguarde um instante...
             <Loader size={4} color="var(--blue-twitter)" />
           </div>
-          
         </>
       )}
-
-      {(confirmDeleteCalendarEvent) && <Overlay /> }
-      {confirmDeleteCalendarEvent && (
-        <ConfirmDeleteModal callbackFunction={{handleCloseConfirmDelete, handleConfirmDelete}} />
-      )}
-
 
     </DropArea>
   );
