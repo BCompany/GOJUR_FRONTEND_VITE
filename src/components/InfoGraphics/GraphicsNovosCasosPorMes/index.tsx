@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+/* eslint-disable no-restricted-globals */
+import React, { useState, useEffect, AreaHTMLAttributes } from 'react';
 import { Line } from 'react-chartjs-2';
 import api from 'services/api';
 import HeaderComponent from '../../HeaderComponent';
@@ -8,7 +9,11 @@ import {
   graphicsColors,
 } from '../../../Shared/dataComponents/graphicsColors';
 
-import { Container, Content } from './styles';
+import { Container, Content, ContainerHeader } from './styles';
+import { useHeader } from 'context/headerContext';
+
+import { FaEye } from "react-icons/fa";
+import {  FiX } from 'react-icons/fi';
 
 interface Data {
   resultName: string;
@@ -25,12 +30,28 @@ interface GraphicProps {
   title: string;
   idElement: string;
   visible: string;
+  activePropagation: any;
+  stopPropagation: any;
+  xClick:any;
+  handleClose: any;
+  cursor: boolean;
+}
+
+interface HeaderProps extends AreaHTMLAttributes<HTMLAreaElement> {
+  title: string;
+  cursor: boolean;
+  action?: any;
 }
 
 const GraphicsNovosCasosPorMes: React.FC<GraphicProps> = ({
   title,
   idElement,
   visible,
+  activePropagation,
+  stopPropagation,
+  xClick,
+  handleClose,
+  cursor,
   ...rest
 }) => {
   const [monthValues, setMonthValues] = useState<string[]>([]);
@@ -41,6 +62,8 @@ const GraphicsNovosCasosPorMes: React.FC<GraphicProps> = ({
   const [metterName, setMetterName] = useState<string>(title);
   const [metterMessage, setMetterMessage] = useState<string>('');
   const token = localStorage.getItem('@GoJur:token');
+  const [haveAction, setHaveAction] = useState(false);
+  const {dragOn} = useHeader();
 
   useEffect(() => {
     async function handleData() {
@@ -114,37 +137,92 @@ const GraphicsNovosCasosPorMes: React.FC<GraphicProps> = ({
   };
 
   return (
-    <Container {...rest} style={{opacity:(visible === 'N' ? '0.5' : '1')}}>
-      <HeaderComponent title={metterName} idElement={idElement} visible={visible} cursor />
-      <Content>
-        {endMetters.length === 0 ? (
-          <p
-            style={{
-              fontSize: 14,
-              color: '#7d7d7d',
-              textAlign: 'center',
-              flex: 1,
-              fontWeight: 400,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 16,
-            }}
-          >
-            Não existem dados o suficiente para esse indicador
-          </p>
-        ) : (
-          <>
-            <div style={{marginBottom:'30px'}} />
-            <Line 
-              type='line' 
-              data={data} 
-              options={options}
-            />
-          </>
-        )}
-      </Content>
-    </Container>
+    <>
+    {dragOn ? (
+      <Container id='Container' {...rest} {...rest} style={{opacity:(visible === 'N' ? '0.5' : '1')}}>
+          <ContainerHeader id='ContainerHeader' style={{display:'inline-block', zIndex:99999}} cursorMouse={cursor} onMouseOut={activePropagation} onMouseOver={stopPropagation} handleClose={haveAction}>
+              <div style= {{ display:'inline-block', width:"90%", height:"90%",...rest}} onMouseOut={activePropagation} onMouseOver={stopPropagation} >
+                <p>{title}</p>
+              </div> 
+              <div style={{display:'inline-block', width: "10%", height:"10%", cursor:"pointer"}} onMouseOut={activePropagation} onMouseOver={stopPropagation}>                       
+                {visible == 'N' ? (
+                    <button onClick={() => { handleClose("S", idElement) }} style={{display:'inline-block'}}>
+                      <FaEye title='Ativar gráfico' />
+                    </button>
+                    ) : (
+                    <button onClick={() => { handleClose("N", idElement)}} style={{display:'inline-block'}}>
+                        <FiX title='Desativar gráfico' />
+                    </button>  
+                )}              
+              </div>         
+        </ContainerHeader> 
+        <Content>
+          {endMetters.length === 0 ? (
+            <p
+              style={{
+                fontSize: 14,
+                color: '#7d7d7d',
+                textAlign: 'center',
+                flex: 1,
+                fontWeight: 400,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 16,
+              }}
+            >
+              Não existem dados o suficiente para esse indicador
+            </p>
+          ) : (
+            <>
+              <div style={{marginBottom:'30px'}} />
+              <Line 
+                type='line' 
+                data={data} 
+                options={options}
+              />
+            </>
+          )}
+        </Content>
+      </Container>
+    ) : (
+          <Container {...rest} style={{opacity:(visible === 'N' ? '0.5' : '1')}}>
+            <ContainerHeader id='ContainerHeader' style={{display:'inline-block', zIndex:99999}} cursorMouse={cursor} handleClose={haveAction}>
+              <div style= {{ display:'inline-block', width:"90%", height:"90%",...rest}}>
+                <p style={{width:"100%", height:"100%"}}>{title}</p>
+              </div> 
+            </ContainerHeader> 
+            <Content>
+              {endMetters.length === 0 ? (
+                <p
+                  style={{
+                    fontSize: 14,
+                    color: '#7d7d7d',
+                    textAlign: 'center',
+                    flex: 1,
+                    fontWeight: 400,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 16,
+                  }}
+                >
+                  Não existem dados o suficiente para esse indicador
+                </p>
+              ) : (
+                <>
+                  <div style={{marginBottom:'30px'}} />
+                  <Line 
+                    type='line' 
+                    data={data} 
+                    options={options}
+                  />
+                </>
+              )}
+            </Content>
+          </Container>
+      )}
+    </>
   );
 };
 

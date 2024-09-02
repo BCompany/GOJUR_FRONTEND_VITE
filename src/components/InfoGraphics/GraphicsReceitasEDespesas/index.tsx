@@ -1,10 +1,14 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import React, { useState, useEffect, ChangeEvent, useCallback } from 'react';
+import React, { useState, useEffect, ChangeEvent, useCallback, AreaHTMLAttributes } from 'react';
 import { Line } from 'react-chartjs-2';
 import api from 'services/api';
 import HeaderComponent from '../../HeaderComponent';
 
-import { Container } from './styles';
+import { Container, ContainerHeader } from './styles';
+import { useHeader } from 'context/headerContext';
+
+import { FaEye } from "react-icons/fa";
+import {  FiX } from 'react-icons/fi';
 
 interface Data {
   resultName: string;
@@ -27,6 +31,11 @@ interface GraphicProps {
   title: string;
   idElement: string;
   visible: string;
+  activePropagation: any;
+  stopPropagation: any;
+  xClick:any;
+  handleClose: any;
+  cursor: boolean;
 }
 
 interface DefaultsListData {
@@ -56,7 +65,7 @@ const optionsGraphic = [
   {id: 1, description: 'Realizado' }
 ];
 
-const GraphicsReceitasEDespesas: React.FC<GraphicProps> = ({title, idElement, visible, ...rest }) => {
+const GraphicsReceitasEDespesas: React.FC<GraphicProps> = ({title, idElement, visible, activePropagation, stopPropagation, xClick, handleClose, cursor, ...rest }) => {
   const [monthValues, setMonthValues] = useState<string[]>([]);
   const [incomes, setIncomes] = useState<number[]>([]);
   const [outcomes, setOutcomes] = useState<number[]>([]);
@@ -66,6 +75,8 @@ const GraphicsReceitasEDespesas: React.FC<GraphicProps> = ({title, idElement, vi
   const [selectedCarteira, setSelectedCarteira] = useState('');
   const [carteira, setCarteira] = useState<AccountsData[]>([]);
   const token = localStorage.getItem('@GoJur:token');
+  const [haveAction, setHaveAction] = useState(false);
+  const {dragOn} = useHeader();
 
   useEffect(() => {
 
@@ -188,46 +199,110 @@ const GraphicsReceitasEDespesas: React.FC<GraphicProps> = ({title, idElement, vi
   };
 
   return (
-    <Container {...rest} style={{opacity:(visible === 'N' ? '0.5' : '1')}}>
-      <HeaderComponent title={metterName} idElement={idElement} visible={visible} cursor />
-      <div>
-        <label htmlFor="carteira" />
-        <select
-          name="carteira"
-          id="carteira"
-          value={selectedCarteira}
-          onChange={handleSelectedCarteira}
-        >
-          {carteira.map(c => (
-            <option key={c.id} value={c.id}>
-              {c.value}
-            </option>
-          ))}
-        </select>
+    <>
+      {dragOn ? (
+          <Container {...rest} style={{opacity:(visible === 'N' ? '0.5' : '1')}}>
+             <ContainerHeader id='ContainerHeader' style={{display:'inline-block', zIndex:99999}} cursorMouse={cursor} onMouseOut={activePropagation} onMouseOver={stopPropagation} handleClose={haveAction}>
+              <div style= {{ display:'inline-block', width:"90%", height:"90%",...rest}} onMouseOut={activePropagation} onMouseOver={stopPropagation} >
+                <p>{title}</p>
+              </div>
+              <div style={{display:'inline-block', width: "10%", height:"10%", cursor:"pointer"}} onMouseOut={activePropagation} onMouseOver={stopPropagation}>                       
+                {visible == 'N' ? (
+                    <button onClick={() => { handleClose("S", idElement)}} style={{display:'inline-block'}}>
+                      <FaEye title='Ativar gráfico' />
+                    </button>
+                    ) : (
+                    <button onClick={() => { handleClose("N", idElement)}} style={{display:'inline-block'}}>
+                        <FiX title='Desativar gráfico' />
+                    </button>  
+                )}              
+              </div>
+            </ContainerHeader> 
+            <div>
+              <label htmlFor="carteira" />
+              <select
+                name="carteira"
+                id="carteira"
+                value={selectedCarteira}
+                onChange={handleSelectedCarteira}
+              >
+                {carteira.map(c => (
+                  <option key={c.id} value={c.id}>
+                    {c.value}
+                  </option>
+                ))}
+              </select>
 
-        <label htmlFor="endpoint" />
+              <label htmlFor="endpoint" />
 
-        <select
-          name="EndPoint"
-          id="endpoint"
-          value={chartType}
-          onChange={(e) => setChartType(e.target.value)}
-        >
-          {optionsGraphic.map(c => (
-            <option key={c.id} value={c.id}>
-              {c.description}
-            </option>
+              <select
+                name="EndPoint"
+                id="endpoint"
+                value={chartType}
+                onChange={(e) => setChartType(e.target.value)}
+              >
+                {optionsGraphic.map(c => (
+                  <option key={c.id} value={c.id}>
+                    {c.description}
+                  </option>
+                  ))}
+              </select>
+
+            </div>
+
+            <Line
+              type='line'
+              data={data} 
+              options={options}
+            />
+          </Container>
+      ) : (
+        <Container {...rest} style={{opacity:(visible === 'N' ? '0.5' : '1')}}>
+          <ContainerHeader id='ContainerHeader' style={{display:'inline-block', zIndex:99999}} cursorMouse={cursor} handleClose={haveAction}>
+            <div style= {{ display:'inline-block', width:"90%", height:"90%",...rest}} >
+              <p style={{width:"100%", height:"100%"}}>{title}</p>
+            </div>
+          </ContainerHeader>    
+        <div>
+          <label htmlFor="carteira" />
+          <select
+            name="carteira"
+            id="carteira"
+            value={selectedCarteira}
+            onChange={handleSelectedCarteira}
+          >
+            {carteira.map(c => (
+              <option key={c.id} value={c.id}>
+                {c.value}
+              </option>
             ))}
-        </select>
+          </select>
 
-      </div>
+          <label htmlFor="endpoint" />
 
-      <Line
-        type='line'
-        data={data} 
-        options={options}
-      />
-    </Container>
+          <select
+            name="EndPoint"
+            id="endpoint"
+            value={chartType}
+            onChange={(e) => setChartType(e.target.value)}
+          >
+            {optionsGraphic.map(c => (
+              <option key={c.id} value={c.id}>
+                {c.description}
+              </option>
+              ))}
+          </select>
+
+        </div>
+
+        <Line
+          type='line'
+          data={data} 
+          options={options}
+        />
+        </Container>
+      )}
+    </>    
   );
 };
 
