@@ -63,10 +63,9 @@ export const Wrapper = styled.div`
   }
 
   #divButtonChangeVisibility{
-    display: "flex"; 
+    display: "none"; 
     align-items: "center";
     justify-content:"center";
-    visibility: "hidden";
 
     >button{
       display:'inline'; 

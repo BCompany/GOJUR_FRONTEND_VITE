@@ -5,22 +5,23 @@ interface SearchProps {
 }
 
 export const ChangeVisibilityModal = styled.div<SearchProps>`
-  width: '50%'; 
-  height: '70%'; 
   font-size: 0.665rem;
   border-radius: 10px;
   box-shadow: 1px 1px 4px 0.5px rgba(0, 0, 0, 0.15);
   background-color: var(--white);
   position: fixed; /* Alterado de absolute para fixed */
+  z-index: 1000; /* Aumentado o valor do z-index */
   justify-content: center;
-  display: ${props => (props.show ? 'block' : 'none')};
+  display: ${props => (props.show ? 'flex' : 'none')};
   overflow: auto;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  flex-direction: 'column'; 
-  border: '1px solid var(--blue-twitter)'; 
   z-index: 99999;
+  border: 1px solid var(--blue-twitter);
+  flex-Direction: column;
+  width: 50%;
+  height: 70%;
 
   .header {
     background-color: rgba(0, 0, 0, 0.1);
@@ -77,8 +78,8 @@ export const GridSubContainer = styled.div`
   margin-top: 5px;
   border: 1px solid rgba(0, 0, 0, 0.15);
   font-size: 13px;
-  flex: '1 1 auto'; 
-  overflow-y: 'auto'; 
+  flex: 1 1 auto; 
+  overflow-y: auto; 
 
   big {
     font-size: 0.675rem;

@@ -99,10 +99,12 @@ const Dashboard: React.FC = () => {
     if(dragOn)
     {
       let element = document.getElementById("divButtonChangeVisibility");
+      element.style.display = "flex";
       element.style.visibility = "visible";
     }
     else{
       let element = document.getElementById("divButtonChangeVisibility");
+      element.style.display = "none";
       element.style.visibility = "hidden";
     }
 
@@ -320,11 +322,14 @@ const Dashboard: React.FC = () => {
         <Wrapper className="wrapper" onClick={() => handleShowListSearch(false)}>
           <Indicators />
 
-          <div id='divButtonChangeVisibility' style={{display: "flex", alignItems: "center", justifyContent:"center", visibility: "hidden"}}>
+
+          <div id='divButtonChangeVisibility' style={{ alignItems: "center", justifyContent:"center", visibility: "hidden"}}>
+            <br/><br/><br/>
             <button type="button" className='selectedButton' onClick={() => { openModalChangeVisibility() }} style={{display:'inline', zIndex: 9999}}>
-              <FaEye title='Alterar Visiblidade dos Gráficos'/>
-              <span>Alterar Visiblidade dos Gráficos</span>
+              <FaEye title='Personalizar DashBoard'/>
+              <span>Personalizar DashBoard</span>
             </button>
+            <br/><br/><br/>
           </div>
 
           <GridLayout

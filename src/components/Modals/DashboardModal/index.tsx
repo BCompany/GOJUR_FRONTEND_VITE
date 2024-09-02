@@ -139,12 +139,12 @@ const ModalChangeVisibility = (props) => {
 
   return (
     <>
-        <ChangeVisibilityModal show >
+        <ChangeVisibilityModal show>
             <div className='header'>
-                <p className='headerLabel'>Alterar Visiblidade dos Gráficos</p>
+                <p className='headerLabel'>Personalizar DashBoard</p>
             </div>
             
-            <GridSubContainer style={{ flex: '1 1 auto', overflowY: 'auto' }}>
+            <GridSubContainer>
                 <Grid
                     rows={layoutComp}
                     columns={columnsUsrList}
