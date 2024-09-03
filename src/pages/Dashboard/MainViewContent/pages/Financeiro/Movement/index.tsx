@@ -18,13 +18,13 @@ import { useConfirmBox } from 'context/confirmBox';
 import { useStateContext } from 'context/statesContext';
 import { useDelay, currencyConfig, selectStyles, FormatCurrency, FormatFileName, AmazonPost } from 'Shared/utils/commonFunctions';
 import { useModal } from 'context/modal';
-import { AiOutlineBarcode } from 'react-icons/ai';
+import { AiOutlineBarcode, AiOutlineMail } from 'react-icons/ai';
 import { IoIosPaper } from 'react-icons/io';
 import { BiSave } from 'react-icons/bi'
 import { BsImage } from 'react-icons/bs';
 import { CgFileDocument } from 'react-icons/cg';
 import { FaCheck, FaRegTimesCircle, FaRegCopy, FaFileAlt, FaFilePdf, FaWhatsapp, FaFileInvoiceDollar } from 'react-icons/fa';
-import { FiTrash, FiEdit, FiX, FiDownloadCloud, FiMail } from 'react-icons/fi';
+import { FiTrash, FiEdit, FiX, FiDownloadCloud, FiMail, FiPrinter } from 'react-icons/fi';
 import { HiDocumentText } from 'react-icons/hi';
 import { MdHelp, MdAttachMoney } from 'react-icons/md';
 import { RiFolder2Fill, RiEraserLine } from 'react-icons/ri';
@@ -142,6 +142,11 @@ const FinancialMovement: React.FC = () => {
   const [showChangePaymentForm, setShowChangePaymentForm] = useState<boolean>(false);
   const [changePaymentForm, setChangePaymentForm] = useState<boolean>(false);
 
+  const [discountPercetage, setDiscountPercentage] = useState<number>(0)
+  const [discountValue, setDiscountValue] = useState<number>(0)
+  const [billingInvoice, setBillingInvoice] = useState<string>('')
+  const [pixKey, setPixKey] = useState<string>('')
+
   const [showBankPaymentSlipModal, setShowBankPaymentSlipModal] = useState<boolean>(false);
   const [showBankPaymentSlipSecondCopyModal, setShowBankPaymentSlipSecondCopyModal] = useState<boolean>(false);
   const [hasFinancialIntegration, setHasFinancialIntegration] = useState<boolean>(false);
@@ -167,6 +172,7 @@ const FinancialMovement: React.FC = () => {
   // #endregion
 
   
+  // #region USE EFFECT
   useEffect(() => {
     if (isCancelMessage)
     {
@@ -242,6 +248,22 @@ const FinancialMovement: React.FC = () => {
   }, [movementId])
 
 
+  useEffect (() => {
+    if (actionSave.length > 0){
+      Save('', false);
+    }
+  }, [actionSave])
+
+
+  useEffect(() => {
+    if (uploadingStatus  === 'conclude') {
+      handleValidateFiles();
+    }
+  }, [uploadingStatus])
+  // #endregion
+
+
+  // #region USE DELAY
   useDelay(() => {
     if (peopleTerm.length > 0 && !isLoading){
       LoadPeople()
@@ -268,15 +290,10 @@ const FinancialMovement: React.FC = () => {
       LoadCenterCost()
     }
   }, [centerCostTerm], 750)
+  // #endregion
 
 
-  useEffect (() => {
-    if (actionSave.length > 0){
-      Save('', false);
-    }
-  }, [actionSave])
-
-
+  // #region MOVEMENT
   const Initialize = async () => {
     await LoadStates()
     LoadPaymentForm()
@@ -358,26 +375,6 @@ const FinancialMovement: React.FC = () => {
     catch (err:any) {
       setIsLoading(false)
       addToast({type: "info", title: "Operação não realizada", description: err.response.data.Message})
-    }
-  }
-
-
-  const LoadBankPaymentSlip = async (movementId:number) => {
-    try{
-      const response = await api.get<IBankPaymentSlip>('/BoletoBancario/ObterPorMovimento', { params:{ movementId, partnerId: 'AS', token }});
-
-      setHasFinancialIntegration(response.data.hasFinancialIntegration)
-
-      if (response.data.paymentSlipId != "0"){
-        setPaymentSlipId(response.data.paymentSlipId)
-        setBankPaymentSlipLinkDate(response.data.dueDate)
-        setHasBankPaymentSlip(response.data.hasBankPaymentSlip)
-        setBankPaymentSlipLink(response.data.bankPaymentSlipLink)
-        setPaymentSlipPartnerId(response.data.paymentSlipPartnerId)
-      }
-    }
-    catch (err:any) {
-      addToast({type: "info", title: "Operação não realizada", description: err.response.data})
     }
   }
 
@@ -489,6 +486,28 @@ const FinancialMovement: React.FC = () => {
     else{
       setChangeInstallments(false)
     }
+  }
+
+
+  const ChangeDiscountPercentage = (event, value) => {
+    event.preventDefault();
+    setDiscountPercentage(value)
+  }
+
+
+  const BlurDiscountPercentage = async() => {
+    if(movementValue == 0)
+      return;
+
+    if(discountPercetage > 100)
+    {
+      addToast({ type: "info", title: "Alerta", description: "O percentual do campo Desconto não pode ser maior que 100%" });
+      setDiscountValue(0);
+      return;
+    }
+
+    setDiscountValue((movementValue / 100) * (100 - discountPercetage))
+
   }
 
 
@@ -618,6 +637,9 @@ const FinancialMovement: React.FC = () => {
         cod_Processo: matterId,
         cod_Conta: accountId,
         changePaymentForm,
+        des_ChavePix:pixKey,
+        pct_Desconto: discountPercetage,
+        num_Fatura: billingInvoice,
         token
       })
 
@@ -647,7 +669,7 @@ const FinancialMovement: React.FC = () => {
         addToast({type: "info", title: "Falha ao salvar movimento.", description: err.response.data.Message})
       }
     }
-  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp, paymentFormType]);
+  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp, paymentFormType, pixKey, discountPercetage, billingInvoice]);
 
 
   const Copy = useCallback(async() => {
@@ -683,6 +705,8 @@ const FinancialMovement: React.FC = () => {
         flg_Reembolso: flgReembolso,
         cod_Processo: matterId,
         cod_Conta: accountId,
+        des_ChavePix:pixKey,
+        pct_Desconto: discountPercetage,
         token
       })
 
@@ -696,7 +720,7 @@ const FinancialMovement: React.FC = () => {
       addToast({type: "info", title: "Falha ao copiar movimento.", description: err.response.data.Message})
       setIsSaving(false)
     }
-  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgNotifyEmail, flgNotifyWhatsApp]);
+  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgNotifyEmail, flgNotifyWhatsApp, pixKey, discountPercetage]);
 
 
   const CheckDeleteType = (qtd) => {
@@ -1005,13 +1029,6 @@ const FinancialMovement: React.FC = () => {
   }
 
 
-  useEffect(() => {
-    if (uploadingStatus  === 'conclude') {
-      handleValidateFiles();
-    }
-  }, [uploadingStatus])
-
-
   const handleValidateFiles = async () => {
     try
     {
@@ -1202,9 +1219,31 @@ const FinancialMovement: React.FC = () => {
   const handleCloseLog = () => {
     setShowLog(false)
   }
+  // #endregion
 
 
-  const handleBankPaymentSlipDate = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+  // #region BANK PAYMENT SLIP
+  const LoadBankPaymentSlip = async (movementId:number) => {
+    try{
+      const response = await api.get<IBankPaymentSlip>('/BoletoBancario/ObterPorMovimento', { params:{ movementId, partnerId: 'AS', token }});
+
+      setHasFinancialIntegration(response.data.hasFinancialIntegration)
+
+      if (response.data.paymentSlipId != "0"){
+        setPaymentSlipId(response.data.paymentSlipId)
+        setBankPaymentSlipLinkDate(response.data.dueDate)
+        setHasBankPaymentSlip(response.data.hasBankPaymentSlip)
+        setBankPaymentSlipLink(response.data.bankPaymentSlipLink)
+        setPaymentSlipPartnerId(response.data.paymentSlipPartnerId)
+      }
+    }
+    catch (err:any) {
+      addToast({type: "info", title: "Operação não realizada", description: err.response.data})
+    }
+  }
+
+
+  const ChangeBankPaymentSlipDueDate = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setBankPaymentSlipDate(event.target.value)
   }, []);
 
@@ -1273,12 +1312,12 @@ const FinancialMovement: React.FC = () => {
   }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp, bankPaymentSlipDate, paymentSlipPartnerId, paymentSlipId]);
 
 
-  const OpenBankPaymentSlip = (item) => {
+  const OpenBankPaymentSlipNewWindow = (item) => {
     window.open(item.bankPaymentSlipLink, '_blank')
   }
 
 
-  const HandleGenerateBankPaymentSlip = () => {
+  const GenerateBankPaymentSlip = () => {
     if (movementParcelas !=  '1' && actionSave.length == 0 && movementId != '0'){
       setShowModalBankPaymentSlipOptions(true)
       return;
@@ -1288,7 +1327,7 @@ const FinancialMovement: React.FC = () => {
   }
 
 
-  const HandleGenerateBankPaymentSlipSecond = () => {
+  const GenerateSecondBankPaymentSlip = () => {
     if (movementParcelas !=  '1' && actionSave.length == 0 && movementId != '0'){
       setShowModalBankPaymentSlipOptions(true)
       return;
@@ -1302,6 +1341,17 @@ const FinancialMovement: React.FC = () => {
     setActionGenerate(actionGenerate)
     GeneratePaymentSlip(actionGenerate, false)
   }
+
+
+  const PrintBillingInvoice = () => {
+    alert("Emitir Fatura")
+  }
+
+
+  const SendEmailBillingInvoice = () => {
+    alert("Fatura por E-Mail")
+  }
+  // #endregion
 
 
   return (
@@ -1325,7 +1375,7 @@ const FinancialMovement: React.FC = () => {
           </>
         )}
 
-        <div>
+        <div style={{height:'50px'}}>
           {movementType == "R" && <span>RECEITA</span> }
           {movementType == "D" && <span>DESPESA</span> }
           {invoice != 0 && (
@@ -1342,7 +1392,6 @@ const FinancialMovement: React.FC = () => {
             </span>
           )}
         </div>
-        <br />
 
         <section id='FirstElements'>
           <label htmlFor='Data'>
@@ -1399,6 +1448,53 @@ const FinancialMovement: React.FC = () => {
         </section>
 
         <section id='SecondElements'>
+          <label htmlFor="chavePIX">
+            Chave Pix
+            <input
+              type="text"
+              className='inputField'
+              maxLength={200}
+              value={pixKey}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setPixKey(e.target.value)}
+            />
+          </label>
+          
+          <label htmlFor="desconto">
+            % Desconto
+            <IntlCurrencyInput
+              currency="BRL"
+              config={currencyConfig}
+              value={discountPercetage}
+              className='inputField'
+              onChange={ChangeDiscountPercentage}
+              onBlur={BlurDiscountPercentage}
+            />
+          </label>
+
+          <label htmlFor="desconto">
+            Valor com Desconto
+            <IntlCurrencyInput
+              currency="BRL"
+              config={currencyConfig}
+              value={discountValue}
+              className='inputField'
+              disabled
+            />
+          </label>
+
+          <label htmlFor="billingInvoice">
+            Número Fatura
+            <input
+              type="text"
+              className='inputField'
+              maxLength={10}
+              value={billingInvoice}
+              disabled
+            />
+          </label>
+        </section>
+
+        <section id='ThirdElements'>
           <label>
             Categoria
             <Select
@@ -1456,7 +1552,7 @@ const FinancialMovement: React.FC = () => {
           </label>
         </section>
 
-        <section id='ThirdElements'>
+        <section id='FouthElements'>
           <label htmlFor="description">
             Descrição
             <textarea
@@ -1467,7 +1563,7 @@ const FinancialMovement: React.FC = () => {
           </label>
         </section>
 
-        <section id='FouthElements'>
+        <section id='FifthElements'>
           <label htmlFor="pessoas">
             Pessoas
             <Select
@@ -1520,7 +1616,7 @@ const FinancialMovement: React.FC = () => {
           </label>
         </section>
 
-        <section id='FifthElements'>
+        <section id='SixthElements'>
           <div className="personList">
 
             {isMOBILE && (
@@ -1579,7 +1675,7 @@ const FinancialMovement: React.FC = () => {
         </section>
         <br />
 
-        <section id='SixthElements'>
+        <section id='SeventhElements'>
           <div id='AttachMatter' className="flexDiv" style={{marginLeft:'10px'}}>
             <Process>
               {processTitle === 'Associar Processo' && (
@@ -1615,7 +1711,7 @@ const FinancialMovement: React.FC = () => {
             {hasBankPaymentSlip &&(
               <div id='BankPaymentSlip' style={{marginTop:'6px'}}>
                 <div style={{float:'left'}}>
-                  <button type="button" onClick={(e) => OpenBankPaymentSlip({bankPaymentSlipLink})}>
+                  <button type="button" onClick={(e) => OpenBankPaymentSlipNewWindow({bankPaymentSlipLink})}>
                     <AiOutlineBarcode 
                       style={{height:'30px', width:'25px', color:'blue'}} 
                       title={`Vencimento do boleto em: ${(format(new Date(bankPaymentSlipLinkDate), 'dd/MM/yyyy'))} `}
@@ -1629,7 +1725,14 @@ const FinancialMovement: React.FC = () => {
             )}
           </div>
           <div className="flexDiv">
-            <></>
+            <>
+              {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B" && companyPlan != 'GOJURFR' && !isTotalPaid) &&(
+                <button className="buttonClick" type='button' onClick={()=> GenerateSecondBankPaymentSlip()}>
+                  <FaFileInvoiceDollar  />
+                  Gerar 2ª Via Boleto
+                </button>
+              )}
+            </>
           </div>
         </section>
         <br />
@@ -1784,27 +1887,34 @@ const FinancialMovement: React.FC = () => {
 
             {hasFinancialIntegration && (
               <>
-                {hasBankPaymentSlip == true ? (
+                {hasBankPaymentSlip == false ? (
                   <>
-                    {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B" && companyPlan != 'GOJURFR' && !isTotalPaid) &&(
-                      <button className="buttonClick" type='button' onClick={()=> HandleGenerateBankPaymentSlipSecond()}>
-                        <FaFileInvoiceDollar  />
-                        2ª Via Boleto
+                    {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B" && companyPlan != 'GOJURFR') &&(
+                      <button className="buttonClick" type='button' onClick={()=> GenerateBankPaymentSlip()}>
+                        <FaFileInvoiceDollar />
+                        Faturar
                       </button>
                     )}
                   </>
                 ) : (
                   <>
                     {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B" && companyPlan != 'GOJURFR') &&(
-                      <button className="buttonClick" type='button' onClick={()=> HandleGenerateBankPaymentSlip()}>
-                        <FaFileInvoiceDollar  />
-                        Gerar Boleto
-                      </button>
+                      <>
+                        <button className="buttonClick" type='button' onClick={()=> PrintBillingInvoice()}>
+                          <FiPrinter />
+                          Emitir Fatura
+                        </button>
+
+                        <button className="buttonClick" type='button' onClick={()=> SendEmailBillingInvoice()}>
+                          <AiOutlineMail />
+                          Fatura Por E-Mail
+                        </button>
+                      </>
                     )}
                   </>
-                )}              
+                )}
               </>
-            )}            
+            )}
 
             {(!isMOBILE && movementId != '0' && invoice == 0) &&(
               <button className="buttonClick" type='button' onClick={()=> GenerateDocument()}>
@@ -2003,7 +2113,7 @@ const FinancialMovement: React.FC = () => {
 
             <div style={{width:'290px'}}>
               <label htmlFor='Data'>
-                <DatePicker title="Vencimento" onChange={handleBankPaymentSlipDate} value={bankPaymentSlipDate} />
+                <DatePicker title="Vencimento" onChange={ChangeBankPaymentSlipDueDate} value={bankPaymentSlipDate} />
               </label>
             </div>
             <br /><br />

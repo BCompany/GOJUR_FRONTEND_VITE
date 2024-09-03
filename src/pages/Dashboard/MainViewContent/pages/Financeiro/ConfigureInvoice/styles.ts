@@ -105,6 +105,18 @@ export const InvoiceHeaderText = styled.div`
 export const CircleLine = styled.div`
   height: 50px;
   width: 320px;
+
+  .checkWhite {
+    margin-Left: 7px;
+    margin-Top: 7px;
+    color: #FFFFFF;
+  }
+
+  .checkBlack {
+    margin-Left: 7px;
+    margin-Top: 7px;
+    color: #000000;
+  }
 `;
 
 

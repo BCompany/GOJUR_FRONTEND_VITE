@@ -77,6 +77,7 @@ export const Content = styled.div`
         font-size: 0.675rem;
         color: var(--primary);
         margin:0.3rem;
+        font-weight: 500;
 
         > svg {
           width:1rem;

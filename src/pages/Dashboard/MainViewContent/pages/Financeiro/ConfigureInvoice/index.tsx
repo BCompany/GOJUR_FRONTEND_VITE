@@ -1,4 +1,3 @@
-
 /* eslint-disable radix *//* eslint-disable array-callback-return */
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
@@ -10,12 +9,11 @@
 /* eslint-disable no-return-assign */
 /* eslint-disable no-alert */
 
-
-import React, { ChangeEvent, useState, useEffect, useRef, useCallback } from 'react'
+import React, { ChangeEvent, useState, useEffect, useCallback } from 'react'
 import api from 'services/api'
 import { BiSave } from 'react-icons/bi'
 import { BsClipboardData } from "react-icons/bs";
-import { FaCheck, FaRegEye, FaRegFileImage } from 'react-icons/fa';
+import { FaCheck, FaRegEye, FaRegFileImage, FaRegTimesCircle } from 'react-icons/fa';
 import { MdCloudUpload } from "react-icons/md";
 import { Overlay } from 'Shared/styles/GlobalStyle';
 import LoaderWaiting from 'react-spinners/ClipLoader';
@@ -168,12 +166,12 @@ const ConfigureInvoice: React.FC = () => {
   }
 
 
-  const handleOptionButtion = (e, option) => {
+  const RadioButtonClick = (e, option:string) => {
     setHasMark(option)
   }
 
 
-  const CheckCircle = async (item) => {
+  const CheckCircle = async (item:string) => {
     await CheckAllToFalse()
     
     if(item == "#0030B9"){
@@ -350,6 +348,12 @@ const ConfigureInvoice: React.FC = () => {
   }
 
 
+  const ChangeCompanyInformation = () => {
+    localStorage.setItem('@GoJur:ConfigureInvoice', 'configureInvoice')
+    history.push('/companyinformation')
+  }
+
+
   return (
     <Container id='Container' onContextMenu={(e) => e.preventDefault()}>
       <HeaderPage />
@@ -359,11 +363,11 @@ const ConfigureInvoice: React.FC = () => {
         <br />
 
         <div className="chartToolBar" style={{marginTop:'-10px'}}>
-          <input type="radio" checked={hasMark === 'S'} onClick={(e) => handleOptionButtion(e,'S')}  />
+          <input type="radio" checked={hasMark === 'S'} onClick={(e) => RadioButtonClick(e, 'S')}  />
           {' '}
           <span style={{fontSize:'16px'}}>Com Logo</span>
           &nbsp;&nbsp;&nbsp;&nbsp;
-          <input type="radio" checked={hasMark === 'N'} onClick={(e) => handleOptionButtion(e,'N')}  />
+          <input type="radio" checked={hasMark === 'N'} onClick={(e) => RadioButtonClick(e, 'N')}  />
           {' '}
           <span style={{fontSize:'16px'}}>Sem Logo</span>
         </div>
@@ -393,7 +397,7 @@ const ConfigureInvoice: React.FC = () => {
 
           <InvoiceHeaderText id='InvoiceHeaderText' style={{backgroundColor:(textBackground), width:(hasMark == "N" ? '100%' : '80%')}}>
             <p>&nbsp;</p>
-            <p style={{fontSize:'20px', fontWeight:500, color:(fontColor)}}>{companyName}</p>
+            <p style={{fontSize:'18px', fontWeight:500, color:(fontColor)}}>{companyName}</p>
             <p style={{fontSize:'18px', fontWeight:500, color:(fontColor)}}>{documentNumber}</p>
             <p>&nbsp;</p>
             <p style={{color:(fontColor)}}>{desEmail}</p>
@@ -406,22 +410,22 @@ const ConfigureInvoice: React.FC = () => {
         </InvoiceHeader>
         <br />
 
-        <CircleLine id='CircleLine'>
-          <Circle style={{backgroundColor:'#0030B9'}} onClick={() => CheckCircle("#0030B9")}>{checkCircle01 && <FaCheck style={{marginLeft:'7px', marginTop:'7px', color:'white'}} />}</Circle>
-          <Circle style={{backgroundColor:'#FFFFFF'}} onClick={() => CheckCircle("#FFFFFF")}>{checkCircle02 && <FaCheck style={{marginLeft:'7px', marginTop:'7px', color:'black'}} />}</Circle>
-          <Circle style={{backgroundColor:'#1DA9DA'}} onClick={() => CheckCircle("#1DA9DA")}>{checkCircle03 && <FaCheck style={{marginLeft:'7px', marginTop:'7px', color:'white'}} />}</Circle>
-          <Circle style={{backgroundColor:'#FF4E7A'}} onClick={() => CheckCircle("#FF4E7A")}>{checkCircle04 && <FaCheck style={{marginLeft:'7px', marginTop:'7px', color:'white'}} />}</Circle>
-          <Circle style={{backgroundColor:'#EEEEEE'}} onClick={() => CheckCircle("#EEEEEE")}>{checkCircle05 && <FaCheck style={{marginLeft:'7px', marginTop:'7px', color:'black'}} />}</Circle>
-          <Circle style={{backgroundColor:'#00D071'}} onClick={() => CheckCircle("#00D071")}>{checkCircle06 && <FaCheck style={{marginLeft:'7px', marginTop:'7px', color:'white'}} />}</Circle>
+        <CircleLine id='CircleLine1'>
+          <Circle style={{backgroundColor:'#0030B9'}} onClick={() => CheckCircle("#0030B9")}>{checkCircle01 && <FaCheck className='checkWhite' />}</Circle>
+          <Circle style={{backgroundColor:'#FFFFFF'}} onClick={() => CheckCircle("#FFFFFF")}>{checkCircle02 && <FaCheck className='checkBlack' />}</Circle>
+          <Circle style={{backgroundColor:'#1DA9DA'}} onClick={() => CheckCircle("#1DA9DA")}>{checkCircle03 && <FaCheck className='checkWhite' />}</Circle>
+          <Circle style={{backgroundColor:'#FF4E7A'}} onClick={() => CheckCircle("#FF4E7A")}>{checkCircle04 && <FaCheck className='checkWhite' />}</Circle>
+          <Circle style={{backgroundColor:'#EEEEEE'}} onClick={() => CheckCircle("#EEEEEE")}>{checkCircle05 && <FaCheck className='checkBlack' />}</Circle>
+          <Circle style={{backgroundColor:'#00D071'}} onClick={() => CheckCircle("#00D071")}>{checkCircle06 && <FaCheck className='checkWhite' />}</Circle>
         </CircleLine>
 
-        <CircleLine id='CircleLine'>
-          <Circle style={{backgroundColor:'#C5381A'}} onClick={() => CheckCircle("#C5381A")}>{checkCircle07 && <FaCheck style={{marginLeft:'7px', marginTop:'7px', color:'white'}} />}</Circle>
-          <Circle style={{backgroundColor:'#FF9A0A'}} onClick={() => CheckCircle("#FF9A0A")}>{checkCircle08 && <FaCheck style={{marginLeft:'7px', marginTop:'7px', color:'white'}} />}</Circle>
-          <Circle style={{backgroundColor:'#FFD33F'}} onClick={() => CheckCircle("#FFD33F")}>{checkCircle09 && <FaCheck style={{marginLeft:'7px', marginTop:'7px', color:'black'}} />}</Circle>
-          <Circle style={{backgroundColor:'#8D72CF'}} onClick={() => CheckCircle("#8D72CF")}>{checkCircle10 && <FaCheck style={{marginLeft:'7px', marginTop:'7px', color:'white'}} />}</Circle>
-          <Circle style={{backgroundColor:'#B0B0B0'}} onClick={() => CheckCircle("#B0B0B0")}>{checkCircle11 && <FaCheck style={{marginLeft:'7px', marginTop:'7px', color:'white'}} />}</Circle>
-          <Circle style={{backgroundColor:'#333333'}} onClick={() => CheckCircle("#333333")}>{checkCircle12 && <FaCheck style={{marginLeft:'7px', marginTop:'7px', color:'white'}} />}</Circle>
+        <CircleLine id='CircleLine2'>
+          <Circle style={{backgroundColor:'#C5381A'}} onClick={() => CheckCircle("#C5381A")}>{checkCircle07 && <FaCheck className='checkWhite' />}</Circle>
+          <Circle style={{backgroundColor:'#FF9A0A'}} onClick={() => CheckCircle("#FF9A0A")}>{checkCircle08 && <FaCheck className='checkWhite' />}</Circle>
+          <Circle style={{backgroundColor:'#FFD33F'}} onClick={() => CheckCircle("#FFD33F")}>{checkCircle09 && <FaCheck className='checkBlack' />}</Circle>
+          <Circle style={{backgroundColor:'#8D72CF'}} onClick={() => CheckCircle("#8D72CF")}>{checkCircle10 && <FaCheck className='checkWhite' />}</Circle>
+          <Circle style={{backgroundColor:'#B0B0B0'}} onClick={() => CheckCircle("#B0B0B0")}>{checkCircle11 && <FaCheck className='checkWhite' />}</Circle>
+          <Circle style={{backgroundColor:'#333333'}} onClick={() => CheckCircle("#333333")}>{checkCircle12 && <FaCheck className='checkWhite' />}</Circle>
         </CircleLine>
         <br />
 
@@ -433,7 +437,7 @@ const ConfigureInvoice: React.FC = () => {
             </button>
           )}
           
-          <button className="buttonClick" type='button' onClick={() => history.push('/companyinformation')}>
+          <button className="buttonClick" type='button' onClick={() => ChangeCompanyInformation()}>
             <BsClipboardData />
             Dados Empresa
           </button>
@@ -447,8 +451,12 @@ const ConfigureInvoice: React.FC = () => {
             <BiSave />
             Salvar Modelo
           </button>
-        </Buttons>
 
+          <button className="buttonClick" type='button' onClick={()=> history.push(`/financeiro`)}>
+            <FaRegTimesCircle />
+            Fechar
+          </button>
+        </Buttons>
       </Content>
       
       {isLoading && (
@@ -480,7 +488,6 @@ const ConfigureInvoice: React.FC = () => {
           </div>
         </>
       )}
-
 
     </Container>
   )
