@@ -49,7 +49,7 @@ export const Content = styled.div`
 
 export const InvoiceHeader = styled.div`
   width: 1000px;
-  height: 200px;
+  height: 180px;
   box-shadow: 1.5px 1.5px 1.5px 1.5px rgba(0, 0, 0, 0.3);
   border-radius: 3px;
   margin-top: 20px;

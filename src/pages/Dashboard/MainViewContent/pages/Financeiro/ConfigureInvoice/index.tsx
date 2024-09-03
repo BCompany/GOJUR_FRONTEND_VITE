@@ -51,7 +51,9 @@ const ConfigureInvoice: React.FC = () => {
   const [fontColor, setFontColor] = useState('#000000')
   const [hasImage, setHasImage] = useState<string>("N")
   const [imageLink, setImageLink] = useState<string>("")
-  const [filesName, setFilesName] = useState<string>("")
+  
+  const [idReportGenerate, setIdReportGenerate] = useState<number>(0)
+  const [isGeneratingReport, setIsGeneratingReport] = useState<boolean>(false)
 
   const [companyName, setCompanyName] = useState<string>("")
   const [numTelefone, setNumTelefone] = useState<string>("")
@@ -80,6 +82,43 @@ const ConfigureInvoice: React.FC = () => {
   useEffect(() => {
     LoadCompanyInformation()
   }, [])
+
+
+  useEffect(() => {
+    if (idReportGenerate > 0){
+      const checkInterval = setInterval(() => {
+        CheckReportPending(checkInterval)
+      }, 2000);
+    }
+  }, [idReportGenerate])
+
+
+  const CheckReportPending = useCallback(async (checkInterval) => {
+    if (isGeneratingReport){
+      const response = await api.post(`/ProcessosGOJUR/VerificarStatus`, {
+        id: idReportGenerate,
+        token: localStorage.getItem('@GoJur:token')
+      })
+
+      if (response.data == "F" && isGeneratingReport){
+        clearInterval(checkInterval);
+        setIsGeneratingReport(false)
+        OpenReportAmazon()
+      }
+    }
+  }, [isGeneratingReport, idReportGenerate])
+
+
+  const OpenReportAmazon = async() => {
+    const response = await api.post(`/ProcessosGOJUR/Editar`, {
+      id: idReportGenerate,
+      token: localStorage.getItem('@GoJur:token')
+    });
+
+    setIdReportGenerate(0)
+    window.open(`${response.data.des_Parametro}`, '_blank');
+    setIsGeneratingReport(false)
+  }
 
 
   const LoadCompanyInformation = async () => {
@@ -230,15 +269,18 @@ const ConfigureInvoice: React.FC = () => {
 
   const Generate = useCallback ( async() => {
     try{
-      setIsLoading(true)
-      Save('')
+      setIsGeneratingReport(true)
+      // Save('')
+
+      const response = await api.get('/Financeiro/Faturamento/GerarFaturaModeloPDF', {params: {token}})
+
+      setIdReportGenerate(response.data)
 
 
-      
       setIsLoading(false)
     }
     catch(err:any){
-      setIsLoading(false)
+      setIsGeneratingReport(false)
       addToast({type: "error", title: "Falha ao gerar modelo de fatura.", description: err.response.data.Message})
     }
   }, [])
@@ -331,7 +373,7 @@ const ConfigureInvoice: React.FC = () => {
             <InvoiceHeaderImage id='InvoiceHeaderImage' style={{backgroundColor:(imageBackground)}}>
               {hasImage == 'S' ? (
                 <>
-                  <img src={imageLink} alt="logo" style={{maxHeight:'200px', maxWidth:'200px'}} />
+                  <img src={imageLink} alt="logo" style={{maxHeight:'180px', maxWidth:'180px'}} />
                 </>
               ) : (
                 <>
@@ -351,7 +393,7 @@ const ConfigureInvoice: React.FC = () => {
 
           <InvoiceHeaderText id='InvoiceHeaderText' style={{backgroundColor:(textBackground), width:(hasMark == "N" ? '100%' : '80%')}}>
             <p>&nbsp;</p>
-            <p style={{fontSize:'20px', fontWeight:600, color:(fontColor)}}>{companyName}</p>
+            <p style={{fontSize:'20px', fontWeight:500, color:(fontColor)}}>{companyName}</p>
             <p style={{fontSize:'18px', fontWeight:500, color:(fontColor)}}>{documentNumber}</p>
             <p>&nbsp;</p>
             <p style={{color:(fontColor)}}>{desEmail}</p>
@@ -428,6 +470,17 @@ const ConfigureInvoice: React.FC = () => {
           </div>
         </>
       )}
+
+      {isGeneratingReport && (
+        <>
+          <Overlay />
+          <div className='waitingMessage'>
+            <LoaderWaiting size={15} color="var(--blue-twitter)" />
+            &nbsp;&nbsp; Gerando fatura...
+          </div>
+        </>
+      )}
+
 
     </Container>
   )
