@@ -48,7 +48,7 @@ import FinancialPaymentModal from '../PaymentModal';
 import FinancialDocumentModal from '../DocumentModal';
 import BankPaymentSlipSecondCopyModal from '../BankPaymentSlipSecondCopy';
 import { ModalDeleteOptions, OverlayFinancial } from '../styles';
-import { Container, Content, Process, GridSubContainer, ModalPaymentInformation, ModalBankPaymentSlip, ModalBankPaymentSlipErrors } from './styles';
+import { Container, Content, Process, GridSubContainer, ModalPaymentInformation, ModalBankPaymentSlip, ModalBankPaymentSlipErrors, Line, ItemLine } from './styles';
 
 
 export interface IBankPaymentSlip{
@@ -394,6 +394,13 @@ const FinancialMovement: React.FC = () => {
       setInvoice(response.data.cod_FaturaParcela)
       setSequence(response.data.num_SequenciaFatura)
       setBankPaymentSlipDate(format(new Date(response.data.dta_Movimento), "yyyy-MM-dd"))
+      setPixKey(response.data.des_ChavePix)
+
+      if(response.data.pct_Desconto != null)
+      {
+        setDiscountPercentage(response.data.pct_Desconto)
+        setDiscountValue((response.data.vlr_Movimento / 100) * response.data.pct_Desconto )
+      }
 
       if(response.data.qtd_Parcelamento != "1"){
         setEnablePayments(false)
@@ -563,10 +570,13 @@ const FinancialMovement: React.FC = () => {
 
 
   const handlePaymentFormSelected = (item) => {
+    
+    console.log('Item: ', item)
+    
     if (item){
       setPaymentFormId(item.id)
       setPaymentFormDescription(item.label)
-      setPaymentFormType(item.type)
+      setPaymentFormType(item.paymentFormType)
     }
     else{
       setPaymentFormId('')
@@ -676,7 +686,7 @@ const FinancialMovement: React.FC = () => {
         cod_Processo: matterId,
         cod_Conta: accountId,
         changePaymentForm,
-        des_ChavePix:pixKey,
+        des_ChavePix: pixKey,
         pct_Desconto: discountPercetage,
         num_Fatura: billingInvoice,
         token
@@ -1446,7 +1456,208 @@ const FinancialMovement: React.FC = () => {
           )}
         </div>
 
-        <section id='FirstElements'>
+        <Line id='Line1'>
+          <ItemLine id='ItemLine1'>
+            <div>
+              <label htmlFor='Data'>
+                <DatePicker title="Vencimento" onChange={handleMovementDate} value={movementDate} />
+              </label>
+            </div>
+          </ItemLine>
+
+          <ItemLine id='ItemLine2'>
+            <div>
+              <label htmlFor="valor">
+                Valor
+                <IntlCurrencyInput currency="BRL" config={currencyConfig} value={movementValue} className='inputField' onChange={handleValue} />
+              </label>
+            </div>
+          </ItemLine>
+
+          <ItemLine id='ItemLine3'>
+            <div style={{height:'60px'}}>
+              <div style={{float:'left', width:'50%'}}>
+                <label htmlFor="Desconto" style={{height:'50px'}}>
+                  % Desconto
+                  <IntlCurrencyInput
+                    currency="BRL"
+                    config={currencyConfig}
+                    value={discountPercetage}
+                    className='inputField'
+                    onChange={ChangeDiscountPercentage}
+                    onBlur={BlurDiscountPercentage}
+                  />
+                </label>
+              </div>
+
+              <div style={{float:'left', width:'50%'}}>
+                <label htmlFor="Liquido" style={{height:'40px'}}>
+                  Liquido
+                  <IntlCurrencyInput
+                    currency="BRL"
+                    config={currencyConfig}
+                    value={discountValue}
+                    className='inputField'
+                    disabled
+                  />
+                </label>
+              </div>
+            </div>
+          </ItemLine>
+
+          <ItemLine id='ItemLine4'>
+            <div style={{height:'60px'}}>
+              <div style={{float:'left', width:'50%'}}>
+                <label htmlFor="parcela">
+                  Parcelas ?
+                  <Select
+                    autoComplete="off"
+                    styles={selectStyles}
+                    value={parcelas.filter(options => options.id === movementParcelas)}
+                    onChange={(item) => handleChangeParcelas(item? item.id: '')}
+                    options={parcelas}
+                  />
+                </label>
+              </div>
+
+              <div style={{float:'left', width:'50%', marginTop:'-6px'}}>
+                {showParcelasDatas && (
+                  <div
+                    className='disableDiv'
+                    style={{pointerEvents: ((!enablePayments && movementId != '0')? 'none': 'auto'), opacity:((!enablePayments && movementId != '0')? '0.5': '1')}}
+                  >
+                    <label htmlFor="parcelaData">
+                      &nbsp;
+                      <Select
+                        disabled={enablePayments}
+                        autoComplete="off"
+                        styles={selectStyles}
+                        placeholder="Selecionar"
+                        value={parcelasDatas. filter(options => options.id === movementParcelasDatas)}
+                        onChange={(item) => setMovementParcelasDatas(item? item.id: '')}
+                        options={parcelasDatas}
+                      />
+                    </label>
+                  </div>
+                )}
+
+                {!showParcelasDatas && <label />}
+              </div>
+            </div>
+          </ItemLine>
+        </Line>
+
+        <Line id='Line2'>
+          <ItemLine id='ItemLine1'>
+            <div>
+              <label htmlFor='Categoria'>
+                Categoria
+                <Select
+                  isSearchable
+                  value={{ id: categoryId, label: categoryDescription }}
+                  onChange={handleCategorySelected}
+                  onInputChange={(term) => setCategoryTerm(term)}
+                  isClearable
+                  placeholder=""
+                  styles={selectStyles}
+                  options={categoryList}
+                  required
+                />
+              </label>
+            </div>
+          </ItemLine>
+
+          <ItemLine id='ItemLine2'>
+            <div>
+              <label htmlFor='CentroCusto'>
+                Centro de Custo
+                <Select
+                  isSearchable
+                  isClearable
+                  value={{ id: centerCostId, label: centerCostDescription }}
+                  onChange={handleCenterCostSelected}
+                  onInputChange={(term) => setCenterCostTerm(term)}
+                  required
+                  placeholder=""
+                  styles={selectStyles}
+                  options={centerCostList}
+                />
+              </label>
+            </div>
+          </ItemLine>
+
+          <ItemLine id='ItemLine3'>
+            <div>
+              <label htmlFor='FormaPagamento'>
+                Forma Pagto.
+                <Select
+                  isSearchable
+                  isClearable
+                  value={{ id: paymentFormId, label: paymentFormDescription }}
+                  onChange={handlePaymentFormSelected}
+                  onInputChange={(term) => setPaymentFormTerm(term)}
+                  required
+                  placeholder=""
+                  styles={selectStyles}
+                  options={paymentFormList}
+                />
+              </label>
+            </div>
+          </ItemLine>
+
+          {paymentFormType == "P" ? (
+            <ItemLine id='ItemLine4'>
+              <div>
+                <label htmlFor="chavePIX">
+                  Chave Pix
+                  <input
+                    type="text"
+                    className='inputField'
+                    maxLength={200}
+                    value={pixKey}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setPixKey(e.target.value)}
+                  />
+                </label>
+              </div>
+            </ItemLine>
+          ) : (
+            <ItemLine id='ItemLine4'>
+              <div>
+                <label htmlFor="NotaFiscal">
+                  Nota Fiscal
+                  <input
+                    type="text"
+                    className='inputField'
+                    maxLength={20}
+                    value={taxInvoice}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setTaxInvoice(e.target.value)}
+                  />
+                </label>
+              </div>
+            </ItemLine>
+          )}
+        </Line>
+
+        {paymentFormType == "P" &&(
+          <Line id='Line2'>
+            <ItemLine id='ItemLine4'>
+              <div>
+                <label htmlFor="NotaFiscal">
+                  Nota Fiscal
+                  <input
+                    type="text"
+                    className='inputField'
+                    maxLength={20}
+                    value={taxInvoice}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setTaxInvoice(e.target.value)}
+                  />
+                </label>
+              </div>
+            </ItemLine>
+          </Line>
+        )}
+
+        {/* <section id='FirstElements'>
           <label htmlFor='Data'>
             <DatePicker
               title="Vencimento"
@@ -1498,9 +1709,9 @@ const FinancialMovement: React.FC = () => {
           )}
 
           {!showParcelasDatas && <label />}
-        </section>
+        </section> */}
 
-        <section id='SecondElements'>
+        {/* <section id='SecondElements'>
           <label htmlFor="chavePIX">
             Chave Pix
             <input
@@ -1524,8 +1735,8 @@ const FinancialMovement: React.FC = () => {
             />
           </label>
 
-          <label htmlFor="desconto">
-            Valor com Desconto
+          <label htmlFor="liquido">
+            Liquido
             <IntlCurrencyInput
               currency="BRL"
               config={currencyConfig}
@@ -1545,10 +1756,10 @@ const FinancialMovement: React.FC = () => {
               disabled
             />
           </label>
-        </section>
+        </section> */}
 
-        <section id='ThirdElements'>
-          <label>
+        {/* <section id='ThirdElements'>
+          <label htmlFor='Categoria'>
             Categoria
             <Select
               isSearchable
@@ -1563,7 +1774,7 @@ const FinancialMovement: React.FC = () => {
             />
           </label>
 
-          <label>
+          <label htmlFor='FormaPagamento'>
             Forma Pagto.
             <Select
               isSearchable
@@ -1578,7 +1789,7 @@ const FinancialMovement: React.FC = () => {
             />
           </label>
 
-          <label>
+          <label htmlFor='CentroCusto'>
             Centro de Custo
             <Select
               isSearchable
@@ -1593,7 +1804,7 @@ const FinancialMovement: React.FC = () => {
             />
           </label>
 
-          <label htmlFor="valor">
+          <label htmlFor="NotaFiscal">
             Nota Fiscal
             <input
               type="text"
@@ -1603,7 +1814,7 @@ const FinancialMovement: React.FC = () => {
               onChange={(e: ChangeEvent<HTMLInputElement>) => setTaxInvoice(e.target.value)}
             />
           </label>
-        </section>
+        </section> */}
 
         <section id='FouthElements'>
           <label htmlFor="description">

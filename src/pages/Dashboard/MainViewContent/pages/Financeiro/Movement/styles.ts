@@ -680,3 +680,125 @@ export const ModalBankPaymentSlipSecond = styled.div`
   }
   
 `;
+
+
+export const Line = styled.div`
+  width: 100%;
+  height: 75px;
+  justify-content: space-around;
+`;
+
+
+export const ItemLine = styled.div`
+  float: left;
+  width: 25%;
+  height: 64px;
+
+  .disableDiv {
+    flex:1;
+    font-size: 0.675rem;
+    color: var(--primary);
+    margin:0.3rem;
+
+    > svg {
+      width:1rem;
+      height:1rem;
+      color:var(--blue-twitter);
+      cursor:pointer;
+      float: right;
+      margin-right: -25px;
+      margin-top: -30px;
+
+      &:hover {
+          color: var(--orange);
+      }
+    }
+
+    input, select {
+      flex: 1;
+      font-size: 0.675rem;
+      padding: 0.25rem;
+      background-color: #FFFFFF;
+      width: 99%;
+      border-bottom: 1px solid rgba(0,0,0,0.15);
+      color: var(--secondary);
+
+      &:focus {
+        border-bottom: 1px solid var(--orange);
+      }
+    }
+
+    textarea {
+      flex: 1;
+      font-size: 0.675rem;
+      padding: 0.25rem;
+      background-color: #FFFFFF;
+      width: 100%;
+      color: var(--secondary);
+      border: 1px solid #B3B3B3;
+      min-height: 70px;
+      height: auto;
+      border-radius: 0.25rem;
+
+      &:focus {
+        border-bottom: 1px solid var(--orange);
+      }
+    }
+
+    .inputField {
+      font-size: 0.675rem;
+      background-color: #FFFFFF;
+      width: 100%;
+      height:40px;
+      border-bottom: 1px solid rgba(0,0,0,0.15);
+      color: var(--secondary);
+      margin-top:-2px;
+
+      &:focus {
+        border-bottom: 1px solid var(--orange);
+      }
+    }
+
+    &:focus-within {
+      color: var(--orange);
+
+      &.required{
+        color: var(--red);
+      }
+    }
+  }
+
+  > div {
+    width: 95%;
+    font-size: 0.675rem;
+    color: var(--primary);
+    font-weight: 500;
+
+    input, select {
+      font-size: 0.675rem;
+      padding: 0.25rem;
+      background-color: #FFFFFF;
+      width: 95%;
+      border-bottom: 1px solid rgba(0,0,0,0.15);
+      color: var(--secondary);
+
+      &:focus {
+        border-bottom: 1px solid var(--orange);
+      }
+    }
+
+    .inputField {
+      width: 99%;
+      font-size: 0.675rem;
+      background-color: #FFFFFF;
+      height: 35px;
+      border-bottom: 1px solid rgba(0,0,0,0.15);
+      color: var(--secondary);
+      margin-top:2px;
+      &:focus {
+          border-bottom: 1px solid var(--orange);
+      }
+    }
+  }
+
+`;
