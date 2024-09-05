@@ -432,6 +432,17 @@ const UnfoldingModal = (props) => {
   };
 
   const handleOpenFollowModal = async () => {
+
+    if (matterUnfoldingId == "0" || matterUnfoldingId == "") {
+      addToast({
+        type: 'info',
+        title: 'Operação NÃO realizada',
+        description: 'Necessário salvar antes de ligar o robô.'
+      });
+
+      return;
+    }
+
     setMatterSelectedId(matterId)
     setMatterSelectedNumber(matterNumber)
     setShowFollowModal(true)
