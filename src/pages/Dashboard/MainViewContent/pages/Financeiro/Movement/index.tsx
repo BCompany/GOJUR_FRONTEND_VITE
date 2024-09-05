@@ -162,6 +162,8 @@ const FinancialMovement: React.FC = () => {
   const [bankPaymentSlipErrors, setBankPaymentSlipErrors] = useState<string>('');
   const [showValidateFinancialIntegration, setShowValidateFinancialIntegration] = useState<boolean>(false);
   const [isTotalPaid, setIsTotalPaid] = useState<boolean>(false);
+  const [idReportGenerate, setIdReportGenerate] = useState<number>(0)
+  const [isGeneratingReport, setIsGeneratingReport] = useState<boolean>(false)
   const companyPlan = localStorage.getItem('@GoJur:companyPlan')
 
   const ref = useRef<any>(null);
@@ -173,6 +175,43 @@ const FinancialMovement: React.FC = () => {
 
   
   // #region USE EFFECT
+  useEffect(() => {
+    if (idReportGenerate > 0){
+      const checkInterval = setInterval(() => {
+        CheckReportPending(checkInterval)
+      }, 2000);
+    }
+  }, [idReportGenerate])
+
+
+  const CheckReportPending = useCallback(async (checkInterval) => {
+    if (isGeneratingReport){
+      const response = await api.post(`/ProcessosGOJUR/VerificarStatus`, {
+        id: idReportGenerate,
+        token: localStorage.getItem('@GoJur:token')
+      })
+
+      if (response.data == "F" && isGeneratingReport){
+        clearInterval(checkInterval);
+        setIsGeneratingReport(false)
+        OpenReportAmazon()
+      }
+    }
+  }, [isGeneratingReport, idReportGenerate])
+
+
+  const OpenReportAmazon = async() => {
+    const response = await api.post(`/ProcessosGOJUR/Editar`, {
+      id: idReportGenerate,
+      token: localStorage.getItem('@GoJur:token')
+    });
+
+    setIdReportGenerate(0)
+    window.open(`${response.data.des_Parametro}`, '_blank');
+    setIsGeneratingReport(false)
+  }
+
+
   useEffect(() => {
     if (isCancelMessage)
     {
@@ -1343,9 +1382,23 @@ const FinancialMovement: React.FC = () => {
   }
 
 
-  const PrintBillingInvoice = () => {
-    alert("Emitir Fatura")
-  }
+  const PrintBillingInvoice = useCallback(async() => {
+    try{
+      setIsGeneratingReport(true)
+      
+      const response = await api.post('/BoletoBancario/EmitirFatura', {
+        cod_Movimento: movementId,
+        bankPaymentSlipLink,
+        token
+      })
+
+      setIdReportGenerate(response.data)
+    }
+    catch (err:any) {
+      setIsGeneratingReport(false)
+      addToast({type: "info", title: "Falha ao gerar boleto.", description: err.response.data.Message}) 
+    }
+  }, [movementId, bankPaymentSlipLink])
 
 
   const SendEmailBillingInvoice = () => {
@@ -2195,6 +2248,16 @@ const FinancialMovement: React.FC = () => {
           <div className='waitingMessage'>
             <LoaderWaiting size={15} color="var(--blue-twitter)" />
             &nbsp;&nbsp; Carregando...
+          </div>
+        </>
+      )}
+
+      {isGeneratingReport && (
+        <>
+          <Overlay />
+          <div className='waitingMessage'>
+            <LoaderWaiting size={15} color="var(--blue-twitter)" />
+            &nbsp;&nbsp; Gerando fatura...
           </div>
         </>
       )}
