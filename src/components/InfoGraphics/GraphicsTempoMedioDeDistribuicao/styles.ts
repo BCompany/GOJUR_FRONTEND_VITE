@@ -37,8 +37,8 @@ export const ContainerHeader = styled.div<headerProps>`
         width: 24px;
         height: 24px;
         display: flex;
-        align-items: center;
-        justify-content: center;
+        align-items: flex-end;
+        justify-content: flex-end;
 
         > svg {
           width: 24px;
