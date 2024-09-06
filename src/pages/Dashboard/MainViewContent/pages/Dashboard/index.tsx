@@ -32,13 +32,15 @@ import { ChangeElementsVisibleProps, dataProps, DefaultsProps, keyProps } from '
 import zIndex from '@material-ui/core/styles/zIndex';
 import { FaEye } from "react-icons/fa";
 import { ModalChangeVisibility } from 'components/Modals/DashboardModal';
+import GraphicsProcessosPorFase from 'components/InfoGraphics/GraphicsProcessosPorFase';
+import GraphicsTempoMedioDeDistribuicao from 'components/InfoGraphics/GraphicsTempoMedioDeDistribuicao';
 
 const Dashboard: React.FC = () => {
   const ref = useRef(null);
 
   const { addToast } = useToast();
   const { handleShowVideoTrainning } = useModal();
-  const {  handleShowListSearch, dragOn, handleDragOn, handleLoadingData, handleCaptureText } = useHeader();
+  const {  handleShowListSearch, dragOn, handleDragOn, handleLoadingData, handleCaptureText, handleReleaseDrag, releaseDrag } = useHeader();
   const { alertData, openProcessModal } = useAlert();
   const history = useHistory();
   const { tpoUser } = useAuth();
@@ -51,7 +53,6 @@ const Dashboard: React.FC = () => {
   const token = localStorage.getItem('@GoJur:token');
   const firstAcces = localStorage.getItem('@GoJur:firstAccess');
   const [firstAccessModal, setFirstAccessModal] = useState<boolean>(false);
-  const [releaseDrag, setReleaseDrag] = useState<boolean>(false);
   const [CloseVisibilityModal, setChangeVisibilityModal] = useState<boolean>(false);
 
   useEffect(() => {
@@ -262,12 +263,12 @@ const Dashboard: React.FC = () => {
 
 
   const handleActivePropagation = (event) => {
-    setReleaseDrag(true)
+    handleReleaseDrag(true)
   };
 
 
   const handleStopPropagation = (event) => {
-    setReleaseDrag(false)
+    handleReleaseDrag(false)
   };
 
 
@@ -348,15 +349,15 @@ const Dashboard: React.FC = () => {
             {layoutComp?.map(item => (
               
               <Content key={item.positions.i} ref={ref} isDraggable={releaseDrag}>
-
                 {item.type === 'homeDashBoard_procAcao' && <GraphicsProcessosPorAcao title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
                 {item.type === 'homeDashBoard_procMesAno' && <GraphicsNovosCasosPorMes title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
                 {item.type === 'homeDashBoard_procPubAlerta' && <Publicacoes title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/>}
                 {item.type === 'homeDashBoard_compromissos' && <Appointment title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/>}
-                {item.type === 'homeDashBoard_contasPorMes'  && <GraphicsReceitasEDespesas title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
+                {item.type === 'homeDashBoard_contasPorMes' && <GraphicsReceitasEDespesas title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
                 {item.type === 'homeDashBoard_procNatureza' && <GraphicsProcessosPorNaturezaJuridica title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
-                {item.type === 'homeDashBoard_procDecisao'  && <GraphicsProcessosDecisaoJudicial title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
-
+                {item.type === 'homeDashBoard_procDecisao' && <GraphicsProcessosDecisaoJudicial title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
+                {item.type === 'homeDashBoard_procFase' && <GraphicsProcessosPorFase title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
+                {item.type === 'homeDashBoard_procTempMedDeDistrib' && <GraphicsTempoMedioDeDistribuicao title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
               </Content>
             ))}
 
