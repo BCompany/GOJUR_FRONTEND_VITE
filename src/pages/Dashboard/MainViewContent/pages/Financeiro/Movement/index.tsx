@@ -144,7 +144,7 @@ const FinancialMovement: React.FC = () => {
 
   const [discountPercetage, setDiscountPercentage] = useState<number>(0)
   const [discountValue, setDiscountValue] = useState<number>(0)
-  const [billingInvoice, setBillingInvoice] = useState<string>('')
+  const [billingInvoiceId, setBillingInvoiceId] = useState<string>('')
   const [pixKey, setPixKey] = useState<string>('')
 
   const [showBankPaymentSlipModal, setShowBankPaymentSlipModal] = useState<boolean>(false);
@@ -395,6 +395,7 @@ const FinancialMovement: React.FC = () => {
       setSequence(response.data.num_SequenciaFatura)
       setBankPaymentSlipDate(format(new Date(response.data.dta_Movimento), "yyyy-MM-dd"))
       setPixKey(response.data.des_ChavePix)
+      setBillingInvoiceId(response.data.num_Fatura)
 
       if(response.data.pct_Desconto != null)
       {
@@ -688,7 +689,7 @@ const FinancialMovement: React.FC = () => {
         changePaymentForm,
         des_ChavePix: pixKey,
         pct_Desconto: discountPercetage,
-        num_Fatura: billingInvoice,
+        num_Fatura: billingInvoiceId,
         token
       })
 
@@ -718,7 +719,7 @@ const FinancialMovement: React.FC = () => {
         addToast({type: "info", title: "Falha ao salvar movimento.", description: err.response.data.Message})
       }
     }
-  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp, paymentFormType, pixKey, discountPercetage, billingInvoice]);
+  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp, paymentFormType, pixKey, discountPercetage, billingInvoiceId]);
 
 
   const Copy = useCallback(async() => {
@@ -1336,6 +1337,8 @@ const FinancialMovement: React.FC = () => {
         token
       })
 
+      setBillingInvoiceId(response.data.num_Fatura)
+
       addToast({type: "success", title: "Operação realizada com sucesso", description: "Boleto criado com sucesso"})
 
       await LoadBankPaymentSlip(Number(movementId))
@@ -1441,7 +1444,7 @@ const FinancialMovement: React.FC = () => {
         <div style={{height:'50px'}}>
           {movementType == "R" && <span>RECEITA</span> }
           {movementType == "D" && <span>DESPESA</span> }
-          {invoice != 0 && (
+          {/* {invoice != 0 && (
             <span className='invoiceWarning'>
               Movimento gerado automaticamente pela Fatura nº
               &nbsp;
@@ -1452,6 +1455,12 @@ const FinancialMovement: React.FC = () => {
                 className='help'
                 title="Esta movimentação foi gerada automaticamente através de uma fatura. Qualquer alteração deve ser executada em sua origem."
               />
+            </span>
+          )} */}
+          {billingInvoiceId != "" && (
+            <span className='invoiceWarning'>
+              Fatura nº &nbsp; {billingInvoiceId}
+              &nbsp;
             </span>
           )}
         </div>
@@ -1657,165 +1666,6 @@ const FinancialMovement: React.FC = () => {
           </Line>
         )}
 
-        {/* <section id='FirstElements'>
-          <label htmlFor='Data'>
-            <DatePicker
-              title="Vencimento"
-              onChange={handleMovementDate}
-              value={movementDate}
-            />
-          </label>
-
-          <label htmlFor="valor">
-            Valor
-            <IntlCurrencyInput
-              currency="BRL"
-              config={currencyConfig}
-              value={movementValue}
-              className='inputField'
-              onChange={handleValue}
-            />
-          </label>
-
-          <label htmlFor="parcela">
-            Parcelas ?
-            <Select
-              autoComplete="off"
-              styles={selectStyles}
-              value={parcelas.filter(options => options.id === movementParcelas)}
-              onChange={(item) => handleChangeParcelas(item? item.id: '')}
-              options={parcelas}
-            />
-          </label>
-
-          {showParcelasDatas && (
-            <div
-              className='disableDiv'
-              style={{pointerEvents: ((!enablePayments && movementId != '0')? 'none': 'auto'), opacity:((!enablePayments && movementId != '0')? '0.5': '1')}}
-            >
-              <label htmlFor="parcelaData">
-                &nbsp;
-                <Select
-                  disabled={enablePayments}
-                  autoComplete="off"
-                  styles={selectStyles}
-                  placeholder="Selecionar"
-                  value={parcelasDatas. filter(options => options.id === movementParcelasDatas)}
-                  onChange={(item) => setMovementParcelasDatas(item? item.id: '')}
-                  options={parcelasDatas}
-                />
-              </label>
-            </div>
-          )}
-
-          {!showParcelasDatas && <label />}
-        </section> */}
-
-        {/* <section id='SecondElements'>
-          <label htmlFor="chavePIX">
-            Chave Pix
-            <input
-              type="text"
-              className='inputField'
-              maxLength={200}
-              value={pixKey}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setPixKey(e.target.value)}
-            />
-          </label>
-          
-          <label htmlFor="desconto">
-            % Desconto
-            <IntlCurrencyInput
-              currency="BRL"
-              config={currencyConfig}
-              value={discountPercetage}
-              className='inputField'
-              onChange={ChangeDiscountPercentage}
-              onBlur={BlurDiscountPercentage}
-            />
-          </label>
-
-          <label htmlFor="liquido">
-            Liquido
-            <IntlCurrencyInput
-              currency="BRL"
-              config={currencyConfig}
-              value={discountValue}
-              className='inputField'
-              disabled
-            />
-          </label>
-
-          <label htmlFor="billingInvoice">
-            Número Fatura
-            <input
-              type="text"
-              className='inputField'
-              maxLength={10}
-              value={billingInvoice}
-              disabled
-            />
-          </label>
-        </section> */}
-
-        {/* <section id='ThirdElements'>
-          <label htmlFor='Categoria'>
-            Categoria
-            <Select
-              isSearchable
-              value={{ id: categoryId, label: categoryDescription }}
-              onChange={handleCategorySelected}
-              onInputChange={(term) => setCategoryTerm(term)}
-              isClearable
-              placeholder=""
-              styles={selectStyles}
-              options={categoryList}
-              required
-            />
-          </label>
-
-          <label htmlFor='FormaPagamento'>
-            Forma Pagto.
-            <Select
-              isSearchable
-              isClearable
-              value={{ id: paymentFormId, label: paymentFormDescription }}
-              onChange={handlePaymentFormSelected}
-              onInputChange={(term) => setPaymentFormTerm(term)}
-              required
-              placeholder=""
-              styles={selectStyles}
-              options={paymentFormList}
-            />
-          </label>
-
-          <label htmlFor='CentroCusto'>
-            Centro de Custo
-            <Select
-              isSearchable
-              isClearable
-              value={{ id: centerCostId, label: centerCostDescription }}
-              onChange={handleCenterCostSelected}
-              onInputChange={(term) => setCenterCostTerm(term)}
-              required
-              placeholder=""
-              styles={selectStyles}
-              options={centerCostList}
-            />
-          </label>
-
-          <label htmlFor="NotaFiscal">
-            Nota Fiscal
-            <input
-              type="text"
-              className='inputField'
-              maxLength={20}
-              value={taxInvoice}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setTaxInvoice(e.target.value)}
-            />
-          </label>
-        </section> */}
-
         <section id='FouthElements'>
           <label htmlFor="description">
             Descrição
@@ -1990,7 +1840,7 @@ const FinancialMovement: React.FC = () => {
           </div>
           <div className="flexDiv">
             <>
-              {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B" && companyPlan != 'GOJURFR' && !isTotalPaid) &&(
+              {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B" && companyPlan != 'GOJURFR' && !isTotalPaid && hasBankPaymentSlip) &&(
                 <button className="buttonClick" type='button' onClick={()=> GenerateSecondBankPaymentSlip()}>
                   <FaFileInvoiceDollar  />
                   Gerar 2ª Via Boleto
