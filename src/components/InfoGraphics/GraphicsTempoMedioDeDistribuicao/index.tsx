@@ -181,7 +181,7 @@ const GraphicsTempoMedioDeDistribuicao: React.FC<GraphicProps> = ({
                 />
                 {annualAverage !== null && (
                   <p style={{ fontSize: '14px', color: '#000', fontWeight: 500, marginTop: '20px', textAlign: 'center' }}>
-                    Média de distribuição dos últimos 12 meses: {annualAverage}
+                    Tempo Médio de Distribuição (12 meses): {annualAverage}
                   </p>
                 )}
               </>
