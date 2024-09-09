@@ -128,172 +128,168 @@ const Appointments: React.FC<AppointmentProps> = ({ title, idElement, visible, a
       {dragOn ? (
         <ModalProvider>
           <Container id='Container' {...rest} style={{opacity:(visible === 'N' ? '0.5' : '1')}}>
-          <ContainerHeader id='ContainerHeader' style={{display:'inline-block', zIndex:99999}} cursorMouse={cursor} onMouseOut={activePropagation} onMouseOver={stopPropagation} handleClose={haveAction}>
-                <div style= {{ display:'inline-block', width:"90%", height:"90%",...rest}} onMouseOut={activePropagation} onMouseOver={stopPropagation} >
-                  <p>{title}</p>
+            <ContainerHeader id='ContainerHeader' style={{display:'block', zIndex:99999}} cursorMouse={cursor} handleClose={handleClose}  onMouseOut={activePropagation} onMouseOver={stopPropagation}>
+                <div style= {{ float:"left", display: "-webkit-box", width:"90%", height:"100%", alignItems: "center", justifyContent: "center", textAlign: "center",...rest}} >
+                  <p style={{ margin: 0, width:"110%"}}>{title}</p>
                 </div>
-                <div style={{display:'inline-block', width: "10%", height:"10%", cursor:"pointer"}} onMouseOut={activePropagation} onMouseOver={stopPropagation}>                       
-                  {visible == 'N' ? (
-                      <button onClick={() => { handleClose("S", idElement)}} style={{display:'inline-block'}}>
-                        <FaEye title='Ativar gráfico' />
-                      </button>
-                      ) : (
-                      <button onClick={() => { handleClose("N", idElement)}} style={{display:'inline-block'}}>
-                          <FiX title='Desativar gráfico' />
-                      </button>  
+                <div style={{float:"left", display:'inline-block', width: "10%", height:"10%", cursor:"pointer"}} onMouseOut={activePropagation} onMouseOver={stopPropagation}>                       
+                  {visible == 'S' && (
+                    <button onClick={() => { handleClose("N", idElement)}} style={{display:'inline-block'}}>
+                      <FiX title='Desativar gráfico' />
+                    </button>
                   )}              
                 </div>
-          </ContainerHeader> 
-          <AppointmentContent>
-            <div>
-              <h2>
-                Horários agendados
-                {permissionData.calendar === 'S' || permissionData.adm === 'S' ? (
-                  <button type="button" onClick={handleNewAppointment}>
-                    <FiPlus />
-                    <p>Agendamento</p>
-                  </button>
-                ) : (
-                  <button type="button" onClick={handleNotPermission}>
-                    <FiPlus />
-                    <p>Agendamento</p>
-                  </button>
-                )}
-              </h2>
-            </div>
-
-            {/* RENDERIZAÇÃO DOS CARDS DE COMPROMISSO */}
-
-            {data.length === 0 && (
-              <p
-                style={{
-                  flex: 1,
-                  textAlign: 'center',
-                  fontSize: 14,
-                  fontWeight: 400,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: 16,
-                }}
-              >
-                Não há compromissos cadastrados para o dia de hoje
-              </p>
-            )}
-
-            {data.map(compromisso => (
-              <AppointmentItens
-                key={compromisso.eventId}
-                style={{
-                  borderLeft: `3px solid ${compromisso.subjectColor}`,
-                }}
-                done={compromisso.status}
-                onClick={() => handleClickEdit(compromisso)}
-                initial={{ opacity: 0, y: -100 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.25 }}
-              >
-                <AppointmentHeader>
-                  <div>
-                    <FiClock />
-                    <p>{format(new Date(compromisso.startDate), 'HH:mm')}</p>
-                  </div>
-
-                  <strong>{compromisso.subject}</strong>
-
-                  {compromisso.status !== 'P' && (
-                    <BsBookmarkCheck title="Compromisso Concluido" />
+            </ContainerHeader> 
+            <AppointmentContent>
+              <div>
+                <h2>
+                  Horários agendados
+                  {permissionData.calendar === 'S' || permissionData.adm === 'S' ? (
+                    <button type="button" onClick={handleNewAppointment}>
+                      <FiPlus />
+                      <p>Agendamento</p>
+                    </button>
+                  ) : (
+                    <button type="button" onClick={handleNotPermission}>
+                      <FiPlus />
+                      <p>Agendamento</p>
+                    </button>
                   )}
-                  {compromisso.status === 'P' && (
-                    <BsBookmark title="Compromisso Pendente" />
-                  )}
-                </AppointmentHeader>
-                <AppointmentDescription>
-                  <p>{compromisso.description}</p>
-                </AppointmentDescription>
-              </AppointmentItens>
-            ))}
-          </AppointmentContent>
+                </h2>
+              </div>
+
+              {/* RENDERIZAÇÃO DOS CARDS DE COMPROMISSO */}
+
+              {data.length === 0 && (
+                <p
+                  style={{
+                    flex: 1,
+                    textAlign: 'center',
+                    fontSize: 14,
+                    fontWeight: 400,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 16,
+                  }}
+                >
+                  Não há compromissos cadastrados para o dia de hoje
+                </p>
+              )}
+
+              {data.map(compromisso => (
+                <AppointmentItens
+                  key={compromisso.eventId}
+                  style={{
+                    borderLeft: `3px solid ${compromisso.subjectColor}`,
+                  }}
+                  done={compromisso.status}
+                  onClick={() => handleClickEdit(compromisso)}
+                  initial={{ opacity: 0, y: -100 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.25 }}
+                >
+                  <AppointmentHeader>
+                    <div>
+                      <FiClock />
+                      <p>{format(new Date(compromisso.startDate), 'HH:mm')}</p>
+                    </div>
+
+                    <strong>{compromisso.subject}</strong>
+
+                    {compromisso.status !== 'P' && (
+                      <BsBookmarkCheck title="Compromisso Concluido" />
+                    )}
+                    {compromisso.status === 'P' && (
+                      <BsBookmark title="Compromisso Pendente" />
+                    )}
+                  </AppointmentHeader>
+                  <AppointmentDescription>
+                    <p>{compromisso.description}</p>
+                  </AppointmentDescription>
+                </AppointmentItens>
+              ))}
+            </AppointmentContent>
           </Container>
         </ModalProvider>
       ) : (
         <ModalProvider>
           <Container id='Container' {...rest} style={{opacity:(visible === 'N' ? '0.5' : '1')}}>
-          <ContainerHeader id='ContainerHeader' style={{display:'inline-block', zIndex:99999}} cursorMouse={cursor} handleClose={haveAction}>
-                <div style= {{ display:'inline-block', width:"90%", height:"90%",...rest}}>
-                  <p>{title}</p>
+            <ContainerHeader id='ContainerHeader' style={{display:'flex', zIndex:99999}} cursorMouse={cursor} handleClose={handleClose}>
+                <div style= {{ display:'flex', width:"100%", height:"100%", alignItems: "center", justifyContent: "center", textAlign: "center",...rest}} >
+                  <p style={{ margin: 0}}>{title}</p>
                 </div>
-          </ContainerHeader> 
-          <AppointmentContent>
-            <div>
-              <h2>
-                Horários agendados
-                {permissionData.calendar === 'S' || permissionData.adm === 'S' ? (
-                  <button type="button" onClick={handleNewAppointment}>
-                    <FiPlus />
-                    <p>Agendamento</p>
-                  </button>
-                ) : (
-                  <button type="button" onClick={handleNotPermission}>
-                    <FiPlus />
-                    <p>Agendamento</p>
-                  </button>
-                )}
-              </h2>
-            </div>
-
-            {/* RENDERIZAÇÃO DOS CARDS DE COMPROMISSO */}
-
-            {data.length === 0 && (
-              <p
-                style={{
-                  flex: 1,
-                  textAlign: 'center',
-                  fontSize: 14,
-                  fontWeight: 400,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: 16,
-                }}
-              >
-                Não há compromissos cadastrados para o dia de hoje
-              </p>
-            )}
-
-            {data.map(compromisso => (
-              <AppointmentItens
-                key={compromisso.eventId}
-                style={{
-                  borderLeft: `3px solid ${compromisso.subjectColor}`,
-                }}
-                done={compromisso.status}
-                onClick={() => handleClickEdit(compromisso)}
-                initial={{ opacity: 0, y: -100 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.25 }}
-              >
-                <AppointmentHeader>
-                  <div>
-                    <FiClock />
-                    <p>{format(new Date(compromisso.startDate), 'HH:mm')}</p>
-                  </div>
-
-                  <strong>{compromisso.subject}</strong>
-
-                  {compromisso.status !== 'P' && (
-                    <BsBookmarkCheck title="Compromisso Concluido" />
+            </ContainerHeader>
+            <AppointmentContent>
+              <div>
+                <h2>
+                  Horários agendados
+                  {permissionData.calendar === 'S' || permissionData.adm === 'S' ? (
+                    <button type="button" onClick={handleNewAppointment}>
+                      <FiPlus />
+                      <p>Agendamento</p>
+                    </button>
+                  ) : (
+                    <button type="button" onClick={handleNotPermission}>
+                      <FiPlus />
+                      <p>Agendamento</p>
+                    </button>
                   )}
-                  {compromisso.status === 'P' && (
-                    <BsBookmark title="Compromisso Pendente" />
-                  )}
-                </AppointmentHeader>
-                <AppointmentDescription>
-                  <p>{compromisso.description}</p>
-                </AppointmentDescription>
-              </AppointmentItens>
-            ))}
-          </AppointmentContent>
+                </h2>
+              </div>
+
+              {/* RENDERIZAÇÃO DOS CARDS DE COMPROMISSO */}
+
+              {data.length === 0 && (
+                <p
+                  style={{
+                    flex: 1,
+                    textAlign: 'center',
+                    fontSize: 14,
+                    fontWeight: 400,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 16,
+                  }}
+                >
+                  Não há compromissos cadastrados para o dia de hoje
+                </p>
+              )}
+
+              {data.map(compromisso => (
+                <AppointmentItens
+                  key={compromisso.eventId}
+                  style={{
+                    borderLeft: `3px solid ${compromisso.subjectColor}`,
+                  }}
+                  done={compromisso.status}
+                  onClick={() => handleClickEdit(compromisso)}
+                  initial={{ opacity: 0, y: -100 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.25 }}
+                >
+                  <AppointmentHeader>
+                    <div>
+                      <FiClock />
+                      <p>{format(new Date(compromisso.startDate), 'HH:mm')}</p>
+                    </div>
+
+                    <strong>{compromisso.subject}</strong>
+
+                    {compromisso.status !== 'P' && (
+                      <BsBookmarkCheck title="Compromisso Concluido" />
+                    )}
+                    {compromisso.status === 'P' && (
+                      <BsBookmark title="Compromisso Pendente" />
+                    )}
+                  </AppointmentHeader>
+                  <AppointmentDescription>
+                    <p>{compromisso.description}</p>
+                  </AppointmentDescription>
+                </AppointmentItens>
+              ))}
+            </AppointmentContent>
           </Container>
       </ModalProvider>
     )}
