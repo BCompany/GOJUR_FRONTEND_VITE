@@ -17,6 +17,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import { Center } from 'pages/Coverages/styles';
 
 // Register Chart.js components
 ChartJS.register(LineElement, CategoryScale, LinearScale, Title, Tooltip, Legend);
@@ -60,8 +61,20 @@ const GraphicsTempoMedioDeDistribuicao: React.FC<GraphicProps> = ({
   const [metterMessage, setMetterMessage] = useState<string>('');
   const token = localStorage.getItem('@GoJur:token');
   const { dragOn } = useHeader();
+  const [screenWitdh, setScreenWitdh] = useState(screen.width);
+  const [labelOptions, setLabelOptions] = useState(false);
+  const [labelSettings, setLabelSettings] = useState(false);
 
   useEffect(() => {
+    if (screenWitdh >= 1366) {
+      setLabelOptions(true);
+    }
+
+    if (screenWitdh <= 1366) {
+      setLabelSettings(false);
+    } else {
+      setLabelSettings(true);
+    }
 
     async function handleData() {
       try {
@@ -87,7 +100,7 @@ const GraphicsTempoMedioDeDistribuicao: React.FC<GraphicProps> = ({
     }
     
     handleData();
-  }, [token]);
+  }, [token, screenWitdh]);
 
   const data = {
     labels: monthValues,
@@ -139,22 +152,19 @@ const GraphicsTempoMedioDeDistribuicao: React.FC<GraphicProps> = ({
     <>
       {dragOn ? (
         <Container id='Container' {...rest} style={{ opacity: visible === 'N' ? '0.5' : '1' }}>
-          <ContainerHeader id='ContainerHeader' style={{display:'inline-block', zIndex:99999}} cursorMouse={cursor} onMouseOut={activePropagation} onMouseOver={stopPropagation} handleClose={handleClose}>
-              <div style= {{ display:'inline-block', width:"90%", height:"90%",...rest}} onMouseOut={activePropagation} onMouseOver={stopPropagation} >
-                <p>{title}</p>
+
+          <ContainerHeader id='ContainerHeader' style={{display:'block', zIndex:99999}} cursorMouse={cursor} handleClose={handleClose}  onMouseOut={activePropagation} onMouseOver={stopPropagation}>
+              <div style= {{ float:"left", display: "-webkit-box", width:"90%", height:"100%", alignItems: "center", justifyContent: "center", textAlign: "center",...rest}} >
+                <p style={{ margin: 0, width:"110%"}}>{title}</p>
               </div>
-              <div style={{display:'inline-block', width: "10%", height:"90%", cursor:"pointer"}} onMouseOut={activePropagation} onMouseOver={stopPropagation}>                       
-                {visible == 'N' ? (
-                    <button onClick={() => { handleClose("S", idElement)}} style={{display:'inline-block'}}>
-                      <FaEye title='Ativar gráfico' />
-                    </button>
-                    ) : (
-                    <button onClick={() => { handleClose("N", idElement)}} style={{display:'inline-block'}}>
-                        <FiX title='Desativar gráfico' />
-                    </button>  
+              <div style={{float:"left", display:'inline-block', width: "10%", height:"10%", cursor:"pointer"}} onMouseOut={activePropagation} onMouseOver={stopPropagation}>                       
+                {visible == 'S' && (
+                  <button onClick={() => { handleClose("N", idElement)}} style={{display:'inline-block'}}>
+                    <FiX title='Desativar gráfico' />
+                  </button>
                 )}              
               </div>
-            </ContainerHeader>  
+          </ContainerHeader> 
           <Content>
             {monthlyAverages.length === 0 ? (
               <p
@@ -190,9 +200,9 @@ const GraphicsTempoMedioDeDistribuicao: React.FC<GraphicProps> = ({
         </Container>
       ) : (
         <Container {...rest} style={{ opacity: visible === 'N' ? '0.5' : '1' }}>
-           <ContainerHeader id='ContainerHeader' style={{display:'flex', zIndex:99999}} cursorMouse={cursor} handleClose={handleClose}>
-              <div style= {{ display:'inline-block', width:"90%", height:"90%",...rest}} >
-                <p style={{width:"100%", height:"100%"}}>{title}</p>
+          <ContainerHeader id='ContainerHeader' style={{display:'flex', zIndex:99999}} cursorMouse={cursor} handleClose={handleClose}>
+              <div style= {{ display:'flex', width:"100%", height:"100%", alignItems: "center", justifyContent: "center", textAlign: "center",...rest}} >
+                <p style={{ margin: 0}}>{title}</p>
               </div>
           </ContainerHeader> 
           <Content>
