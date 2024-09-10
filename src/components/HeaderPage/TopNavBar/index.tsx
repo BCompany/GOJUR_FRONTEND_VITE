@@ -54,7 +54,7 @@ const TopNavBar: React.FC<NavigationProps> = ({
   const [messageIdList, setMessageIdList] = useState<MessageIdList[]>([]);
   const { signOut } = useAuth();
   const {handleUserPermission} = useDefaultSettings();
-  const { handleDragOn } = useHeader();
+  const { handleDragOn, handleReleaseDrag } = useHeader();
   const { addToast } = useToast();
   const history = useHistory();
   const { handleShowVideoTrainning } = useModal();
@@ -275,8 +275,10 @@ const TopNavBar: React.FC<NavigationProps> = ({
 
     if(isLayoutChange) {
       handleDragOn(false)
+      handleReleaseDrag(false)
     }else{
       handleDragOn(true)
+      handleReleaseDrag(true)
     }
   }, [handleDragOn, isLayoutChange]);
 

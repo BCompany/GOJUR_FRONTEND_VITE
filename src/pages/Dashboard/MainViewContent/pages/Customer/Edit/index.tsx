@@ -58,7 +58,7 @@ export default function Customer() {
   const { pathname  } = useLocation();
   const { handleSubmit} = useForm<ICustomerData>();
   const { handleReloadBusinesCard, reloadBusinessCard } = useCustomer();
-  const {isConfirmMessage, isCancelMessage, handleCancelMessage,handleConfirmMessage } = useConfirmBox();
+  const {isConfirmMessage, isCancelMessage, caller, handleCancelMessage,handleConfirmMessage } = useConfirmBox();
   const [showSalesFunnelMenu, setShowSalesFunnelMenu] = useState<boolean>(true)
   const { showSalesChannelModal } = useModal();
   const [isLoading , setIsLoading] = useState(true); // objecto todo de do cliente
@@ -118,6 +118,7 @@ export default function Customer() {
   const [isLoadingSearchTerm, setIsLoadingSearchTerm] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
   const [customerStartDate, setCustomerStartDate] = useState<string>('')
+  const [currentCustomerId, setCurrentCustomerId] = useState<number>(0);
   const [permissionCRM, setPermissionCRM] = useState<boolean>(false)
   const [businessTotal, setBusinessTotal] = useState<number>(0)
   const [tabsControl, setTabsControl] = useState<ITabsControl>({tab1: true, tab2: false, tab3: false, tab4: false, activeTab: 'customer'});
@@ -131,6 +132,7 @@ export default function Customer() {
   const companyId = localStorage.getItem('@GoJur:companyId');
   const apiKey = localStorage.getItem('@GoJur:apiKey');
   const checkpermissionDocument = permissionsSecurity.find(item => item.name === "CFGDCMEM");
+  const [confirmDeleteModal, setConfirmDeleteModal] = useState<boolean>(false);
 
   // Initialization
   useEffect (() => {
@@ -451,6 +453,7 @@ export default function Customer() {
     }
   },[isPagination])
 
+
   const LoadGroups = async (stateValue?: string) => {
 
     if (isLoadingComboData){
@@ -487,17 +490,20 @@ export default function Customer() {
     }
   }
 
+
   useDelay(() => {
     if (groupSearchTerm.length > 0){
       LoadGroups()
     }
   }, [groupSearchTerm], 1000)
 
+
   useDelay(() => {
     if (salesChannelSearchTerm.length > 0){
       LoadSalesChannel()
     }
   }, [salesChannelSearchTerm], 1000)
+
 
   useDelay(() => {
     async function LoadCities() {
@@ -544,6 +550,7 @@ export default function Customer() {
 
   }, [customerCityValue], 1000)
 
+
   // Get permission to see or not menu sales funnel on customer list
   useEffect(() => {
     try{
@@ -556,6 +563,7 @@ export default function Customer() {
     }
 
   },[permission])
+
 
   const handleSubmitCustomer = useCallback(async() => {
     const abertura = `${customerAbertura}T00:00:00`;
@@ -698,6 +706,7 @@ export default function Customer() {
 
   },[customerAbertura, customerNasc, customerAddress, customerLegalPerson, customer.cod_Pessoa, customer.tpo_Telefone01, customer.num_Telefone01, customer.tpo_Telefone02, customer.num_Telefone02, customer.cod_PessoaFisica, customer.cod_Cliente, customer.cod_PessoaJuridica, customer.cod_SistemaUsuarioEmpresa, customer.doubleCheck, customer.cod_Empresa, customerName, customerFantasia, customerEmail, customerSenha, customerGroupId, customerGroupValue, customerNacionalidade, customerType, customerNumDoc, customerWhatsapp, customerRg, customerSex, customerECivil, customerProf, customerCtps, customerSCtps, customerInss, customerPis, customerPai, customerMae, customerRepresent, customerObs, customerIE, customerEmailFinanAdd, customerRef, customerSalesChannelId, customerStatus, customerStartDate, customerSalary, addToast, history]);
 
+
   const handleSaveWithDoubleCheck = useCallback(async() => {
     const abertura = `${customerAbertura}T00:00:00`;
     const nascimento = `${customerNasc}T00:00:00`;
@@ -775,10 +784,12 @@ export default function Customer() {
 
   },[addToast, customer.cod_Cliente, customer.cod_Pessoa, customer.cod_PessoaFisica, customer.cod_PessoaJuridica, customer.cod_SistemaUsuarioEmpresa, customer.num_Telefone01, customer.num_Telefone02, customer.tpo_Telefone01, customer.tpo_Telefone02, customerAbertura, customerAddress, customerCtps, customerECivil, customerEmail, customerEmailFinanAdd, customerFantasia, customerGroupId, customerGroupValue, customerIE, customerInss, customerLegalPerson, customerMae, customerNacionalidade, customerName, customerNasc, customerNumDoc, customerObs, customerPai, customerPis, customerProf, customerRef, customerRepresent, customerRg, customerSCtps, customerSalary, customerSenha, customerSex, customerType, customerWhatsapp, history]);
 
+
   const handleDeletePassword = () => {
     setCustomerActivePassword(false);
     setCustomerSenha('')
   }
+
 
   const handleSearchCitiesByTermLP  = (item, personId)  => {
 
@@ -808,6 +819,7 @@ export default function Customer() {
     }
   }
 
+
   const handleCityChangeAddress = (item: any, addressId: number | undefined) => {
 
     if (item){
@@ -832,6 +844,7 @@ export default function Customer() {
     }
   }
 
+
   const handleNewAddress = useCallback(() => {
     const id = Math.random()
     const newAddress: ICustomerAddress = {
@@ -852,6 +865,7 @@ export default function Customer() {
 
     setCustomerAddress(oldAddress => [...oldAddress, newAddress])
   },[]); // adiciona um novo endereço na interface
+
 
   const handleNewLegalPerson = useCallback(() => {
     const id = Math.random()
@@ -881,6 +895,7 @@ export default function Customer() {
     setCustomerLegalPerson(oldLegalPerson => [...oldLegalPerson, newLegalPerson])
   },[customer]); // adiciona um novo representante legal na interface
 
+
   const handleDeleteLegalPerson = useCallback((personId) => {
       const person = customerLegalPerson.map(i => i.cod_PessoaRepresentanteLegal === personId ? {
         ...i,
@@ -889,6 +904,7 @@ export default function Customer() {
       setCustomerLegalPerson(person)
 
   },[customerLegalPerson]); // remove um representante legal da interface
+
 
   const handleDeleteAddress = useCallback((addressId) => {
       const address = customerAddress.filter(item => item.cod_Endereco !== addressId);
@@ -903,6 +919,7 @@ export default function Customer() {
       }
   },[addToast, customerAddress]); // remove um endereço da interface
 
+
   const handleChangeCep = useCallback((value, addressId) => {
       const formatedValue = formatField(value, 'cep')
       const cep = customerAddress.map(address => address.cod_Endereco === addressId ? {
@@ -913,6 +930,7 @@ export default function Customer() {
       setCustomerAddress(cep)
       setChangeCEPCustomer(true)
   },[customerAddress]); // atualiza o cep
+
 
   const handleLoadAddressFromCep = useCallback(async(addressId , type: 'c' | 'lp') => {
 
@@ -979,6 +997,7 @@ export default function Customer() {
 
   },[addToast, customerAddress, customerLegalPerson, changeCEPCustomer, changeCEPLP]);
 
+
   const handleChangeLPCep = useCallback((value, personId) => {
       const formatedValue = formatField(value, 'cep')
       if(formatedValue === undefined) return;
@@ -991,6 +1010,7 @@ export default function Customer() {
       setChangeCEPLP(true)
   },[customerLegalPerson]); // atualiza o cep do representante legal
 
+
   const handleChangeDistrict = useCallback((value, addressId) => {
       const district = customerAddress.map(address => address.cod_Endereco === addressId ? {
         ...address,
@@ -999,6 +1019,7 @@ export default function Customer() {
 
       setCustomerAddress(district)
   },[customerAddress]); // atualiza o bairro
+
 
   const handleChangeLPDistrict = useCallback((value, personId) => {
       const district = customerLegalPerson.map(address => address.cod_PessoaRepresentanteLegal === personId ? {
@@ -1009,6 +1030,7 @@ export default function Customer() {
       setCustomerLegalPerson(district)
   },[customerLegalPerson]); // atualiza o bairro do representante legal
 
+
   const handleChangeAddress = useCallback((value, addressId) => {
       const newAddress = customerAddress.map(address => address.cod_Endereco === addressId ? {
         ...address,
@@ -1018,6 +1040,7 @@ export default function Customer() {
       setCustomerAddress(newAddress)
   },[customerAddress]); // atualiza o endereço
 
+
   const handleChangeLPAddress = useCallback((value, personId) => {
       const newAddress = customerLegalPerson.map(address => address.cod_PessoaRepresentanteLegal === personId ? {
         ...address,
@@ -1026,6 +1049,7 @@ export default function Customer() {
 
       setCustomerLegalPerson(newAddress)
   },[customerLegalPerson]); // atualiza o endereço do representante legal
+
 
   const handleChangeTypePhone1 = useCallback((value, addressId) => {
 
@@ -1038,6 +1062,7 @@ export default function Customer() {
 
   },[customerAddress]); // atualiza o tipo de telefone 1
 
+
   const handleChangeTypePhone2 = useCallback((value, addressId) => {
     const newTypePhone = customerAddress.map(address => address.cod_Endereco === addressId ? {
       ...address,
@@ -1047,6 +1072,7 @@ export default function Customer() {
     setCustomerAddress(newTypePhone)
 
   },[customerAddress]); // atualiza o tipo de telefone 2
+
 
   const handleChangePhone1 = useCallback((value, addressId) => {
 
@@ -1060,6 +1086,7 @@ export default function Customer() {
 
   },[customerAddress]); // atualiza o  telefone 1
 
+
   const handleChangePhone2 = useCallback((value, addressId) => {
     const newPhone = customerAddress.map(address => address.cod_Endereco === addressId ? {
       ...address,
@@ -1070,6 +1097,7 @@ export default function Customer() {
 
   },[customerAddress]); // atualiza o  telefone 2
 
+  
   const handleChangeLegalPersonName = useCallback((value, personId) => {
     const newName = customerLegalPerson.map(person => person.cod_PessoaRepresentanteLegal === personId ? {
       ...person,
@@ -1079,6 +1107,7 @@ export default function Customer() {
     setCustomerLegalPerson(newName)
 
   },[customerLegalPerson]); // atualiza o  Nome do representante legal
+
 
   const handleChangeLegalPersonCpf = useCallback((value, personId) => {
     const formatedValue = formatField(value, 'cpf')
@@ -1093,6 +1122,7 @@ export default function Customer() {
 
   },[customerLegalPerson]); // atualiza o  cpf do representante legal
 
+
   const handleChangeLegalPersonRg = useCallback((value, personId) => {
 
     const newRg = customerLegalPerson.map(person => person.cod_PessoaRepresentanteLegal === personId ? {
@@ -1104,6 +1134,7 @@ export default function Customer() {
 
   },[customerLegalPerson]); // atualiza o  Rg do representante legal
 
+
   const handleChangeLegalPersonProf = useCallback((value, personId) => {
     const newProf = customerLegalPerson.map(person => person.cod_PessoaRepresentanteLegal === personId ? {
       ...person,
@@ -1114,9 +1145,11 @@ export default function Customer() {
 
   },[customerLegalPerson]); // atualiza o  Profissão do representante legal
 
+
   const handleEndDate = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setCustomerStartDate(event.target.value)
   },[]);
+
 
   const handleChangeLegalPersonECivil = useCallback((value, personId) => {
 
@@ -1128,6 +1161,7 @@ export default function Customer() {
     setCustomerLegalPerson(newECivil)
   }, [customerLegalPerson]) // muda o estado civil do representante
 
+
   const handleChangeLegalPersonType = useCallback((value, personId) => {
     const newType = customerLegalPerson.map(person => person.cod_PessoaRepresentanteLegal === personId ? {
       ...person,
@@ -1136,6 +1170,7 @@ export default function Customer() {
 
     setCustomerLegalPerson(newType)
   }, [customerLegalPerson]) //  muda o tipo do representante
+
 
   const handleChangeLegalPersonEndCheck = useCallback((value, personId) => {
     const addressCheck = customerLegalPerson.map(person => person.cod_PessoaRepresentanteLegal === personId ? {
@@ -1146,11 +1181,13 @@ export default function Customer() {
     setCustomerLegalPerson(addressCheck)
   }, [customerLegalPerson]) // marca a flag relacionada ao endereço do representante
 
+
   const handleOpenWhatsApp = useCallback((number) => {
     if (number === null) return;
     const message = 'Olá,'
     window.open(`https://web.whatsapp.com/send?phone=+55${number}&text=${message}`, '_blank')
   },[]); // inicia a conversa no whatsapp
+
 
   const handleValidateEmail = useCallback((email: string, typeEmail:string) => {
     if(email === '' || email === null) return true;
@@ -1183,8 +1220,16 @@ export default function Customer() {
 
   },[addToast]);
 
-  const handleDeleteCustomer  = useCallback(async(customerId) => {
+
+  const handleDeleteCustomer  = useCallback(async(customerId:number, confirmDelete:boolean) => {
     try {
+      if(confirmDelete == false)
+      {
+        setCurrentCustomerId(customerId)
+        setConfirmDeleteModal(true)
+        return;
+      }
+      
       const token = localStorage.getItem('@GoJur:token');
       setIsDeleting(true)
 
@@ -1202,9 +1247,12 @@ export default function Customer() {
       setIsDeleting(false)
       history.push('/customer/list')
 
-
-    } catch (err:any) {
+      setCurrentCustomerId(0)
+      setConfirmDeleteModal(false)
+    }
+    catch (err:any) {
       setIsDeleting(false)
+      setConfirmDeleteModal(false)
       addToast({
         type: "info",
         title: "Falha ao apagar cliente",
@@ -1212,6 +1260,7 @@ export default function Customer() {
       })
     }
   },[addToast, history]);
+
 
   // handle changes in tabs
   const handleTabs = (tabActive: string, customerId: number) => {
@@ -1291,22 +1340,33 @@ export default function Customer() {
     }
   }
 
-  useEffect(() => {
 
-    if (isCancelMessage){
+  useEffect(() => {
+    if (isCancelMessage && caller != "customerDelete"){
       setCustomerActiveModalDoubleCheck(false)
       handleCancelMessage(false)
     }
-  }, [isCancelMessage])
+    
+    if (isCancelMessage && caller == "customerDelete"){
+      setConfirmDeleteModal(false)
+      handleCancelMessage(false)
+    }
+  }, [isCancelMessage, caller])
+
 
   useEffect(() => {
-
-    if (isConfirmMessage && customerActiveModalDoubleCheck){
-
+    if (isConfirmMessage && customerActiveModalDoubleCheck && caller != "customerDelete"){
       handleSaveWithDoubleCheck()
-      handleConfirmMessage(false)      }
+      handleConfirmMessage(false)
+    }
 
-  }, [isConfirmMessage])
+    if(isConfirmMessage && caller == "customerDelete")
+    {
+      handleDeleteCustomer(currentCustomerId, true)
+      handleConfirmMessage(false)
+    }
+  }, [isConfirmMessage, caller])
+
 
   const handleNewBusiness = useCallback(async () => {
 
@@ -1381,6 +1441,7 @@ export default function Customer() {
     }
   },[idReportGenerate])
 
+
   // Check is report is already
   const CheckReportPending = useCallback(async (checkInterval) => {
     if (isGeneratingReport){
@@ -1398,6 +1459,7 @@ export default function Customer() {
       }
     }
   },[isGeneratingReport, idReportGenerate])
+
 
   // Open link with report
   const OpenReportAmazon = async() => {
@@ -1496,7 +1558,7 @@ export default function Customer() {
             <button
               type='button'
               style={{opacity:(customer.cod_Cliente == undefined? '0.5': '1'), border:'none'}}
-              onClick={() => handleDeleteCustomer(customer.cod_Cliente)}
+              onClick={() => handleDeleteCustomer(customer.cod_Cliente, false)}
             >
               <FiTrash />
               Excluir
@@ -2252,7 +2314,7 @@ export default function Customer() {
                   </button>
 
                   { pathname.substr(15) != '0' && (
-                    <button className="buttonClick" type="button" onClick={() => handleDeleteCustomer(customer.cod_Cliente)}>
+                    <button className="buttonClick" type="button" onClick={() => handleDeleteCustomer(customer.cod_Cliente, false)}>
                       <FiTrash />
                       Excluir
                     </button>
@@ -2392,6 +2454,14 @@ export default function Customer() {
 
       </Content>
 
+      {confirmDeleteModal && (
+        <ConfirmBoxModal
+          title="Excluir Registro"
+          caller="customerDelete"
+          message="Confirma a exclusão deste cliente ?"
+        />
+      )}
+
       { customerActiveModalDoubleCheck && (
         <ConfirmBoxModal
           title="AVISO"
@@ -2414,7 +2484,7 @@ export default function Customer() {
           <Overlay />
           <div className='waitingMessage'>
             <LoaderWaiting size={15} color="var(--blue-twitter)" />
-            &nbsp;&nbsp; Deletando Cliente...
+            &nbsp;&nbsp; Excluindo Cliente...
           </div>
         </>
       )}
