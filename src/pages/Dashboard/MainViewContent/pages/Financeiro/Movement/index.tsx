@@ -141,6 +141,7 @@ const FinancialMovement: React.FC = () => {
   const [showLog, setShowLog] = useState(false);
   const [showChangePaymentForm, setShowChangePaymentForm] = useState<boolean>(false);
   const [changePaymentForm, setChangePaymentForm] = useState<boolean>(false);
+  const [showInstallmentInvoiceConfirm, setShowInstallmentInvoiceConfirm] = useState<boolean>(false);
 
   const [discountPercetage, setDiscountPercentage] = useState<number>(0)
   const [discountValue, setDiscountValue] = useState<number>(0)
@@ -219,12 +220,19 @@ const FinancialMovement: React.FC = () => {
         setShowChangeInstallments(false)
         handleCancelMessage(false)
       }
+
       if(caller == "changePaymentForm"){
         setShowChangePaymentForm(false)
         handleCancelMessage(false)
       }
+
       if(caller == "validateFinancialIntegration"){
         setShowValidateFinancialIntegration(false)
+        handleCancelMessage(false)
+      }
+
+      if(caller == "invoiceInstallment"){
+        setShowInstallmentInvoiceConfirm(false)
         handleCancelMessage(false)
       }
     }
@@ -249,6 +257,12 @@ const FinancialMovement: React.FC = () => {
       if (caller == "validateFinancialIntegration"){
         handleConfirmMessage(false)
         Delete(true, false)
+      }
+
+      if(caller == "invoiceInstallment"){
+        handleConfirmMessage(false)
+        setShowInstallmentInvoiceConfirm(false)
+        CreateInvoice(false)
       }
     }
   }, [isConfirmMessage, caller])
@@ -396,6 +410,9 @@ const FinancialMovement: React.FC = () => {
       setBankPaymentSlipDate(format(new Date(response.data.dta_Movimento), "yyyy-MM-dd"))
       setPixKey(response.data.des_ChavePix)
       setBillingInvoiceId(response.data.num_Fatura)
+
+
+      console.log(response.data.num_Fatura)
 
       if(response.data.pct_Desconto != null)
       {
@@ -909,7 +926,7 @@ const FinancialMovement: React.FC = () => {
 
   const ClosePaymentModal = () => {
     setShowPaymentModal(false)
-    LoadMovement(movementId);
+    LoadMovement(movementId)
   }
 
 
@@ -1269,6 +1286,46 @@ const FinancialMovement: React.FC = () => {
   const handleCloseLog = () => {
     setShowLog(false)
   }
+
+
+  const CreateInvoice = useCallback(async (checkInstallment:boolean) => {
+    try{
+      if(checkInstallment){
+        if(movementParcelas != '1'){
+          setShowInstallmentInvoiceConfirm(true)
+          return
+        }
+      }
+
+      setIsSaving(true)
+
+      let peopleIdsItems = '';
+      selectedPeopleList.map((people) => {
+        return peopleIdsItems += `${people.id},`
+      })
+
+      const response = await api.post('/Fatura/GerarFaturaPorMovimento', {
+        cod_Movimento: movementId,
+        peopleIds: peopleIdsItems,
+        token
+      })
+
+      setIsSaving(false)
+      LoadMovement(movementId)
+    }
+    catch(err:any){
+      setIsSaving(false)
+
+      if (err.response.data.typeError.warning == "awareness"){
+        addToast({type: "info", title: "Plano inválido.", description: "Este recurso não está disponível no plano FREE"})
+      }
+      else{
+        addToast({type: "info", title: "Falha ao criar faturas.", description: err.response.data.Message})
+      }
+    }
+  }, [movementId, movementParcelas, selectedPeopleList])
+
+
   // #endregion
 
 
@@ -1295,7 +1352,7 @@ const FinancialMovement: React.FC = () => {
 
   const ChangeBankPaymentSlipDueDate = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setBankPaymentSlipDate(event.target.value)
-  }, []);
+  }, [])
 
 
   const GeneratePaymentSlip = useCallback(async(actionGenerate: string, secondPayment: boolean) => {
@@ -1361,7 +1418,7 @@ const FinancialMovement: React.FC = () => {
         addToast({type: "info", title: "Falha ao gerar boleto.", description: err.response.data.Message})
       }
     }
-  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp, bankPaymentSlipDate, paymentSlipPartnerId, paymentSlipId]);
+  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp, bankPaymentSlipDate, paymentSlipPartnerId, paymentSlipId])
 
 
   const OpenBankPaymentSlipNewWindow = (item) => {
@@ -1414,9 +1471,30 @@ const FinancialMovement: React.FC = () => {
   }, [movementId, bankPaymentSlipLink])
 
 
-  const SendEmailBillingInvoice = () => {
-    alert("Fatura por E-Mail")
-  }
+  const SendEmailBillingInvoice = useCallback(async() => {
+    try{
+      setIsLoading(true)
+
+      let peopleIdsItems = '';
+      selectedPeopleList.map((people) => {
+        return peopleIdsItems += `${people.id},`
+      })
+      
+      const response = await api.post('/BoletoBancario/EnviarEmailFatura', {
+        cod_Movimento: movementId,
+        bankPaymentSlipLink,
+        peopleIds: peopleIdsItems,
+        token
+      })
+
+      setIdReportGenerate(response.data)
+      setIsLoading(false)
+    }
+    catch (err:any) {
+      setIsLoading(false)
+      addToast({type: "info", title: "Falha ao gerar boleto.", description: err.response.data.Message}) 
+    }
+  }, [movementId, selectedPeopleList, bankPaymentSlipLink])
   // #endregion
 
 
@@ -1444,19 +1522,6 @@ const FinancialMovement: React.FC = () => {
         <div style={{height:'50px'}}>
           {movementType == "R" && <span>RECEITA</span> }
           {movementType == "D" && <span>DESPESA</span> }
-          {/* {invoice != 0 && (
-            <span className='invoiceWarning'>
-              Movimento gerado automaticamente pela Fatura nº
-              &nbsp;
-              {sequence}
-              &nbsp;
-              <MdHelp
-                style={{color:'#2C8ED6'}}
-                className='help'
-                title="Esta movimentação foi gerada automaticamente através de uma fatura. Qualquer alteração deve ser executada em sua origem."
-              />
-            </span>
-          )} */}
           {billingInvoiceId != "" && (
             <span className='invoiceWarning'>
               Fatura nº &nbsp; {billingInvoiceId}
@@ -1999,34 +2064,35 @@ const FinancialMovement: React.FC = () => {
               </button>
             )}
 
-            {hasFinancialIntegration && (
-              <>
-                {hasBankPaymentSlip == false ? (
-                  <>
-                    {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B" && companyPlan != 'GOJURFR') &&(
-                      <button className="buttonClick" type='button' onClick={()=> GenerateBankPaymentSlip()}>
-                        <FaFileInvoiceDollar />
-                        Faturar
-                      </button>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B" && companyPlan != 'GOJURFR') &&(
-                      <>
-                        <button className="buttonClick" type='button' onClick={()=> PrintBillingInvoice()}>
-                          <FiPrinter />
-                          Emitir Fatura
-                        </button>
+            {(movementId != '0' && invoice == 0 && movementType == "R" && hasBankPaymentSlip == false && billingInvoiceId == null) && (
+              <button className="buttonClick" type='button' onClick={()=> CreateInvoice(true)}>
+                <FaRegCopy />
+                Faturar
+              </button>
+            )}
 
-                        <button className="buttonClick" type='button' onClick={()=> SendEmailBillingInvoice()}>
-                          <AiOutlineMail />
-                          Fatura Por E-Mail
-                        </button>
-                      </>
-                    )}
-                  </>
+            {(hasFinancialIntegration && hasBankPaymentSlip == false) && (
+              <>
+                {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B" && companyPlan != 'GOJURFR') &&(
+                  <button className="buttonClick" type='button' onClick={()=> GenerateBankPaymentSlip()}>
+                    <FaFileInvoiceDollar />
+                    Gerar Boletos
+                  </button>
                 )}
+              </>
+            )}
+
+            {(!isMOBILE && movementId != '0' && movementType == "R" && billingInvoiceId != null) &&(
+              <>
+                <button className="buttonClick" type='button' onClick={()=> PrintBillingInvoice()}>
+                  <FiPrinter />
+                  Emitir Fatura
+                </button>
+
+                <button className="buttonClick" type='button' onClick={()=> SendEmailBillingInvoice()}>
+                  <AiOutlineMail />
+                  Fatura Por E-Mail
+                </button>
               </>
             )}
 
@@ -2303,6 +2369,15 @@ const FinancialMovement: React.FC = () => {
         />
       )}
 
+      {showInstallmentInvoiceConfirm && (
+        <ConfirmBoxModal
+          title="Faturar"
+          caller="invoiceInstallment"
+          useCheckBoxConfirm
+          message="Este movimento está parcelado, todas as parcelas serão faturadas."
+        />
+      )}
+
       {isLoading && (
         <>
           <Overlay />
@@ -2323,7 +2398,6 @@ const FinancialMovement: React.FC = () => {
         </>
       )}
 
-      {/* warning uploading file */}
       {(uploadingStatus != 'none') && (
         <>
           <OverlayFinancial />
@@ -2335,7 +2409,6 @@ const FinancialMovement: React.FC = () => {
         </>
       )}
 
-      {/* warning uploading file */}
       {(isDeletingFile) && (
         <>
           <OverlayFinancial />
