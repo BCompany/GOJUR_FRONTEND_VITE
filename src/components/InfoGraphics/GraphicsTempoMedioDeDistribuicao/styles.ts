@@ -82,8 +82,10 @@ export const Container = styled.div`
   align-items: center;
   background-color: var(--white);
 `;
+
+
 export const Content = styled.div`
-  width: 100%;
+  width: 95%;
   height: 100%;
   display: flex;
   flex-direction: column;
