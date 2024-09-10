@@ -152,7 +152,6 @@ const GraphicsTempoMedioDeDistribuicao: React.FC<GraphicProps> = ({
     <>
       {dragOn ? (
         <Container id='Container' {...rest} style={{ opacity: visible === 'N' ? '0.5' : '1' }}>
-
           <ContainerHeader id='ContainerHeader' style={{display:'block', zIndex:99999}} cursorMouse={cursor} handleClose={handleClose}  onMouseOut={activePropagation} onMouseOver={stopPropagation}>
               <div style= {{ float:"left", display: "-webkit-box", width:"90%", height:"100%", alignItems: "center", justifyContent: "center", textAlign: "center",...rest}} >
                 <p style={{ margin: 0, width:"110%"}}>{title}</p>
@@ -190,7 +189,7 @@ const GraphicsTempoMedioDeDistribuicao: React.FC<GraphicProps> = ({
                     options={options} type={undefined}                
                 />
                 {annualAverage !== null && (
-                  <p style={{ fontSize: '14px', color: '#000', fontWeight: 500, marginTop: '20px', textAlign: 'center' }}>
+                  <p style={{ fontSize: '14px', color: '#000', fontWeight: 500, textAlign: 'center' }}>
                     Tempo Médio de Distribuição (12 meses): {annualAverage}
                   </p>
                 )}
@@ -229,7 +228,7 @@ const GraphicsTempoMedioDeDistribuicao: React.FC<GraphicProps> = ({
                       data={data}
                       options={options} type={undefined}                />
                 {annualAverage !== null && (
-                  <p style={{ fontSize: '14px', color: '#000', fontWeight: 500, marginTop: '20px', textAlign: 'center' }}>
+                  <p style={{ fontSize: '14px', color: '#000', fontWeight: 500, textAlign: 'center' }}>
                     Tempo Médio de Distribuição (12 meses): {annualAverage}
                   </p>
                 )}
