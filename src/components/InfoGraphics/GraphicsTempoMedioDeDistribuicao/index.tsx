@@ -1,26 +1,34 @@
-/* eslint-disable no-restricted-globals */
-import React, { AreaHTMLAttributes, useCallback, useEffect, useState } from 'react';
-import { Pie } from 'react-chartjs-2';
+import React, { useState, useEffect } from 'react';
+import { Line } from 'react-chartjs-2';
 import api from 'services/api';
-
-import {
-  borderColors,
-  graphicsColors,
-} from 'Shared/dataComponents/graphicsColors';
 import HeaderComponent from '../../HeaderComponent';
 
 import { Container, Content, ContainerHeader } from './styles';
 import { useHeader } from 'context/headerContext';
 
 import { FaEye } from "react-icons/fa";
-import {  FiX } from 'react-icons/fi';
+import { FiX } from 'react-icons/fi';
+import {
+  Chart as ChartJS,
+  LineElement,
+  CategoryScale,
+  LinearScale,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Center } from 'pages/Coverages/styles';
+
+// Register Chart.js components
+ChartJS.register(LineElement, CategoryScale, LinearScale, Title, Tooltip, Legend);
 
 interface Data {
   resultName: string;
   resultValue: [
     {
-      m_Item1: string;
-      m_Item2: number;
+      m_Item1: string; 
+      m_Item2: number; 
+      m_Item3: number; 
     },
   ];
 }
@@ -31,12 +39,12 @@ interface GraphicProps {
   visible: string;
   activePropagation: any;
   stopPropagation: any;
-  xClick:any;
+  xClick: any;
   handleClose: any;
   cursor: boolean;
 }
 
-const GraphicsProcessosDecisaoJudicial: React.FC<GraphicProps> = ({
+const GraphicsTempoMedioDeDistribuicao: React.FC<GraphicProps> = ({
   title,
   idElement,
   visible,
@@ -47,15 +55,15 @@ const GraphicsProcessosDecisaoJudicial: React.FC<GraphicProps> = ({
   cursor,
   ...rest
 }) => {
-  const [metterValues, setMetterValues] = useState<number[]>([]);
-  const [metter, setMetter] = useState<string[]>([]);
+  const [monthValues, setMonthValues] = useState<string[]>([]);
+  const [monthlyAverages, setMonthlyAverages] = useState<number[]>([]);
+  const [annualAverage, setAnnualAverage] = useState<number | null>(null);
+  const [metterMessage, setMetterMessage] = useState<string>('');
+  const token = localStorage.getItem('@GoJur:token');
+  const { dragOn } = useHeader();
   const [screenWitdh, setScreenWitdh] = useState(screen.width);
   const [labelOptions, setLabelOptions] = useState(false);
   const [labelSettings, setLabelSettings] = useState(false);
-  const [metterName, setMetterName] = useState<string>(title);
-  const [metterMessage, setMetterMessage] = useState<string>('');
-  const [haveAction, setHaveAction] = useState(false);
-  const {dragOn} = useHeader();
 
   useEffect(() => {
     if (screenWitdh >= 1366) {
@@ -67,58 +75,83 @@ const GraphicsProcessosDecisaoJudicial: React.FC<GraphicProps> = ({
     } else {
       setLabelSettings(true);
     }
+
     async function handleData() {
       try {
         const userToken = localStorage.getItem('@GoJur:token');
 
         const response = await api.post<Data>(
-          `/BIProcesso/ListarQuantidadeProcessosPorDecisaoJudicial`,
+          `/BIProcesso/ListarTempoDeDistribuicaoMedia`,
           {
             token: userToken,
           },
         );
 
-        setMetter(
-          response.data.resultValue.map(m => m.m_Item1.substring(0, 10)),
-        );
-        setMetterValues(response.data.resultValue.map(m => m.m_Item2));
-      } catch (err:any) {
+        const labels = response.data.resultValue.map(m => m.m_Item1); 
+        const monthlyData = response.data.resultValue.map(m => m.m_Item2); 
+        const average = response.data.resultValue[0]?.m_Item3 ?? null; 
+
+        setMonthValues(labels);
+        setMonthlyAverages(monthlyData);
+        setAnnualAverage(average);
+      } catch (err: any) {
         setMetterMessage(err.message);
       }
     }
-
+    
     handleData();
-  }, [metterName, screenWitdh]);
+  }, [token, screenWitdh]);
 
   const data = {
-    labels: metter,
+    labels: monthValues,
     datasets: [
       {
-        label: metterName,
-        data: metterValues,
-        backgroundColor: graphicsColors,
-        borderColor: borderColors,
-        borderWidth: 1,
+        label: 'Média do Mês(Dias)',
+        data: monthlyAverages,
+        fill: false,
+        backgroundColor: 'rgb(255, 99, 132)',
+        borderColor: 'rgba(255, 99, 132, 0.4)',
+        tension: 0.1,
       },
     ],
   };
 
-  const option = {
+  const options = {
     responsive: true,
-    maintainAspectRatio: false,
-    // maintainAspectRatio: labelSettings,
-    plugins:{
+    plugins: {
       legend: {
-        display: labelOptions,
-        position: 'right',
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          label: function (context: any) {
+            return `${context.dataset.label}: ${context.raw}`;
+          }
+        }
       }
-    }
+    },
+    scales: {
+      x: {
+        type: 'category',
+        title: {
+          display: true,
+          text: 'Meses',
+        },
+      },
+      y: {
+        title: {
+          display: true,
+          text: 'Média(Dias)',
+        },
+        beginAtZero: true,
+      },
+    },
   };
 
   return (
     <>
       {dragOn ? (
-        <Container id='Container' {...rest} style={{opacity:(visible === 'N' ? '0.5' : '1')}}>
+        <Container id='Container' {...rest} style={{ opacity: visible === 'N' ? '0.5' : '1' }}>
           <ContainerHeader id='ContainerHeader' style={{display:'block', zIndex:99999}} cursorMouse={cursor} handleClose={handleClose}  onMouseOut={activePropagation} onMouseOver={stopPropagation}>
               <div style= {{ float:"left", display: "-webkit-box", width:"90%", height:"100%", alignItems: "center", justifyContent: "center", textAlign: "center",...rest}} >
                 <p style={{ margin: 0, width:"110%"}}>{title}</p>
@@ -132,7 +165,7 @@ const GraphicsProcessosDecisaoJudicial: React.FC<GraphicProps> = ({
               </div>
           </ContainerHeader> 
           <Content>
-            {metterValues.length === 0 ? (
+            {monthlyAverages.length === 0 ? (
               <p
                 style={{
                   fontSize: 14,
@@ -149,23 +182,30 @@ const GraphicsProcessosDecisaoJudicial: React.FC<GraphicProps> = ({
                 Não existem dados o suficiente para esse indicador
               </p>
             ) : (
-              <Pie 
-                type='pie' 
-                data={data} 
-                options={option}
-              />
+              <>
+                <div style={{ marginBottom: '30px' }} />
+                <Line
+                    data={data}
+                    options={options} type={undefined}                
+                />
+                {annualAverage !== null && (
+                  <p style={{ fontSize: '14px', color: '#000', fontWeight: 500, textAlign: 'center' }}>
+                    Tempo Médio de Distribuição (12 meses): {annualAverage}
+                  </p>
+                )}
+              </>
             )}
           </Content>
         </Container>
       ) : (
-        <Container id='Container' {...rest} style={{opacity:(visible === 'N' ? '0.5' : '1')}}>
+        <Container {...rest} style={{ opacity: visible === 'N' ? '0.5' : '1' }}>
           <ContainerHeader id='ContainerHeader' style={{display:'flex', zIndex:99999}} cursorMouse={cursor} handleClose={handleClose}>
               <div style= {{ display:'flex', width:"100%", height:"100%", alignItems: "center", justifyContent: "center", textAlign: "center",...rest}} >
                 <p style={{ margin: 0}}>{title}</p>
               </div>
           </ContainerHeader> 
           <Content>
-            {metterValues.length === 0 ? (
+            {monthlyAverages.length === 0 ? (
               <p
                 style={{
                   fontSize: 14,
@@ -182,17 +222,23 @@ const GraphicsProcessosDecisaoJudicial: React.FC<GraphicProps> = ({
                 Não existem dados o suficiente para esse indicador
               </p>
             ) : (
-              <Pie 
-                type='pie' 
-                data={data} 
-                options={option}
-              />
+              <>
+                <div style={{ marginBottom: '30px' }} />
+                <Line
+                      data={data}
+                      options={options} type={undefined}                />
+                {annualAverage !== null && (
+                  <p style={{ fontSize: '14px', color: '#000', fontWeight: 500, textAlign: 'center' }}>
+                    Tempo Médio de Distribuição (12 meses): {annualAverage}
+                  </p>
+                )}
+              </>
             )}
           </Content>
         </Container>
       )}
-    </>  
+    </>
   );
 };
 
-export default GraphicsProcessosDecisaoJudicial;
+export default GraphicsTempoMedioDeDistribuicao;

@@ -15,6 +15,29 @@ export const Container = styled.div`
   @media (max-width: 420px) {
     display: none;
   }
+
+  .selectedButton {
+    padding: 0.4rem;
+    border-radius: 0.25rem;
+    font-family: Montserrat;
+    font-size: 0.700rem;
+    background-color: var(--blue);
+    border-radius: 10px;
+    color: var(--gray);
+    display: flex;
+    align-items: center;
+
+    > svg {
+      width: 0.8rem;
+      height: 1rem;
+      color: var(--white);
+      margin-right: 0.5rem;
+    }
+
+    &:hover {
+      filter: brightness(80%);
+    }
+  }
 `;
 
 export const Wrapper = styled.div`
@@ -37,6 +60,17 @@ export const Wrapper = styled.div`
   > h1 {
     background-color: #000;
     color: #fff;
+  }
+
+  #divButtonChangeVisibility{
+    display: "none"; 
+    align-items: "center";
+    justify-content:"center";
+
+    >button{
+      display:'inline'; 
+      z-Index: 9999;
+    }
   }
 `;
 

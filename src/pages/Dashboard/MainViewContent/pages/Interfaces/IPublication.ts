@@ -1,6 +1,14 @@
+import { AreaHTMLAttributes } from "react";
 
 export interface PublicacaoProps {
   title: string;
+  idElement: string;
+  visible: string;
+  activePropagation: any;
+  stopPropagation: any;
+  xClick:any;
+  handleClose: any;
+  cursor: boolean;
 }
 
 export interface PublicationData {
@@ -45,4 +53,10 @@ export interface AlertsDataDTO {
   alertDescription: string;
   alertTitle: string;
   hover: boolean;
+}
+
+interface HeaderProps extends AreaHTMLAttributes<HTMLAreaElement> {
+  title: string;
+  cursor: boolean;
+  action?: any;
 }

@@ -10,6 +10,7 @@ interface HeaderContextData {
   handleDispathCallback: (state: boolean) => void;
   handleLoadingData: (state: boolean) => void;
   handleFilterList: (value:string) => void;
+  handleReleaseDrag: (state: boolean) => void;
   dragOn: boolean;
   LoadingData:boolean;
   imageT: any;
@@ -17,6 +18,7 @@ interface HeaderContextData {
   captureType: string;
   dispathCallback: boolean;
   filterList:string;
+  releaseDrag: boolean;
 }
 
 const HeaderContext = createContext({} as HeaderContextData);
@@ -31,6 +33,7 @@ const HeaderProvider: React.FC = ({children}) => {
   const [captureType , setCaptureType] = useState<string>('');    
   const [filterList , setFilterList] = useState<string>('');    
   const [dispathCallback , setDispathCallback] = useState<boolean>(false);
+  const [releaseDrag, setReleaseDrag] = useState<boolean>(false);
   
   const handleShowListSearch = useCallback((state: boolean) => {
     setListOpen(state)
@@ -64,6 +67,10 @@ const HeaderProvider: React.FC = ({children}) => {
     setFilterList(value)
   },[])
 
+  const handleReleaseDrag = useCallback((state: boolean) => {
+    setReleaseDrag(state)
+  },[]);
+
   return (
     <HeaderContext.Provider
       value={{        
@@ -75,6 +82,7 @@ const HeaderProvider: React.FC = ({children}) => {
         handleDispathCallback,
         handleFilterList,
         handleLoadingData,
+        handleReleaseDrag,
         listOpen,
         dragOn,
         imageT,
@@ -82,7 +90,8 @@ const HeaderProvider: React.FC = ({children}) => {
         captureType,
         dispathCallback,
         filterList,
-        LoadingData
+        LoadingData,
+        releaseDrag
       }}
     >
       {children}

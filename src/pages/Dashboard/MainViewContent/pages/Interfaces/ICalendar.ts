@@ -94,6 +94,7 @@ export interface dataProps {
     w: number;
     h: number;
   };
+  visible: string;
 }
 
 export interface userListData {

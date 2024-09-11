@@ -28,14 +28,19 @@ import Indicators from './resorces/DashboardComponents/Indicators';
 import HighliteModal from './resorces/DashboardComponents/HighliteModal';
 import FirstAccessModal from '../Cadastro/FirstAccessModal';
 import {Container, Wrapper, Content, OverlayDashboard } from './styles';
-import { dataProps, DefaultsProps, keyProps } from '../Interfaces/IGraphics';
+import { ChangeElementsVisibleProps, dataProps, DefaultsProps, keyProps } from '../Interfaces/IGraphics';
+import zIndex from '@material-ui/core/styles/zIndex';
+import { FaEye } from "react-icons/fa";
+import { ModalChangeVisibility } from 'components/Modals/DashboardModal';
+import GraphicsProcessosPorFase from 'components/InfoGraphics/GraphicsProcessosPorFase';
+import GraphicsTempoMedioDeDistribuicao from 'components/InfoGraphics/GraphicsTempoMedioDeDistribuicao';
 
 const Dashboard: React.FC = () => {
   const ref = useRef(null);
 
   const { addToast } = useToast();
   const { handleShowVideoTrainning } = useModal();
-  const {  handleShowListSearch, dragOn, handleLoadingData, handleCaptureText } = useHeader();
+  const {  handleShowListSearch, dragOn, handleDragOn, handleLoadingData, handleCaptureText, handleReleaseDrag, releaseDrag } = useHeader();
   const { alertData, openProcessModal } = useAlert();
   const history = useHistory();
   const { tpoUser } = useAuth();
@@ -48,7 +53,7 @@ const Dashboard: React.FC = () => {
   const token = localStorage.getItem('@GoJur:token');
   const firstAcces = localStorage.getItem('@GoJur:firstAccess');
   const [firstAccessModal, setFirstAccessModal] = useState<boolean>(false);
-
+  const [CloseVisibilityModal, setChangeVisibilityModal] = useState<boolean>(false);
 
   useEffect(() => {
     if (tpoUser === 'C') {
@@ -56,9 +61,9 @@ const Dashboard: React.FC = () => {
     }
   }, [history, tpoUser]);
 
-
+  
   useEffect(() => {
-    // Save navigation log
+
     const response = api.post('/Usuario/SalvarLogNavegacaoUsuario', {
         token,
         module: 'MEN_DASHBOARD'
@@ -69,7 +74,8 @@ const Dashboard: React.FC = () => {
         '/Dashboard/ListarPosicionamentos',
         {
           token,
-          type: 'homeDashBoard'
+          type: 'homeDashBoard',
+          visible: 'S'
         },
         { headers: { 'Access-Control-Max-Age': 600 } },
       );
@@ -87,7 +93,23 @@ const Dashboard: React.FC = () => {
     if(firstAcces == 'true')
       setFirstAccessModal(true);
 
-  }, []);
+  }, [dragOn]);
+
+  useEffect(() => {
+
+    if(dragOn)
+    {
+      let element = document.getElementById("divButtonChangeVisibility");
+      element.style.display = "flex";
+      element.style.visibility = "visible";
+    }
+    else{
+      let element = document.getElementById("divButtonChangeVisibility");
+      element.style.display = "none";
+      element.style.visibility = "hidden";
+    }
+
+  }, [dragOn]);
 
 
   // If user was blocked or company has flag as suspense or canceled, remove store from current user and block his access
@@ -150,7 +172,7 @@ const Dashboard: React.FC = () => {
       setOpenHighlite(true);
     }
   }, [alertData, handleBlockMenu]);
-
+  
 
   const handleNewPosition = useCallback((e: GridLayout.Layout[]) => {
 
@@ -199,12 +221,99 @@ const Dashboard: React.FC = () => {
   }
 
 
+  const handleClose = useCallback(async (visible: string, idElement: string) => {
+ 
+    const response = await api.post<ChangeElementsVisibleProps[]>(
+      '/Dashboard/AlterarElemento',
+      {
+        token,
+        type: 'homeDashBoard',
+        idElement: idElement,
+        visible: visible
+      },
+      { headers: { 'Access-Control-Max-Age': 600 } },
+    );
+
+    async function handleGraphics() {
+      const response = await api.post<dataProps[]>(
+        '/Dashboard/ListarPosicionamentos',
+        {
+          token,
+          type: 'homeDashBoard',
+          visible: "S"
+        },
+        { headers: { 'Access-Control-Max-Age': 600 } },
+      );
+
+      setLayoutComp(response.data);
+      setLayoutKey(response.data.map(m => m.positions));
+
+      localStorage.removeItem('@GoJur:PublicationFilter')
+      localStorage.removeItem('@GoJur:CustomerFilter')
+      localStorage.removeItem('@GoJur:matterCoverId');
+    }
+    
+    handleGraphics();
+
+    // Verify first Access, new account
+    if(firstAcces == 'true')
+      setFirstAccessModal(true);
+
+  },[dragOn]);
+
+
+  const handleActivePropagation = (event) => {
+    handleReleaseDrag(true)
+  };
+
+
+  const handleStopPropagation = (event) => {
+    handleReleaseDrag(false)
+  };
+
+
+  const ClickButton = (event) => {
+    alert("CLICK")
+  };
+
+
+  const openModalChangeVisibility = () => {
+    setChangeVisibilityModal(true);
+  };
+
+
+  const closeModalChangeVisibility = () => {
+    setChangeVisibilityModal(false);
+
+    async function handleGraphics() {
+      const response = await api.post<dataProps[]>(
+        '/Dashboard/ListarPosicionamentos',
+        {
+          token,
+          type: 'homeDashBoard',
+          visible: 'S'
+        },
+        { headers: { 'Access-Control-Max-Age': 600 } },
+      );
+
+      setLayoutComp(response.data);
+      setLayoutKey(response.data.map(m => m.positions));
+
+      localStorage.removeItem('@GoJur:PublicationFilter')
+      localStorage.removeItem('@GoJur:CustomerFilter')
+      localStorage.removeItem('@GoJur:matterCoverId');
+    }
+    handleGraphics();
+  };
+
+
   return (
     <Container>
       <ModalProvider>
-
         {firstAccessModal && <FirstAccessModal callbackFunction={{CloseFirstAccess}} />}
         {firstAccessModal && <OverlayDashboard />}
+
+        {CloseVisibilityModal && <ModalChangeVisibility callbackFunction={{ closeModalChangeVisibility }}/>}
 
         <HeaderPage />
 
@@ -213,6 +322,16 @@ const Dashboard: React.FC = () => {
 
         <Wrapper className="wrapper" onClick={() => handleShowListSearch(false)}>
           <Indicators />
+
+
+          <div id='divButtonChangeVisibility' style={{ alignItems: "center", justifyContent:"center", visibility: "hidden"}}>
+            <br/><br/><br/>
+            <button type="button" className='selectedButton' onClick={() => { openModalChangeVisibility() }} style={{display:'inline', zIndex: 9999}}>
+              <FaEye title='Personalizar DashBoard'/>
+              <span>Personalizar DashBoard</span>
+            </button>
+            <br/><br/><br/>
+          </div>
 
           <GridLayout
             // className="layout"
@@ -224,21 +343,21 @@ const Dashboard: React.FC = () => {
             onDragStop={handleNewPosition}
             // onResizeStop={handleNewPosition}
             preventCollision={false}
-            isDraggable={dragOn}
+            isDraggable={releaseDrag}
             isResizable={false}
           >
-
             {layoutComp?.map(item => (
-              <Content key={item.positions.i} ref={ref} isDraggable={dragOn}>
-
-                {item.type === 'homeDashBoard_procAcao' && <GraphicsProcessosPorAcao title={item.name} /> }
-                {item.type === 'homeDashBoard_procMesAno' && <GraphicsNovosCasosPorMes title={item.name} /> }
-                {item.type === 'homeDashBoard_procPubAlerta' && <Publicacoes title={item.name} />}
-                {item.type === 'homeDashBoard_compromissos' && <Appointment title={item.name} />}
-                {item.type === 'homeDashBoard_contasPorMes'  && <GraphicsReceitasEDespesas title={item.name} /> }
-                {item.type === 'homeDashBoard_procNatureza' && <GraphicsProcessosPorNaturezaJuridica title={item.name} /> }
-                {item.type === 'homeDashBoard_procDecisao'  && <GraphicsProcessosDecisaoJudicial title={item.name} /> }
-
+              
+              <Content key={item.positions.i} ref={ref} isDraggable={releaseDrag}>
+                {item.type === 'homeDashBoard_procAcao' && <GraphicsProcessosPorAcao title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
+                {item.type === 'homeDashBoard_procMesAno' && <GraphicsNovosCasosPorMes title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
+                {item.type === 'homeDashBoard_procPubAlerta' && <Publicacoes title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/>}
+                {item.type === 'homeDashBoard_compromissos' && <Appointment title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/>}
+                {item.type === 'homeDashBoard_contasPorMes' && <GraphicsReceitasEDespesas title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
+                {item.type === 'homeDashBoard_procNatureza' && <GraphicsProcessosPorNaturezaJuridica title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
+                {item.type === 'homeDashBoard_procDecisao' && <GraphicsProcessosDecisaoJudicial title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
+                {item.type === 'homeDashBoard_procFase' && <GraphicsProcessosPorFase title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
+                {item.type === 'homeDashBoard_procTempMedDeDistrib' && <GraphicsTempoMedioDeDistribuicao title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
               </Content>
             ))}
 
@@ -247,7 +366,6 @@ const Dashboard: React.FC = () => {
         </Wrapper>
 
       </ModalProvider>
-
     </Container>
   );
 };
