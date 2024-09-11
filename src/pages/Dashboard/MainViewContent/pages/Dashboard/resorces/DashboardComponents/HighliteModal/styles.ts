@@ -12,6 +12,7 @@ export const Container = styled.div`
   right: 50%;
   transform: translateX(50%) translateY(-50%);
   z-index: 999;
+  font-family: Arial, Helvetica, sans-serif;
 
   display: flex;
   flex-direction: column;
@@ -35,6 +36,7 @@ export const Container = styled.div`
 
     > div {
       width: 100%;
+      height: 100%;
       display: flex;
       align-items: center;
 
@@ -72,15 +74,19 @@ export const Content = styled.div`
 `;
 
 export const Message = styled.div`
-  border: 1px solid var(--grey);
+  border: 1px solid var(--blue-twitter);
   margin-top: 1rem;
   padding-right: 0.5rem;
   padding-left: 0.5rem;
   border-radius: 6px;
-  background-color: var(--gray);
+  background-color: transparent;
 
   display: flex;
   flex-direction: column;
+
+  #messageContent{
+    margin-top: 15px;
+  }
 
   > div {
     font-size: 0.725rem;
@@ -110,7 +116,7 @@ export const Message = styled.div`
     align-items: center;
     justify-content: center;
     margin-top: 1rem;
-    margin-bottom: 4px;
+    margin-bottom: 15px;
 
     > button {
       width: 280px;
