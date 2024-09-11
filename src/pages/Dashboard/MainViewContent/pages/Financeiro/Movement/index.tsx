@@ -157,7 +157,6 @@ const FinancialMovement: React.FC = () => {
   const [bankPaymentSlipLinkDate, setBankPaymentSlipLinkDate] = useState<string>("");
   const [bankPaymentSlipLink, setBankPaymentSlipLink] = useState<string>('');
   const [paymentSlipPartnerId, setPaymentSlipPartnerId] = useState<string>('');
-  const [showModalBankPaymentSlipOptions, setShowModalBankPaymentSlipOptions] = useState<boolean>(false);
   const [actionGenerate, setActionGenerate] = useState<string>('');
   const [hasBankPaymentSlipErrors, setHasBankPaymentSlipErrors] = useState<boolean>(false);
   const [bankPaymentSlipErrors, setBankPaymentSlipErrors] = useState<string>('');
@@ -1317,10 +1316,10 @@ const FinancialMovement: React.FC = () => {
       setIsSaving(false)
 
       if (err.response.data.typeError.warning == "awareness"){
-        addToast({type: "info", title: "Plano inválido.", description: "Este recurso não está disponível no plano FREE"})
+        addToast({type: "info", title: "Falha ao criar fatura", description: err.response.data.Message})
       }
       else{
-        addToast({type: "info", title: "Falha ao criar faturas.", description: err.response.data.Message})
+        addToast({type: "info", title: "Falha ao criar fatura", description: err.response.data.Message})
       }
     }
   }, [movementId, movementParcelas, selectedPeopleList])
@@ -1401,13 +1400,11 @@ const FinancialMovement: React.FC = () => {
       await LoadBankPaymentSlip(Number(movementId))
       setIsSaving(false)
       setShowBankPaymentSlipModal(false)
-      setShowModalBankPaymentSlipOptions(false)
       setShowBankPaymentSlipSecondCopyModal(false)
     }
     catch (err:any) {
       setIsSaving(false)
       setShowBankPaymentSlipModal(false)
-      setShowModalBankPaymentSlipOptions(false)
       setShowBankPaymentSlipSecondCopyModal(false)
 
       if (err.response.data.typeError.warning == "awareness"){
@@ -1427,21 +1424,11 @@ const FinancialMovement: React.FC = () => {
 
 
   const GenerateBankPaymentSlip = () => {
-    if (movementParcelas !=  '1' && actionSave.length == 0 && movementId != '0'){
-      setShowModalBankPaymentSlipOptions(true)
-      return;
-    }
-
     setShowBankPaymentSlipModal(true)
   }
 
 
   const GenerateSecondBankPaymentSlip = () => {
-    if (movementParcelas !=  '1' && actionSave.length == 0 && movementId != '0'){
-      setShowModalBankPaymentSlipOptions(true)
-      return;
-    }
-
     setShowBankPaymentSlipSecondCopyModal(true)
   }
 
@@ -1456,8 +1443,9 @@ const FinancialMovement: React.FC = () => {
     try{
       setIsGeneratingReport(true)
       
-      const response = await api.post('/BoletoBancario/EmitirFatura', {
+      const response = await api.post('/Fatura/EmitirFatura', {
         cod_Movimento: movementId,
+        tpo_FormaPagamento: paymentFormType,
         bankPaymentSlipLink,
         token
       })
@@ -1468,7 +1456,7 @@ const FinancialMovement: React.FC = () => {
       setIsGeneratingReport(false)
       addToast({type: "info", title: "Falha ao gerar boleto.", description: err.response.data.Message}) 
     }
-  }, [movementId, bankPaymentSlipLink])
+  }, [movementId, paymentFormType, bankPaymentSlipLink])
 
 
   const SendEmailBillingInvoice = useCallback(async() => {
@@ -1480,8 +1468,9 @@ const FinancialMovement: React.FC = () => {
         return peopleIdsItems += `${people.id},`
       })
       
-      const response = await api.post('/BoletoBancario/EnviarEmailFatura', {
+      const response = await api.post('/Fatura/EnviarEmailFatura', {
         cod_Movimento: movementId,
+        tpo_FormaPagamento: paymentFormType,
         bankPaymentSlipLink,
         peopleIds: peopleIdsItems,
         token
@@ -1494,7 +1483,7 @@ const FinancialMovement: React.FC = () => {
       setIsLoading(false)
       addToast({type: "info", title: "Falha ao gerar boleto.", description: err.response.data.Message}) 
     }
-  }, [movementId, selectedPeopleList, bankPaymentSlipLink])
+  }, [movementId, paymentFormType, selectedPeopleList, bankPaymentSlipLink])
   // #endregion
 
 
@@ -1731,7 +1720,7 @@ const FinancialMovement: React.FC = () => {
           </Line>
         )}
 
-        <section id='FouthElements'>
+        <section id='Description'>
           <label htmlFor="description">
             Descrição
             <textarea
@@ -1742,7 +1731,7 @@ const FinancialMovement: React.FC = () => {
           </label>
         </section>
 
-        <section id='FifthElements'>
+        <section id='PeopleAndReminders'>
           <label htmlFor="pessoas">
             Pessoas
             <Select
@@ -1795,7 +1784,7 @@ const FinancialMovement: React.FC = () => {
           </label>
         </section>
 
-        <section id='SixthElements'>
+        <section id='PeopleListAdd'>
           <div className="personList">
 
             {isMOBILE && (
@@ -1854,7 +1843,7 @@ const FinancialMovement: React.FC = () => {
         </section>
         <br />
 
-        <section id='SeventhElements'>
+        <section id='MatterAndPaymentSlip'>
           <div id='AttachMatter' className="flexDiv" style={{marginLeft:'10px'}}>
             <Process>
               {processTitle === 'Associar Processo' && (
@@ -2135,13 +2124,6 @@ const FinancialMovement: React.FC = () => {
           description="Este movimento está parcelado, deseja atualizar também as outras parcelas ?"
           close={() => setShowModalOptions(false)}
           callback={handleCallback}
-        />
-      )}
-
-      {showModalBankPaymentSlipOptions && (
-        <ModalBankPaymentSlipOptions
-          close={() => setShowModalBankPaymentSlipOptions(false)}
-          callback={CallbackModalBankPaymentSlip}
         />
       )}
 
