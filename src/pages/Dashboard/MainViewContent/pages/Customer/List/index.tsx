@@ -324,7 +324,7 @@ const CustomerList: React.FC = () => {
       addToast({
         type: 'info',
         title: 'Falha ao apagar cliente',
-        description: err.response.data.Message
+        description: "Não foi possível remover o cliente selecionado"
       });
 
       setIsDeletingCustomer(false)

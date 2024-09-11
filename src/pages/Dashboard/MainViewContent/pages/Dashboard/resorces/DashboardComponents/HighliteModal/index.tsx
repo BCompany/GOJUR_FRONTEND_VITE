@@ -104,7 +104,7 @@ const HighliteModal: React.FC<HighliteProps> = ({ isOpen }) => {
         <Content id='Content'>
           {warnMessage.map(item => (
             <Message id='Message' key={item.cod_Mensagem}>
-              <div id="messageContent" dangerouslySetInnerHTML={{ __html: item.des_Mensagem }} />
+              <div dangerouslySetInnerHTML={{ __html: item.des_Mensagem }} />
               <section>
                 <button
                   type="button"

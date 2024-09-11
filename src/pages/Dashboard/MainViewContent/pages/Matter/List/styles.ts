@@ -232,11 +232,6 @@ export const MatterItem = styled.div`
 
         > span{
           white-space:pre-line;
-          word-wrap: break-word; 
-          word-break: break-word; 
-          overflow-wrap: break-word; 
-          white-space: normal; 
-          display: block; 
         }
 
         .followDescription {
