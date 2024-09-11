@@ -69,7 +69,7 @@ export const Container = styled.div`
 export const Content = styled.div`
   width: 100%;
   height: 100%;
-  background: transparent;
+  background: var(--white-card);
   margin-top: -10px;
 `;
 
@@ -79,13 +79,14 @@ export const Message = styled.div`
   padding-right: 0.5rem;
   padding-left: 0.5rem;
   border-radius: 6px;
-  background-color: transparent;
+  background-color: white;
 
   display: flex;
   flex-direction: column;
 
   #messageContent{
     margin-top: 15px;
+    background-color: white;
   }
 
   > div {
