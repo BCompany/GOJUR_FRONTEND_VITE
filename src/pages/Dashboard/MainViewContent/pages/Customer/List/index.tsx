@@ -320,7 +320,7 @@ const CustomerList: React.FC = () => {
       setIsDeletingCustomer(false)
       setCurrentCustomerId(0)
 
-    } catch (err:any) {
+    } catch (err) {
       addToast({
         type: 'info',
         title: 'Falha ao apagar cliente',
@@ -508,7 +508,7 @@ const CustomerList: React.FC = () => {
                 type="submit"
               >
                 <BsFunnel />
-                 Funil de Vendas
+                Funil de Vendas
               </button>
             )}
 
@@ -520,7 +520,7 @@ const CustomerList: React.FC = () => {
                 type="submit"
               >
                 <RiDashboardLine />
-                 DashBoard
+                DashBoard
               </button>
             )}
 
@@ -768,7 +768,8 @@ const CustomerList: React.FC = () => {
       {isDeleting && (
 
         <ConfirmBoxModal
-          title="Excluir Registro"
+          title="Deletar Registro"
+          useCheckBoxConfirm
           caller="customerList"
           message="Confirma a exclusão deste cliente ?"
         />
@@ -782,7 +783,7 @@ const CustomerList: React.FC = () => {
           <Overlay />
           <div className='waitingMessage'>
             <LoaderWaiting size={15} color="var(--blue-twitter)" />
-            &nbsp;&nbsp; Excluindo Cliente...
+            &nbsp;&nbsp; Deletando Cliente...
           </div>
         </>
       )}
