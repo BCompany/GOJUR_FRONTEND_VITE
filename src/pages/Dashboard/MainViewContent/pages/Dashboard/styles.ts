@@ -12,9 +12,9 @@ export const Container = styled.div`
   flex-direction: column;
   padding-bottom: 1rem;
 
-  @media (max-width: 420px) {
+  /* @media (max-width: 420px) {
     display: none;
-  }
+  } */
 
   .selectedButton {
     padding: 0.4rem;
