@@ -1674,7 +1674,7 @@ export default function Customer() {
                     autoComplete="off"
                     name="referencia"
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setCustomerRef(e.target.value)}
-                    maxLength={10}
+                    maxLength={100}
                   />
                 </label>
 
