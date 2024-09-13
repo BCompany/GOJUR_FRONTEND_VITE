@@ -772,7 +772,7 @@ const FirstAccessModal = (props) => {
 
                 <div style={{height:'20px'}}><>&nbsp;</></div>
                 <div id='Button' className='items'>
-                  <p style={{cursor:'pointer', color:'blue'}} onClick={() => Save()}>
+                  <p style={{cursor:'pointer', color:'blue', marginTop:'130px'}} onClick={() => Save()}>
                     <span style={{fontWeight:600}}>Clique aqui para Acessar o GOJUR</span>
                   </p>
                 </div>

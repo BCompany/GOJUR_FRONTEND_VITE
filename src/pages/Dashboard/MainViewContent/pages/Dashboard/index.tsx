@@ -5,6 +5,7 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-restricted-globals */
 import React, {useState, useEffect, useRef, useCallback } from 'react';
+import { useDevice } from "react-use-device";
 import { useHistory } from 'react-router-dom';
 import { ModalProvider, useModal } from 'context/modal';
 import { useAlert } from 'context/alert';
@@ -37,7 +38,7 @@ import GraphicsTempoMedioDeDistribuicao from 'components/InfoGraphics/GraphicsTe
 
 const Dashboard: React.FC = () => {
   const ref = useRef(null);
-
+  const { isMOBILE } = useDevice()
   const { addToast } = useToast();
   const { handleShowVideoTrainning } = useModal();
   const {  handleShowListSearch, dragOn, handleDragOn, handleLoadingData, handleCaptureText, handleReleaseDrag, releaseDrag } = useHeader();
@@ -313,57 +314,72 @@ const Dashboard: React.FC = () => {
         {firstAccessModal && <FirstAccessModal callbackFunction={{CloseFirstAccess}} />}
         {firstAccessModal && <OverlayDashboard />}
 
-        {CloseVisibilityModal && <ModalChangeVisibility callbackFunction={{ closeModalChangeVisibility }}/>}
+        {!isMOBILE && (
+          <>
+            {CloseVisibilityModal && <ModalChangeVisibility callbackFunction={{ closeModalChangeVisibility }}/>}
 
-        <HeaderPage />
+            <HeaderPage />
 
-        {openHighlite ? <HighliteModal isOpen={handleCloseHighlite} /> : null}
-        {openProcessModal ? <ProcessModal /> : null}
+            {openHighlite ? <HighliteModal isOpen={handleCloseHighlite} /> : null}
+            {openProcessModal ? <ProcessModal /> : null}
 
-        <Wrapper className="wrapper" onClick={() => handleShowListSearch(false)}>
-          <Indicators />
+            <Wrapper className="wrapper" onClick={() => handleShowListSearch(false)}>
+              <Indicators />
 
+              <div id='divButtonChangeVisibility' style={{ alignItems: "center", justifyContent:"center", visibility: "hidden"}}>
+                <br/><br/><br/>
+                <button type="button" className='selectedButton' onClick={() => { openModalChangeVisibility() }} style={{display:'inline', zIndex: 9999}}>
+                  <FaEye title='Personalizar DashBoard'/>
+                  <span>Personalizar DashBoard</span>
+                </button>
+                <br/><br/><br/>
+              </div>
 
-          <div id='divButtonChangeVisibility' style={{ alignItems: "center", justifyContent:"center", visibility: "hidden"}}>
-            <br/><br/><br/>
-            <button type="button" className='selectedButton' onClick={() => { openModalChangeVisibility() }} style={{display:'inline', zIndex: 9999}}>
-              <FaEye title='Personalizar DashBoard'/>
-              <span>Personalizar DashBoard</span>
-            </button>
-            <br/><br/><br/>
+              <GridLayout
+                // className="layout"
+                layout={layoutKey}
+                cols={13}
+                containerPadding={[64, 16]}
+                rowHeight={30}
+                width={screenWitdh}
+                onDragStop={handleNewPosition}
+                // onResizeStop={handleNewPosition}
+                preventCollision={false}
+                isDraggable={releaseDrag}
+                isResizable={false}
+              >
+                {layoutComp?.map(item => (
+                  
+                  <Content key={item.positions.i} ref={ref} isDraggable={releaseDrag}>
+                    {item.type === 'homeDashBoard_procAcao' && <GraphicsProcessosPorAcao title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
+                    {item.type === 'homeDashBoard_procMesAno' && <GraphicsNovosCasosPorMes title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
+                    {item.type === 'homeDashBoard_procPubAlerta' && <Publicacoes title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/>}
+                    {item.type === 'homeDashBoard_compromissos' && <Appointment title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/>}
+                    {item.type === 'homeDashBoard_contasPorMes' && <GraphicsReceitasEDespesas title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
+                    {item.type === 'homeDashBoard_procNatureza' && <GraphicsProcessosPorNaturezaJuridica title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
+                    {item.type === 'homeDashBoard_procDecisao' && <GraphicsProcessosDecisaoJudicial title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
+                    {item.type === 'homeDashBoard_procFase' && <GraphicsProcessosPorFase title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
+                    {item.type === 'homeDashBoard_procTempMedDeDistrib' && <GraphicsTempoMedioDeDistribuicao title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
+                  </Content>
+                ))}
+
+              </GridLayout>
+
+            </Wrapper>
+          </>
+        )}
+
+        {isMOBILE && (
+        <>
+          <div id='information' style={{marginTop:'50%', border:'solid 1px', backgroundColor:'white', height:'100px', borderRadius:'10px', color:'#2c8ed6'}}>
+            <div style={{marginLeft:'2%'}}>
+              <br />
+              A dashboard não fica disponível na versão mobile, para uma melhor experiência com o GOJUR recomendamos que use um computador ou notebook. 
+              Caso tenha realizado sua inscrição agora, recomendamos fortemente que acesse a plataforma em https://gojur.com.br com o mesmo usuário e senha para conhecer todo o potencial de nossas ferramentas
+            </div>
           </div>
-
-          <GridLayout
-            // className="layout"
-            layout={layoutKey}
-            cols={13}
-            containerPadding={[64, 16]}
-            rowHeight={30}
-            width={screenWitdh}
-            onDragStop={handleNewPosition}
-            // onResizeStop={handleNewPosition}
-            preventCollision={false}
-            isDraggable={releaseDrag}
-            isResizable={false}
-          >
-            {layoutComp?.map(item => (
-              
-              <Content key={item.positions.i} ref={ref} isDraggable={releaseDrag}>
-                {item.type === 'homeDashBoard_procAcao' && <GraphicsProcessosPorAcao title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
-                {item.type === 'homeDashBoard_procMesAno' && <GraphicsNovosCasosPorMes title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
-                {item.type === 'homeDashBoard_procPubAlerta' && <Publicacoes title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/>}
-                {item.type === 'homeDashBoard_compromissos' && <Appointment title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/>}
-                {item.type === 'homeDashBoard_contasPorMes' && <GraphicsReceitasEDespesas title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
-                {item.type === 'homeDashBoard_procNatureza' && <GraphicsProcessosPorNaturezaJuridica title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
-                {item.type === 'homeDashBoard_procDecisao' && <GraphicsProcessosDecisaoJudicial title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
-                {item.type === 'homeDashBoard_procFase' && <GraphicsProcessosPorFase title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
-                {item.type === 'homeDashBoard_procTempMedDeDistrib' && <GraphicsTempoMedioDeDistribuicao title={item.name} idElement={item.idElement} visible={item.visible} activePropagation={handleActivePropagation} stopPropagation={handleStopPropagation} xClick={ClickButton} handleClose={handleClose} cursor/> }
-              </Content>
-            ))}
-
-          </GridLayout>
-
-        </Wrapper>
+        </>
+        )}
 
       </ModalProvider>
     </Container>
