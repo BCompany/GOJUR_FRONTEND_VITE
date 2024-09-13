@@ -269,3 +269,112 @@ export const ModalAlert = styled.div`
     }
   }
 `;
+
+
+export const CenterMobile = styled.div`
+  width: 96%;
+  padding: 0.5rem 2rem;
+  margin: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  box-shadow: 1px 1px 4px 0.5px rgba(0,0,0,0.15);
+  margin-top: -5px;
+  height: auto;
+  overflow: auto;
+
+  select {
+    font-size: 9px;
+    padding: 0.25rem;
+    background-color: #F9F9F9;
+    width: 99%;
+    border-bottom: 1px solid rgba(0,0,0,0.15);
+    color: var(--secondary);
+    margin-top: 5px;
+    width: 300px;
+    height: 30px;
+
+    &:focus {
+      border-bottom: 1px solid var(--orange);
+    }
+  }
+
+  input {
+    font-size: 9px;
+    padding: 0.25rem;
+    background-color: #F9F9F9;
+    width: 99%;
+    border-bottom: 1px solid rgba(0,0,0,0.15);
+    color: var(--secondary);
+    margin-top: 5px;
+    width: 99%;
+
+    &:focus {
+      border-bottom: 1px solid var(--orange);
+    }
+  }
+
+  .items{
+    width: 100%;
+    /* display: flex;
+    flex-Direction: row; */
+    justify-Content: center;
+    align-Items: center;
+    font-Size: 9px;
+  }
+
+  .itemsInput{
+    width: 70%;
+    margin-left: 30%;
+    width: 40%;
+    display: flex;
+    flex-Direction: row;
+    justify-Content: center;
+    align-Items: center;
+    font-Size: 9px;
+  }
+
+  .itemsCheck{
+    width: 70%;
+    display: flex;
+    flex-Direction: row;
+    justify-Content: center;
+    align-Items: center;
+    font-Size: 9px;
+  }
+
+  .itemsSelect{
+    font-size: 9px;
+    padding: 0.25rem;
+    background-color: #F9F9F9;
+    width: 99%;
+    border-bottom: 1px solid rgba(0,0,0,0.15);
+    color: var(--secondary);
+    margin-top: 5px;
+    width: 110px;
+    height: 30px;
+
+    &:focus {
+      border-bottom: 1px solid var(--orange);
+    }
+  }
+
+  .itemsButton{
+    /* display: flex;
+    flex-Direction: row; */
+    margin-left: 5px;
+    float: left;
+    width: 45%;
+    height: 50px;
+    justify-Content: center;
+    align-Items: center;
+    font-Size: 7px;
+    text-align: center;
+    padding: 10px 20px 10px 20px;
+    color: #000000;
+    background: #FFFFFF;
+    border: 0px;
+    border-Radius: 50px 50px 50px 50px;
+    text-Decoration: none;
+    cursor: pointer;
+  }
+
+`;
