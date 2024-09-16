@@ -178,7 +178,7 @@ const FirstAccessModal = (props) => {
         ChangeName(id, response.data.nome_Advogado, response.data.status_Validacao, 'OAB Validada')
       }
       else{
-        ChangeName(id, response.data.nome_Advogado, response.data.status_Validacao, 'OAB Não Encontrada')
+        ChangeName(id, response.data.nome_Advogado, response.data.status_Validacao, 'Não conseguimos validar sua OAB neste momento, favor informar o nome')
       }
     }
     catch(err){
@@ -483,10 +483,12 @@ const FirstAccessModal = (props) => {
                             )}
 
                             {lawyer.statusAfterValidation != "OAB Validada" && (
-                              <div style={{fontSize:'12px', width:'130px'}}>
-                                <label style={{color:'#830404'}}>
-                                  {lawyer.statusAfterValidation}
-                                </label>
+                              <div style={{width: '100%'}}>
+                                <div style={{fontSize:'12px'}}>
+                                  <label style={{color:'#19a50d'}}>
+                                    {lawyer.statusAfterValidation}
+                                  </label>
+                                </div>
                               </div>
                             )}
                           </div>
@@ -708,7 +710,7 @@ const FirstAccessModal = (props) => {
 
                             {lawyer.statusAfterValidation != "OAB Validada" && (
                               <div style={{fontSize:'9px', width:'130px'}}>
-                                <label style={{color:'#830404'}}>
+                                <label style={{color:'#19a50d'}}>
                                   {lawyer.statusAfterValidation}
                                 </label>
                               </div>
