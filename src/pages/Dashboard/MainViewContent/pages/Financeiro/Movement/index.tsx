@@ -142,6 +142,7 @@ const FinancialMovement: React.FC = () => {
   const [showChangePaymentForm, setShowChangePaymentForm] = useState<boolean>(false);
   const [changePaymentForm, setChangePaymentForm] = useState<boolean>(false);
   const [showInstallmentInvoiceConfirm, setShowInstallmentInvoiceConfirm] = useState<boolean>(false);
+  const [showInstallmentPaymentSlipConfirm, setShowInstallmentPaymentSlipConfirm] = useState<boolean>(false);
 
   const [discountPercetage, setDiscountPercentage] = useState<number>(0)
   const [discountValue, setDiscountValue] = useState<number>(0)
@@ -234,6 +235,11 @@ const FinancialMovement: React.FC = () => {
         setShowInstallmentInvoiceConfirm(false)
         handleCancelMessage(false)
       }
+
+      if(caller == "paymentSlipInstallment"){
+        setShowInstallmentPaymentSlipConfirm(false)
+        handleCancelMessage(false)
+      }
     }
   }, [isCancelMessage, caller])
 
@@ -262,6 +268,12 @@ const FinancialMovement: React.FC = () => {
         handleConfirmMessage(false)
         setShowInstallmentInvoiceConfirm(false)
         CreateInvoice(false)
+      }
+
+      if(caller == "paymentSlipInstallment"){
+        handleConfirmMessage(false)
+        setShowInstallmentPaymentSlipConfirm(false)
+        GeneratePaymentSlip('all', false, false)
       }
     }
   }, [isConfirmMessage, caller])
@@ -1354,8 +1366,15 @@ const FinancialMovement: React.FC = () => {
   }, [])
 
 
-  const GeneratePaymentSlip = useCallback(async(actionGenerate: string, secondPayment: boolean) => {
+  const GeneratePaymentSlip = useCallback(async(actionGenerate: string, secondPayment: boolean, checkInstallment:boolean) => {
     try {
+      if(checkInstallment){
+        if(movementParcelas != '1'){
+          setShowInstallmentInvoiceConfirm(true)
+          return
+        }
+      }
+
       setIsSaving(true)
       setShowModalOptions(false)
 
@@ -1424,6 +1443,11 @@ const FinancialMovement: React.FC = () => {
 
 
   const GenerateBankPaymentSlip = () => {
+    if (movementParcelas != '1' && actionSave.length == 0 && movementId != '0'){
+      setShowInstallmentPaymentSlipConfirm(true)
+      return;
+    }
+    
     setShowBankPaymentSlipModal(true)
   }
 
@@ -1435,7 +1459,7 @@ const FinancialMovement: React.FC = () => {
 
   const CallbackModalBankPaymentSlip = (actionGenerate: string) => {
     setActionGenerate(actionGenerate)
-    GeneratePaymentSlip(actionGenerate, false)
+    GeneratePaymentSlip(actionGenerate, false, false)
   }
 
 
@@ -1497,7 +1521,7 @@ const FinancialMovement: React.FC = () => {
       {(showDocumentModal) && <OverlayFinancial /> }
       {(showDocumentModal) && <FinancialDocumentModal callbackFunction={{movementId, invoice, CloseDocumentModal}} /> }
 
-      <Content>
+      <Content id='Content'>
         {isLoading || isSaving && (
           <>
             <Overlay />
@@ -2062,7 +2086,7 @@ const FinancialMovement: React.FC = () => {
 
             {(hasFinancialIntegration && hasBankPaymentSlip == false) && (
               <>
-                {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B" && companyPlan != 'GOJURFR') &&(
+                {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B" && companyPlan != 'GOJURFR' && billingInvoiceId != null) &&(
                   <button className="buttonClick" type='button' onClick={()=> GenerateBankPaymentSlip()}>
                     <FaFileInvoiceDollar />
                     Gerar Boletos
@@ -2282,7 +2306,7 @@ const FinancialMovement: React.FC = () => {
 
             <div id='Buttons' style={{marginLeft:'130px'}}>
               <div style={{float:'left'}}>
-                <button className="buttonClick" type='button' onClick={()=> GeneratePaymentSlip('justOne', false)} style={{width:'150px'}}>
+                <button className="buttonClick" type='button' onClick={()=> GeneratePaymentSlip('justOne', false, true)} style={{width:'150px'}}>
                   <FaCheck />
                   Gerar Boleto
                 </button>
@@ -2357,6 +2381,14 @@ const FinancialMovement: React.FC = () => {
           caller="invoiceInstallment"
           useCheckBoxConfirm
           message="Este movimento está parcelado, todas as parcelas serão faturadas."
+        />
+      )}
+
+      {showInstallmentPaymentSlipConfirm && (
+        <ConfirmBoxModal
+          title="Gerar Boletos"
+          caller="paymentSlipInstallment"
+          message="Este movimento está parcelado, serão gerados os boletos para todas as parcelas com período de vencimento posterior a hoje."
         />
       )}
 

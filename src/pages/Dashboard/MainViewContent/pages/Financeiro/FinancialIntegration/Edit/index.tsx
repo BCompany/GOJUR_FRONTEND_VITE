@@ -143,16 +143,6 @@ const FinancialIntegrationEdit: React.FC = () => {
         return;
       }
 
-      if(penaltyPackages == '0' || penaltyPackages == ''){
-        addToast({type: "info", title: "Operação NÃO realizada", description: `O valor da multa não pode ser zero`})
-        return;
-      }
-
-      if(ratesPackage == '0' || ratesPackage == ''){
-        addToast({type: "info", title: "Operação NÃO realizada", description: `O valor dos juros não pode ser zero`})
-        return;
-      }
-
       const id = pathname.substr(27)
       const token = localStorage.getItem('@GoJur:token');
       setisSaving(true)
