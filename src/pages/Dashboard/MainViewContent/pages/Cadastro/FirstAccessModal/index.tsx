@@ -75,6 +75,18 @@ const FirstAccessModal = (props) => {
     }
   },[lawyerId]);
 
+  // This function is used to save the data when the user closes the browser, to capture all iformation that was filled
+  useEffect(() => {
+    const handleUnload = () => {
+      Save(true);
+    };
+  
+    window.addEventListener('unload', handleUnload);
+  
+    return () => {
+      window.removeEventListener('unload', handleUnload);
+    };
+  }, [lawyerList, companyType, quantity, checkCivel, checkTrabalhista, checkCriminal, checkPrevidenciario, checkTributaria, checkOutros, errorCompanyType, errorQuantity, errorQtt, errorName, button0, button1, button2, button3, button4, button5, button6, button7, button8, button9]);
 
   const NewLawyer = async (id) => {
     const newLawyer: ILawyer = {
@@ -187,7 +199,7 @@ const FirstAccessModal = (props) => {
   };
 
 
-  const Save = useCallback(async() => {
+  const Save = useCallback(async(closed: boolean) => {
     try{
 
       let error = '';
@@ -197,7 +209,7 @@ const FirstAccessModal = (props) => {
       lawyerList.map(item => {
         if(item.action != 'DELETE' && item.lawyerOAB != '')
         {
-          if(item.lawyerName == null || item.lawyerName == "")
+          if(item.lawyerName == null || item.lawyerName == "" && closed == false)
           {
             error += 'Erro';
             setErrorName('- Como você informou o número da OAB e não conseguimos validar, por favor preencher o campo Nome do Advogado.')
@@ -206,14 +218,14 @@ const FirstAccessModal = (props) => {
         }
       })
 
-      if(companyType == '')
+      if(companyType == '' && closed == false)
       {
         error += 'Erro';
         setErrorCompanyType('- Preencher o campo de atuação do escritório.');
         setHasError(true);
       }
         
-      if(quantity == '')
+      if(quantity == '' && closed == false)
       {
         error += 'Erro';
         setErrorQuantity('- Preencher o campo de quantidade de pessoas.');
@@ -261,14 +273,14 @@ const FirstAccessModal = (props) => {
         tpo_Interesse += 'Melhorar Faturamento, ';
       }
 
-      if(count == 0)
+      if(count == 0 && closed == false)
       {
         error += 'Erro';
         setErrorQtt('- Selecionar pelo menos 1 opção de utilização do GOJUR.');
         setHasError(true);
       }
 
-      if(count > 3)
+      if(count > 3 && closed == false)
       {
         error += 'Erro';
         setErrorQtt('- Selecionar no máximo 3 opções de utilização do GOJUR.');
@@ -310,6 +322,7 @@ const FirstAccessModal = (props) => {
       alert(err.response.data.Message)
     }
   },[lawyerList, companyType, quantity, checkCivel, checkTrabalhista, checkCriminal, checkPrevidenciario, checkTributaria, checkOutros, errorCompanyType, errorQuantity, errorQtt, errorName, button0, button1, button2, button3, button4, button5, button6, button7, button8, button9]);
+
 
 
   const CloseModal = () => {
@@ -549,7 +562,7 @@ const FirstAccessModal = (props) => {
 
                 <div style={{height:'20px'}}><>&nbsp;</></div>
                 <div className='items'>
-                  <p style={{cursor:'pointer', color:'blue'}} onClick={() => Save()}>
+                  <p style={{cursor:'pointer', color:'blue'}} onClick={() => Save(false)}>
                     <span style={{fontWeight:600}}>Clique para Acessar o GOJUR</span>
                   </p>
                 </div>
@@ -774,7 +787,7 @@ const FirstAccessModal = (props) => {
 
                 <div style={{height:'20px'}}><>&nbsp;</></div>
                 <div id='Button' className='items'>
-                  <p style={{cursor:'pointer', color:'blue', marginTop:'130px'}} onClick={() => Save()}>
+                  <p style={{cursor:'pointer', color:'blue', marginTop:'130px'}} onClick={() => Save(false)}>
                     <span style={{fontWeight:600}}>Clique aqui para Acessar o GOJUR</span>
                   </p>
                 </div>
