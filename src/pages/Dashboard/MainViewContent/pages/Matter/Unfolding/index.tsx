@@ -56,6 +56,10 @@ const UnfoldingModal = (props) => {
   const [isSecretJustice, setIsSecretJustice] = useState<boolean>(false);
   const [selectedCredentialid, setSelectedCredentialid] = useState<number>(0);
 
+  const [notHaveCourtMessage, setNotHaveCourtMessage] = useState<string>("")
+  const [openNotHaveCourtModal, setOpenNotHaveCourtModal] = useState<boolean>(false)
+  const [confirmOpenNotHaveCourtModal, setConfirmOpenNotHaveCourtModal] = useState<boolean>(false)
+
   const [isChanging, setIsChanging] = useState<boolean>(false);
 
   const columns = [
@@ -73,6 +77,38 @@ const UnfoldingModal = (props) => {
     { columnName: 'edit', width: '10%' },
     { columnName: 'remove',width: '10%' },
   ]);
+
+  useEffect(() => {
+
+    if (isCancelMessage) {
+
+      if (caller === 'confirmOpenNotHaveCourtModal') {
+        setOpenNotHaveCourtModal(false)
+        handleCancelMessage(false)
+        setNotHaveCourtMessage("")
+      }
+    }
+
+  }, [isCancelMessage, caller]);
+
+  useEffect(() => {
+
+    if (isConfirmMessage) {
+      if (caller === 'confirmOpenNotHaveCourtModal') {
+        setConfirmOpenNotHaveCourtModal(true)
+      }
+    }
+  }, [isConfirmMessage, caller]);
+
+  useEffect(() => {
+
+    if (confirmOpenNotHaveCourtModal) {
+      setOpenNotHaveCourtModal(false)
+      handleCaller("")
+      handleConfirmMessage(false)
+      history.push('/Matter/monitoring')
+    }
+  }, [confirmOpenNotHaveCourtModal]);
 
   useEffect(() => {
 
@@ -155,10 +191,14 @@ const UnfoldingModal = (props) => {
 
 
   useEffect(() => {
-    if(isCancelMessage == true)
-      setIsDeleteWithCourt(false)
-      setMatterUnfoldingId("")
-  },[isCancelMessage]);
+    if(isCancelMessage){
+
+      if(caller == "deleteMatterUnfolding"){
+        setIsDeleteWithCourt(false)
+        setMatterUnfoldingId("")
+      }      
+    }      
+  },[isCancelMessage, caller]);
 
 
   useEffect(() => {
@@ -370,6 +410,8 @@ const UnfoldingModal = (props) => {
   const Follow = async(flgCourt, matterUnfoldingId, matterNumber, credentialId) => {
     try{
 
+      alert ("flgCourt: " + flgCourt + " matterUnfoldingId: " + matterUnfoldingId + " matterNumber: " + matterNumber + " credentialId: " + credentialId)
+
       if (isSecretJustice && selectedCredentialid === 0) {
         addToast({
           type: 'info',
@@ -396,20 +438,24 @@ const UnfoldingModal = (props) => {
       setIsFollow(false)
       setIsChanging(false)
     } catch (err:any) {
+
+      setIsChanging(false)
       setIsFollow(false)
       setFlgCourt("N")
-      setIsChanging(false)
+
+      if (err.response.data.typeError.warning == "awareness") {
+        setNotHaveCourtMessage(err.response.data.Message)
+        setOpenNotHaveCourtModal(true)
+      }
 
       if (String(err.response.data.Message).includes("Não há mais crédito") && companyPlan != 'GOJURCM' && String(err.response.data.Message).includes("Não há mais crédito") && companyPlan != 'GOJURFR' && accessCode == 'adm'){
         setMatterMonitorResourceMessage(String(err.response.data.Message).split(".")[0])
         setOpenMatterMonitorResourceModal(true)
-        ResetValues()
       }
 
       if (String(err.response.data.Message).includes("Não há mais crédito") && companyPlan == 'GOJURFR'){
         setMatterMonitorResourceMessage(String(err.response.data.Message).split(".")[0])
         setOpenMatterMonitorResourceModalFree(true)
-        ResetValues()
       }
 
       if (String(err.response.data.Message).includes("Não há mais crédito") && companyPlan == 'GOJURCM' || accessCode != 'adm' && String(err.response.data.Message).includes("Não há mais crédito")){
@@ -418,10 +464,9 @@ const UnfoldingModal = (props) => {
           title: 'Operação NÃO realizada',
           description: err.response.data.Message
         });
-        ResetValues()
-      }    
-      
-      if (String(err.response.data.Message).includes("Não há mais crédito") == false){
+      }
+
+      if (String(err.response.data.Message).includes("Não há mais crédito") == false && err.response.data.typeError.warning != "awareness") {
         addToast({
           type: 'info',
           title: 'Operação NÃO realizada',
@@ -449,12 +494,14 @@ const UnfoldingModal = (props) => {
   };
 
   const handleCloseFollowModal = async () => {
+
     ResetValues()
     setShowFollowModal(false)
     setIsSecretJustice(false)
     setMatterSelectedId(0)
     setMatterSelectedNumber('')
     setSelectedCredentialid(0)
+    setIsChanging(false)
   };
 
   const handleSecretJusticeChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -606,6 +653,15 @@ const UnfoldingModal = (props) => {
           </div>
         </>
       )}
+
+      {openNotHaveCourtModal && (
+          <ConfirmBoxModal
+            caller="confirmOpenNotHaveCourtModal"
+            title="Tribunal - Abrangência"
+            buttonOkText="Ver Abrangências"
+            message={`${notHaveCourtMessage}`}
+          />
+        )}
 
       {isDeleteWithCourt && (
         <ConfirmBoxModal
