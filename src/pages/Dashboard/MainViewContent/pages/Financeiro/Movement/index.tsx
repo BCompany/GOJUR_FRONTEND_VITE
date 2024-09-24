@@ -95,6 +95,7 @@ const FinancialMovement: React.FC = () => {
   const [paymentMessage, setPaymentMessage] = useState<string>('');
   const [movementDate, setMovementDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [movementValue, setMovementValue] = useState<number>();
+  const [cod_Parcelamento, setCod_Parcelamento] = useState('');
   const [movementParcelas, setMovementParcelas] = useState('1');
   const [movementParcelasFirst, setMovementParcelasFirst] = useState('1');
   const [movementParcelasDatas, setMovementParcelasDatas] = useState('M');
@@ -267,7 +268,7 @@ const FinancialMovement: React.FC = () => {
       if(caller == "invoiceInstallment"){
         handleConfirmMessage(false)
         setShowInstallmentInvoiceConfirm(false)
-        CreateInvoice(false)
+        GenerateBankPaymentSlip()
       }
 
       if(caller == "paymentSlipInstallment"){
@@ -393,6 +394,7 @@ const FinancialMovement: React.FC = () => {
       setMovementDate(format(new Date(response.data.dta_Movimento), "yyyy-MM-dd"))
       setMovementValue(response.data.vlr_Movimento)
       setMovementType(movementType)
+      setCod_Parcelamento(response.data.cod_Parcelamento.toString())
       setMovementParcelas(response.data.qtd_Parcelamento.toString())
       setMovementParcelasFirst(response.data.qtd_Parcelamento.toString())
       setMovementParcelasDatas(response.data.Periodicidade)
@@ -1388,6 +1390,7 @@ const FinancialMovement: React.FC = () => {
         dta_Movimento: movementDate,
         vlr_Movimento: movementValue,
         tpo_Movimento : movementType,
+        cod_Parcelamento: cod_Parcelamento,
         qtd_Parcelamento: movementParcelas,
         Periodicidade: movementParcelasDatas,
         cod_FormaPagamento: paymentFormId,
@@ -1434,7 +1437,7 @@ const FinancialMovement: React.FC = () => {
         addToast({type: "info", title: "Falha ao gerar boleto.", description: err.response.data.Message})
       }
     }
-  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp, bankPaymentSlipDate, paymentSlipPartnerId, paymentSlipId])
+  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, cod_Parcelamento, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp, bankPaymentSlipDate, paymentSlipPartnerId, paymentSlipId])
 
 
   const OpenBankPaymentSlipNewWindow = (item) => {
@@ -1443,12 +1446,14 @@ const FinancialMovement: React.FC = () => {
 
 
   const GenerateBankPaymentSlip = () => {
-    if (movementParcelas != '1' && actionSave.length == 0 && movementId != '0'){
+    if (movementParcelas != '1' && actionSave.length == 0 && movementId != '0' && paymentFormType == "B"){
       setShowInstallmentPaymentSlipConfirm(true)
+      setShowBankPaymentSlipModal(true)
       return;
     }
-    
-    setShowBankPaymentSlipModal(true)
+    if (movementParcelas == '1' && movementId != '0' && paymentFormType != "B"){
+      GeneratePaymentSlip("justOne", false, false)
+    }
   }
 
 
@@ -1514,12 +1519,6 @@ const FinancialMovement: React.FC = () => {
   return (
     <Container>
       <HeaderPage />
-
-      {matterAttachedModal &&(<OverlayFinancial />)}
-      {matterAttachedModal &&(<GridSelectProcess />)}
-
-      {(showDocumentModal) && <OverlayFinancial /> }
-      {(showDocumentModal) && <FinancialDocumentModal callbackFunction={{movementId, invoice, CloseDocumentModal}} /> }
 
       <Content id='Content'>
         {isLoading || isSaving && (
@@ -2077,14 +2076,14 @@ const FinancialMovement: React.FC = () => {
               </button>
             )}
 
-            {(movementId != '0' && invoice == 0 && movementType == "R" && hasBankPaymentSlip == false && billingInvoiceId == null) && (
-              <button className="buttonClick" type='button' onClick={()=> CreateInvoice(true)}>
+            {(movementId != '0' && invoice == 0 && movementType == "R" && hasBankPaymentSlip == false && billingInvoiceId == null && companyPlan != 'GOJURFR') && (
+              <button className="buttonClick" type='button' onClick={()=> GenerateBankPaymentSlip()}>
                 <FaRegCopy />
                 Faturar
               </button>
             )}
 
-            {(hasFinancialIntegration && hasBankPaymentSlip == false) && (
+            {/* {(hasFinancialIntegration && hasBankPaymentSlip == false) && (
               <>
                 {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B" && companyPlan != 'GOJURFR' && billingInvoiceId != null) &&(
                   <button className="buttonClick" type='button' onClick={()=> GenerateBankPaymentSlip()}>
@@ -2093,7 +2092,7 @@ const FinancialMovement: React.FC = () => {
                   </button>
                 )}
               </>
-            )}
+            )} */}
 
             {(!isMOBILE && movementId != '0' && movementType == "R" && billingInvoiceId != null) &&(
               <>
@@ -2139,6 +2138,12 @@ const FinancialMovement: React.FC = () => {
 
         &nbsp;
       </Content>
+
+      {(showDocumentModal) && <OverlayFinancial /> }
+      {(showDocumentModal) && <FinancialDocumentModal callbackFunction={{movementId, invoice, CloseDocumentModal}} /> }
+
+      {matterAttachedModal &&(<OverlayFinancial />)}
+      {matterAttachedModal &&(<GridSelectProcess />)}
 
       {(showPaymentModal) && <OverlayFinancial /> }
       {(showPaymentModal) && <FinancialPaymentModal callbackFunction={{movementId, ClosePaymentModal }} /> }
