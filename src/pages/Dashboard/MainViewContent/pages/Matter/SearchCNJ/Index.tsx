@@ -11,6 +11,7 @@ import InputMask from 'components/InputMask';
 import api from 'services/api';
 import Select from 'react-select';
 import { useConfirmBox } from 'context/confirmBox';
+import ConfirmBoxModal from 'components/ConfirmBoxModal';
 import  {BiSave} from 'react-icons/bi';
 import { useToast } from 'context/toast';
 import { Container } from './styles'
@@ -18,7 +19,7 @@ import { ISearchCNJ } from '../Interfaces/IMatter';
 import { AutoCompleteSelect } from 'Shared/styles/GlobalStyle';
 import { loadingMessage, noOptionsMessage } from 'Shared/utils/commonConfig';
 import { customStyles, selectStyles } from 'Shared/utils/commonFunctions';
-import CredentialModal from '../Credentials';
+import { useHistory } from 'react-router-dom'
 import CredentialsDataSourceModal from '../Credentials/EditModal';
 
 export interface ISelectData {
@@ -34,7 +35,7 @@ export interface ICredentials {
 export default function SearchCNJ () {
 
   const { addToast } = useToast();
-  const { handleCancelMessage, handleCaller } = useConfirmBox(); 
+  const { handleCancelMessage, handleCaller, handleConfirmMessage, caller, isCancelMessage, isConfirmMessage } = useConfirmBox();
   const [isLoadingComboData, setIsLoadingComboData] = useState<boolean>(false);
   const [isSecret, setIsSecret] = useState<boolean>(false)
   const [numberCNJ, setNumberCNJ] = useState<string>('')
@@ -48,6 +49,43 @@ export default function SearchCNJ () {
   const [credentialValue, setCredentialValue] = useState<string>('');
   const [showNewCredentials, setShowNewCredentials] = useState<boolean>(false)
   const tokenApi = localStorage.getItem('@GoJur:token');
+
+  const [notHaveCourtMessage, setNotHaveCourtMessage] = useState<string>("")
+  const [openNotHaveCourtModal, setOpenNotHaveCourtModal] = useState<boolean>(false)
+  const [confirmOpenNotHaveCourtModal, setConfirmOpenNotHaveCourtModal] = useState<boolean>(false)
+  const history = useHistory();
+
+  useEffect(() => {
+
+    if (isCancelMessage) {
+
+      if (caller === 'confirmOpenNotHaveCourtModal') {
+        setOpenNotHaveCourtModal(false)
+        handleCancelMessage(false)
+        setNotHaveCourtMessage("")
+      }
+    }
+
+  }, [isCancelMessage, caller]);
+
+  useEffect(() => {
+
+    if (isConfirmMessage) {
+      if (caller === 'confirmOpenNotHaveCourtModal') {
+        setConfirmOpenNotHaveCourtModal(true)
+      }
+    }
+  }, [isConfirmMessage, caller]);
+
+  useEffect(() => {
+
+    if (confirmOpenNotHaveCourtModal) {
+      setOpenNotHaveCourtModal(false)
+      handleCaller("")
+      handleConfirmMessage(false)
+      history.push('/Matter/monitoring')
+    }
+  }, [confirmOpenNotHaveCourtModal]);
 
   useEffect(() => {
 
@@ -177,15 +215,22 @@ export default function SearchCNJ () {
       handleCloseModal();
     }
     catch(err:any){
-      setIsSaving(false)
-      
-      addToast({
-        type: 'info',
-        title: 'Operação não realizada',
-        description: err.response.data.Message,
-      });
-    }
 
+      setIsSaving(false)
+
+      if (err.response.data.typeError.warning == "awareness") {
+        setNotHaveCourtMessage(err.response.data.Message)
+        setOpenNotHaveCourtModal(true)
+      }
+      if (!err.response.data.typeError.warning) 
+      {
+        addToast({
+          type: 'info',
+          title: 'Operação não realizada',
+          description: err.response.data.Message,
+        });
+      }
+    }
   },[userCNJ, pswCNJ, numberCNJ, listSearch ])
 
   const handleCredentialSelected = (item) => {
@@ -246,140 +291,136 @@ export default function SearchCNJ () {
 
   return (
     <>
-
-   {showNewCredentials && <CredentialsDataSourceModal callbackFunction={{ handleCloseEditModal, handleIsNewCredential }} />}
-
-    <Modal
-      isOpen
-      overlayClassName="react-modal-overlay"      
-      className="react-modal-content-medium"
-    >
-      <Container>
-          
-        <header>
-          <h1>Cadastro automático de processos por CNJ</h1>
-          <h5>Informe abaixo o(s) numero(s) do(s) processo(s) para efetuar a busca automática. Nº Unificado do Processo - CNJ</h5>
-        </header>
-
-        <div>
-
-          <InputMask
-            mask="cnj"
-            autoComplete='off'
-            value={numberCNJ}
-            onChange={(e) => setNumberCNJ(e.target.value)}
-            placeholder='Nº Unificado do Processo - CNJ' 
-          />
-
-          <div className='secret'>
-            <input type='checkbox' autoComplete='off' checked={isSecret} onClick={() => setIsSecret(!isSecret)} />
-            &nbsp;&nbsp;
-            <span>&nbsp;Segredo de Justiça</span>
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <FcAbout title='Informe um numero de CNJ válido (máximo 25 digitos) para efetuar a busca automática' />
+      {showNewCredentials && <CredentialsDataSourceModal callbackFunction={{ handleCloseEditModal, handleIsNewCredential }} />}
+  
+      {openNotHaveCourtModal && (
+        <ConfirmBoxModal
+          caller="confirmOpenNotHaveCourtModal"
+          title="Tribunal - Abrangência"
+          buttonOkText="Ver Abrangências"
+          message={`${notHaveCourtMessage}`}
+        />
+      )}
+  
+      <Modal
+        isOpen
+        overlayClassName="react-modal-overlay"      
+        className="react-modal-content-medium"
+      >
+        <Container>
+          <header>
+            <h1>Cadastro automático de processos por CNJ</h1>
+            <h5>Informe abaixo o(s) numero(s) do(s) processo(s) para efetuar a busca automática. Nº Unificado do Processo - CNJ</h5>
+          </header>
+  
+          <div>
+            <InputMask
+              mask="cnj"
+              autoComplete='off'
+              value={numberCNJ}
+              onChange={(e) => setNumberCNJ(e.target.value)}
+              placeholder='Nº Unificado do Processo - CNJ' 
+            />
+  
+            <div className='secret'>
+              <input type='checkbox' autoComplete='off' checked={isSecret} onClick={() => setIsSecret(!isSecret)} />
+              &nbsp;&nbsp;
+              <span>&nbsp;Segredo de Justiça</span>
+              &nbsp;&nbsp;&nbsp;&nbsp;
+              <FcAbout title='Informe um numero de CNJ válido (máximo 25 digitos) para efetuar a busca automática' />
+            </div>
+  
+            {isSecret && (
+              <>
+                <br />
+  
+                <div style={{ display: "flex", justifyContent: 'center', alignItems: 'center', marginLeft: "5%" }}>
+                  <AutoCompleteSelect className="selectCredentials" style={{ width: '65%' }}>
+                    <p>Credenciais:</p>
+                    <Select
+                      isSearchable
+                      value={{ id: credentialId, label: credentialValue }}
+                      onChange={handleCredentialSelected}
+                      onInputChange={(term) => setCredentialTerm(term)}
+                      isClearable
+                      placeholder=""
+                      isLoading={isLoadingComboData}
+                      loadingMessage={loadingMessage}
+                      noOptionsMessage={noOptionsMessage}
+                      menuPortalTarget={document.body}
+                      menuPosition={'fixed'}
+                      styles={customStyles}
+                      options={credentialsList}
+                    />
+                  </AutoCompleteSelect>
+  
+                  <button
+                    className="buttonLinkClick buttonInclude"
+                    title="Clique para incluir uma nova credencial"
+                    type="submit"
+                    style={{ marginLeft: '10px', marginTop: "1.5rem" }}
+                    onClick={openNewCredentialModal}
+                  >
+                    <FcKey />
+                    <span>Criar Credencial</span>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
-
-          {isSecret && (
-            <>
-              <br />
-
-              <div style={{ display: "flex", justifyContent: 'center', alignItems: 'center', marginLeft: "5%" }}>
-                <AutoCompleteSelect className="selectCredentials" style={{ width: '65%' }}>
-                  <p>Credenciais:</p>
-                  <Select
-                    isSearchable
-                    value={{ id: credentialId, label: credentialValue }}
-                    onChange={handleCredentialSelected}
-                    onInputChange={(term) => setCredentialTerm(term)}
-                    isClearable
-                    placeholder=""
-                    isLoading={isLoadingComboData}
-                    loadingMessage={loadingMessage}
-                    noOptionsMessage={noOptionsMessage}
-                    menuPortalTarget={document.body}
-                    menuPosition={'fixed'}
-                    styles={customStyles}
-                    options={credentialsList}
-                  />
-                </AutoCompleteSelect>
-
-                <button
-                  className="buttonLinkClick buttonInclude"
-                  title="Clique para incluir uma nova credencial"
-                  type="submit"
-                  style={{ marginLeft: '10px', marginTop: "1.5rem" }}
-                  onClick={openNewCredentialModal}
-                >
-                  <FcKey />
-                  <span>Criar Credencial</span>
-                </button>
-              </div>
-            </>
-          )}
-
-        </div>
-
-        <button 
-          className="buttonLinkClick buttonAddNew" 
-          onClick={handleAddNumber}
-          title="Clique para adicionar uma nova pesquisa por OAB"
-          type="submit"
-        >
-          <FiPlus />
-          Adicionar
-            
-        </button>
-
-        <div className='listItem'>
-          {listSearch.map(item => {
-            return (
-              <p key={item.index}>
-                <FiTrash title='Clique para excluir este CNJ' onClick={() => handleDelete(item.index)} />
-                {item.matterNumberCNJ}
-                {(item.id_Credential) && (
-                  <>
-                    &nbsp;
-                    <FcKey title='Este processo será procurado por nossos robôs na forma de segredo de justiça, com base no usuário e senha informados' />
-                    <span className='password'>Segredo de Justiça</span>
-                  </>
-                )}
-
-              </p>
-            )
-          })}
-
-        </div>
-
-        <footer>
-
+  
           <button 
-            className="buttonClick" 
-            type="button"
-            onClick={handleSave}
-            title="Clique para salvar o parâmetro"
+            className="buttonLinkClick buttonAddNew" 
+            onClick={handleAddNumber}
+            title="Clique para adicionar uma nova pesquisa por OAB"
+            type="submit"
           >
-            <BiSave />
-            {!isSaving && <span> Salvar Busca</span> }
-            {isSaving && <span>Salvando...</span> }
-           
-          </button>   
-
-          <button 
-            className="buttonClick" 
-            type="button"
-            onClick={handleCloseModal}
-            title="Clique para retornar a listagem de processos"
-          >
-            <MdBlock />
-            <span>Fechar</span>
-          </button>  
-
-        </footer>
-
-      </Container>
-      
-    </Modal>
+            <FiPlus />
+            Adicionar
+          </button>
+  
+          <div className='listItem'>
+            {listSearch.map(item => {
+              return (
+                <p key={item.index}>
+                  <FiTrash title='Clique para excluir este CNJ' onClick={() => handleDelete(item.index)} />
+                  {item.matterNumberCNJ}
+                  {(item.id_Credential) && (
+                    <>
+                      &nbsp;
+                      <FcKey title='Este processo será procurado por nossos robôs na forma de segredo de justiça, com base no usuário e senha informados' />
+                      <span className='password'>Segredo de Justiça</span>
+                    </>
+                  )}
+                </p>
+              )
+            })}
+          </div>
+  
+          <footer>
+            <button 
+              className="buttonClick" 
+              type="button"
+              onClick={handleSave}
+              title="Clique para salvar o parâmetro"
+            >
+              <BiSave />
+              {!isSaving && <span> Salvar Busca</span> }
+              {isSaving && <span>Salvando...</span> }
+            </button>   
+  
+            <button 
+              className="buttonClick" 
+              type="button"
+              onClick={handleCloseModal}
+              title="Clique para retornar a listagem de processos"
+            >
+              <MdBlock />
+              <span>Fechar</span>
+            </button>  
+          </footer>
+        </Container>
+      </Modal>
     </>
-
-  )
+  );
 }
