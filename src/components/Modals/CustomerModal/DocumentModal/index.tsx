@@ -19,6 +19,11 @@ import { selectStyles, useDelay } from 'Shared/utils/commonFunctions';
 import { loadingMessage, noOptionsMessage } from 'Shared/utils/commonConfig';
 import { Container } from './styles';
 
+export const documentExtensionsList = [
+  {id: "1", label: "PDF"},
+  {id: "2", label: "WORD (.docx)"}
+];
+
 export default function DocumentModal() {
   // Context imports
   const { isCustomerDocumentModalOpen, handleCloseCustomerDocumentModal } = useCustomer();
@@ -34,6 +39,7 @@ export default function DocumentModal() {
   const [documentPrepostoId, setDocumentPrepostoId] = useState('');
   const history = useHistory();
   const token = localStorage.getItem('@GoJur:token');
+  const [documentExtensionId, setDocumentExtensionId] = useState(''); 
 
   useEffect(() => {
     changeText("Gerar Documento ")
@@ -189,6 +195,7 @@ export default function DocumentModal() {
     handleCloseCustomerDocumentModal();
     setDocumentModelId('');
     setDocumentModelName('')
+    setDocumentExtensionId('');
     changeText("Gerar Documento ")
   } 
 
@@ -235,6 +242,12 @@ export default function DocumentModal() {
         .map(i => i.id),
     );
 
+    const extensionId = Number(
+      documentExtensionsList
+        .filter(extension => extension.id === documentExtensionId)
+        .map(extension => extension.id),
+    );
+
     // validation if same process was selected
     if (typeDocument == 'PR' && idMatter == 0 && !generateWithoutMatter){
         addToast({
@@ -261,6 +274,7 @@ export default function DocumentModal() {
             printAllCustomer: 'notset',
             caller: 'customerModule',
             token,
+            documentExtensionId: extensionId
           }, 
         ) ;
 
@@ -287,6 +301,7 @@ export default function DocumentModal() {
             representativeAgentId: prepostoId === 0  || prepostoList.length === 1 ? null : prepostoId,
             des_Titulo: filteredDocument? filteredDocument.label.toString(): "",
             token,
+            documentExtensionId: extensionId
           },
         );
 
@@ -304,6 +319,7 @@ export default function DocumentModal() {
         // setIsGeneratingReport(false)    
         setDocumentModelId('');
         setDocumentModelName('')
+        setDocumentExtensionId('');
         handleResetValues(); 
         // handleCloseCustomerDocumentModal()
         setGenerateWithoutMatter(false)
@@ -321,6 +337,7 @@ export default function DocumentModal() {
             representativeAgentId: prepostoId === 0 || prepostoList.length === 1 ? null : prepostoId,
             des_Titulo: filteredDocument? filteredDocument.label.toString(): "",
             token,
+            documentExtensionId: extensionId
           },
         );
 
@@ -446,6 +463,7 @@ export default function DocumentModal() {
 
         setDocumentModelId('');
         setDocumentModelName('')
+        setDocumentExtensionId('');
         handleResetValues();
         handleCloseCustomerDocumentModal();
         setIsVisualizeReport(false)
@@ -489,6 +507,7 @@ export default function DocumentModal() {
         setDocumentModelId('');
         setDocumentModelName('')
         handleResetValues();
+        setDocumentExtensionId('');
         handleCloseCustomerDocumentModal();
         setIsVisualizeReport(false)
         setGenerateWithoutMatter(false)
@@ -528,6 +547,7 @@ export default function DocumentModal() {
 
           setDocumentModelId('');
           setDocumentModelName('')
+          setDocumentExtensionId('');
           handleResetValues();
           handleCloseCustomerDocumentModal();
           setIsVisualizeReport(false)
@@ -589,6 +609,15 @@ export default function DocumentModal() {
     }
   }
 
+  const handleModelDocumentExtensionValue = (item: any) => {
+    
+    if (item){
+      setDocumentExtensionId(item.id)
+    }else{
+      setDocumentExtensionId('')
+    }
+  }
+
   const [buttonText, setButtonText] = useState("Gerar Relatório");
   const changeText = (text) => setButtonText(text);
 
@@ -599,6 +628,7 @@ export default function DocumentModal() {
         setDocumentModelId('');
         handleResetValues();
         handleCloseCustomerDocumentModal();
+        setDocumentExtensionId('');
       }}
       overlayClassName="react-modal-overlay"
       className="react-modal-content"
@@ -611,6 +641,7 @@ export default function DocumentModal() {
             handleResetValues();
             setDocumentModelId('');
             handleCloseCustomerDocumentModal();
+            setDocumentExtensionId('');
           }}
         >
           <FiX size={20} />
@@ -707,6 +738,21 @@ export default function DocumentModal() {
             </AutoCompleteSelect>
           )}
         </div>
+
+          <AutoCompleteSelect>
+                <p>Formato</p>  
+                <Select
+                  isSearchable   
+                  isClearable
+                  isLoading={isLoadingDocumentData}
+                  placeholder="Selecione um formato"
+                  onChange={(item) => handleModelDocumentExtensionValue(item)}
+                  loadingMessage={loadingMessage}
+                  noOptionsMessage={noOptionsMessage}
+                  styles={selectStyles}                 
+                  options={documentExtensionsList}
+                />
+          </AutoCompleteSelect>
 
         <footer>
 

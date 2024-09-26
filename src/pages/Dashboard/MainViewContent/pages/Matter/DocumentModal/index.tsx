@@ -31,6 +31,11 @@ export interface ISelectData{
   flg_Principal: string
 }
 
+export const documentExtensionsList = [
+  {id: "1", label: "PDF"},
+  {id: "2", label: "WORD (.docx)"}
+];
+
 export default function DocumentModal() {
 
   const { handleLoadDocumentModelList, handleOpenDocumentModal, handleBlockButton, isBlockButton,isOpenDocumentModal, isLoadingDocumentData, documentList, legalPersonList, legalPersonTermSearch, prepostoList, legalPrepostoTermSearch, customerQtdeLegalPerson, loadLegalPerson, loadLegalPreposto, handleLegalPersonTermSearchTerm, handleLoadInitialPropsFromDocument, handleResetValues, handlePrepostoSearchTerm } = useDocument();
@@ -49,6 +54,7 @@ export default function DocumentModal() {
   const history = useHistory();
   const [peopleId, setPeopleId] = useState<string>("0")
   const [customerList, setCustomerList] = useState<ISelectData[]>([]);
+  const [documentExtensionId, setDocumentExtensionId] = useState(''); 
   
   const token = localStorage.getItem('@GoJur:token');
 
@@ -216,6 +222,7 @@ export default function DocumentModal() {
     window.open(urlRedirect, '_parent')
 
     setDocumentModelId('');
+    setDocumentExtensionId('');
     setDocumentModelName('')
     handleOpenDocumentModal(false);
     setIsVisualizeReport(false)
@@ -320,6 +327,12 @@ export default function DocumentModal() {
     
     const filteredDocument = documentList.find(i => i.id === documentModelId);
 
+    const extensionId = Number(
+      documentExtensionsList
+        .filter(extension => extension.id === documentExtensionId)
+        .map(extension => extension.id),
+    );
+
     let legalPersonId
     let caller = "matterModule"
 
@@ -353,6 +366,7 @@ export default function DocumentModal() {
         printAllCustomer: parameterValue,
         caller,
         token,
+        documentExtensionId: extensionId
       },
     );
     
@@ -412,6 +426,7 @@ export default function DocumentModal() {
     window.open(`${response.data.des_Parametro}`, '_blank');     
     handleOpenDocumentModal(false)
     setDocumentModelId('');
+    setDocumentExtensionId('');
     setDocumentModelName('')
     changeText("Gerar Documento ")
   } 
@@ -419,6 +434,7 @@ export default function DocumentModal() {
   const handleCloseModal = () => {
 
     setDocumentModelId('');
+    setDocumentExtensionId('');
     handleOpenDocumentModal(false)
     handleBlockButton(true)
   }
@@ -485,6 +501,15 @@ export default function DocumentModal() {
     }
 
   }
+
+  const handleModelDocumentExtensionValue = (item: any) => {
+    
+    if (item){
+      setDocumentExtensionId(item.id)
+    }else{
+      setDocumentExtensionId('')
+    }
+  }
   
   // const optionsParameter = [
   //   {
@@ -502,6 +527,7 @@ export default function DocumentModal() {
       isOpen={isOpenDocumentModal}
       onRequestClose={() => {
         setDocumentModelId('')
+        setDocumentExtensionId('')
       }}
       overlayClassName="react-modal-overlay"
       className="react-modal-content"
@@ -520,7 +546,7 @@ export default function DocumentModal() {
       )} */}
 
       <Container>
-        <h1>Escolha na lista acima um modelo para gerar o documento</h1>
+        <h1>Escolha na lista abaixo um modelo para gerar o documento</h1>
         <div>
 
           <AutoCompleteSelect>
@@ -611,6 +637,21 @@ export default function DocumentModal() {
             </AutoCompleteSelect>
           )}
           
+          <AutoCompleteSelect>
+                <p>Formato</p>  
+                <Select
+                  isSearchable   
+                  isClearable
+                  isLoading={isLoadingDocumentData}
+                  placeholder="Selecione um formato"
+                  onChange={(item) => handleModelDocumentExtensionValue(item)}
+                  loadingMessage={loadingMessage}
+                  noOptionsMessage={noOptionsMessage}
+                  styles={selectStyles}                 
+                  options={documentExtensionsList}
+                />
+          </AutoCompleteSelect>
+
         </div>
 
         <footer>
