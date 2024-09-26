@@ -301,11 +301,18 @@ export default function SearchOAB () {
               <input 
                 type='text' 
                 placeholder='Nº OAB' 
-                onChange={(e) => handleLawyerOAB(e, item)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (/^\d*$/.test(value)) {
+                    handleLawyerOAB(e, item);
+                  }
+                }}
                 onBlur={() => handleSearchOAB(item)}
                 value={item.OAB}  
                 disabled={item.searchStatus == 'V'}
                 className='numOAB'
+                inputMode='numeric'
+                pattern='[0-9]*'
               />
         
               <input 

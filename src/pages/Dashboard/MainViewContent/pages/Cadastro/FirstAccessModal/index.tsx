@@ -472,8 +472,20 @@ const FirstAccessModal = (props) => {
                               type='text'
                               id='numeroOAB'
                               placeholder='Nº OAB (sem UF)'
-                              onChange={(e: ChangeEvent<HTMLInputElement>) => ChangeOAB(e.target.value, lawyer.lawyerId)}
+                              onKeyPress={(e) => {
+                                if (!/^\d$/.test(e.key)) {
+                                  e.preventDefault(); // Impede a entrada de caracteres não numéricos
+                                }
+                              }}
+                              onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                const value = e.target.value;
+                                if (/^\d*$/.test(value)) { // Verifica se o valor contém apenas números
+                                  ChangeOAB(value, lawyer.lawyerId);
+                                }
+                              }}
                               onBlur={() => handleInputBlur(lawyer.lawyerId)}
+                              inputMode='numeric'
+                              pattern='[0-9]*'
                             />
                             &nbsp;&nbsp;&nbsp;&nbsp;
 
@@ -698,8 +710,20 @@ const FirstAccessModal = (props) => {
                               type='text'
                               id='numeroOAB'
                               placeholder='Nº OAB (sem UF)'
-                              onChange={(e: ChangeEvent<HTMLInputElement>) => ChangeOAB(e.target.value, lawyer.lawyerId)}
+                              onKeyPress={(e) => {
+                                if (!/^\d$/.test(e.key)) {
+                                  e.preventDefault(); // Impede a entrada de caracteres não numéricos
+                                }
+                              }}
+                              onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                const value = e.target.value;
+                                if (/^\d*$/.test(value)) { // Verifica se o valor contém apenas números
+                                  ChangeOAB(value, lawyer.lawyerId);
+                                }
+                              }}
                               onBlur={() => handleInputBlur(lawyer.lawyerId)}
+                              inputMode='numeric'
+                              pattern='[0-9]*'
                             />
                             <br />
 
