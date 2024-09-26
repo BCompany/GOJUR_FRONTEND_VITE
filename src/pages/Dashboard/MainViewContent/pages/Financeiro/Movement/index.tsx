@@ -150,7 +150,6 @@ const FinancialMovement: React.FC = () => {
   const [billingInvoiceId, setBillingInvoiceId] = useState<string>('')
   const [pixKey, setPixKey] = useState<string>('')
 
-  const [showBankPaymentSlipModal, setShowBankPaymentSlipModal] = useState<boolean>(false);
   const [showBankPaymentSlipSecondCopyModal, setShowBankPaymentSlipSecondCopyModal] = useState<boolean>(false);
   const [hasFinancialIntegration, setHasFinancialIntegration] = useState<boolean>(false);
   const [hasBankPaymentSlip, setHasBankPaymentSlip] = useState<boolean>(false);
@@ -1331,7 +1330,7 @@ const FinancialMovement: React.FC = () => {
       }
       // Boleto único
       else {
-        setShowBankPaymentSlipModal(true)
+        GeneratePaymentSlip('justOne', false, true)
         return;
       }
     }
@@ -1434,12 +1433,10 @@ const FinancialMovement: React.FC = () => {
 
       await LoadBankPaymentSlip(Number(movementId))
       setIsSaving(false)
-      setShowBankPaymentSlipModal(false)
       setShowBankPaymentSlipSecondCopyModal(false)
     }
     catch (err:any) {
       setIsSaving(false)
-      setShowBankPaymentSlipModal(false)
       setShowBankPaymentSlipSecondCopyModal(false)
 
       if (err.response.data.typeError.warning == "awareness"){
@@ -2079,7 +2076,7 @@ const FinancialMovement: React.FC = () => {
             )}
 
             {(movementId != '0' && movementType == "R" && companyPlan != 'GOJURFR' && paymentFormType == "B" && billingInvoiceId != "0" && !hasBankPaymentSlip) && (
-              <button className="buttonClick" type='button' onClick={()=> GeneratePaymentSlip('justoOne', false, true)}>
+              <button className="buttonClick" type='button' onClick={()=> GeneratePaymentSlip('justOne', false, true)}>
                 <FaRegCopy />
                 Gerar Boleto
               </button>
@@ -2281,42 +2278,6 @@ const FinancialMovement: React.FC = () => {
           </div>
 
         </ModalPaymentInformation>
-      )}
-
-      {showBankPaymentSlipModal && <OverlayFinancial /> }
-      {showBankPaymentSlipModal && (
-        <ModalBankPaymentSlip>
-          <div className='menuSection'>
-            <FiX onClick={(e) => {setShowBankPaymentSlipModal(false)}} />
-          </div>
-          <div id='ModalContent' style={{textAlign:'-webkit-center'}}>
-            Informe a data de vencimento do boleto
-            <br /><br />
-
-            <div style={{width:'290px'}}>
-              <label htmlFor='Data'>
-                <DatePicker title="Vencimento" onChange={(e: ChangeEvent<HTMLInputElement>) => setBankPaymentSlipDate(e.target.value)} value={bankPaymentSlipDate} />
-              </label>
-            </div>
-            <br /><br />
-
-            <div id='Buttons' style={{marginLeft:'130px'}}>
-              <div style={{float:'left'}}>
-                <button className="buttonClick" type='button' onClick={()=> GeneratePaymentSlip('justOne', false, true)} style={{width:'150px'}}>
-                  <FaCheck />
-                  Gerar Boleto
-                </button>
-              </div>
-
-              <div style={{float:'left'}}>
-                <button type='button' className="buttonClick" onClick={()=> {setShowBankPaymentSlipModal(false)}} style={{width:'150px'}}>
-                  <FaRegTimesCircle />
-                  Fechar
-                </button>
-              </div>
-            </div>
-          </div>
-        </ModalBankPaymentSlip>
       )}
 
       {showBankPaymentSlipSecondCopyModal && <OverlayFinancial /> }
