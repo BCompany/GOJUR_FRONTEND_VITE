@@ -612,9 +612,11 @@ export default function DocumentModal() {
   const handleModelDocumentExtensionValue = (item: any) => {
     
     if (item){
-      setDocumentExtensionId(item.id)
+      setDocumentExtensionId(item.id);
+      handleBlockButton(false);
     }else{
-      setDocumentExtensionId('')
+      setDocumentExtensionId('');
+      handleBlockButton(true);
     }
   }
 

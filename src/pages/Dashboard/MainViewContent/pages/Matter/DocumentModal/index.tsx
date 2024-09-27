@@ -222,7 +222,6 @@ export default function DocumentModal() {
     window.open(urlRedirect, '_parent')
 
     setDocumentModelId('');
-    setDocumentExtensionId('');
     setDocumentModelName('')
     handleOpenDocumentModal(false);
     setIsVisualizeReport(false)
@@ -374,7 +373,7 @@ export default function DocumentModal() {
     
     localStorage.removeItem('@GoJur:matterId')
 
-  }, [documentList, documentModelId, isGeneratingReport, parameterValue, totalCustomer, legalPersonList, documentLPId, prepostoList, documentPrepostoId, parameterValue, peopleId]);
+  }, [documentList, documentModelId, isGeneratingReport, parameterValue, totalCustomer, legalPersonList, documentLPId, prepostoList, documentPrepostoId, parameterValue, peopleId, documentExtensionId]);
 
     // when exists report id verify if is avaiable every 2 seconds
     useEffect(() => {
@@ -426,7 +425,6 @@ export default function DocumentModal() {
     window.open(`${response.data.des_Parametro}`, '_blank');     
     handleOpenDocumentModal(false)
     setDocumentModelId('');
-    setDocumentExtensionId('');
     setDocumentModelName('')
     changeText("Gerar Documento ")
   } 
@@ -434,7 +432,6 @@ export default function DocumentModal() {
   const handleCloseModal = () => {
 
     setDocumentModelId('');
-    setDocumentExtensionId('');
     handleOpenDocumentModal(false)
     handleBlockButton(true)
   }
@@ -505,9 +502,11 @@ export default function DocumentModal() {
   const handleModelDocumentExtensionValue = (item: any) => {
     
     if (item){
-      setDocumentExtensionId(item.id)
+      setDocumentExtensionId(item.id);
+      handleBlockButton(false);
     }else{
-      setDocumentExtensionId('')
+      setDocumentExtensionId('');
+      handleBlockButton(true);
     }
   }
   
@@ -527,7 +526,6 @@ export default function DocumentModal() {
       isOpen={isOpenDocumentModal}
       onRequestClose={() => {
         setDocumentModelId('')
-        setDocumentExtensionId('')
       }}
       overlayClassName="react-modal-overlay"
       className="react-modal-content"
@@ -642,7 +640,6 @@ export default function DocumentModal() {
                 <Select
                   isSearchable   
                   isClearable
-                  isLoading={isLoadingDocumentData}
                   placeholder="Selecione um formato"
                   onChange={(item) => handleModelDocumentExtensionValue(item)}
                   loadingMessage={loadingMessage}
