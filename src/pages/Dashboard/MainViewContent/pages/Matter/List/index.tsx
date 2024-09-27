@@ -66,8 +66,8 @@ import SearchOAB from '../SearchOAB/Index';
 import InvertParts from '../InvertParts/Index';
 import SearchCNJ from '../SearchCNJ/Index';
 import MatterFileModal from '../MatterFileModal/index';
-import CredentialModal from '../Credentials/index';
 import FollowModal from '../FollowModal';
+import AwarenessModal from 'components/AwarenessModal';
 
 const Matter: React.FC = () => {
   const { signOut } = useAuth();
@@ -144,9 +144,10 @@ const Matter: React.FC = () => {
   const [isSecretJustice, setIsSecretJustice] = useState<boolean>(false);
   const [selectedCredentialid, setSelectedCredentialid] = useState<number>(0);
 
-  const [notHaveCourtMessage, setNotHaveCourtMessage] = useState<string>("")
-  const [openNotHaveCourtModal, setOpenNotHaveCourtModal] = useState<boolean>(false)
-  const [confirmOpenNotHaveCourtModal, setConfirmOpenNotHaveCourtModal] = useState<boolean>(false)
+  const [showAwarenessModal, setShowAwarenessModal] = useState<boolean>(false)
+  const [awarenessModalMessage, setAwarenessModalMessage] = useState<string>("")
+  const [awarenessModalTitle, setAwarenessModalTitle] = useState<string>("Tribunal - Abrangência")
+  const [awarenessButtonOkText, setAwarenessButtonOkText] = useState<string>("Ver Abrangências")
 
   const [isChanging, setIsChanging] = useState<boolean>(false);
 
@@ -156,39 +157,6 @@ const Matter: React.FC = () => {
     handleCaptureText('')
     VerifyCurrentSearch()
   }, [])
-
-  useEffect(() => {
-
-    if (isCancelMessage) {
-
-      if (caller === 'confirmOpenNotHaveCourtModal') {
-        setOpenNotHaveCourtModal(false)
-        handleCancelMessage(false)
-        setNotHaveCourtMessage("")
-      }
-    }
-
-  }, [isCancelMessage, caller]);
-
-  useEffect(() => {
-
-    if (isConfirmMessage) {
-      if (caller === 'confirmOpenNotHaveCourtModal') {
-        setConfirmOpenNotHaveCourtModal(true)
-      }
-    }
-  }, [isConfirmMessage, caller]);
-
-  useEffect(() => {
-
-    if (confirmOpenNotHaveCourtModal) {
-      setOpenNotHaveCourtModal(false)
-      handleCaller("")
-      handleConfirmMessage(false)
-      history.push('/Matter/monitoring')
-    }
-  }, [confirmOpenNotHaveCourtModal]);
-
 
   useEffect(() => {
 
@@ -929,8 +897,8 @@ const Matter: React.FC = () => {
       }
 
       if (err.response.data.typeError.warning == "awareness") {
-        setNotHaveCourtMessage(err.response.data.Message)
-        setOpenNotHaveCourtModal(true)
+        setAwarenessModalMessage(err.response.data.Message)
+        setShowAwarenessModal(true)
       }
 
       console.log(err)
@@ -2134,6 +2102,17 @@ const Matter: React.FC = () => {
     setSelectedCredentialid(id)
   }
 
+  const handleCloseAwarenessModal = async () => {
+    setShowAwarenessModal(false)
+    setAwarenessModalMessage('')
+  };
+
+  const handleConfirmAwarenessButton = async () => {
+    setShowAwarenessModal(false)
+    setAwarenessModalMessage('')
+    history.push('/Matter/monitoring')
+  };
+
   return (
 
     <Container onScroll={handleScrool} ref={scrollRef}>
@@ -2330,15 +2309,6 @@ const Matter: React.FC = () => {
           />
         )}
 
-      {openNotHaveCourtModal && (
-          <ConfirmBoxModal
-            caller="confirmOpenNotHaveCourtModal"
-            title="Tribunal - Abrangência"
-            buttonOkText="Ver Abrangências"
-            message={`${notHaveCourtMessage}`}
-          />
-        )}
-
         {isDeleting && (
 
           // CONFIRM MODAL DELETE
@@ -2351,6 +2321,8 @@ const Matter: React.FC = () => {
           />
 
         )}
+
+      {showAwarenessModal && <AwarenessModal callbackFunction={{ awarenessModalTitle, awarenessModalMessage, awarenessButtonOkText, handleCloseAwarenessModal, handleConfirmAwarenessButton }}  />}
 
         {isDeletingTemp && (
 

@@ -21,6 +21,7 @@ import { loadingMessage, noOptionsMessage } from 'Shared/utils/commonConfig';
 import { customStyles, selectStyles } from 'Shared/utils/commonFunctions';
 import { useHistory } from 'react-router-dom'
 import CredentialsDataSourceModal from '../Credentials/EditModal';
+import AwarenessModal from 'components/AwarenessModal';
 
 export interface ISelectData {
   id: string;
@@ -50,42 +51,12 @@ export default function SearchCNJ () {
   const [showNewCredentials, setShowNewCredentials] = useState<boolean>(false)
   const tokenApi = localStorage.getItem('@GoJur:token');
 
-  const [notHaveCourtMessage, setNotHaveCourtMessage] = useState<string>("")
-  const [openNotHaveCourtModal, setOpenNotHaveCourtModal] = useState<boolean>(false)
-  const [confirmOpenNotHaveCourtModal, setConfirmOpenNotHaveCourtModal] = useState<boolean>(false)
+  const [showAwarenessModal, setShowAwarenessModal] = useState<boolean>(false)
+  const [awarenessModalMessage, setAwarenessModalMessage] = useState<string>("")
+  const [awarenessModalTitle, setAwarenessModalTitle] = useState<string>("Tribunal - Abrangência")
+  const [awarenessButtonOkText, setAwarenessButtonOkText] = useState<string>("Ver Abrangências")
   const history = useHistory();
 
-  useEffect(() => {
-
-    if (isCancelMessage) {
-
-      if (caller === 'confirmOpenNotHaveCourtModal') {
-        setOpenNotHaveCourtModal(false)
-        handleCancelMessage(false)
-        setNotHaveCourtMessage("")
-      }
-    }
-
-  }, [isCancelMessage, caller]);
-
-  useEffect(() => {
-
-    if (isConfirmMessage) {
-      if (caller === 'confirmOpenNotHaveCourtModal') {
-        setConfirmOpenNotHaveCourtModal(true)
-      }
-    }
-  }, [isConfirmMessage, caller]);
-
-  useEffect(() => {
-
-    if (confirmOpenNotHaveCourtModal) {
-      setOpenNotHaveCourtModal(false)
-      handleCaller("")
-      handleConfirmMessage(false)
-      history.push('/Matter/monitoring')
-    }
-  }, [confirmOpenNotHaveCourtModal]);
 
   useEffect(() => {
 
@@ -219,8 +190,8 @@ export default function SearchCNJ () {
       setIsSaving(false)
 
       if (err.response.data.typeError.warning == "awareness") {
-        setNotHaveCourtMessage(err.response.data.Message)
-        setOpenNotHaveCourtModal(true)
+        setAwarenessModalMessage(err.response.data.Message)
+        setShowAwarenessModal(true)
       }
       if (!err.response.data.typeError.warning) 
       {
@@ -289,19 +260,23 @@ export default function SearchCNJ () {
     setCredentialValue(description);
   }
 
+  const handleCloseAwarenessModal = async () => {
+    setShowAwarenessModal(false)
+    setAwarenessModalMessage('')
+  };
+
+  const handleConfirmAwarenessButton = async () => {
+    setShowAwarenessModal(false)
+    setAwarenessModalMessage('')
+    history.push('/Matter/monitoring')
+  };
+
   return (
     <>
       {showNewCredentials && <CredentialsDataSourceModal callbackFunction={{ handleCloseEditModal, handleIsNewCredential }} />}
-  
-      {openNotHaveCourtModal && (
-        <ConfirmBoxModal
-          caller="confirmOpenNotHaveCourtModal"
-          title="Tribunal - Abrangência"
-          buttonOkText="Ver Abrangências"
-          message={`${notHaveCourtMessage}`}
-        />
-      )}
-  
+
+      {showAwarenessModal && <AwarenessModal callbackFunction={{ awarenessModalTitle, awarenessModalMessage, awarenessButtonOkText, handleCloseAwarenessModal, handleConfirmAwarenessButton }}  />}
+
       <Modal
         isOpen
         overlayClassName="react-modal-overlay"      
