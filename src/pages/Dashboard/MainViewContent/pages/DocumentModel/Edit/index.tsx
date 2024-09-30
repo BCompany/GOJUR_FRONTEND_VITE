@@ -19,6 +19,9 @@ import {customColorPalette} from 'Shared/dataComponents/graphicsColors';
 import Uploader from './Uploader'
 import HeaderFooterModal from '../HeaderFooterModal/index';
 import { Container, Content, Editor, Elements, ModalInformation, OverlayDocument, ModalWarning } from './styles';
+import { AutoCompleteSelect } from 'Shared/styles/GlobalStyle';
+import Select from 'react-select'
+import { selectStyles, useDelay } from 'Shared/utils/commonFunctions';
 
 export interface IDocumentModelData{
   cod_DocumentoModelo: string;
@@ -31,6 +34,11 @@ export interface IDocumentModelData{
   tpo_Rodape: string;
   des_RodapePersonalizado: string;
 }
+
+export const documentExtensionsList = [
+  {id: "1", label: "PDF"},
+  {id: "2", label: "WORD (.docx)"}
+];
 
 const DocumentModelEdit: React.FC = () => {
   const { addToast } = useToast();
@@ -65,6 +73,7 @@ const DocumentModelEdit: React.FC = () => {
   const MDLFAT = localStorage.getItem('@GoJur:moduleCode');
   const [fromCaller, setFromCaller] = useState<string>("")
   const editorRef = useRef<CKEditor>();
+  const [documentExtensionId, setDocumentExtensionId] = useState(''); 
 
   useEffect(() => {
     DocumentEdit()
@@ -303,6 +312,12 @@ const DocumentModelEdit: React.FC = () => {
       setIsGenerating(true)
       const token = localStorage.getItem('@GoJur:token');
 
+      const extensionId = Number(
+        documentExtensionsList
+          .filter(extension => extension.id === documentExtensionId)
+          .map(extension => extension.id),
+      );
+
       if(documentId == "0")
       {
         addToast({
@@ -314,6 +329,17 @@ const DocumentModelEdit: React.FC = () => {
         return;
       }
 
+      if(extensionId == 0 && extensionId == null)
+        {
+          addToast({
+            type: "info",
+            title: "Atenção",
+            description: "Favor selecionar o formato antes de visualizar."
+          })
+          setIsGenerating(false)
+          return;
+        }
+
       const response = await api.post('/DocumentosModelo/VisualizarModelo', {
         id: documentId,
         type: documentTypeId,
@@ -323,13 +349,11 @@ const DocumentModelEdit: React.FC = () => {
         headerText,
         footerType: footerTypeId,
         footerText,
-        token
+        token,
+        documentExtensionId: extensionId
       })
       
-      if (response.data.id == "OK")
-      {
-        window.open(`${response.data.value}`, '_blank');
-      }
+      window.open(`${response.data.value}`, '_blank');
       
       setIsGenerating(false)
     }
@@ -340,7 +364,7 @@ const DocumentModelEdit: React.FC = () => {
         title: "Falha ao gerar documento.",
       })
     }
-  },[documentTitle, documentText, documentTypeId, headerTypeId, headerText, footerTypeId, footerText, pathname, documentId]);
+  },[documentTitle, documentText, documentTypeId, headerTypeId, headerText, footerTypeId, footerText, pathname, documentId, documentExtensionId]);
 
   // update img src to S3 amazon
   useEffect(() => {
@@ -464,6 +488,16 @@ const DocumentModelEdit: React.FC = () => {
     )
   
   },[documentText])
+
+
+  const handleModelDocumentExtensionValue = (item: any) => {
+    
+    if (item){
+      setDocumentExtensionId(item.id);
+    }else{
+      setDocumentExtensionId('');
+    }
+  }
  
 
   return (
@@ -827,8 +861,8 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
         <>
           <div id='TextElements' style={{height:'1400px', overflow:'auto', width:'850px', margin:'auto'}}>
 
-            <div id='Bottons' style={{float:'right', marginRight:'5%'}}>
-              <div style={{float:'left', width:'160px'}}>
+            <div id='Bottons' style={{float:'right', marginRight:'5%', display: "flex", alignItems: "center"}}>
+              <div style={{float:'left', width:'160px', marginTop:'20px'}}>
                 <button 
                   type='button'
                   className="buttonClick"
@@ -844,8 +878,22 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
                   {buttonElementDiv}
                 </button>
               </div>
+
+              <div style={{float:'left', width:'265px', marginRight:"20px"}}>
+                <AutoCompleteSelect style={{width: "265px"}}>
+                    <p>Formato</p>  
+                    <Select
+                      isSearchable   
+                      isClearable
+                      placeholder="Selecione um formato"
+                      onChange={(item) => handleModelDocumentExtensionValue(item)}
+                      styles={selectStyles}                 
+                      options={documentExtensionsList}
+                    />
+                </AutoCompleteSelect>
+              </div>
               
-              <div style={{float:'left', width:'120px'}}>
+              <div style={{float:'left', width:'120px', marginTop:'20px'}}>
                 <button 
                   type='button'
                   className="buttonClick"
@@ -857,7 +905,7 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
                 </button>
               </div>
               
-              <div style={{float:'left', width:'120px'}}>
+              <div style={{float:'left', width:'120px', marginTop:'20px'}}>
                 <button 
                   className="buttonClick"
                   type='button'
@@ -869,7 +917,7 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
                 </button>
               </div>
                         
-              <div style={{float:'left', width:'120px'}}>
+              <div style={{float:'left', width:'120px', marginTop:'20px'}}>
                 <button 
                   type='button'
                   className="buttonClick"
@@ -882,7 +930,7 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
               </div>
             </div>
 
-            <div id='Space' style={{width:'100%', height:'60px'}}><></></div>
+            <div id='Space' style={{width:'100%', height:'90px'}}><></></div>
 
             <Editor id='Editor'>
               <div className="App">
@@ -893,7 +941,22 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
             <div id='Space' style={{width:'100%', height:'40px'}}><></></div>
 
             <div id='Bottons' style={{float:'right', marginRight:'5%'}}>
-              <div style={{float:'left', width:'120px'}}>
+
+            <div style={{float:'left', width:'265px', marginRight:"20px"}}>
+                <AutoCompleteSelect style={{width: "265px"}}>
+                    <p>Formato</p>  
+                    <Select
+                      isSearchable   
+                      isClearable
+                      placeholder="Selecione um formato"
+                      onChange={(item) => handleModelDocumentExtensionValue(item)}
+                      styles={selectStyles}                 
+                      options={documentExtensionsList}
+                    />
+                </AutoCompleteSelect>
+              </div>
+
+              <div style={{float:'left', width:'120px', marginTop: "25px"}}>
                 <button 
                   type='button'
                   className="buttonClick"
@@ -905,7 +968,7 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
                 </button>
               </div>
               
-              <div style={{float:'left', width:'120px'}}>
+              <div style={{float:'left', width:'120px', marginTop: "25px"}}>
                 <button 
                   className="buttonClick"
                   type='button'
@@ -917,7 +980,7 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
                 </button>
               </div>
                         
-              <div style={{float:'left', width:'120px'}}>
+              <div style={{float:'left', width:'120px', marginTop: "25px"}}>
                 <button 
                   type='button'
                   className="buttonClick"

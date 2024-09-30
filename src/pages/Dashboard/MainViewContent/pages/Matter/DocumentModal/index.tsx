@@ -332,6 +332,16 @@ export default function DocumentModal() {
         .map(extension => extension.id),
     );
 
+    if(extensionId == 0){
+      addToast({
+        title: 'Não foi possivel completar a operação',
+        type: 'info',
+        description: 'Para gerar um documento do tipo processo favor selecionar um formato',
+      });     
+      setIsGeneratingReport(false)   
+      return;
+    }
+
     let legalPersonId
     let caller = "matterModule"
 

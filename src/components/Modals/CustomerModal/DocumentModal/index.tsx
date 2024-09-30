@@ -248,6 +248,16 @@ export default function DocumentModal() {
         .map(extension => extension.id),
     );
 
+    if(extensionId == 0){
+      addToast({
+        title: 'Não foi possivel completar a operação',
+        type: 'info',
+        description: 'Para gerar um documento do tipo processo favor selecionar um formato',
+      });     
+      setIsGeneratingReport(false)   
+      return;
+    }
+
     // validation if same process was selected
     if (typeDocument == 'PR' && idMatter == 0 && !generateWithoutMatter){
         addToast({
@@ -355,7 +365,7 @@ export default function DocumentModal() {
         // handleCloseCustomerDocumentModal()
       }
     }
-  }, [addToast, customerQtdeLegalPerson, customerQtdeProcess, documentLPId, documentList, documentLPId, documentModelName, documentPrepostoId, documentProcessId, legalPersonList, peopleId, prepostoList, processList]);
+  }, [addToast, customerQtdeLegalPerson, customerQtdeProcess, documentLPId, documentList, documentLPId, documentModelName, documentPrepostoId, documentProcessId, legalPersonList, peopleId, prepostoList, processList, documentExtensionId]);
 
   
   const handleVisualizeReport = async () => {

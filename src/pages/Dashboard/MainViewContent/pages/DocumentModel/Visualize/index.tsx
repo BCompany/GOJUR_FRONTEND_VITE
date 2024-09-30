@@ -14,6 +14,14 @@ import {customColorPalette} from 'Shared/dataComponents/graphicsColors';
 import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document/build/ckeditor';
 import Uploader from '../Edit/Uploader';
 import { Container, Content, Editor } from './styles';
+import { AutoCompleteSelect } from 'Shared/styles/GlobalStyle';
+import Select from 'react-select'
+import { selectStyles, useDelay } from 'Shared/utils/commonFunctions';
+
+export const documentExtensionsList = [
+  {id: "1", label: "PDF"},
+  {id: "2", label: "WORD (.docx)"}
+];
 
 const DocumentModelVizualize: React.FC = () => {
   const { addToast } = useToast();
@@ -25,6 +33,7 @@ const DocumentModelVizualize: React.FC = () => {
   const [keyWord, setKeyWord] = useState<string>('');
   const [htmlChangeData, setHtmlChangeData] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [documentExtensionId, setDocumentExtensionId] = useState(''); 
   
   const handleEditClose = () => {
     localStorage.removeItem('@Gojur:documentText')
@@ -88,19 +97,33 @@ const DocumentModelVizualize: React.FC = () => {
   const VisualizeDocument = useCallback(async() => {
     try {
       setIsGenerating(true)
-      const id = pathname.substr(25)
+      const id = pathname.substr(25);
+
+      const extensionId = Number(
+        documentExtensionsList
+          .filter(extension => extension.id === documentExtensionId)
+          .map(extension => extension.id),
+      );
+
+      if(extensionId == 0){
+        addToast({
+          title: 'Não foi possivel completar a operação',
+          type: 'info',
+          description: 'Para gerar um documento do tipo processo favor selecionar um formato',
+        });     
+        setIsGenerating(false)   
+        return;
+      }
 
       const response = await api.post('/DocumentosModelo/GerarDocumento', {
         id,
         text: documentText,
-        token
+        token,
+        documentExtensionId: extensionId
       })
-      
-      if (response.data.id == "OK")
-      {
-        window.open(`${response.data.value}`, '_blank');
-      }
-      
+         
+      window.open(`${response.data.value}`, '_blank');
+        
       setIsGenerating(false)
       localStorage.removeItem('@Gojur:documentText')
     }
@@ -111,7 +134,7 @@ const DocumentModelVizualize: React.FC = () => {
         title: "Falha ao gerar documento.",
       })
     }
-  },[documentText]);
+  },[documentText, documentExtensionId]);
 
   const colors = [
     {
@@ -149,6 +172,15 @@ const DocumentModelVizualize: React.FC = () => {
     }
 
   },[htmlChangeData])
+
+  const handleModelDocumentExtensionValue = (item: any) => {
+    
+    if (item){
+      setDocumentExtensionId(item.id);
+    }else{
+      setDocumentExtensionId('');
+    }
+  }
 
   return (
     
@@ -239,6 +271,19 @@ const DocumentModelVizualize: React.FC = () => {
             <div style={{width:'100%', height:'50px'}}><></></div>
 
             <div style={{float:'right', marginRight:'5%'}}>
+
+              <AutoCompleteSelect style={{marginLeft: 0, width: "265px"}}>
+                  <p>Formato</p>  
+                  <Select
+                    isSearchable   
+                    isClearable
+                    placeholder="Selecione um formato"
+                    onChange={(item) => handleModelDocumentExtensionValue(item)}
+                    styles={selectStyles}                 
+                    options={documentExtensionsList}
+                  />
+              </AutoCompleteSelect>
+
               <div style={{float:'left', width:'160px'}}>
                 <button 
                   type='button'
