@@ -802,3 +802,54 @@ export const ItemLine = styled.div`
   }
 
 `;
+
+
+export const ModalPlan = styled.div`
+  border: 1px solid var(--blue-twitter);
+  font-size: 0.7rem;
+  box-shadow: 1px 1px 4px 0.5px rgba(0,0,0,0.15);
+  width: 30rem;
+  height: 11rem;
+  background-color: var(--white);
+  position: absolute;
+  z-index: 2;
+  justify-content: center;
+  margin-left: 22%;
+  margin-top: 10%;
+
+  .menuTitle {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    color: black;
+    text-align: center;
+    float: left;
+    width: 93%;
+    background-color: #dcdcdc;
+    height: 27px;
+    font-weight: 500;
+  }
+
+  .menuSection {
+    font-size: 0.65rem;
+    padding: 0.25rem 0.5rem;
+    color: var(--blue-twitter);
+    text-align: right;
+    cursor: pointer;
+    float: left;
+    width: 6.95%;
+    background-color: #dcdcdc;
+    height: 27px;
+
+    > svg {
+      width: 0.85rem;
+      height: 0.85rem;
+      stroke-width: 3px;
+    }
+
+    &:hover {
+      color: var(--orange);
+    }
+  }
+  
+`;
+

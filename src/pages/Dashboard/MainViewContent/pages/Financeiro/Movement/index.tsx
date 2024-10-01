@@ -48,7 +48,7 @@ import FinancialPaymentModal from '../PaymentModal';
 import FinancialDocumentModal from '../DocumentModal';
 import BankPaymentSlipSecondCopyModal from '../BankPaymentSlipSecondCopy';
 import { ModalDeleteOptions, OverlayFinancial } from '../styles';
-import { Container, Content, Process, GridSubContainer, ModalPaymentInformation, ModalBankPaymentSlip, ModalBankPaymentSlipErrors, Line, ItemLine } from './styles';
+import { Container, Content, Process, GridSubContainer, ModalPaymentInformation, ModalBankPaymentSlip, ModalBankPaymentSlipErrors, ModalPlan, Line, ItemLine } from './styles';
 
 
 export interface IBankPaymentSlip{
@@ -165,6 +165,7 @@ const FinancialMovement: React.FC = () => {
   const [isTotalPaid, setIsTotalPaid] = useState<boolean>(false);
   const [idReportGenerate, setIdReportGenerate] = useState<number>(0)
   const [isGeneratingReport, setIsGeneratingReport] = useState<boolean>(false)
+  const [showModalPlan, setShowModalPlan] = useState<boolean>(false)
   const companyPlan = localStorage.getItem('@GoJur:companyPlan')
 
   const ref = useRef<any>(null);
@@ -1370,7 +1371,7 @@ const FinancialMovement: React.FC = () => {
       setIsSaving(false)
 
       if (err.response.data.typeError.warning == "awareness"){
-        addToast({type: "info", title: "Falha ao criar fatura", description: err.response.data.Message})
+        setShowModalPlan(true)
       }
       else{
         addToast({type: "info", title: "Falha ao criar fatura", description: err.response.data.Message})
@@ -2068,7 +2069,7 @@ const FinancialMovement: React.FC = () => {
               </button>
             )}
 
-            {(movementId != '0' && invoice == 0 && movementType == "R" && billingInvoiceId == "0" && companyPlan != 'GOJURFR' && paymentFormType != "" && !hasBankPaymentSlip) && (
+            {(movementId != '0' && invoice == 0 && movementType == "R" && billingInvoiceId == "0" && paymentFormType != "" && !hasBankPaymentSlip) && (
               <button className="buttonClick" type='button' onClick={()=> HandleCreateInvoice()}>
                 <FaRegCopy />
                 Faturar
@@ -2347,6 +2348,36 @@ const FinancialMovement: React.FC = () => {
           caller="paymentSlipInstallment"
           message="Este movimento está parcelado, serão gerados os boletos para todas as parcelas com período de vencimento posterior a hoje."
         />
+      )}
+
+      {showModalPlan && <OverlayFinancial /> }
+      {showModalPlan && (
+        <ModalPlan>
+          <div className='menuTitle'>
+            &nbsp;&nbsp;&nbsp;&nbsp;ATENÇÃO
+          </div>
+          <div className='menuSection'>
+            <FiX onClick={(e) => {setHasBankPaymentSlipErrors(false)}} />
+          </div>
+          <br /><br />
+
+          &nbsp;&nbsp;Atenção, você já atingiu o limite de geração de boleto para o seu plano.<br />
+          &nbsp;&nbsp;Você pode adquirir mais através de um dos nossos planos.<br />
+          &nbsp;&nbsp;Confira nossas opções a seguir.
+
+          <br /><br /><br />
+
+          <div id='Button' style={{textAlign:'center'}}>
+            <button type='button' className="buttonClick" onClick={()=> {history.push('/changeplan')}} style={{width:'150px'}}>
+              <FaRegTimesCircle />
+              Trocar Plano
+            </button>
+            <button type='button' className="buttonClick" onClick={()=> {setShowModalPlan(false)}} style={{width:'150px'}}>
+              <FaRegTimesCircle />
+              Fechar
+            </button>
+          </div>
+        </ModalPlan>
       )}
 
       {isLoading && (
