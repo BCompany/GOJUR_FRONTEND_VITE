@@ -357,12 +357,25 @@ const DocumentModelEdit: React.FC = () => {
       
       setIsGenerating(false)
     }
-    catch (err) {
-      setIsGenerating(false)
-      addToast({
-        type: "error",
-        title: "Falha ao gerar documento.",
-      })
+    catch (err: any) {
+
+      if (err.response.data.typeError.warning == "awareness") {
+
+        setIsGenerating(false);
+        addToast({
+          type: "info",
+          title: "Falha ao gerar documento.",
+          description: err.response.data.Message
+        })
+      }
+      else {
+        setIsGenerating(false)
+        addToast({
+          type: "error",
+          title: "Falha ao gerar documento.",
+          description: err.response.data.Message
+        })
+      }
     }
   },[documentTitle, documentText, documentTypeId, headerTypeId, headerText, footerTypeId, footerText, pathname, documentId, documentExtensionId]);
 

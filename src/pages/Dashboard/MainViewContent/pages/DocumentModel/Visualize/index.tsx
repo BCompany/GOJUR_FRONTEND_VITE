@@ -127,12 +127,28 @@ const DocumentModelVizualize: React.FC = () => {
       setIsGenerating(false)
       localStorage.removeItem('@Gojur:documentText')
     }
-    catch (err) {
-      setIsGenerating(false)
-      addToast({
-        type: "error",
-        title: "Falha ao gerar documento.",
-      })
+    catch (err: any) {
+
+      if (err.response.data.typeError.warning == "awareness") {
+
+        setIsGenerating(false);
+
+        setTimeout(function(){
+            addToast({
+              type: "error",
+              title: "Falha ao gerar documento.",
+              description: err.response.data.Message,
+            });    
+        }, 5000);
+      }
+      else {
+        setIsGenerating(false)
+        addToast({
+          type: "error",
+          title: "Falha ao gerar documento.",
+          description: err.response.data.Message
+        })
+      }
     }
   },[documentText, documentExtensionId]);
 

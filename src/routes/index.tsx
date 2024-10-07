@@ -82,6 +82,12 @@ const Routes: React.FC = () => {
         component={DashBoard}
         isPrivate
       />
+       {/* <Route
+        path="/documentModel/TestCkEditor"
+        exact
+        component={DashBoard}
+        isPrivate
+      /> */}
       <Route
         path="/documentModel/visualize/:id"
         exact

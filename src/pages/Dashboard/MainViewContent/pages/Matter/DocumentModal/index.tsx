@@ -407,6 +407,13 @@ export default function DocumentModal() {
             OpenReportAmazon()
           }
 
+          if (response.data == "W" && isGeneratingReport){
+          
+            clearInterval(checkInterval);
+            setIsGeneratingReport(false)
+            GetWarningProcessMessage()
+          }
+
           if (response.data == "E"){
             clearInterval(checkInterval);
             setIsGeneratingReport(false)
@@ -438,6 +445,30 @@ export default function DocumentModal() {
     setDocumentModelName('')
     changeText("Gerar Documento ")
   } 
+
+
+  // Get the warning message
+  const GetWarningProcessMessage = async() => {
+    const response = await api.post(`/ProcessosGOJUR/Editar`, {
+      id: idReportGenerate,
+      token: localStorage.getItem('@GoJur:token')
+    });      
+
+    addToast({
+      type: "info",
+      title: "Operação não realizada",
+      description: response.data.des_ErroProcessoGOJUR
+    })
+
+    setIdReportGenerate(0)  ;
+    handleCloseModal();
+    handleResetValues();
+    setDocumentModelId('');
+    setDocumentModelName('')
+    setDocumentExtensionId('');
+    changeText("Gerar Documento ")
+  } 
+
 
   const handleCloseModal = () => {
 

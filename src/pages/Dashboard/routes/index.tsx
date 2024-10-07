@@ -91,6 +91,7 @@ import SearchCNJBatch from '../MainViewContent/pages/Matter/SearchCNJBatch';
 import CompanyInformation from '../MainViewContent/pages/AccountInformation/CompanyInformation';
 import CompanyFiles from '../MainViewContent/pages/CompanyFiles';
 import Monitoring from '../MainViewContent/pages/Matter/Monitoring';
+// import TestCkEditor from '../MainViewContent/pages/DocumentModel/Edit/testeCkEditor'
 
 const Routes: React.FC = () => {
   return (
@@ -117,6 +118,7 @@ const Routes: React.FC = () => {
       <Route path="/customer/list" exact component={Cliente} isPrivate />
       <Route path="/documentModel/list" exact component={DocumentModel} isPrivate />
       <Route path="/documentModel/edit/:cod_DocumentoModelo" exact component={DocumentModelEdit} isPrivate />
+      {/* <Route path="/documentModel/TestCkEditor" exact component={TestCkEditor} isPrivate /> */}
       <Route path="/documentModel/visualize/:id" exact component={DocumentModelVisualize} isPrivate />
       <Route path="/customer/edit/:id" component={CreateCustomer} isPrivate />
       <Route path="/customer/business/edit/:id" component={CreateCustomerBusiness} isPrivate />
