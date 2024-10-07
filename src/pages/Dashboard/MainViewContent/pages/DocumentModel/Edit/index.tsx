@@ -13,6 +13,7 @@ import { HeaderPage } from 'components/HeaderPage';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import { useModal } from 'context/modal';
 import api from 'services/api';
+import UploadAdapter from "./upload_adapter";
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document/build/ckeditor';
 import {customColorPalette} from 'Shared/dataComponents/graphicsColors';
@@ -41,6 +42,7 @@ export const documentExtensionsList = [
 ];
 
 const DocumentModelEdit: React.FC = () => {
+  // #region STATES
   const { addToast } = useToast();
   const token = localStorage.getItem('@GoJur:token');
   const history = useHistory();
@@ -53,7 +55,6 @@ const DocumentModelEdit: React.FC = () => {
   const [oldDocumentTypeId, setOldDocumentTypeId] = useState<string>('')
   const [newDocumentTypeId, setNewDocumentTypeId] = useState<string>('')
   const [defaultHeader, setDefaultHeader] = useState<string>('S');
-  // const [keyWord, setKeyWord] = useState<string>('');
   const [showModal, setShowModal] = useState(false);
   const [openInformationModal, setOpenInformationModal] = useState(false);
   const [openWarningModal, setOpenWarningModal] = useState(false);
@@ -73,21 +74,27 @@ const DocumentModelEdit: React.FC = () => {
   const MDLFAT = localStorage.getItem('@GoJur:moduleCode');
   const [fromCaller, setFromCaller] = useState<string>("")
   const editorRef = useRef<CKEditor>();
-  const [documentExtensionId, setDocumentExtensionId] = useState(''); 
+  const [documentExtensionId, setDocumentExtensionId] = useState('')
+  // #endregion
 
+
+  // #region USE EFFECT
   useEffect(() => {
     DocumentEdit()
   }, [])
+  
 
   useEffect(() => {
     setDocumentId(pathname.substr(20))
   }, [documentId])
+
 
   useEffect(() => {
     if (caller == 'advisoryTypeModal' && modalActive){
       setShowModal(true)      
     }
   },[caller, modalActive])
+
 
   useEffect(() => {
     
@@ -96,12 +103,14 @@ const DocumentModelEdit: React.FC = () => {
     
   }, [confirmWarning])
 
+
   useEffect(() => {
     
     if(visualize == "SaveAndGenerate")
       handleEditSave(false,true)
     
   }, [visualize])
+
 
   useEffect(() => {
     
@@ -110,12 +119,15 @@ const DocumentModelEdit: React.FC = () => {
     
   }, [generateViewDocument])
 
+
   useEffect(() => {
     if(showElementsDiv)
       setButtonElementDiv("Expandir editor")
     else
       setButtonElementDiv("Reexibir campos")
   }, [showElementsDiv])
+  // #endregion
+
 
   const DocumentEdit = async() => {
 
@@ -148,6 +160,7 @@ const DocumentModelEdit: React.FC = () => {
     }
   }
 
+
   const handleChangeDocumentType = (item) => {
 
     const id = pathname.substr(20)
@@ -168,6 +181,7 @@ const DocumentModelEdit: React.FC = () => {
     
   };
 
+
   const handleHeaderFooterModalClick = async () => {
 
     setFromCaller("headerAndFooter")
@@ -182,19 +196,23 @@ const DocumentModelEdit: React.FC = () => {
     }
   };
 
+
   const ConfirmDocumentTypeChange = () => {
     setDocumentTypeId(newDocumentTypeId)
     setOpenInformationModal(false)
   };
+
 
   const DiscardDocumentTypeChange = () => {
     setDocumentTypeId(oldDocumentTypeId)
     setOpenInformationModal(false)
   };
 
+
   const handleEditClose = () => {
     history.push(`/documentModel/list`)
   };
+
 
   const handleEditSave = useCallback(async(fromheader = false, fromVisualize = false) => {
     try {
@@ -274,6 +292,7 @@ const DocumentModelEdit: React.FC = () => {
     }
   },[documentTitle, documentText, documentTypeId, headerTypeId, headerText, footerTypeId, footerText, confirmWarning, visualize, fromCaller, documentId ]);
 
+
   const handleHeaderFooterCallback = (headerType: string, footerType: string, headerText: string, footerText: string ) => {
 
     setHeaderTypeId(headerType)
@@ -282,10 +301,12 @@ const DocumentModelEdit: React.FC = () => {
     setFooterText(footerText)
   }
 
+
   const handleHeaderFooterModalClose = () => {
     DocumentEdit()
     setShowModal(false)
   }
+
 
   function CustomAdapter( editor ) {
 
@@ -293,6 +314,14 @@ const DocumentModelEdit: React.FC = () => {
         return new Uploader( loader );
     };
   }
+
+
+  function CustomAdapter64( editor ) {
+    editor.plugins.get('FileRepository').createUploadAdapter = ( loader ) => {
+      return new UploadAdapter( loader );
+    };
+  }
+
 
   const handleVisualize = () => {
     const id = pathname.substr(20)
@@ -306,6 +335,7 @@ const DocumentModelEdit: React.FC = () => {
         VisualizeDocument()
       }
   }
+
 
   const VisualizeDocument = useCallback(async() => {
     try {
@@ -379,6 +409,7 @@ const DocumentModelEdit: React.FC = () => {
     }
   },[documentTitle, documentText, documentTypeId, headerTypeId, headerText, footerTypeId, footerText, pathname, documentId, documentExtensionId]);
 
+
   // update img src to S3 amazon
   useEffect(() => {
 
@@ -404,10 +435,12 @@ const DocumentModelEdit: React.FC = () => {
     setOpenWarningModal(false)
   };
 
+
   const DiscardWarning = () => {
     setOpenWarningModal(false)
   };
   
+
   const handleComboChange = (e: any) => {
     
     if (editorRef.current){
@@ -419,6 +452,7 @@ const DocumentModelEdit: React.FC = () => {
       });
     }
   }
+
 
   const createElementEditor = useCallback(() => {
 
@@ -440,7 +474,7 @@ const DocumentModelEdit: React.FC = () => {
             tableColumnResize: {
               isEnabled: false,
             },
-            extraPlugins: [CustomAdapter, ],
+            extraPlugins: [CustomAdapter64],
             image: {
               insert: {
                 type: 'inline'
@@ -1113,7 +1147,6 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
 
     </Container>
   );
-
 };
 
 export default DocumentModelEdit;

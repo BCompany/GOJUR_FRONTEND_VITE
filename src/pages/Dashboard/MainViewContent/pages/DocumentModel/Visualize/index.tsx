@@ -9,6 +9,7 @@ import { HeaderPage } from 'components/HeaderPage';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import { Overlay } from 'Shared/styles/GlobalStyle';
 import api from 'services/api';
+import UploadAdapter from "../Edit/upload_adapter";
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import {customColorPalette} from 'Shared/dataComponents/graphicsColors';
 import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document/build/ckeditor';
@@ -18,6 +19,7 @@ import { AutoCompleteSelect } from 'Shared/styles/GlobalStyle';
 import Select from 'react-select'
 import { selectStyles, useDelay } from 'Shared/utils/commonFunctions';
 
+
 export const documentExtensionsList = [
   {id: "1", label: "PDF"},
   {id: "2", label: "WORD (.docx)"}
@@ -26,7 +28,6 @@ export const documentExtensionsList = [
 const DocumentModelVizualize: React.FC = () => {
   const { addToast } = useToast();
   const token = localStorage.getItem('@GoJur:token');
-  // const text = localStorage.getItem('@GoJur:documentText')
   const history = useHistory();
   const { pathname  } = useLocation();
   const [documentText, setDocumentText] = useState<string>(localStorage.getItem('@GoJur:documentText')??"");  
@@ -34,6 +35,7 @@ const DocumentModelVizualize: React.FC = () => {
   const [htmlChangeData, setHtmlChangeData] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [documentExtensionId, setDocumentExtensionId] = useState(''); 
+
   
   const handleEditClose = () => {
     localStorage.removeItem('@Gojur:documentText')
@@ -87,12 +89,20 @@ const DocumentModelVizualize: React.FC = () => {
     }
   };
 
-  function CustomAdapter( editor ) {
 
+  function CustomAdapter( editor ) {
     editor.plugins.get( 'FileRepository' ).createUploadAdapter = ( loader ) => {
-        return new Uploader( loader );
+      return new Uploader( loader );
     };
   }
+
+
+  function CustomAdapter64( editor ) {
+    editor.plugins.get('FileRepository').createUploadAdapter = ( loader ) => {
+      return new UploadAdapter( loader );
+    };
+  }
+
 
   const VisualizeDocument = useCallback(async() => {
     try {
@@ -152,6 +162,7 @@ const DocumentModelVizualize: React.FC = () => {
     }
   },[documentText, documentExtensionId]);
 
+
   const colors = [
     {
       color: 'hsl(0, 0%, 60%)',
@@ -169,6 +180,7 @@ const DocumentModelVizualize: React.FC = () => {
     },
     '#FF0000'
   ]
+
 
   // update img src to S3 amazon
   useEffect(() => {
@@ -189,6 +201,7 @@ const DocumentModelVizualize: React.FC = () => {
 
   },[htmlChangeData])
 
+
   const handleModelDocumentExtensionValue = (item: any) => {
     
     if (item){
@@ -198,21 +211,17 @@ const DocumentModelVizualize: React.FC = () => {
     }
   }
 
+
   return (
-    
     <Container>
-
       <HeaderPage />
-
       <br />
 
       <Content>
         <>
           <div id='textElements' style={{height:'2400px', overflow:'auto', width:'850px', margin:'auto'}}>
             <Editor>
-
               <div className="App">
-
                 <CKEditor
                   editor={DecoupledEditor}
                   data={documentText}
@@ -223,7 +232,7 @@ const DocumentModelVizualize: React.FC = () => {
                       items: ["heading", "|", "fontfamily", "fontsize", "fontColor", "fontBackgroundColor", "|", "bold", "italic", "underline", "strikethrough", "link", "|", "alignment", "|", "numberedList", "bulletedList", "|", "outdent", "indent", "|", "uploadImage", "blockquote", "pageBreak", "insertTable", "tableColumn", "tableRow", "mergeTableCells", "|", "undo", "redo", "sourceEditing"],
                       shouldNotGroupWhenFull: true
                     },
-                    extraPlugins: [CustomAdapter],
+                    extraPlugins: [CustomAdapter64],
                     keystrokes: [[ 9, 'doNothing']],
                     image: {
                       insert: {
@@ -325,7 +334,6 @@ const DocumentModelVizualize: React.FC = () => {
               </div>
             </div>
           </div>
-
         </>
       </Content>
 
