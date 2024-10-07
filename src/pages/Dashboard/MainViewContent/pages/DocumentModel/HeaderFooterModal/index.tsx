@@ -14,6 +14,7 @@ import { FiSave, FiX } from 'react-icons/fi';
 import api from 'services/api';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
 import { useConfirmBox } from 'context/confirmBox';
+import UploadAdapter from "../Edit/upload_adapter";
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document/build/ckeditor';
 import {customColorPalette} from 'Shared/dataComponents/graphicsColors';
@@ -34,7 +35,7 @@ export interface IParameterData {
 }
 
 const HeaderFooterModal = (props) => {
-
+  // #region STATES
   const {documentId, headerTypeId, headerText, footerTypeId, footerText, handleHeaderFooterCallback, handleHeaderFooterModalClose} = props.callbackFunction
 
   const { addToast } = useToast();
@@ -67,7 +68,10 @@ const HeaderFooterModal = (props) => {
   const [hasDefaultFooter, setHasDefaultFooter] = useState<boolean>(false)
   const [footerWarning, setFooterWarning] = useState<boolean>(false)
   const [footerImage, setFooterImage] = useState(false);
+  // #endregion
+
   
+  // #region USE EFFECT
   useEffect(() => {
 
     if(footerTypeId == 'E')
@@ -82,6 +86,7 @@ const HeaderFooterModal = (props) => {
 
   },[footerTypeId, headerTypeId])
   
+
   useEffect(() => {
 
     if (isCancelMessage){
@@ -100,6 +105,7 @@ const HeaderFooterModal = (props) => {
     }
 
   },[isCancelMessage, caller]);
+
 
   useEffect(() => {
 
@@ -121,6 +127,7 @@ const HeaderFooterModal = (props) => {
     }
   },[isConfirmMessage, caller]);
 
+
   // update img src to S3 amazon
   useEffect(() => {
     if (headerImage){
@@ -136,6 +143,7 @@ const HeaderFooterModal = (props) => {
     }
   },[headerImage])
 
+
   // update img src to S3 amazon
   useEffect(() => {
     if (footerImage){
@@ -150,6 +158,7 @@ const HeaderFooterModal = (props) => {
       setHeaderImage(false)
     }
   },[footerImage])
+  // #endregion
 
 
   const CheckCompanyDefaultHeaderFooter = async (parameterName) => { 
@@ -200,6 +209,7 @@ const HeaderFooterModal = (props) => {
     }
   }
 
+
   // CHANGE HEADER SELECT
   const handleChangeHeaderType = (item) => {
     setHeaderTypeIdModal(item.target.value)
@@ -222,6 +232,7 @@ const HeaderFooterModal = (props) => {
       setButtonChangeHeader(false)
     }
   };
+
 
   // CHANGE FOOTER SELECT
   const handleChangeFooterType = (item) => {
@@ -246,6 +257,7 @@ const HeaderFooterModal = (props) => {
     }
   };
 
+
   // CREATE DEFAULT HEADER
   const CreateDefaultHeader = () => { 
     setHeaderTextModal('')
@@ -253,6 +265,7 @@ const HeaderFooterModal = (props) => {
     setButtonChangeHeader(false)
     setHasDefaultHeader(false)
   }
+
 
   // CREATE DEFAULT FOOTER
   const CreateDefaultFooter = () => { 
@@ -291,6 +304,7 @@ const HeaderFooterModal = (props) => {
     setCheckChangeFooter(true)
     setButtonChangeFooter(false)
   }
+
 
   const saveHeaderFooter = useCallback(async() => {
     try {
@@ -338,13 +352,13 @@ const HeaderFooterModal = (props) => {
 
   function HeaderCustomAdapter( editor ) {
     editor.plugins.get( 'FileRepository' ).createUploadAdapter = ( loader ) => {
-        return new Uploader( loader );
+      return new UploadAdapter( loader );
     };
   }
 
   function FooterCustomAdapter( editor ) {
     editor.plugins.get( 'FileRepository' ).createUploadAdapter = ( loader ) => {
-        return new Uploader( loader );
+      return new UploadAdapter( loader );
     };
   }
 
