@@ -25,6 +25,7 @@ import { useToast } from 'context/toast';
 import { IUnfolding } from './IUnfolding';
 import { Modal, GridUnfolding, OverlayUnfolding } from './styles';
 import FollowModal from '../FollowModal';
+import AwarenessModal from 'components/AwarenessModal';
 
 const UnfoldingModal = (props) => {
   const { CloseUnfoldingModal, matterId } = props.callbackFunction
@@ -56,9 +57,10 @@ const UnfoldingModal = (props) => {
   const [isSecretJustice, setIsSecretJustice] = useState<boolean>(false);
   const [selectedCredentialid, setSelectedCredentialid] = useState<number>(0);
 
-  const [notHaveCourtMessage, setNotHaveCourtMessage] = useState<string>("")
-  const [openNotHaveCourtModal, setOpenNotHaveCourtModal] = useState<boolean>(false)
-  const [confirmOpenNotHaveCourtModal, setConfirmOpenNotHaveCourtModal] = useState<boolean>(false)
+  const [showAwarenessModal, setShowAwarenessModal] = useState<boolean>(false)
+  const [awarenessModalMessage, setAwarenessModalMessage] = useState<string>("")
+  const [awarenessModalTitle, setAwarenessModalTitle] = useState<string>("Tribunal - Abrangência")
+  const [awarenessButtonOkText, setAwarenessButtonOkText] = useState<string>("Ver Abrangências")
 
   const [isChanging, setIsChanging] = useState<boolean>(false);
 
@@ -77,38 +79,6 @@ const UnfoldingModal = (props) => {
     { columnName: 'edit', width: '10%' },
     { columnName: 'remove',width: '10%' },
   ]);
-
-  useEffect(() => {
-
-    if (isCancelMessage) {
-
-      if (caller === 'confirmOpenNotHaveCourtModal') {
-        setOpenNotHaveCourtModal(false)
-        handleCancelMessage(false)
-        setNotHaveCourtMessage("")
-      }
-    }
-
-  }, [isCancelMessage, caller]);
-
-  useEffect(() => {
-
-    if (isConfirmMessage) {
-      if (caller === 'confirmOpenNotHaveCourtModal') {
-        setConfirmOpenNotHaveCourtModal(true)
-      }
-    }
-  }, [isConfirmMessage, caller]);
-
-  useEffect(() => {
-
-    if (confirmOpenNotHaveCourtModal) {
-      setOpenNotHaveCourtModal(false)
-      handleCaller("")
-      handleConfirmMessage(false)
-      history.push('/Matter/monitoring')
-    }
-  }, [confirmOpenNotHaveCourtModal]);
 
   useEffect(() => {
 
@@ -410,8 +380,6 @@ const UnfoldingModal = (props) => {
   const Follow = async(flgCourt, matterUnfoldingId, matterNumber, credentialId) => {
     try{
 
-      alert ("flgCourt: " + flgCourt + " matterUnfoldingId: " + matterUnfoldingId + " matterNumber: " + matterNumber + " credentialId: " + credentialId)
-
       if (isSecretJustice && selectedCredentialid === 0) {
         addToast({
           type: 'info',
@@ -444,8 +412,8 @@ const UnfoldingModal = (props) => {
       setFlgCourt("N")
 
       if (err.response.data.typeError.warning == "awareness") {
-        setNotHaveCourtMessage(err.response.data.Message)
-        setOpenNotHaveCourtModal(true)
+        setAwarenessModalMessage(err.response.data.Message)
+        setShowAwarenessModal(true)
       }
 
       if (String(err.response.data.Message).includes("Não há mais crédito") && companyPlan != 'GOJURCM' && String(err.response.data.Message).includes("Não há mais crédito") && companyPlan != 'GOJURFR' && accessCode == 'adm'){
@@ -516,7 +484,17 @@ const UnfoldingModal = (props) => {
   const handleSelectCredentialId = (id) => {
     setSelectedCredentialid(id)
   }
+  
+  const handleCloseAwarenessModal = async () => {
+    setShowAwarenessModal(false)
+    setAwarenessModalMessage('')
+  };
 
+  const handleConfirmAwarenessButton = async () => {
+    setShowAwarenessModal(false)
+    setAwarenessModalMessage('')
+    history.push('/Matter/monitoring')
+  };
 
   return(
     <>
@@ -654,14 +632,7 @@ const UnfoldingModal = (props) => {
         </>
       )}
 
-      {openNotHaveCourtModal && (
-          <ConfirmBoxModal
-            caller="confirmOpenNotHaveCourtModal"
-            title="Tribunal - Abrangência"
-            buttonOkText="Ver Abrangências"
-            message={`${notHaveCourtMessage}`}
-          />
-        )}
+      {showAwarenessModal && <AwarenessModal callbackFunction={{ awarenessModalTitle, awarenessModalMessage, awarenessButtonOkText, handleCloseAwarenessModal, handleConfirmAwarenessButton }}  />}
 
       {isDeleteWithCourt && (
         <ConfirmBoxModal
