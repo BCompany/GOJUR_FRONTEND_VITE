@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-globals */
-import React, { AreaHTMLAttributes, useState, useEffect } from 'react';
-import { Doughnut } from 'react-chartjs-2';
+import React, { AreaHTMLAttributes, useCallback, useEffect, useState } from 'react';
+import { Pie } from 'react-chartjs-2';
 import api from 'services/api';
 
 import {
@@ -24,6 +24,7 @@ interface Data {
     },
   ];
 }
+
 interface GraphicProps {
   title: string;
   idElement: string;
@@ -35,7 +36,7 @@ interface GraphicProps {
   cursor: boolean;
 }
 
-const GraphicsProcessosPorNaturezaJuridica: React.FC<GraphicProps> = ({
+const GraphicsProcessosPorFase: React.FC<GraphicProps> = ({
   title,
   idElement,
   visible,
@@ -46,12 +47,13 @@ const GraphicsProcessosPorNaturezaJuridica: React.FC<GraphicProps> = ({
   cursor,
   ...rest
 }) => {
-  const [metterNature, setMetterNature] = useState<string[]>([]);
   const [metterValues, setMetterValues] = useState<number[]>([]);
-
-  const [labelSettings, setLabelSettings] = useState(false);
-  const [labelOptions, setLabelOptions] = useState(false);
+  const [metter, setMetter] = useState<string[]>([]);
   const [screenWitdh, setScreenWitdh] = useState(screen.width);
+  const [labelOptions, setLabelOptions] = useState(false);
+  const [labelSettings, setLabelSettings] = useState(false);
+  const [metterName, setMetterName] = useState<string>(title);
+  const [metterMessage, setMetterMessage] = useState<string>('');
   const [haveAction, setHaveAction] = useState(false);
   const {dragOn} = useHeader();
 
@@ -70,27 +72,29 @@ const GraphicsProcessosPorNaturezaJuridica: React.FC<GraphicProps> = ({
         const userToken = localStorage.getItem('@GoJur:token');
 
         const response = await api.post<Data>(
-          `/BIProcesso/ListarQuantidadeProcessosPorNaturezaJuridica`,
+          `/BIProcesso/ListarQuantidadeProcessosPorFaseProcessual`,
           {
             token: userToken,
           },
         );
 
-        setMetterNature(
+        setMetter(
           response.data.resultValue.map(m => m.m_Item1.substring(0, 10)),
         );
-        setMetterValues(response.data.resultValue.map(i => i.m_Item2));
+        setMetterValues(response.data.resultValue.map(m => m.m_Item2));
       } catch (err:any) {
-        console.log(err);
+        setMetterMessage(err.message);
       }
     }
+
     handleData();
-  }, [screenWitdh]);
+  }, [metterName, screenWitdh]);
 
   const data = {
-    labels: metterNature,
+    labels: metter,
     datasets: [
       {
+        label: metterName,
         data: metterValues,
         backgroundColor: graphicsColors,
         borderColor: borderColors,
@@ -101,65 +105,32 @@ const GraphicsProcessosPorNaturezaJuridica: React.FC<GraphicProps> = ({
 
   const option = {
     responsive: true,
-    // maintainAspectRatio: labelSettings,
     maintainAspectRatio: false,
-
+    // maintainAspectRatio: labelSettings,
     plugins:{
       legend: {
         display: labelOptions,
         position: 'right',
       }
-    },
+    }
   };
+
   return (
     <>
       {dragOn ? (
-          <Container id='Container' {...rest} style={{opacity:(visible === 'N' ? '0.5' : '1')}}>
-             <ContainerHeader id='ContainerHeader' style={{display:'block', zIndex:99999}} cursorMouse={cursor} handleClose={handleClose}  onMouseOut={activePropagation} onMouseOver={stopPropagation}>
-                <div style= {{ float:"left", display: "-webkit-box", width:"90%", height:"100%", alignItems: "center", justifyContent: "center", textAlign: "center",...rest}} >
-                  <p style={{ margin: 0, width:"110%"}}>{title}</p>
-                </div>
-                <div style={{float:"left", display:'inline-block', width: "10%", height:"10%", cursor:"pointer"}} onMouseOut={activePropagation} onMouseOver={stopPropagation}>                       
-                  {visible == 'S' && (
-                    <button onClick={() => { handleClose("N", idElement)}} style={{display:'inline-block'}}>
-                      <FiX title='Desativar gráfico' />
-                    </button>
-                  )}              
-                </div>
-              </ContainerHeader> 
-            <Content>
-              {metterValues.length === 0 ? (
-                <p
-                  style={{
-                    fontSize: 14,
-                    color: '#7d7d7d',
-                    textAlign: 'center',
-                    flex: 1,
-                    fontWeight: 400,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: 16,
-                  }}
-                >
-                  Não existem dados o suficiente para esse indicador
-                </p>
-              ) : (
-                <Doughnut
-                  type='doughnut'
-                  data={data} 
-                  options={option}
-                />
-              )}
-            </Content>
-          </Container>
-      ) : (
         <Container id='Container' {...rest} style={{opacity:(visible === 'N' ? '0.5' : '1')}}>
-           <ContainerHeader id='ContainerHeader' style={{display:'flex', zIndex:99999}} cursorMouse={cursor} handleClose={handleClose}>
-              <div style= {{ display:'flex', width:"100%", height:"100%", alignItems: "center", justifyContent: "center", textAlign: "center",...rest}} >
-                <p style={{ margin: 0}}>{title}</p>
+           <ContainerHeader id='ContainerHeader' style={{display:'block', zIndex:99999}} cursorMouse={cursor} handleClose={handleClose}  onMouseOut={activePropagation} onMouseOver={stopPropagation}>
+              <div style= {{ float:"left", display: "-webkit-box", width:"90%", height:"100%", alignItems: "center", justifyContent: "center", textAlign: "center",...rest}} >
+                <p style={{ margin: 0, width:"110%"}}>{title}</p>
               </div>
-           </ContainerHeader> 
+              <div style={{float:"left", display:'inline-block', width: "10%", height:"10%", cursor:"pointer"}} onMouseOut={activePropagation} onMouseOver={stopPropagation}>                       
+                {visible == 'S' && (
+                  <button onClick={() => { handleClose("N", idElement)}} style={{display:'inline-block'}}>
+                    <FiX title='Desativar gráfico' />
+                  </button>
+                )}              
+              </div>
+          </ContainerHeader> 
           <Content>
             {metterValues.length === 0 ? (
               <p
@@ -178,8 +149,41 @@ const GraphicsProcessosPorNaturezaJuridica: React.FC<GraphicProps> = ({
                 Não existem dados o suficiente para esse indicador
               </p>
             ) : (
-              <Doughnut
-                type='doughnut'
+              <Pie 
+                type='pie' 
+                data={data} 
+                options={option}
+              />
+            )}
+          </Content>
+        </Container>
+      ) : (
+        <Container id='Container' {...rest} style={{opacity:(visible === 'N' ? '0.5' : '1')}}>
+          <ContainerHeader id='ContainerHeader' style={{display:'flex', zIndex:99999}} cursorMouse={cursor} handleClose={handleClose}>
+              <div style= {{ display:'flex', width:"100%", height:"100%", alignItems: "center", justifyContent: "center", textAlign: "center",...rest}} >
+                <p style={{ margin: 0}}>{title}</p>
+              </div>
+          </ContainerHeader> 
+          <Content>
+            {metterValues.length === 0 ? (
+              <p
+                style={{
+                  fontSize: 14,
+                  color: '#7d7d7d',
+                  textAlign: 'center',
+                  flex: 1,
+                  fontWeight: 400,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 16,
+                }}
+              >
+                Não existem dados o suficiente para esse indicador
+              </p>
+            ) : (
+              <Pie 
+                type='pie' 
                 data={data} 
                 options={option}
               />
@@ -187,8 +191,8 @@ const GraphicsProcessosPorNaturezaJuridica: React.FC<GraphicProps> = ({
           </Content>
         </Container>
       )}
-    </>
+    </>  
   );
 };
 
-export default GraphicsProcessosPorNaturezaJuridica;
+export default GraphicsProcessosPorFase;

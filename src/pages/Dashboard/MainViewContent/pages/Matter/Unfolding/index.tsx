@@ -23,7 +23,9 @@ import { Grid, Table, TableHeaderRow } from '@devexpress/dx-react-grid-material-
 import { languageGridEmpty } from 'Shared/utils/commonConfig';
 import { useToast } from 'context/toast';
 import { IUnfolding } from './IUnfolding';
-import { Modal, GridUnfolding } from './styles';
+import { Modal, GridUnfolding, OverlayUnfolding } from './styles';
+import FollowModal from '../FollowModal';
+import AwarenessModal from 'components/AwarenessModal';
 
 const UnfoldingModal = (props) => {
   const { CloseUnfoldingModal, matterId } = props.callbackFunction
@@ -34,6 +36,7 @@ const UnfoldingModal = (props) => {
   const [matterNumber, setMatterNumber] = useState('');
   const [description, setDescription] = useState('');
   const [flgCourt, setFlgCourt] = useState('N');
+  const [credentialId, setCredentialId] = useState("");
   const [isFollow, setIsFollow] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [followPermission, setFollowPermission] = useState(false);
@@ -47,6 +50,19 @@ const UnfoldingModal = (props) => {
   const companyPlan = localStorage.getItem('@GoJur:companyPlan')
   const accessCode = localStorage.getItem('@GoJur:accessCode')
   const history = useHistory();
+
+  const [showFollowModal, setShowFollowModal] = useState<boolean>(false)
+  const [matterSelectedId, setMatterSelectedId] = useState<number>(0)
+  const [matterSelectedNumber, setMatterSelectedNumber] = useState<string>("")
+  const [isSecretJustice, setIsSecretJustice] = useState<boolean>(false);
+  const [selectedCredentialid, setSelectedCredentialid] = useState<number>(0);
+
+  const [showAwarenessModal, setShowAwarenessModal] = useState<boolean>(false)
+  const [awarenessModalMessage, setAwarenessModalMessage] = useState<string>("")
+  const [awarenessModalTitle, setAwarenessModalTitle] = useState<string>("Tribunal - Abrangência")
+  const [awarenessButtonOkText, setAwarenessButtonOkText] = useState<string>("Ver Abrangências")
+
+  const [isChanging, setIsChanging] = useState<boolean>(false);
 
   const columns = [
     { name: 'matter', title: 'Processo'},
@@ -145,10 +161,14 @@ const UnfoldingModal = (props) => {
 
 
   useEffect(() => {
-    if(isCancelMessage == true)
-      setIsDeleteWithCourt(false)
-      setMatterUnfoldingId("")
-  },[isCancelMessage]);
+    if(isCancelMessage){
+
+      if(caller == "deleteMatterUnfolding"){
+        setIsDeleteWithCourt(false)
+        setMatterUnfoldingId("")
+      }      
+    }      
+  },[isCancelMessage, caller]);
 
 
   useEffect(() => {
@@ -176,6 +196,7 @@ const UnfoldingModal = (props) => {
     setMatterNumber('')
     setDescription('')
     setFlgCourt('N')
+    setCredentialId('0')
     setIsEdit(false)
   }
 
@@ -263,6 +284,7 @@ const UnfoldingModal = (props) => {
       setMatterNumber(props.row.matterNumber)
       setDescription(props.row.description)
       setFlgCourt(props.row.flgCourt)
+      setCredentialId(props.row.credentialId)
     }
     if (props.column.name === 'remove'){
       setMatterUnfoldingId(props.row.id)
@@ -317,6 +339,7 @@ const UnfoldingModal = (props) => {
         matterNumber,
         description,
         flgCourt,
+        credentialId,
         token
       })
 
@@ -343,47 +366,64 @@ const UnfoldingModal = (props) => {
     
     if(flgCourt == "S")
     {
-      Follow(flgCourt, matterUnfoldingId, matterNumber) // OFF
+      Follow(flgCourt, matterUnfoldingId, matterNumber, selectedCredentialid) // OFF
       setFlgCourt("N")
     }
     else
     {
-      Follow(flgCourt, matterUnfoldingId, matterNumber) // ON
+      Follow(flgCourt, matterUnfoldingId, matterNumber, selectedCredentialid) // ON
       setFlgCourt("S")
     }
-  },[matterUnfoldingId, matterNumber])
+  },[matterUnfoldingId, matterNumber, selectedCredentialid])
 
 
-  const Follow = async(flgCourt, matterUnfoldingId, matterNumber) => {
+  const Follow = async(flgCourt, matterUnfoldingId, matterNumber, credentialId) => {
     try{
+
+      if (isSecretJustice && selectedCredentialid === 0) {
+        addToast({
+          type: 'info',
+          title: 'Operação NÃO realizada',
+          description: "Para um processo em segredo de justiça, selecione uma credencial para prosseguir."
+        });
+        return;
+      }
+
       const response = await api.get('/ProcessoDesdobramento/BotaoSeguir', {
         params:{
           token,
           matterId,
           matterUnfoldingId,
           matterNumber,
-          enable: flgCourt == "N"
+          enable: flgCourt == "N",
+          credentialId
         }
       })
 
       addToast({type: "success", title: "Operação realizada com exito", description: 'Processo monitorado no sistema'})
-      ResetValues();
+      handleCloseFollowModal()
       ListMatterUnfolding(matterId);
       setIsFollow(false)
+      setIsChanging(false)
     } catch (err:any) {
+
+      setIsChanging(false)
       setIsFollow(false)
       setFlgCourt("N")
+
+      if (err.response.data.typeError.warning == "awareness") {
+        setAwarenessModalMessage(err.response.data.Message)
+        setShowAwarenessModal(true)
+      }
 
       if (String(err.response.data.Message).includes("Não há mais crédito") && companyPlan != 'GOJURCM' && String(err.response.data.Message).includes("Não há mais crédito") && companyPlan != 'GOJURFR' && accessCode == 'adm'){
         setMatterMonitorResourceMessage(String(err.response.data.Message).split(".")[0])
         setOpenMatterMonitorResourceModal(true)
-        ResetValues()
       }
 
       if (String(err.response.data.Message).includes("Não há mais crédito") && companyPlan == 'GOJURFR'){
         setMatterMonitorResourceMessage(String(err.response.data.Message).split(".")[0])
         setOpenMatterMonitorResourceModalFree(true)
-        ResetValues()
       }
 
       if (String(err.response.data.Message).includes("Não há mais crédito") && companyPlan == 'GOJURCM' || accessCode != 'adm' && String(err.response.data.Message).includes("Não há mais crédito")){
@@ -392,10 +432,9 @@ const UnfoldingModal = (props) => {
           title: 'Operação NÃO realizada',
           description: err.response.data.Message
         });
-        ResetValues()
-      }    
-      
-      if (String(err.response.data.Message).includes("Não há mais crédito") == false){
+      }
+
+      if (String(err.response.data.Message).includes("Não há mais crédito") == false && err.response.data.typeError.warning != "awareness") {
         addToast({
           type: 'info',
           title: 'Operação NÃO realizada',
@@ -405,9 +444,63 @@ const UnfoldingModal = (props) => {
     }
   };
 
+  const handleOpenFollowModal = async () => {
+
+    if (matterUnfoldingId == "0" || matterUnfoldingId == "") {
+      addToast({
+        type: 'info',
+        title: 'Operação NÃO realizada',
+        description: 'Necessário salvar antes de ligar o robô.'
+      });
+
+      return;
+    }
+
+    setMatterSelectedId(matterId)
+    setMatterSelectedNumber(matterNumber)
+    setShowFollowModal(true)
+  };
+
+  const handleCloseFollowModal = async () => {
+
+    ResetValues()
+    setShowFollowModal(false)
+    setIsSecretJustice(false)
+    setMatterSelectedId(0)
+    setMatterSelectedNumber('')
+    setSelectedCredentialid(0)
+    setIsChanging(false)
+  };
+
+  const handleSecretJusticeChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setIsSecretJustice(event.target.checked);
+  }
+
+  const handleFollowMatter = async () => {
+    setIsChanging(true)
+    handleFollowButton(flgCourt)
+  }
+
+  const handleSelectCredentialId = (id) => {
+    setSelectedCredentialid(id)
+  }
+  
+  const handleCloseAwarenessModal = async () => {
+    setShowAwarenessModal(false)
+    setAwarenessModalMessage('')
+  };
+
+  const handleConfirmAwarenessButton = async () => {
+    setShowAwarenessModal(false)
+    setAwarenessModalMessage('')
+    history.push('/Matter/monitoring')
+  };
 
   return(
     <>
+    {(showFollowModal) && <OverlayUnfolding />}
+    {showFollowModal && <FollowModal callbackFunction={{ handleCloseFollowModal, matterSelectedNumber, handleSecretJusticeChange, isSecretJustice, handleFollowMatter, handleSelectCredentialId, isChanging }} />}
+    
       <Modal show>
         <div id='Header' style={{height:'30px'}}>
           <div className='menuTitle'>
@@ -463,7 +556,13 @@ const UnfoldingModal = (props) => {
               Seguir
               <br />
               <Switch
-                onChange={() => handleFollowButton(flgCourt)}
+                onChange={() => {
+                  if (flgCourt == "S") {
+                    handleFollowButton(flgCourt);                                            
+                  } else {
+                    handleOpenFollowModal();
+                  }
+                }}
                 checked={flgCourt == "S"}
                 onColor="#86d3ff"
                 onHandleColor="#2693e6"
@@ -532,6 +631,8 @@ const UnfoldingModal = (props) => {
           </div>
         </>
       )}
+
+      {showAwarenessModal && <AwarenessModal callbackFunction={{ awarenessModalTitle, awarenessModalMessage, awarenessButtonOkText, handleCloseAwarenessModal, handleConfirmAwarenessButton }}  />}
 
       {isDeleteWithCourt && (
         <ConfirmBoxModal

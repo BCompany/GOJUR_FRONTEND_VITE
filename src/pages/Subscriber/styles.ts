@@ -11,6 +11,7 @@ export const Container = styled.div`
   background-color: #FFFFFF;
 `;
 
+
 export const Center = styled.div`
   .flex-box {
     display: flex;
@@ -30,35 +31,35 @@ export const Center = styled.div`
 
 
 export const OverlaySubscriber = styled.div `
-    background-color: rgba(0, 0, 0, 0.4);
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 3;
+  background-color: rgba(0, 0, 0, 0.4);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
 
-    .message {
-      position: absolute;
-      background: var(--yellow);
-      box-shadow: 2px 2px 2px 2px rgb(0 0 0 / 40%);
-      border-radius: 0.25rem;
-      text-align: center;
-      font-size: 0.7rem;
-      font-weight: 400;
-      color: var(--blue-twitter);
-      font-family: Montserrat;
-      padding: 0.5rem 0.5rem;
-      margin-right: 1.7rem;
-      margin-bottom: 1px;
-      cursor: pointer;
-      z-index: 999999;
-      min-width: 10rem;
-      margin-top: 22%;
-      margin-left: 38%;
-      bottom: 50%;
-      right: 30%;
-    }
+  .message {
+    position: absolute;
+    background: var(--yellow);
+    box-shadow: 2px 2px 2px 2px rgb(0 0 0 / 40%);
+    border-radius: 0.25rem;
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: var(--blue-twitter);
+    font-family: Montserrat;
+    padding: 0.5rem 0.5rem;
+    margin-right: 1.7rem;
+    margin-bottom: 1px;
+    cursor: pointer;
+    z-index: 999999;
+    min-width: 10rem;
+    margin-top: 22%;
+    margin-left: 38%;
+    bottom: 50%;
+    right: 30%;
+  }
 `;
 
 

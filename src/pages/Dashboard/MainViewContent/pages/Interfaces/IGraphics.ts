@@ -25,3 +25,9 @@ export interface DefaultsProps {
   id: string;
   value: string;
 }
+
+
+export interface ChangeElementsVisibleProps {
+  idElement: string;
+  visible: string
+}

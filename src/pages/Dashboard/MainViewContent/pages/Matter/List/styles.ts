@@ -231,11 +231,15 @@ export const MatterItem = styled.div`
         padding: 0.5rem 0rem;
 
         > span{
-          white-space:pre-line;
+          word-wrap: break-word; 
+          word-break: break-word; 
+          overflow-wrap: break-word; 
+          white-space: pre-line; 
+          display: block; 
         }
 
         .followDescription {
-           white-space: pre-line;
+          white-space: pre-line;
         }
 
         .userPhotos {

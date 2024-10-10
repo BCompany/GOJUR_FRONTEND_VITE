@@ -68,6 +68,8 @@ import SearchCNJ from '../SearchCNJ/Index';
 import MatterFileModal from '../MatterFileModal/index';
 import CredentialModal from '../Credentials/index';
 import FollowModal from '../FollowModal';
+import AwarenessModal from 'components/AwarenessModal';
+
 
 const Matter: React.FC = () => {
   const { signOut } = useAuth();
@@ -144,6 +146,12 @@ const Matter: React.FC = () => {
   const [isSecretJustice, setIsSecretJustice] = useState<boolean>(false);
   const [selectedCredentialid, setSelectedCredentialid] = useState<number>(0);
 
+  const [showAwarenessModal, setShowAwarenessModal] = useState<boolean>(false)
+  const [awarenessModalMessage, setAwarenessModalMessage] = useState<string>("")
+  const [awarenessModalTitle, setAwarenessModalTitle] = useState<string>("Tribunal - Abrangência")
+  const [awarenessButtonOkText, setAwarenessButtonOkText] = useState<string>("Ver Abrangências")
+
+
   const [isChanging, setIsChanging] = useState<boolean>(false);
 
 
@@ -152,7 +160,6 @@ const Matter: React.FC = () => {
     handleCaptureText('')
     VerifyCurrentSearch()
   }, [])
-
 
   useEffect(() => {
 
@@ -890,6 +897,11 @@ const Matter: React.FC = () => {
           title: 'Operação NÃO realizada',
           description: err.response.data.Message
         });
+      }
+
+      if (err.response.data.typeError.warning == "awareness") {
+        setAwarenessModalMessage(err.response.data.Message)
+        setShowAwarenessModal(true)
       }
 
       console.log(err)
@@ -2093,6 +2105,17 @@ const Matter: React.FC = () => {
     setSelectedCredentialid(id)
   }
 
+  const handleCloseAwarenessModal = async () => {
+    setShowAwarenessModal(false)
+    setAwarenessModalMessage('')
+  };
+
+  const handleConfirmAwarenessButton = async () => {
+    setShowAwarenessModal(false)
+    setAwarenessModalMessage('')
+    history.push('/Matter/monitoring')
+  };
+
   return (
 
     <Container onScroll={handleScrool} ref={scrollRef}>
@@ -2301,6 +2324,8 @@ const Matter: React.FC = () => {
           />
 
         )}
+
+      {showAwarenessModal && <AwarenessModal callbackFunction={{ awarenessModalTitle, awarenessModalMessage, awarenessButtonOkText, handleCloseAwarenessModal, handleConfirmAwarenessButton }}  />}
 
         {isDeletingTemp && (
 
