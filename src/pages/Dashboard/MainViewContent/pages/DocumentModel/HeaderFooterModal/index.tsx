@@ -467,11 +467,11 @@ const HeaderFooterModal = (props) => {
                             language: 'pt-br',
                             toolbar: ["heading", "|", "fontfamily", "fontsize", "fontColor", "fontBackgroundColor", "|", "bold", "italic", "underline", "strikethrough", "link", "|", "alignment", "|", "numberedList", "bulletedList", "|", "outdent", "indent", "|", "uploadImage", "blockquote", "insertTable", "tableColumn", "tableRow", "mergeTableCells", "|", "undo", "redo", "sourceEditing"],
                             image: {
-                              resizeUnit: 'px',
-                              toolbar: [ 'ImageInline' ],
                               insert: {
                                 type: 'inline'
                               },
+                              resizeUnit: 'px',
+                              toolbar: [ 'ImageInline' ]
                             },
                             heading: {
                               options: [
@@ -556,11 +556,11 @@ const HeaderFooterModal = (props) => {
                               language: 'pt-br',
                               toolbar: ["heading", "|", "fontfamily", "fontsize", "fontColor", "fontBackgroundColor", "|", "bold", "italic", "underline", "strikethrough", "link", "|", "alignment", "|", "numberedList", "bulletedList", "|", "outdent", "indent", "|", "uploadImage", "blockquote", "insertTable", "tableColumn", "tableRow", "mergeTableCells", "|", "undo", "redo", "sourceEditing"],
                               image: {
-                                resizeUnit: 'px',
-                                toolbar: [ 'ImageInline' ],
                                 insert: {
                                   type: 'inline'
                                 },
+                                resizeUnit: 'px',
+                                toolbar: [ 'ImageInline' ]
                               },
                               heading: {
                                 options: [
@@ -667,11 +667,11 @@ const HeaderFooterModal = (props) => {
                             removePlugins: [ "TableColumnResize"],
                             toolbar: ["heading", "|", "fontfamily", "fontsize", "fontColor", "fontBackgroundColor", "|", "bold", "italic", "underline", "strikethrough", "link", "|", "alignment", "|", "numberedList", "bulletedList", "|", "outdent", "indent", "|", "uploadImage", "blockquote", "insertTable", "tableColumn", "tableRow", "mergeTableCells", "|", "undo", "redo", "sourceEditing"],
                             image: {
-                              resizeUnit: 'px',
-                              toolbar: [ 'ImageInline' ],
                               insert: {
                                 type: 'inline'
                               },
+                              resizeUnit: 'px',
+                              toolbar: [ 'ImageInline' ]
                             },
                             heading: {
                               options: [
@@ -752,11 +752,11 @@ const HeaderFooterModal = (props) => {
                               removePlugins: [ "TableColumnResize"],
                               items: ["heading", "|", "fontfamily", "fontsize", "fontColor", "fontBackgroundColor", "|", "bold", "italic", "underline", "strikethrough", "link", "|", "alignment", "|", "numberedList", "bulletedList", "|", "outdent", "indent", "|", "uploadImage", "blockquote", "pageBreak", "insertTable", "tableColumn", "tableRow", "mergeTableCells", "|", "undo", "redo", "sourceEditing"],
                               image: {
-                                resizeUnit: 'px',
-                                toolbar: [ 'ImageInline' ],
                                 insert: {
                                   type: 'inline'
                                 },
+                                resizeUnit: 'px',
+                                toolbar: [ 'ImageInline' ]
                               },
                               heading: {
                                 options: [
