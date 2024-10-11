@@ -9,9 +9,9 @@ import { HeaderPage } from 'components/HeaderPage';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import { Overlay } from 'Shared/styles/GlobalStyle';
 import api from 'services/api';
-import { CKEditor } from '@ckeditor/ckeditor5-react';
-import {customColorPalette} from 'Shared/dataComponents/graphicsColors';
-import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document/build/ckeditor';
+// import { CKEditor } from '@ckeditor/ckeditor5-react';
+// import {customColorPalette} from 'Shared/dataComponents/graphicsColors';
+// import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document/build/ckeditor';
 import Uploader from '../Edit/Uploader';
 import { Container, Content, Editor } from './styles';
 
@@ -161,7 +161,7 @@ const DocumentModelVizualize: React.FC = () => {
       <Content>
         <>
           <div id='textElements' style={{height:'2400px', overflow:'auto', width:'850px', margin:'auto'}}>
-            <Editor>
+            {/* <Editor>
 
               <div className="App">
 
@@ -234,7 +234,7 @@ const DocumentModelVizualize: React.FC = () => {
                   }}
                 />
               </div>
-            </Editor>
+            </Editor> */}
 
             <div style={{width:'100%', height:'50px'}}><></></div>
 

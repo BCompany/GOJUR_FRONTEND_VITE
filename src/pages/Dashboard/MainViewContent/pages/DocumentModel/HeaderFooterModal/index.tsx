@@ -14,9 +14,9 @@ import { FiSave, FiX } from 'react-icons/fi';
 import api from 'services/api';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
 import { useConfirmBox } from 'context/confirmBox';
-import { CKEditor } from '@ckeditor/ckeditor5-react';
-import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document/build/ckeditor';
-import {customColorPalette} from 'Shared/dataComponents/graphicsColors';
+// import { CKEditor } from '@ckeditor/ckeditor5-react';
+// import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document/build/ckeditor';
+// import {customColorPalette} from 'Shared/dataComponents/graphicsColors';
 import Uploader from '../Edit/Uploader';
 import { ModalHeaderFooter, Editor, ModalInformation, OverlayDocument, OverlayHeader, OverlayFooter } from './styles';
 
@@ -442,7 +442,7 @@ const HeaderFooterModal = (props) => {
                       CABEÇALHO
                     </div>
 
-                    <Editor>
+                    {/* <Editor>
                       <div className="App">
                         <CKEditor
                           data={headerTextModal}
@@ -520,7 +520,7 @@ const HeaderFooterModal = (props) => {
                           }}
                         />
                       </div>
-                    </Editor>
+                    </Editor> */}
                   </div>
                 )}
 
@@ -531,7 +531,7 @@ const HeaderFooterModal = (props) => {
                         CABEÇALHO
                       </div>
 
-                      <Editor>
+                      {/* <Editor>
                         <div className="App">
                           <CKEditor
                             data={headerTextModal}
@@ -604,7 +604,7 @@ const HeaderFooterModal = (props) => {
                             }}
                           />
                         </div>
-                      </Editor>
+                      </Editor> */}
                     </div>
                   </OverlayHeader>
                 )}
@@ -642,7 +642,7 @@ const HeaderFooterModal = (props) => {
                       RODAPÉ
                     </div>
 
-                    <Editor>
+                    {/* <Editor>
                       <div className="App">
                         <CKEditor
                           data={footerTextModal}
@@ -716,7 +716,7 @@ const HeaderFooterModal = (props) => {
                           }}
                         />
                       </div>
-                    </Editor>
+                    </Editor> */}
                   </div>
                 )}
 
@@ -727,7 +727,7 @@ const HeaderFooterModal = (props) => {
                         RODAPÉ
                       </div>
 
-                      <Editor>
+                      {/* <Editor>
                         <div className="App">
                           <CKEditor
                             data={footerTextModal}
@@ -801,7 +801,7 @@ const HeaderFooterModal = (props) => {
                             }}
                           />
                         </div>
-                      </Editor>
+                      </Editor> */}
                     </div>
                   </OverlayFooter>
                 )}
