@@ -13,9 +13,10 @@ import { HeaderPage } from 'components/HeaderPage';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import { useModal } from 'context/modal';
 import api from 'services/api';
-// import { CKEditor } from '@ckeditor/ckeditor5-react';
-// import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document/build/ckeditor';
-// import {customColorPalette} from 'Shared/dataComponents/graphicsColors';
+import {CKEditor} from '@ckeditor/ckeditor5-react';
+import {ClassicEditor, AccessibilityHelp, Alignment, AutoImage, Autosave, BlockQuote, Bold, CloudServices, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, Heading, ImageBlock, ImageCaption, ImageInline, ImageInsertViaUrl, ImageResize, ImageStyle, ImageTextAlternative, ImageToolbar, ImageUpload, Indent, IndentBlock, Italic, Link, LinkImage, List, ListProperties, PageBreak, Paragraph, SelectAll, SourceEditing, Strikethrough, Table, TableCaption, TableCellProperties, TableColumnResize, TableProperties, TableToolbar, Underline, Undo} from 'ckeditor5';
+import {customColorPalette} from 'Shared/dataComponents/graphicsColors';
+import translations from 'ckeditor5/translations/pt-br.js';
 import Uploader from './Uploader'
 import HeaderFooterModal from '../HeaderFooterModal/index';
 import { Container, Content, Editor, Elements, ModalInformation, OverlayDocument, ModalWarning } from './styles';
@@ -45,7 +46,6 @@ const DocumentModelEdit: React.FC = () => {
   const [oldDocumentTypeId, setOldDocumentTypeId] = useState<string>('')
   const [newDocumentTypeId, setNewDocumentTypeId] = useState<string>('')
   const [defaultHeader, setDefaultHeader] = useState<string>('S');
-  // const [keyWord, setKeyWord] = useState<string>('');
   const [showModal, setShowModal] = useState(false);
   const [openInformationModal, setOpenInformationModal] = useState(false);
   const [openWarningModal, setOpenWarningModal] = useState(false);
@@ -64,21 +64,26 @@ const DocumentModelEdit: React.FC = () => {
   const [buttonElementDiv, setButtonElementDiv] = useState<string>('Expandir editor')
   const MDLFAT = localStorage.getItem('@GoJur:moduleCode');
   const [fromCaller, setFromCaller] = useState<string>("")
-  // const editorRef = useRef<CKEditor>();
+  const editorContainerRef = useRef(null);
+	const editorRef = useRef(null);
+
 
   useEffect(() => {
     DocumentEdit()
   }, [])
 
+
   useEffect(() => {
     setDocumentId(pathname.substr(20))
   }, [documentId])
+
 
   useEffect(() => {
     if (caller == 'advisoryTypeModal' && modalActive){
       setShowModal(true)      
     }
   },[caller, modalActive])
+
 
   useEffect(() => {
     
@@ -87,12 +92,14 @@ const DocumentModelEdit: React.FC = () => {
     
   }, [confirmWarning])
 
+
   useEffect(() => {
     
     if(visualize == "SaveAndGenerate")
       handleEditSave(false,true)
     
   }, [visualize])
+
 
   useEffect(() => {
     
@@ -101,12 +108,14 @@ const DocumentModelEdit: React.FC = () => {
     
   }, [generateViewDocument])
 
+
   useEffect(() => {
     if(showElementsDiv)
       setButtonElementDiv("Expandir editor")
     else
       setButtonElementDiv("Reexibir campos")
   }, [showElementsDiv])
+
 
   const DocumentEdit = async() => {
 
@@ -139,6 +148,7 @@ const DocumentModelEdit: React.FC = () => {
     }
   }
 
+
   const handleChangeDocumentType = (item) => {
 
     const id = pathname.substr(20)
@@ -159,6 +169,7 @@ const DocumentModelEdit: React.FC = () => {
     
   };
 
+
   const handleHeaderFooterModalClick = async () => {
 
     setFromCaller("headerAndFooter")
@@ -173,19 +184,23 @@ const DocumentModelEdit: React.FC = () => {
     }
   };
 
+
   const ConfirmDocumentTypeChange = () => {
     setDocumentTypeId(newDocumentTypeId)
     setOpenInformationModal(false)
   };
+
 
   const DiscardDocumentTypeChange = () => {
     setDocumentTypeId(oldDocumentTypeId)
     setOpenInformationModal(false)
   };
 
+
   const handleEditClose = () => {
     history.push(`/documentModel/list`)
   };
+
 
   const handleEditSave = useCallback(async(fromheader = false, fromVisualize = false) => {
     try {
@@ -265,6 +280,7 @@ const DocumentModelEdit: React.FC = () => {
     }
   },[documentTitle, documentText, documentTypeId, headerTypeId, headerText, footerTypeId, footerText, confirmWarning, visualize, fromCaller, documentId ]);
 
+
   const handleHeaderFooterCallback = (headerType: string, footerType: string, headerText: string, footerText: string ) => {
 
     setHeaderTypeId(headerType)
@@ -273,17 +289,19 @@ const DocumentModelEdit: React.FC = () => {
     setFooterText(footerText)
   }
 
+  
   const handleHeaderFooterModalClose = () => {
     DocumentEdit()
     setShowModal(false)
   }
 
-  function CustomAdapter( editor ) {
 
+  function CustomAdapter( editor ) {
     editor.plugins.get( 'FileRepository' ).createUploadAdapter = ( loader ) => {
         return new Uploader( loader );
     };
   }
+
 
   const handleVisualize = () => {
     const id = pathname.substr(20)
@@ -297,6 +315,7 @@ const DocumentModelEdit: React.FC = () => {
         VisualizeDocument()
       }
   }
+
 
   const VisualizeDocument = useCallback(async() => {
     try {
@@ -342,6 +361,7 @@ const DocumentModelEdit: React.FC = () => {
     }
   },[documentTitle, documentText, documentTypeId, headerTypeId, headerText, footerTypeId, footerText, pathname, documentId]);
 
+
   // update img src to S3 amazon
   useEffect(() => {
 
@@ -367,10 +387,12 @@ const DocumentModelEdit: React.FC = () => {
     setOpenWarningModal(false)
   };
 
+
   const DiscardWarning = () => {
     setOpenWarningModal(false)
   };
   
+
   const handleComboChange = (e: any) => {
     
     if (editorRef.current){
@@ -382,6 +404,7 @@ const DocumentModelEdit: React.FC = () => {
       });
     }
   }
+
 
   // const createElementEditor = useCallback(() => {
 
@@ -464,6 +487,130 @@ const DocumentModelEdit: React.FC = () => {
   //   )
   
   // },[documentText])
+
+
+  const editorConfig = {
+		toolbar: {
+			items: [
+				'heading',
+        '|',
+        'fontFamily', 'fontSize', 'fontColor', 'fontBackgroundColor',
+        '|',
+        'bold', 'italic', 'underline', 'strikethrough', 'link',
+        '|',
+        'alignment',
+        '|',
+        'bulletedList', 'numberedList', 
+        '|',
+        'outdent', 'indent', 'uploadImage',
+        '|',
+        'blockQuote', 'pageBreak', 'insertTable', 
+        '|',
+        'undo', 'redo',
+        '|',
+				'sourceEditing',
+				'|',
+			],
+			shouldNotGroupWhenFull: true
+		},
+    extraPlugins: [CustomAdapter],
+		plugins: [AccessibilityHelp, Alignment, AutoImage, Autosave, BlockQuote, Bold, CloudServices, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, Heading, ImageBlock, ImageCaption, ImageInline, ImageInsertViaUrl, ImageResize, ImageStyle, ImageTextAlternative, ImageToolbar, ImageUpload, Indent, IndentBlock, Italic, Link, LinkImage, List, ListProperties, PageBreak, Paragraph, SelectAll, SourceEditing, Strikethrough, Table, TableCaption, TableCellProperties, TableColumnResize, TableProperties, TableToolbar, Underline, Undo],
+		fontFamily: {supportAllValues: true},
+		fontSize: {
+			options: [ 9, 10, 11, 12, 13, 14, 15, 17, 19, 21 ],
+			supportAllValues: true
+		},
+    fontColor: {
+      colors: customColorPalette
+    },
+    fontBackgroundColor: {
+      colors: customColorPalette
+    },    
+		heading: {
+			options: [
+				{
+					model: 'paragraph',
+					title: 'Paragraph',
+					class: 'ck-heading_paragraph'
+				},
+				{
+					model: 'heading1',
+					view: 'h1',
+					title: 'Heading 1',
+					class: 'ck-heading_heading1'
+				},
+				{
+					model: 'heading2',
+					view: 'h2',
+					title: 'Heading 2',
+					class: 'ck-heading_heading2'
+				},
+				{
+					model: 'heading3',
+					view: 'h3',
+					title: 'Heading 3',
+					class: 'ck-heading_heading3'
+				},
+				{
+					model: 'heading4',
+					view: 'h4',
+					title: 'Heading 4',
+					class: 'ck-heading_heading4'
+				},
+				{
+					model: 'heading5',
+					view: 'h5',
+					title: 'Heading 5',
+					class: 'ck-heading_heading5'
+				},
+				{
+					model: 'heading6',
+					view: 'h6',
+					title: 'Heading 6',
+					class: 'ck-heading_heading6'
+				}
+			]
+		},
+		image: {
+			toolbar: [
+				'toggleImageCaption',
+				'imageTextAlternative',
+				'|',
+				'imageStyle:inline',
+				'imageStyle:wrapText',
+				'imageStyle:breakText',
+				'|',
+				'resizeImage'
+			]
+		},
+		initialData:
+      documentText,
+		language: 'pt-br',
+		link: {
+			addTargetToExternalLinks: true,
+			defaultProtocol: 'https://',
+			decorators: {
+				toggleDownloadable: {
+					mode: 'manual',
+					label: 'Downloadable',
+					attributes: {
+						download: 'file'
+					}
+				}
+			}
+		},
+		list: {
+			properties: {
+				styles: true,
+				startIndex: true,
+				reversed: true
+			}
+		},
+		table: {
+			contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
+		},
+		translations: [translations]
+	};
  
 
   return (
@@ -884,11 +1031,40 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
 
             <div id='Space' style={{width:'100%', height:'60px'}}><></></div>
 
-            {/* <Editor id='Editor'>
-              <div className="App">
-                { createElementEditor() }
+            
+            <div className="main-container">
+              <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
+                <div className="editor-container__editor">
+                  <div>
+                    <CKEditor 
+                      ref={editorRef}
+                      editor={ClassicEditor}
+                      data={documentText}
+                      config={editorConfig}
+                      onReady={(editor) => {
+                        editor.ui.getEditableElement().parentElement.prepend(editor.ui.view.toolbar.element);
+                        editor.keystrokes.set( 'Tab', ( data, cancel ) => {
+                          editor.model.change(writer => {
+                            writer.insertText("            ", editor.model.document.selection.getFirstPosition() );
+                          });
+                          cancel();
+                        });
+                      }}
+                      onChange={(event, editor) => {
+                        const data = editor.getData();
+                        const documentImage = localStorage.getItem('@Gojur:documentImage');
+
+                        if (documentImage){
+                          setHtmlChangeData(true)
+                        }
+                        setDocumentText(data);
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
-            </Editor> */}
+            </div>
+
 
             <div id='Space' style={{width:'100%', height:'40px'}}><></></div>
 
@@ -930,7 +1106,6 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
               </div>
             </div>
           </div>
-
         </>
       </Content>
 
