@@ -270,7 +270,7 @@ const DocumentModelVizualize: React.FC = () => {
 				reversed: true
 			}
 		},
-		placeholder: 'Type or paste your content here!',
+		placeholder: '',
 		table: {
 			contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
 		},
@@ -287,18 +287,20 @@ const DocumentModelVizualize: React.FC = () => {
         <>
           <div id='textElements' style={{height:'2400px', overflow:'auto', width:'850px', margin:'auto'}}>
 
-            <div className="main-container">
-              <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
-                <div className="editor-container__editor">
-                  <div>
-                    <CKEditor
-                      editor={ClassicEditor}
-                      ref={editorRef}
-                      config={editorConfig} />
+            <Editor>
+              <div className="main-container">
+                <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
+                  <div className="editor-container__editor">
+                    <div>
+                      <CKEditor
+                        editor={ClassicEditor}
+                        ref={editorRef}
+                        config={editorConfig} />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </Editor>
 
             <div style={{width:'100%', height:'50px'}}><></></div>
 

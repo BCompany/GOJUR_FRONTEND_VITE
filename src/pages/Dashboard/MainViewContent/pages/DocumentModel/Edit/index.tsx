@@ -1031,40 +1031,40 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
 
             <div id='Space' style={{width:'100%', height:'60px'}}><></></div>
 
-            
-            <div className="main-container">
-              <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
-                <div className="editor-container__editor">
-                  <div>
-                    <CKEditor 
-                      ref={editorRef}
-                      editor={ClassicEditor}
-                      data={documentText}
-                      config={editorConfig}
-                      onReady={(editor) => {
-                        editor.ui.getEditableElement().parentElement.prepend(editor.ui.view.toolbar.element);
-                        editor.keystrokes.set( 'Tab', ( data, cancel ) => {
-                          editor.model.change(writer => {
-                            writer.insertText("            ", editor.model.document.selection.getFirstPosition() );
+            <Editor>
+              <div className="main-container">
+                <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
+                  <div className="editor-container__editor">
+                    <div>
+                      <CKEditor 
+                        ref={editorRef}
+                        editor={ClassicEditor}
+                        data={documentText}
+                        config={editorConfig}
+                        onReady={(editor) => {
+                          editor.ui.getEditableElement().parentElement.prepend(editor.ui.view.toolbar.element);
+                          editor.keystrokes.set( 'Tab', ( data, cancel ) => {
+                            editor.model.change(writer => {
+                              writer.insertText("            ", editor.model.document.selection.getFirstPosition() );
+                            });
+                            cancel();
                           });
-                          cancel();
-                        });
-                      }}
-                      onChange={(event, editor) => {
-                        const data = editor.getData();
-                        const documentImage = localStorage.getItem('@Gojur:documentImage');
+                        }}
+                        onChange={(event, editor) => {
+                          const data = editor.getData();
+                          const documentImage = localStorage.getItem('@Gojur:documentImage');
 
-                        if (documentImage){
-                          setHtmlChangeData(true)
-                        }
-                        setDocumentText(data);
-                      }}
-                    />
+                          if (documentImage){
+                            setHtmlChangeData(true)
+                          }
+                          setDocumentText(data);
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-
+            </Editor>
 
             <div id='Space' style={{width:'100%', height:'40px'}}><></></div>
 

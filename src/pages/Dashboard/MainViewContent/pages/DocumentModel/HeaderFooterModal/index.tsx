@@ -6,25 +6,28 @@
 /* eslint-disable no-alert */
 /* eslint-disable no-param-reassign */
 
-import React, { useCallback, useEffect, useState, ChangeEvent } from 'react';
+import React, { useCallback, useEffect, useState, ChangeEvent, useRef } from 'react';
 import { FaRegTimesCircle, FaCheck } from 'react-icons/fa';
 import { useToast } from 'context/toast';
 import { useDevice } from "react-use-device";
 import { FiSave, FiX } from 'react-icons/fi';
 import api from 'services/api';
+import {CKEditor} from '@ckeditor/ckeditor5-react';
+import {ClassicEditor, AccessibilityHelp, Alignment, AutoImage, Autosave, BlockQuote, Bold, CloudServices, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, Heading, ImageBlock, ImageCaption, ImageInline, ImageInsertViaUrl, ImageResize, ImageStyle, ImageTextAlternative, ImageToolbar, ImageUpload, Indent, IndentBlock, Italic, Link, LinkImage, List, ListProperties, PageBreak, Paragraph, SelectAll, SourceEditing, Strikethrough, Table, TableCaption, TableCellProperties, TableColumnResize, TableProperties, TableToolbar, Underline, Undo} from 'ckeditor5';
+import {customColorPalette} from 'Shared/dataComponents/graphicsColors';
+import translations from 'ckeditor5/translations/pt-br.js';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
 import { useConfirmBox } from 'context/confirmBox';
-// import { CKEditor } from '@ckeditor/ckeditor5-react';
-// import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document/build/ckeditor';
-// import {customColorPalette} from 'Shared/dataComponents/graphicsColors';
 import Uploader from '../Edit/Uploader';
 import { ModalHeaderFooter, Editor, ModalInformation, OverlayDocument, OverlayHeader, OverlayFooter } from './styles';
+
 
 export interface IHeaderFooterData {
   id: string;
   value: string;
   count: string;
 }
+
 
 export interface IParameterData {
   parameterId: number;
@@ -33,22 +36,21 @@ export interface IParameterData {
   message: string;
 }
 
+
 const HeaderFooterModal = (props) => {
-
   const {documentId, headerTypeId, headerText, footerTypeId, footerText, handleHeaderFooterCallback, handleHeaderFooterModalClose} = props.callbackFunction
-
   const { addToast } = useToast();
   const token = localStorage.getItem('@GoJur:token');
   const {isConfirmMessage, isCancelMessage, handleCancelMessage, handleConfirmMessage, caller, handleCaller, handleCheckConfirm } = useConfirmBox();
   const { isMOBILE } = useDevice();
   console.clear()
-
   const [warningCaller, setWarningCaller] = useState<string>("");
-
   const [documentModelId, setDocumentModelId] = useState<string>(documentId)
   const [openInformationModal, setOpenInformationModal] = useState(false)
   const [informationType, setInformationType] = useState('')
   const [confirmSave, setConfirmSave] = useState(false)
+  const editorContainerRef = useRef(null);
+	const editorRef = useRef(null);
 
   // Header
   const [headerTypeIdModal, setHeaderTypeIdModal] = useState<string>(headerTypeId)
@@ -348,6 +350,255 @@ const HeaderFooterModal = (props) => {
     };
   }
 
+
+  const editorConfigHeader = {
+		toolbar: {
+			items: [
+				'heading',
+        '|',
+        'fontFamily', 'fontSize', 'fontColor', 'fontBackgroundColor',
+        '|',
+        'bold', 'italic', 'underline', 'strikethrough', 'link',
+        '|',
+        'alignment',
+        '|',
+        'bulletedList', 'numberedList', 
+        '|',
+        'outdent', 'indent', 'uploadImage',
+        '|',
+        'blockQuote', 'pageBreak', 'insertTable', 
+        '|',
+        'undo', 'redo',
+        '|',
+				'sourceEditing',
+				'|',
+			],
+			shouldNotGroupWhenFull: true
+		},
+    extraPlugins: [HeaderCustomAdapter],
+		plugins: [AccessibilityHelp, Alignment, AutoImage, Autosave, BlockQuote, Bold, CloudServices, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, Heading, ImageBlock, ImageCaption, ImageInline, ImageInsertViaUrl, ImageResize, ImageStyle, ImageTextAlternative, ImageToolbar, ImageUpload, Indent, IndentBlock, Italic, Link, LinkImage, List, ListProperties, PageBreak, Paragraph, SelectAll, SourceEditing, Strikethrough, Table, TableCaption, TableCellProperties, TableColumnResize, TableProperties, TableToolbar, Underline, Undo],
+		fontFamily: {supportAllValues: true},
+		fontSize: {
+			options: [ 9, 10, 11, 12, 13, 14, 15, 17, 19, 21 ],
+			supportAllValues: true
+		},
+    fontColor: {
+      colors: customColorPalette
+    },
+    fontBackgroundColor: {
+      colors: customColorPalette
+    },    
+		heading: {
+			options: [
+				{
+					model: 'paragraph',
+					title: 'Paragraph',
+					class: 'ck-heading_paragraph'
+				},
+				{
+					model: 'heading1',
+					view: 'h1',
+					title: 'Heading 1',
+					class: 'ck-heading_heading1'
+				},
+				{
+					model: 'heading2',
+					view: 'h2',
+					title: 'Heading 2',
+					class: 'ck-heading_heading2'
+				},
+				{
+					model: 'heading3',
+					view: 'h3',
+					title: 'Heading 3',
+					class: 'ck-heading_heading3'
+				},
+				{
+					model: 'heading4',
+					view: 'h4',
+					title: 'Heading 4',
+					class: 'ck-heading_heading4'
+				},
+				{
+					model: 'heading5',
+					view: 'h5',
+					title: 'Heading 5',
+					class: 'ck-heading_heading5'
+				},
+				{
+					model: 'heading6',
+					view: 'h6',
+					title: 'Heading 6',
+					class: 'ck-heading_heading6'
+				}
+			]
+		},
+		image: {
+			toolbar: [
+				'toggleImageCaption',
+				'imageTextAlternative',
+				'|',
+				'imageStyle:inline',
+				'imageStyle:wrapText',
+				'imageStyle:breakText',
+				'|',
+				'resizeImage'
+			]
+		},
+		initialData: headerTextModal,
+		language: 'pt-br',
+		link: {
+			addTargetToExternalLinks: true,
+			defaultProtocol: 'https://',
+			decorators: {
+				toggleDownloadable: {
+					mode: 'manual',
+					label: 'Downloadable',
+					attributes: {
+						download: 'file'
+					}
+				}
+			}
+		},
+		list: {
+			properties: {
+				styles: true,
+				startIndex: true,
+				reversed: true
+			}
+		},
+		placeholder: '',
+		table: {
+			contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
+		},
+		translations: [translations]
+	};
+
+
+  const editorConfigFooter = {
+		toolbar: {
+			items: [
+				'heading',
+        '|',
+        'fontFamily', 'fontSize', 'fontColor', 'fontBackgroundColor',
+        '|',
+        'bold', 'italic', 'underline', 'strikethrough', 'link',
+        '|',
+        'alignment',
+        '|',
+        'bulletedList', 'numberedList', 
+        '|',
+        'outdent', 'indent', 'uploadImage',
+        '|',
+        'blockQuote', 'pageBreak', 'insertTable', 
+        '|',
+        'undo', 'redo',
+        '|',
+				'sourceEditing',
+				'|',
+			],
+			shouldNotGroupWhenFull: true
+		},
+    extraPlugins: [FooterCustomAdapter],
+		plugins: [AccessibilityHelp, Alignment, AutoImage, Autosave, BlockQuote, Bold, CloudServices, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, Heading, ImageBlock, ImageCaption, ImageInline, ImageInsertViaUrl, ImageResize, ImageStyle, ImageTextAlternative, ImageToolbar, ImageUpload, Indent, IndentBlock, Italic, Link, LinkImage, List, ListProperties, PageBreak, Paragraph, SelectAll, SourceEditing, Strikethrough, Table, TableCaption, TableCellProperties, TableColumnResize, TableProperties, TableToolbar, Underline, Undo],
+		fontFamily: {supportAllValues: true},
+		fontSize: {
+			options: [ 9, 10, 11, 12, 13, 14, 15, 17, 19, 21 ],
+			supportAllValues: true
+		},
+    fontColor: {
+      colors: customColorPalette
+    },
+    fontBackgroundColor: {
+      colors: customColorPalette
+    },    
+		heading: {
+			options: [
+				{
+					model: 'paragraph',
+					title: 'Paragraph',
+					class: 'ck-heading_paragraph'
+				},
+				{
+					model: 'heading1',
+					view: 'h1',
+					title: 'Heading 1',
+					class: 'ck-heading_heading1'
+				},
+				{
+					model: 'heading2',
+					view: 'h2',
+					title: 'Heading 2',
+					class: 'ck-heading_heading2'
+				},
+				{
+					model: 'heading3',
+					view: 'h3',
+					title: 'Heading 3',
+					class: 'ck-heading_heading3'
+				},
+				{
+					model: 'heading4',
+					view: 'h4',
+					title: 'Heading 4',
+					class: 'ck-heading_heading4'
+				},
+				{
+					model: 'heading5',
+					view: 'h5',
+					title: 'Heading 5',
+					class: 'ck-heading_heading5'
+				},
+				{
+					model: 'heading6',
+					view: 'h6',
+					title: 'Heading 6',
+					class: 'ck-heading_heading6'
+				}
+			]
+		},
+		image: {
+			toolbar: [
+				'toggleImageCaption',
+				'imageTextAlternative',
+				'|',
+				'imageStyle:inline',
+				'imageStyle:wrapText',
+				'imageStyle:breakText',
+				'|',
+				'resizeImage'
+			]
+		},
+		initialData: footerTextModal,
+		language: 'pt-br',
+		link: {
+			addTargetToExternalLinks: true,
+			defaultProtocol: 'https://',
+			decorators: {
+				toggleDownloadable: {
+					mode: 'manual',
+					label: 'Downloadable',
+					attributes: {
+						download: 'file'
+					}
+				}
+			}
+		},
+		list: {
+			properties: {
+				styles: true,
+				startIndex: true,
+				reversed: true
+			}
+		},
+		placeholder: '',
+		table: {
+			contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
+		},
+		translations: [translations]
+	};
+
+
   return (
     <>
 
@@ -442,6 +693,23 @@ const HeaderFooterModal = (props) => {
                       CABEÇALHO
                     </div>
 
+                    <Editor>
+                      <div className="main-container">
+                        <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
+                          <div className="editor-container__editor">
+                            <div>
+                              <CKEditor
+                                editor={ClassicEditor}
+                                ref={editorRef}
+                                config={editorConfigHeader} />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </Editor>
+
+
+
                     {/* <Editor>
                       <div className="App">
                         <CKEditor
@@ -530,6 +798,21 @@ const HeaderFooterModal = (props) => {
                       <div className='headerFooter'>
                         CABEÇALHO
                       </div>
+
+                      <Editor>
+                        <div className="main-container">
+                          <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
+                            <div className="editor-container__editor">
+                              <div>
+                                <CKEditor
+                                  editor={ClassicEditor}
+                                  ref={editorRef}
+                                  config={editorConfigHeader} />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </Editor>
 
                       {/* <Editor>
                         <div className="App">
@@ -642,6 +925,22 @@ const HeaderFooterModal = (props) => {
                       RODAPÉ
                     </div>
 
+                    <Editor>
+                      <div className="main-container">
+                        <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
+                          <div className="editor-container__editor">
+                            <div>
+                              <CKEditor
+                                editor={ClassicEditor}
+                                ref={editorRef}
+                                config={editorConfigFooter} />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </Editor>
+
+
                     {/* <Editor>
                       <div className="App">
                         <CKEditor
@@ -726,6 +1025,21 @@ const HeaderFooterModal = (props) => {
                       <div className='headerFooter'>
                         RODAPÉ
                       </div>
+
+                      <Editor>
+                        <div className="main-container">
+                          <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
+                            <div className="editor-container__editor">
+                              <div>
+                                <CKEditor
+                                  editor={ClassicEditor}
+                                  ref={editorRef}
+                                  config={editorConfigFooter} />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </Editor>
 
                       {/* <Editor>
                         <div className="App">
@@ -904,4 +1218,5 @@ const HeaderFooterModal = (props) => {
   )
 
 }
+
 export default HeaderFooterModal;
