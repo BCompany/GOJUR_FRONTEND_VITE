@@ -362,16 +362,12 @@ const HeaderFooterModal = (props) => {
         '|',
         'alignment',
         '|',
-        'bulletedList', 'numberedList', 
-        '|',
         'outdent', 'indent', 'uploadImage',
         '|',
-        'blockQuote', 'pageBreak', 'insertTable', 
+        'blockQuote', 'insertTable', 
         '|',
         'undo', 'redo',
         '|',
-				'sourceEditing',
-				'|',
 			],
 			shouldNotGroupWhenFull: true
 		},
@@ -471,6 +467,7 @@ const HeaderFooterModal = (props) => {
 		table: {
 			contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
 		},
+    shouldNotGroupWhenFull: true,
 		translations: [translations]
 	};
 
@@ -486,16 +483,12 @@ const HeaderFooterModal = (props) => {
         '|',
         'alignment',
         '|',
-        'bulletedList', 'numberedList', 
-        '|',
         'outdent', 'indent', 'uploadImage',
         '|',
-        'blockQuote', 'pageBreak', 'insertTable', 
+        'blockQuote', 'insertTable', 
         '|',
         'undo', 'redo',
         '|',
-				'sourceEditing',
-				'|',
 			],
 			shouldNotGroupWhenFull: true
 		},
@@ -595,6 +588,7 @@ const HeaderFooterModal = (props) => {
 		table: {
 			contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
 		},
+    shouldNotGroupWhenFull: true,
 		translations: [translations]
 	};
 
@@ -701,14 +695,23 @@ const HeaderFooterModal = (props) => {
                               <CKEditor
                                 editor={ClassicEditor}
                                 ref={editorRef}
-                                config={editorConfigHeader} />
+                                config={editorConfigHeader}
+                                onChange={(event, editor) => {
+                                  const data = editor.getData();
+                                  const documentImage = localStorage.getItem('@Gojur:documentImage');
+
+                                  if (documentImage){
+                                    setHeaderImage(true)
+                                  }
+      
+                                  setHeaderTextModal(data)
+                                }}
+                              />
                             </div>
                           </div>
                         </div>
                       </div>
                     </Editor>
-
-
 
                     {/* <Editor>
                       <div className="App">
@@ -807,7 +810,18 @@ const HeaderFooterModal = (props) => {
                                 <CKEditor
                                   editor={ClassicEditor}
                                   ref={editorRef}
-                                  config={editorConfigHeader} />
+                                  config={editorConfigHeader}
+                                  onChange={(event, editor) => {
+                                    const data = editor.getData();
+                                    const documentImage = localStorage.getItem('@Gojur:documentImage');
+  
+                                    if (documentImage){
+                                      setHeaderImage(true)
+                                    }
+        
+                                    setHeaderTextModal(data)
+                                  }}
+                                />
                               </div>
                             </div>
                           </div>
@@ -933,13 +947,23 @@ const HeaderFooterModal = (props) => {
                               <CKEditor
                                 editor={ClassicEditor}
                                 ref={editorRef}
-                                config={editorConfigFooter} />
+                                config={editorConfigFooter}
+                                onChange={(event, editor) => {
+                                  const data = editor.getData();
+                                  const documentImage = localStorage.getItem('@Gojur:documentImage');
+
+                                  if (documentImage){
+                                    setFooterImage(true)
+                                  }
+    
+                                  setFooterTextModal(data)
+                                }}
+                              />
                             </div>
                           </div>
                         </div>
                       </div>
                     </Editor>
-
 
                     {/* <Editor>
                       <div className="App">
@@ -1034,7 +1058,18 @@ const HeaderFooterModal = (props) => {
                                 <CKEditor
                                   editor={ClassicEditor}
                                   ref={editorRef}
-                                  config={editorConfigFooter} />
+                                  config={editorConfigFooter}
+                                  onChange={(event, editor) => {
+                                    const data = editor.getData();
+                                    const documentImage = localStorage.getItem('@Gojur:documentImage');
+
+                                    if (documentImage){
+                                      setFooterImage(true)
+                                    }
+      
+                                    setFooterTextModal(data)
+                                  }}
+                                />
                               </div>
                             </div>
                           </div>

@@ -172,8 +172,6 @@ const DocumentModelVizualize: React.FC = () => {
         '|',
         'undo', 'redo',
         '|',
-				'sourceEditing',
-				'|',
 			],
 			shouldNotGroupWhenFull: true
 		},
@@ -295,7 +293,17 @@ const DocumentModelVizualize: React.FC = () => {
                       <CKEditor
                         editor={ClassicEditor}
                         ref={editorRef}
-                        config={editorConfig} />
+                        config={editorConfig}
+                        onChange={(event, editor) => {
+                          const data = editor.getData();
+                          const documentImage = localStorage.getItem('@Gojur:documentImage');
+
+                          if (documentImage){
+                            setHtmlChangeData(true)
+                          }
+                          setDocumentText(data);
+                        }}
+                      />
                     </div>
                   </div>
                 </div>

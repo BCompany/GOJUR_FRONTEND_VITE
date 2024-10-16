@@ -508,8 +508,6 @@ const DocumentModelEdit: React.FC = () => {
         '|',
         'undo', 'redo',
         '|',
-				'sourceEditing',
-				'|',
 			],
 			shouldNotGroupWhenFull: true
 		},
