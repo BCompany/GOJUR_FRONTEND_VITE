@@ -22,6 +22,7 @@ import FinancialInformation from '../../FinancialInformation';
 import DocumentModel from '../MainViewContent/pages/DocumentModel/List';
 import DocumentModelEdit from '../MainViewContent/pages/DocumentModel/Edit';
 import DocumentModelVisualize from '../MainViewContent/pages/DocumentModel/Visualize';
+import LabEditor from '../MainViewContent/pages/DocumentModel/LabEditor';
 import Usuario from '../MainViewContent/pages/Usuario';
 import UserList from '../MainViewContent/pages/UserList';
 import CreateUser from '../MainViewContent/pages/User';
@@ -118,6 +119,7 @@ const Routes: React.FC = () => {
       <Route path="/documentModel/list" exact component={DocumentModel} isPrivate />
       <Route path="/documentModel/edit/:cod_DocumentoModelo" exact component={DocumentModelEdit} isPrivate />
       <Route path="/documentModel/visualize/:id" exact component={DocumentModelVisualize} isPrivate />
+      <Route path="/documentModel/LabEditor" exact component={LabEditor} isPrivate />
       <Route path="/customer/edit/:id" component={CreateCustomer} isPrivate />
       <Route path="/customer/business/edit/:id" component={CreateCustomerBusiness} isPrivate />
       <Route path="/CRM/configuration/salesChannel" exact component={SalesChannelList} isPrivate />
