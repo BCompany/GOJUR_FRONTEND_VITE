@@ -69,9 +69,9 @@ const HeaderFooterModal = (props) => {
   const [hasDefaultFooter, setHasDefaultFooter] = useState<boolean>(false)
   const [footerWarning, setFooterWarning] = useState<boolean>(false)
   const [footerImage, setFooterImage] = useState(false);
-  
-  useEffect(() => {
 
+
+  useEffect(() => {
     if(footerTypeId == 'E')
       setCheckChangeFooter(true)
     else if(footerTypeId == 'A')
@@ -81,39 +81,29 @@ const HeaderFooterModal = (props) => {
       setCheckChangeHeader(true)
     else if(headerTypeId == 'A')
       CheckCompanyDefaultHeaderFooter('#DOCDEFHEADER,')
+  }, [footerTypeId, headerTypeId])
 
-  },[footerTypeId, headerTypeId])
   
   useEffect(() => {
-
     if (isCancelMessage){
-
       if (caller === 'changeDefaultHeader')
-      {
         setHeaderWarning(false)
-      }
       
       if (caller === 'changeDefaultFooter')
-      {
         setFooterWarning(false)
-      }
 
       setWarningCaller("")
     }
+  }, [isCancelMessage, caller]);
 
-  },[isCancelMessage, caller]);
 
   useEffect(() => {
-
-    if(isConfirmMessage)
-    {
-      if (warningCaller == "C" && caller === 'changeDefaultHeader')
-      {
+    if(isConfirmMessage){
+      if (warningCaller == "C" && caller === 'changeDefaultHeader'){
         ChangeDefaultHeader()
         setHeaderWarning(false)
       }
-      if (warningCaller == "R" && caller === 'changeDefaultFooter')
-      {
+      if (warningCaller == "R" && caller === 'changeDefaultFooter'){
         ChangeDefaultFooter()
         setFooterWarning(false)
       }      
@@ -121,7 +111,8 @@ const HeaderFooterModal = (props) => {
       setWarningCaller("");
       handleConfirmMessage(false)
     }
-  },[isConfirmMessage, caller]);
+  }, [isConfirmMessage, caller]);
+
 
   // update img src to S3 amazon
   useEffect(() => {
@@ -136,7 +127,8 @@ const HeaderFooterModal = (props) => {
 
       setHeaderImage(false)
     }
-  },[headerImage])
+  }, [headerImage])
+
 
   // update img src to S3 amazon
   useEffect(() => {
@@ -149,13 +141,12 @@ const HeaderFooterModal = (props) => {
         localStorage.removeItem('@Gojur:documentImage')
       }
 
-      setHeaderImage(false)
+      setFooterImage(false)
     }
-  },[footerImage])
+  }, [footerImage])
 
 
   const CheckCompanyDefaultHeaderFooter = async (parameterName) => { 
-
     try
     {
       const response = await api.post<IParameterData[]>('/Parametro/Selecionar', {
@@ -195,58 +186,54 @@ const HeaderFooterModal = (props) => {
           setCheckChangeFooter(false);
         }
       }
-      
     }
     catch (err){
       console.log(err)
     }
   }
 
+
   // CHANGE HEADER SELECT
   const handleChangeHeaderType = (item) => {
     setHeaderTypeIdModal(item.target.value)
 
-    if(item.target.value == 'E')
-    {
+    if(item.target.value == 'E'){
       setCheckChangeHeader(true)
       setButtonChangeHeader(false)
       setHasDefaultHeader(false)
       setHeaderTextModal(headerText??"")
       return;
     }
-    if(item.target.value == 'A')
-    {
+    if(item.target.value == 'A'){
       CheckCompanyDefaultHeaderFooter('#DOCDEFHEADER,')
     }
-    else
-    {
+    else{
       setCheckChangeHeader(false)
       setButtonChangeHeader(false)
     }
-  };
+  }
+
 
   // CHANGE FOOTER SELECT
   const handleChangeFooterType = (item) => {
     setFooterTypeIdModal(item.target.value)
 
-    if(item.target.value == 'E')
-    {
+    if(item.target.value == 'E'){
       setCheckChangeFooter(true)
       setButtonChangeFooter(false)
       setHasDefaultFooter(false)
       setFooterTextModal(footerText??"")
       return;
     }
-    if(item.target.value == 'A')
-    {
+    if(item.target.value == 'A'){
       CheckCompanyDefaultHeaderFooter('#DOCDEFFOOTER,')
     }
-    else
-    {
+    else{
       setCheckChangeFooter(false)
       setButtonChangeFooter(false)
     }
-  };
+  }
+
 
   // CREATE DEFAULT HEADER
   const CreateDefaultHeader = () => { 
@@ -255,6 +242,7 @@ const HeaderFooterModal = (props) => {
     setButtonChangeHeader(false)
     setHasDefaultHeader(false)
   }
+
 
   // CREATE DEFAULT FOOTER
   const CreateDefaultFooter = () => { 
@@ -294,11 +282,11 @@ const HeaderFooterModal = (props) => {
     setButtonChangeFooter(false)
   }
 
+
   const saveHeaderFooter = useCallback(async() => {
     try {
       // If document exists, save header and footer in database
-      if(documentModelId != "0")
-      {
+      if(documentModelId != "0"){
         await api.post('/DocumentosModelo/SalvarCabecalhoRodape', {
           id: documentModelId,
           headerType: headerTypeIdModal,
@@ -311,31 +299,15 @@ const HeaderFooterModal = (props) => {
 
       handleHeaderFooterModalClose()
 
-      addToast({
-        type: 'success',
-        title: 'Operação realizada com sucesso',
-        description: 'O Cabeçalho/Rodapé foram salvos com sucesso',
-      });
-
-    } catch (err:any) {
-      
-      if(err.response.data.typeError.warning == "awareness")
-      {
-        addToast({
-          type: "info",
-          title: "Atenção",
-          description: err.response.data.Message
-        })
-      }
-      else{
-        addToast({
-          type: "error",
-          title: "Falha ao salvar cabeçalho e rodapé.",
-          description: err.response.data.Message
-        })
-      }
+      addToast({type: 'success', title: 'Operação realizada com sucesso', description: 'O Cabeçalho/Rodapé foram salvos com sucesso'})
     }
-  },[headerTypeIdModal, footerTypeIdModal, headerTextModal, footerTextModal, confirmSave]);
+    catch (err:any) {
+      if(err.response.data.typeError.warning == "awareness")
+        addToast({type: "info", title: "Atenção", description: err.response.data.Message})
+      else
+        addToast({type: "error", title: "Falha ao salvar cabeçalho e rodapé.", description: err.response.data.Message})
+    }
+  }, [headerTypeIdModal, footerTypeIdModal, headerTextModal, footerTextModal, confirmSave]);
 
 
   function HeaderCustomAdapter( editor ) {
@@ -343,6 +315,7 @@ const HeaderFooterModal = (props) => {
         return new Uploader( loader );
     };
   }
+
 
   function FooterCustomAdapter( editor ) {
     editor.plugins.get( 'FileRepository' ).createUploadAdapter = ( loader ) => {
@@ -430,16 +403,31 @@ const HeaderFooterModal = (props) => {
 			]
 		},
 		image: {
-			toolbar: [
-				'toggleImageCaption',
-				'imageTextAlternative',
-				'|',
-				'imageStyle:inline',
-				'imageStyle:wrapText',
-				'imageStyle:breakText',
-				'|',
-				'resizeImage'
-			]
+      insert: {type: 'inline'},
+      resizeUnit: 'px',
+      resizeOptions: [
+        {
+          name: 'resizeImage:original',
+          label: 'Original',
+          value: null
+        },
+        {
+          name: 'resizeImage:custom',
+          label: 'Custom',
+          value: 'custom'
+        },
+        {
+          name: 'resizeImage:100',
+          label: '100px',
+          value: '100'
+        },
+        {
+          name: 'resizeImage:200',
+          label: '200px',
+          value: '200'
+        }
+      ],
+			toolbar: ['ImageInline',]
 		},
 		initialData: headerTextModal,
 		language: 'pt-br',
@@ -469,7 +457,7 @@ const HeaderFooterModal = (props) => {
 		},
     shouldNotGroupWhenFull: true,
 		translations: [translations]
-	};
+	}
 
 
   const editorConfigFooter = {
@@ -551,16 +539,31 @@ const HeaderFooterModal = (props) => {
 			]
 		},
 		image: {
-			toolbar: [
-				'toggleImageCaption',
-				'imageTextAlternative',
-				'|',
-				'imageStyle:inline',
-				'imageStyle:wrapText',
-				'imageStyle:breakText',
-				'|',
-				'resizeImage'
-			]
+      insert: {type: 'inline'},
+      resizeUnit: 'px',
+      resizeOptions: [
+        {
+          name: 'resizeImage:original',
+          label: 'Original',
+          value: null
+        },
+        {
+          name: 'resizeImage:custom',
+          label: 'Custom',
+          value: 'custom'
+        },
+        {
+          name: 'resizeImage:100',
+          label: '100px',
+          value: '100'
+        },
+        {
+          name: 'resizeImage:200',
+          label: '200px',
+          value: '200'
+        }
+      ],
+			toolbar: ['ImageInline',]
 		},
 		initialData: footerTextModal,
 		language: 'pt-br',
@@ -590,7 +593,7 @@ const HeaderFooterModal = (props) => {
 		},
     shouldNotGroupWhenFull: true,
 		translations: [translations]
-	};
+	}
 
 
   return (

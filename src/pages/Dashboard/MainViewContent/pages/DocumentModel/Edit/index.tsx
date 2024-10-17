@@ -79,33 +79,26 @@ const DocumentModelEdit: React.FC = () => {
 
 
   useEffect(() => {
-    if (caller == 'advisoryTypeModal' && modalActive){
+    if (caller == 'advisoryTypeModal' && modalActive)
       setShowModal(true)      
-    }
-  },[caller, modalActive])
+  }, [caller, modalActive])
 
 
   useEffect(() => {
-    
     if(confirmWarning)
       handleEditSave()
-    
   }, [confirmWarning])
 
 
   useEffect(() => {
-    
     if(visualize == "SaveAndGenerate")
       handleEditSave(false,true)
-    
   }, [visualize])
 
 
   useEffect(() => {
-    
     if(generateViewDocument)
       VisualizeDocument()
-    
   }, [generateViewDocument])
 
 
@@ -118,7 +111,6 @@ const DocumentModelEdit: React.FC = () => {
 
 
   const DocumentEdit = async() => {
-
     try {
       const id = documentId
 
@@ -127,23 +119,19 @@ const DocumentModelEdit: React.FC = () => {
         return;
       }
 
-      const response = await api.post<IDocumentModelData>('/DocumentosModelo/Editar', { 
-        id,
-        token
-      });
+      const response = await api.post<IDocumentModelData>('/DocumentosModelo/Editar', {id, token})
 
       setDocumentTitle(response.data.des_Titulo)
       setDocumentTypeId(response.data.tpo_Documento)
       setDocumentText(response.data.des_TextoModelo)
-
       setHeaderTypeId(response.data.tpo_Cabecalho)
       setHeaderText(response.data.des_CabecalhoPersonalizado)
       setFooterTypeId(response.data.tpo_Rodape)
       setFooterText(response.data.des_RodapePersonalizado)
 
       setDisableSelect(true)
-
-    } catch (err) {
+    }
+    catch (err) {
       console.log(err);
     }
   }
@@ -167,7 +155,7 @@ const DocumentModelEdit: React.FC = () => {
       setDisableSelect(true)
     }
     
-  };
+  }
 
 
   const handleHeaderFooterModalClick = async () => {
@@ -182,24 +170,24 @@ const DocumentModelEdit: React.FC = () => {
     else{
       return
     }
-  };
+  }
 
 
   const ConfirmDocumentTypeChange = () => {
     setDocumentTypeId(newDocumentTypeId)
     setOpenInformationModal(false)
-  };
+  }
 
 
   const DiscardDocumentTypeChange = () => {
     setDocumentTypeId(oldDocumentTypeId)
     setOpenInformationModal(false)
-  };
+  }
 
 
   const handleEditClose = () => {
     history.push(`/documentModel/list`)
-  };
+  }
 
 
   const handleEditSave = useCallback(async(fromheader = false, fromVisualize = false) => {
@@ -278,7 +266,7 @@ const DocumentModelEdit: React.FC = () => {
 
       return false
     }
-  },[documentTitle, documentText, documentTypeId, headerTypeId, headerText, footerTypeId, footerText, confirmWarning, visualize, fromCaller, documentId ]);
+  },[documentTitle, documentText, documentTypeId, headerTypeId, headerText, footerTypeId, footerText, confirmWarning, visualize, fromCaller, documentId ])
 
 
   const handleHeaderFooterCallback = (headerType: string, footerType: string, headerText: string, footerText: string ) => {
@@ -359,18 +347,15 @@ const DocumentModelEdit: React.FC = () => {
         title: "Falha ao gerar documento.",
       })
     }
-  },[documentTitle, documentText, documentTypeId, headerTypeId, headerText, footerTypeId, footerText, pathname, documentId]);
+  },[documentTitle, documentText, documentTypeId, headerTypeId, headerText, footerTypeId, footerText, pathname, documentId])
 
 
   // update img src to S3 amazon
   useEffect(() => {
-
     if (htmlChangeData){
-
       const documentImage = localStorage.getItem('@Gojur:documentImage')
 
       if (documentImage){
-
         const newDocumentText = documentText.replaceAll('<img>', `'<img src=${documentImage} />'`)
         setDocumentText(newDocumentText)
         localStorage.removeItem('@Gojur:documentImage')
@@ -378,19 +363,18 @@ const DocumentModelEdit: React.FC = () => {
 
       setHtmlChangeData(false)
     }
-
-  },[htmlChangeData])
+  }, [htmlChangeData])
 
 
   const ConfirmWarning = () => {
     setConfirmWarning(true)
     setOpenWarningModal(false)
-  };
+  }
 
 
   const DiscardWarning = () => {
     setOpenWarningModal(false)
-  };
+  }
   
 
   const handleComboChange = (e: any) => {
@@ -508,6 +492,8 @@ const DocumentModelEdit: React.FC = () => {
         '|',
         'undo', 'redo',
         '|',
+        'sourceEditing',
+				'|',
 			],
 			shouldNotGroupWhenFull: true
 		},
@@ -570,16 +556,31 @@ const DocumentModelEdit: React.FC = () => {
 			]
 		},
 		image: {
-			toolbar: [
-				'toggleImageCaption',
-				'imageTextAlternative',
-				'|',
-				'imageStyle:inline',
-				'imageStyle:wrapText',
-				'imageStyle:breakText',
-				'|',
-				'resizeImage'
-			]
+      insert: {type: 'inline'},
+      resizeUnit: 'px',
+      resizeOptions: [
+        {
+          name: 'resizeImage:original',
+          label: 'Original',
+          value: null
+        },
+        {
+          name: 'resizeImage:custom',
+          label: 'Custom',
+          value: 'custom'
+        },
+        {
+          name: 'resizeImage:100',
+          label: '100px',
+          value: '100'
+        },
+        {
+          name: 'resizeImage:200',
+          label: '200px',
+          value: '200'
+        }
+      ],
+			toolbar: ['ImageInline',]
 		},
 		initialData:
       documentText,
@@ -608,7 +609,7 @@ const DocumentModelEdit: React.FC = () => {
 			contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
 		},
 		translations: [translations]
-	};
+	}
  
 
   return (
@@ -1209,8 +1210,8 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
       )}
 
     </Container>
-  );
+  )
 
-};
+}
 
 export default DocumentModelEdit;

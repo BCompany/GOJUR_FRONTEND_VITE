@@ -234,16 +234,31 @@ const DocumentModelVizualize: React.FC = () => {
 			]
 		},
 		image: {
-			toolbar: [
-				'toggleImageCaption',
-				'imageTextAlternative',
-				'|',
-				'imageStyle:inline',
-				'imageStyle:wrapText',
-				'imageStyle:breakText',
-				'|',
-				'resizeImage'
-			]
+      insert: {type: 'inline'},
+      resizeUnit: 'px',
+      resizeOptions: [
+        {
+          name: 'resizeImage:original',
+          label: 'Original',
+          value: null
+        },
+        {
+          name: 'resizeImage:custom',
+          label: 'Custom',
+          value: 'custom'
+        },
+        {
+          name: 'resizeImage:100',
+          label: '100px',
+          value: '100'
+        },
+        {
+          name: 'resizeImage:200',
+          label: '200px',
+          value: '200'
+        }
+      ],
+			toolbar: ['ImageInline',]
 		},
 		initialData:
       documentText,
