@@ -6,26 +6,29 @@
 /* eslint-disable no-alert */
 /* eslint-disable no-param-reassign */
 
-import React, { useCallback, useEffect, useState, ChangeEvent } from 'react';
+import React, { useCallback, useEffect, useState, ChangeEvent, useRef } from 'react';
 import { FaRegTimesCircle, FaCheck } from 'react-icons/fa';
 import { useToast } from 'context/toast';
 import { useDevice } from "react-use-device";
 import { FiSave, FiX } from 'react-icons/fi';
 import api from 'services/api';
+import {CKEditor} from '@ckeditor/ckeditor5-react';
+import {ClassicEditor, AccessibilityHelp, Alignment, AutoImage, Autosave, BlockQuote, Bold, CloudServices, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, Heading, ImageBlock, ImageCaption, ImageInline, ImageInsertViaUrl, ImageResize, ImageStyle, ImageTextAlternative, ImageToolbar, ImageUpload, Indent, IndentBlock, Italic, Link, LinkImage, List, ListProperties, PageBreak, Paragraph, SelectAll, SourceEditing, Strikethrough, Table, TableCaption, TableCellProperties, TableColumnResize, TableProperties, TableToolbar, Underline, Undo} from 'ckeditor5';
+import {customColorPalette} from 'Shared/dataComponents/graphicsColors';
+import translations from 'ckeditor5/translations/pt-br.js';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
 import { useConfirmBox } from 'context/confirmBox';
 import UploadAdapter from "../Edit/upload_adapter";
-import { CKEditor } from '@ckeditor/ckeditor5-react';
-import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document/build/ckeditor';
-import {customColorPalette} from 'Shared/dataComponents/graphicsColors';
 import Uploader from '../Edit/Uploader';
 import { ModalHeaderFooter, Editor, ModalInformation, OverlayDocument, OverlayHeader, OverlayFooter } from './styles';
+
 
 export interface IHeaderFooterData {
   id: string;
   value: string;
   count: string;
 }
+
 
 export interface IParameterData {
   parameterId: number;
@@ -34,22 +37,21 @@ export interface IParameterData {
   message: string;
 }
 
-const HeaderFooterModal = (props) => {
-  // #region STATES
-  const {documentId, headerTypeId, headerText, footerTypeId, footerText, handleHeaderFooterCallback, handleHeaderFooterModalClose} = props.callbackFunction
 
+const HeaderFooterModal = (props) => {
+  const {documentId, headerTypeId, headerText, footerTypeId, footerText, handleHeaderFooterCallback, handleHeaderFooterModalClose} = props.callbackFunction
   const { addToast } = useToast();
   const token = localStorage.getItem('@GoJur:token');
   const {isConfirmMessage, isCancelMessage, handleCancelMessage, handleConfirmMessage, caller, handleCaller, handleCheckConfirm } = useConfirmBox();
   const { isMOBILE } = useDevice();
   console.clear()
-
   const [warningCaller, setWarningCaller] = useState<string>("");
-
   const [documentModelId, setDocumentModelId] = useState<string>(documentId)
   const [openInformationModal, setOpenInformationModal] = useState(false)
   const [informationType, setInformationType] = useState('')
   const [confirmSave, setConfirmSave] = useState(false)
+  const editorContainerRef = useRef(null);
+	const editorRef = useRef(null);
 
   // Header
   const [headerTypeIdModal, setHeaderTypeIdModal] = useState<string>(headerTypeId)
@@ -68,12 +70,9 @@ const HeaderFooterModal = (props) => {
   const [hasDefaultFooter, setHasDefaultFooter] = useState<boolean>(false)
   const [footerWarning, setFooterWarning] = useState<boolean>(false)
   const [footerImage, setFooterImage] = useState(false);
-  // #endregion
 
-  
-  // #region USE EFFECT
+
   useEffect(() => {
-
     if(footerTypeId == 'E')
       setCheckChangeFooter(true)
     else if(footerTypeId == 'A')
@@ -83,41 +82,31 @@ const HeaderFooterModal = (props) => {
       setCheckChangeHeader(true)
     else if(headerTypeId == 'A')
       CheckCompanyDefaultHeaderFooter('#DOCDEFHEADER,')
+  }, [footerTypeId, headerTypeId])
 
-  },[footerTypeId, headerTypeId])
   
 
   useEffect(() => {
-
     if (isCancelMessage){
-
       if (caller === 'changeDefaultHeader')
-      {
         setHeaderWarning(false)
-      }
       
       if (caller === 'changeDefaultFooter')
-      {
         setFooterWarning(false)
-      }
 
       setWarningCaller("")
     }
+  }, [isCancelMessage, caller]);
 
-  },[isCancelMessage, caller]);
 
 
   useEffect(() => {
-
-    if(isConfirmMessage)
-    {
-      if (warningCaller == "C" && caller === 'changeDefaultHeader')
-      {
+    if(isConfirmMessage){
+      if (warningCaller == "C" && caller === 'changeDefaultHeader'){
         ChangeDefaultHeader()
         setHeaderWarning(false)
       }
-      if (warningCaller == "R" && caller === 'changeDefaultFooter')
-      {
+      if (warningCaller == "R" && caller === 'changeDefaultFooter'){
         ChangeDefaultFooter()
         setFooterWarning(false)
       }      
@@ -125,7 +114,8 @@ const HeaderFooterModal = (props) => {
       setWarningCaller("");
       handleConfirmMessage(false)
     }
-  },[isConfirmMessage, caller]);
+  }, [isConfirmMessage, caller]);
+
 
 
   // update img src to S3 amazon
@@ -141,7 +131,8 @@ const HeaderFooterModal = (props) => {
 
       setHeaderImage(false)
     }
-  },[headerImage])
+  }, [headerImage])
+
 
 
   // update img src to S3 amazon
@@ -155,14 +146,12 @@ const HeaderFooterModal = (props) => {
         localStorage.removeItem('@Gojur:documentImage')
       }
 
-      setHeaderImage(false)
+      setFooterImage(false)
     }
-  },[footerImage])
-  // #endregion
+  }, [footerImage])
 
 
   const CheckCompanyDefaultHeaderFooter = async (parameterName) => { 
-
     try
     {
       const response = await api.post<IParameterData[]>('/Parametro/Selecionar', {
@@ -202,7 +191,6 @@ const HeaderFooterModal = (props) => {
           setCheckChangeFooter(false);
         }
       }
-      
     }
     catch (err){
       console.log(err)
@@ -214,48 +202,44 @@ const HeaderFooterModal = (props) => {
   const handleChangeHeaderType = (item) => {
     setHeaderTypeIdModal(item.target.value)
 
-    if(item.target.value == 'E')
-    {
+    if(item.target.value == 'E'){
       setCheckChangeHeader(true)
       setButtonChangeHeader(false)
       setHasDefaultHeader(false)
       setHeaderTextModal(headerText??"")
       return;
     }
-    if(item.target.value == 'A')
-    {
+    if(item.target.value == 'A'){
       CheckCompanyDefaultHeaderFooter('#DOCDEFHEADER,')
     }
-    else
-    {
+    else{
       setCheckChangeHeader(false)
       setButtonChangeHeader(false)
     }
-  };
+  }
+
 
 
   // CHANGE FOOTER SELECT
   const handleChangeFooterType = (item) => {
     setFooterTypeIdModal(item.target.value)
 
-    if(item.target.value == 'E')
-    {
+    if(item.target.value == 'E'){
       setCheckChangeFooter(true)
       setButtonChangeFooter(false)
       setHasDefaultFooter(false)
       setFooterTextModal(footerText??"")
       return;
     }
-    if(item.target.value == 'A')
-    {
+    if(item.target.value == 'A'){
       CheckCompanyDefaultHeaderFooter('#DOCDEFFOOTER,')
     }
-    else
-    {
+    else{
       setCheckChangeFooter(false)
       setButtonChangeFooter(false)
     }
-  };
+  }
+
 
 
   // CREATE DEFAULT HEADER
@@ -309,8 +293,7 @@ const HeaderFooterModal = (props) => {
   const saveHeaderFooter = useCallback(async() => {
     try {
       // If document exists, save header and footer in database
-      if(documentModelId != "0")
-      {
+      if(documentModelId != "0"){
         await api.post('/DocumentosModelo/SalvarCabecalhoRodape', {
           id: documentModelId,
           headerType: headerTypeIdModal,
@@ -323,31 +306,15 @@ const HeaderFooterModal = (props) => {
 
       handleHeaderFooterModalClose()
 
-      addToast({
-        type: 'success',
-        title: 'Operação realizada com sucesso',
-        description: 'O Cabeçalho/Rodapé foram salvos com sucesso',
-      });
-
-    } catch (err:any) {
-      
-      if(err.response.data.typeError.warning == "awareness")
-      {
-        addToast({
-          type: "info",
-          title: "Atenção",
-          description: err.response.data.Message
-        })
-      }
-      else{
-        addToast({
-          type: "error",
-          title: "Falha ao salvar cabeçalho e rodapé.",
-          description: err.response.data.Message
-        })
-      }
+      addToast({type: 'success', title: 'Operação realizada com sucesso', description: 'O Cabeçalho/Rodapé foram salvos com sucesso'})
     }
-  },[headerTypeIdModal, footerTypeIdModal, headerTextModal, footerTextModal, confirmSave]);
+    catch (err:any) {
+      if(err.response.data.typeError.warning == "awareness")
+        addToast({type: "info", title: "Atenção", description: err.response.data.Message})
+      else
+        addToast({type: "error", title: "Falha ao salvar cabeçalho e rodapé.", description: err.response.data.Message})
+    }
+  }, [headerTypeIdModal, footerTypeIdModal, headerTextModal, footerTextModal, confirmSave]);
 
 
   function HeaderCustomAdapter( editor ) {
@@ -356,11 +323,285 @@ const HeaderFooterModal = (props) => {
     };
   }
 
+
   function FooterCustomAdapter( editor ) {
     editor.plugins.get( 'FileRepository' ).createUploadAdapter = ( loader ) => {
       return new UploadAdapter( loader );
     };
   }
+
+
+  const editorConfigHeader = {
+		toolbar: {
+			items: [
+				'heading',
+        '|',
+        'fontFamily', 'fontSize', 'fontColor', 'fontBackgroundColor',
+        '|',
+        'bold', 'italic', 'underline', 'strikethrough', 'link',
+        '|',
+        'alignment',
+        '|',
+        'outdent', 'indent', 'uploadImage',
+        '|',
+        'blockQuote', 'insertTable', 
+        '|',
+        'undo', 'redo',
+        '|',
+			],
+			shouldNotGroupWhenFull: true
+		},
+    extraPlugins: [HeaderCustomAdapter],
+		plugins: [AccessibilityHelp, Alignment, AutoImage, Autosave, BlockQuote, Bold, CloudServices, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, Heading, ImageBlock, ImageCaption, ImageInline, ImageInsertViaUrl, ImageResize, ImageStyle, ImageTextAlternative, ImageToolbar, ImageUpload, Indent, IndentBlock, Italic, Link, LinkImage, List, ListProperties, PageBreak, Paragraph, SelectAll, SourceEditing, Strikethrough, Table, TableCaption, TableCellProperties, TableColumnResize, TableProperties, TableToolbar, Underline, Undo],
+		fontFamily: {supportAllValues: true},
+		fontSize: {
+			options: [ 9, 10, 11, 12, 13, 14, 15, 17, 19, 21 ],
+			supportAllValues: true
+		},
+    fontColor: {
+      colors: customColorPalette
+    },
+    fontBackgroundColor: {
+      colors: customColorPalette
+    },    
+		heading: {
+			options: [
+				{
+					model: 'paragraph',
+					title: 'Paragraph',
+					class: 'ck-heading_paragraph'
+				},
+				{
+					model: 'heading1',
+					view: 'h1',
+					title: 'Heading 1',
+					class: 'ck-heading_heading1'
+				},
+				{
+					model: 'heading2',
+					view: 'h2',
+					title: 'Heading 2',
+					class: 'ck-heading_heading2'
+				},
+				{
+					model: 'heading3',
+					view: 'h3',
+					title: 'Heading 3',
+					class: 'ck-heading_heading3'
+				},
+				{
+					model: 'heading4',
+					view: 'h4',
+					title: 'Heading 4',
+					class: 'ck-heading_heading4'
+				},
+				{
+					model: 'heading5',
+					view: 'h5',
+					title: 'Heading 5',
+					class: 'ck-heading_heading5'
+				},
+				{
+					model: 'heading6',
+					view: 'h6',
+					title: 'Heading 6',
+					class: 'ck-heading_heading6'
+				}
+			]
+		},
+		image: {
+      insert: {type: 'inline'},
+      resizeUnit: 'px',
+      resizeOptions: [
+        {
+          name: 'resizeImage:original',
+          label: 'Original',
+          value: null
+        },
+        {
+          name: 'resizeImage:custom',
+          label: 'Custom',
+          value: 'custom'
+        },
+        {
+          name: 'resizeImage:100',
+          label: '100px',
+          value: '100'
+        },
+        {
+          name: 'resizeImage:200',
+          label: '200px',
+          value: '200'
+        }
+      ],
+			toolbar: ['ImageInline',]
+		},
+		initialData: headerTextModal,
+		language: 'pt-br',
+		link: {
+			addTargetToExternalLinks: true,
+			defaultProtocol: 'https://',
+			decorators: {
+				toggleDownloadable: {
+					mode: 'manual',
+					label: 'Downloadable',
+					attributes: {
+						download: 'file'
+					}
+				}
+			}
+		},
+		list: {
+			properties: {
+				styles: true,
+				startIndex: true,
+				reversed: true
+			}
+		},
+		placeholder: '',
+		table: {
+			contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
+		},
+    shouldNotGroupWhenFull: true,
+		translations: [translations]
+	}
+
+
+  const editorConfigFooter = {
+		toolbar: {
+			items: [
+				'heading',
+        '|',
+        'fontFamily', 'fontSize', 'fontColor', 'fontBackgroundColor',
+        '|',
+        'bold', 'italic', 'underline', 'strikethrough', 'link',
+        '|',
+        'alignment',
+        '|',
+        'outdent', 'indent', 'uploadImage',
+        '|',
+        'blockQuote', 'insertTable', 
+        '|',
+        'undo', 'redo',
+        '|',
+			],
+			shouldNotGroupWhenFull: true
+		},
+    extraPlugins: [FooterCustomAdapter],
+		plugins: [AccessibilityHelp, Alignment, AutoImage, Autosave, BlockQuote, Bold, CloudServices, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, Heading, ImageBlock, ImageCaption, ImageInline, ImageInsertViaUrl, ImageResize, ImageStyle, ImageTextAlternative, ImageToolbar, ImageUpload, Indent, IndentBlock, Italic, Link, LinkImage, List, ListProperties, PageBreak, Paragraph, SelectAll, SourceEditing, Strikethrough, Table, TableCaption, TableCellProperties, TableColumnResize, TableProperties, TableToolbar, Underline, Undo],
+		fontFamily: {supportAllValues: true},
+		fontSize: {
+			options: [ 9, 10, 11, 12, 13, 14, 15, 17, 19, 21 ],
+			supportAllValues: true
+		},
+    fontColor: {
+      colors: customColorPalette
+    },
+    fontBackgroundColor: {
+      colors: customColorPalette
+    },    
+		heading: {
+			options: [
+				{
+					model: 'paragraph',
+					title: 'Paragraph',
+					class: 'ck-heading_paragraph'
+				},
+				{
+					model: 'heading1',
+					view: 'h1',
+					title: 'Heading 1',
+					class: 'ck-heading_heading1'
+				},
+				{
+					model: 'heading2',
+					view: 'h2',
+					title: 'Heading 2',
+					class: 'ck-heading_heading2'
+				},
+				{
+					model: 'heading3',
+					view: 'h3',
+					title: 'Heading 3',
+					class: 'ck-heading_heading3'
+				},
+				{
+					model: 'heading4',
+					view: 'h4',
+					title: 'Heading 4',
+					class: 'ck-heading_heading4'
+				},
+				{
+					model: 'heading5',
+					view: 'h5',
+					title: 'Heading 5',
+					class: 'ck-heading_heading5'
+				},
+				{
+					model: 'heading6',
+					view: 'h6',
+					title: 'Heading 6',
+					class: 'ck-heading_heading6'
+				}
+			]
+		},
+		image: {
+      insert: {type: 'inline'},
+      resizeUnit: 'px',
+      resizeOptions: [
+        {
+          name: 'resizeImage:original',
+          label: 'Original',
+          value: null
+        },
+        {
+          name: 'resizeImage:custom',
+          label: 'Custom',
+          value: 'custom'
+        },
+        {
+          name: 'resizeImage:100',
+          label: '100px',
+          value: '100'
+        },
+        {
+          name: 'resizeImage:200',
+          label: '200px',
+          value: '200'
+        }
+      ],
+			toolbar: ['ImageInline',]
+		},
+		initialData: footerTextModal,
+		language: 'pt-br',
+		link: {
+			addTargetToExternalLinks: true,
+			defaultProtocol: 'https://',
+			decorators: {
+				toggleDownloadable: {
+					mode: 'manual',
+					label: 'Downloadable',
+					attributes: {
+						download: 'file'
+					}
+				}
+			}
+		},
+		list: {
+			properties: {
+				styles: true,
+				startIndex: true,
+				reversed: true
+			}
+		},
+		placeholder: '',
+		table: {
+			contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
+		},
+    shouldNotGroupWhenFull: true,
+		translations: [translations]
+	}
+
 
   return (
     <>
@@ -457,6 +698,32 @@ const HeaderFooterModal = (props) => {
                     </div>
 
                     <Editor>
+                      <div className="main-container">
+                        <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
+                          <div className="editor-container__editor">
+                            <div>
+                              <CKEditor
+                                editor={ClassicEditor}
+                                ref={editorRef}
+                                config={editorConfigHeader}
+                                onChange={(event, editor) => {
+                                  const data = editor.getData();
+                                  const documentImage = localStorage.getItem('@Gojur:documentImage');
+
+                                  if (documentImage){
+                                    setHeaderImage(true)
+                                  }
+      
+                                  setHeaderTextModal(data)
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </Editor>
+
+                    {/* <Editor>
                       <div className="App">
                         <CKEditor
                           data={headerTextModal}
@@ -534,7 +801,7 @@ const HeaderFooterModal = (props) => {
                           }}
                         />
                       </div>
-                    </Editor>
+                    </Editor> */}
                   </div>
                 )}
 
@@ -546,6 +813,32 @@ const HeaderFooterModal = (props) => {
                       </div>
 
                       <Editor>
+                        <div className="main-container">
+                          <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
+                            <div className="editor-container__editor">
+                              <div>
+                                <CKEditor
+                                  editor={ClassicEditor}
+                                  ref={editorRef}
+                                  config={editorConfigHeader}
+                                  onChange={(event, editor) => {
+                                    const data = editor.getData();
+                                    const documentImage = localStorage.getItem('@Gojur:documentImage');
+  
+                                    if (documentImage){
+                                      setHeaderImage(true)
+                                    }
+        
+                                    setHeaderTextModal(data)
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </Editor>
+
+                      {/* <Editor>
                         <div className="App">
                           <CKEditor
                             data={headerTextModal}
@@ -618,7 +911,7 @@ const HeaderFooterModal = (props) => {
                             }}
                           />
                         </div>
-                      </Editor>
+                      </Editor> */}
                     </div>
                   </OverlayHeader>
                 )}
@@ -657,6 +950,32 @@ const HeaderFooterModal = (props) => {
                     </div>
 
                     <Editor>
+                      <div className="main-container">
+                        <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
+                          <div className="editor-container__editor">
+                            <div>
+                              <CKEditor
+                                editor={ClassicEditor}
+                                ref={editorRef}
+                                config={editorConfigFooter}
+                                onChange={(event, editor) => {
+                                  const data = editor.getData();
+                                  const documentImage = localStorage.getItem('@Gojur:documentImage');
+
+                                  if (documentImage){
+                                    setFooterImage(true)
+                                  }
+    
+                                  setFooterTextModal(data)
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </Editor>
+
+                    {/* <Editor>
                       <div className="App">
                         <CKEditor
                           data={footerTextModal}
@@ -730,7 +1049,7 @@ const HeaderFooterModal = (props) => {
                           }}
                         />
                       </div>
-                    </Editor>
+                    </Editor> */}
                   </div>
                 )}
 
@@ -742,6 +1061,32 @@ const HeaderFooterModal = (props) => {
                       </div>
 
                       <Editor>
+                        <div className="main-container">
+                          <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
+                            <div className="editor-container__editor">
+                              <div>
+                                <CKEditor
+                                  editor={ClassicEditor}
+                                  ref={editorRef}
+                                  config={editorConfigFooter}
+                                  onChange={(event, editor) => {
+                                    const data = editor.getData();
+                                    const documentImage = localStorage.getItem('@Gojur:documentImage');
+
+                                    if (documentImage){
+                                      setFooterImage(true)
+                                    }
+      
+                                    setFooterTextModal(data)
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </Editor>
+
+                      {/* <Editor>
                         <div className="App">
                           <CKEditor
                             data={footerTextModal}
@@ -815,7 +1160,7 @@ const HeaderFooterModal = (props) => {
                             }}
                           />
                         </div>
-                      </Editor>
+                      </Editor> */}
                     </div>
                   </OverlayFooter>
                 )}
@@ -918,4 +1263,5 @@ const HeaderFooterModal = (props) => {
   )
 
 }
+
 export default HeaderFooterModal;
