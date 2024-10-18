@@ -55,7 +55,7 @@ export default function DocumentModal() {
   const [peopleId, setPeopleId] = useState<string>("0")
   const [customerList, setCustomerList] = useState<ISelectData[]>([]);
   const [documentExtensionId, setDocumentExtensionId] = useState(''); 
-  
+  const [selectedFormat, setSelectedFormat] = useState(null);
   const token = localStorage.getItem('@GoJur:token');
 
   useEffect(() => {
@@ -97,6 +97,14 @@ export default function DocumentModal() {
     handleEffects();
 
   }, [addToast, customerQtdeLegalPerson , documentModelId]);
+
+
+  useEffect(() => {
+    const defaultFormat = documentExtensionsList[0]; 
+    setSelectedFormat(defaultFormat);
+    handleModelDocumentExtensionValue(defaultFormat); 
+  }, []);
+  
 
   useDelay(() => {
     
@@ -543,9 +551,11 @@ export default function DocumentModal() {
   const handleModelDocumentExtensionValue = (item: any) => {
     
     if (item){
+      setSelectedFormat(item);
       setDocumentExtensionId(item.id);
       handleBlockButton(false);
     }else{
+      setSelectedFormat(null);
       setDocumentExtensionId('');
       handleBlockButton(true);
     }
@@ -687,6 +697,8 @@ export default function DocumentModal() {
                   noOptionsMessage={noOptionsMessage}
                   styles={selectStyles}                 
                   options={documentExtensionsList}
+                  defaultValue={documentExtensionsList[0]}
+                  value={selectedFormat} 
                 />
           </AutoCompleteSelect>
 

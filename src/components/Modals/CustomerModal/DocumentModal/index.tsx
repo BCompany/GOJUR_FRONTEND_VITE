@@ -40,6 +40,8 @@ export default function DocumentModal() {
   const history = useHistory();
   const token = localStorage.getItem('@GoJur:token');
   const [documentExtensionId, setDocumentExtensionId] = useState(''); 
+  const [selectedFormat, setSelectedFormat] = useState(null);
+
 
   useEffect(() => {
     changeText("Gerar Documento ")
@@ -109,6 +111,14 @@ export default function DocumentModal() {
     handleEffects();
 
   }, [addToast, customerQtdeProcess, documentList]);
+
+
+  useEffect(() => {
+    const defaultFormat = documentExtensionsList[0]; 
+    setSelectedFormat(defaultFormat);
+    handleModelDocumentExtensionValue(defaultFormat); 
+  }, []);
+
 
   // visualize report
   const validateParameters = () => {
@@ -653,9 +663,11 @@ export default function DocumentModal() {
   const handleModelDocumentExtensionValue = (item: any) => {
     
     if (item){
+      setSelectedFormat(item);
       setDocumentExtensionId(item.id);
       handleBlockButton(false);
     }else{
+      setSelectedFormat(null);
       setDocumentExtensionId('');
       handleBlockButton(true);
     }
@@ -794,6 +806,8 @@ export default function DocumentModal() {
                   noOptionsMessage={noOptionsMessage}
                   styles={selectStyles}                 
                   options={documentExtensionsList}
+                  defaultValue={documentExtensionsList[0]}
+                  value={selectedFormat} 
                 />
           </AutoCompleteSelect>
 

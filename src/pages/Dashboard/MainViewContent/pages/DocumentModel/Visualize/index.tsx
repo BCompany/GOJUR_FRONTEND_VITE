@@ -39,6 +39,14 @@ const DocumentModelVizualize: React.FC = () => {
   const [documentExtensionId, setDocumentExtensionId] = useState(''); 
   const editorContainerRef = useRef(null);
 	const editorRef = useRef(null);
+  const [selectedFormat, setSelectedFormat] = useState(null);
+
+
+  useEffect(() => {
+    const defaultFormat = documentExtensionsList[0]; 
+    setSelectedFormat(defaultFormat);
+    handleModelDocumentExtensionValue(defaultFormat); 
+  }, []);
 
   
   const handleEditClose = () => {
@@ -334,14 +342,16 @@ const DocumentModelVizualize: React.FC = () => {
 
 
 
-  const handleModelDocumentExtensionValue = (item: any) => {
-    
-    if (item){
-      setDocumentExtensionId(item.id);
-    }else{
-      setDocumentExtensionId('');
+   const handleModelDocumentExtensionValue = (item: any) => {
+  
+      if (item){
+        setSelectedFormat(item);
+        setDocumentExtensionId(item.id);
+      }else{
+        setSelectedFormat(null);
+        setDocumentExtensionId('');
+      }
     }
-  }
 
 
   return (
@@ -391,6 +401,8 @@ const DocumentModelVizualize: React.FC = () => {
                     onChange={(item) => handleModelDocumentExtensionValue(item)}
                     styles={selectStyles}                 
                     options={documentExtensionsList}
+                    defaultValue={documentExtensionsList[0]}
+                    value={selectedFormat} 
                   />
               </AutoCompleteSelect>
 
