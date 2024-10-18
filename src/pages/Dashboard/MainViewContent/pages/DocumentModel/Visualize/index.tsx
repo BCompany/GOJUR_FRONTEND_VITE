@@ -394,7 +394,6 @@ const DocumentModelVizualize: React.FC = () => {
                   />
               </AutoCompleteSelect>
 
-            <div id='Buttons' style={{float:'right', marginRight:'5%'}}>
               <div style={{float:'left', width:'160px'}}>
                 <button type='button' className="buttonClick" onClick={() => VisualizeDocument()} style={{width:'150px'}}>
                   <FaFileAlt />
