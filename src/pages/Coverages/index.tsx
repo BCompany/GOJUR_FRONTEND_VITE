@@ -11,7 +11,8 @@ import React, { useState, useEffect, } from 'react';
   
   interface CoveragesDTO {
     name: string;
-    uf: string
+    uf: string;
+    processingStatus: string;
   }
   
   const Coverages: React.FC = () => {
@@ -21,7 +22,7 @@ import React, { useState, useEffect, } from 'react';
     useEffect(() => {
       async function LoadCoverages() {
         try {
-          const response = await api.post<CoveragesDTO[]>('https://api.gojur.com.br/Abrangencias/Listar', {
+          const response = await api.post<CoveragesDTO[]>('/Abrangencias/Listar', {
           });
   
           setCoveragesList(response.data)
@@ -70,13 +71,15 @@ import React, { useState, useEffect, } from 'react';
                 <ProfileTable>
                   <table>
                     <tr>
-                      <th style={{width:'70%'}}>Diário</th>
-                      <th style={{width:'30%'}}>Estado</th>
+                      <th style={{width:'65%'}}>Diário</th>
+                      <th style={{width:'10%'}}>Estado</th>
+                      <th style={{width:'25%'}}>Status</th>
                     </tr>
                     {coveragesList.map(item =>(
                       <tr>
-                        <td style={{width:'70%', textAlign:'left'}}>{item.name}</td>
-                        <td style={{width:'30%'}}>{item.uf}</td>
+                        <td style={{width:'65%', textAlign:'left'}}>{item.name}</td>
+                        <td style={{width:'10%'}}>{item.uf}</td>
+                        <td style={{width:'25%'}}>{item.processingStatus}</td>
                       </tr>
                     ))}
                   </table>
