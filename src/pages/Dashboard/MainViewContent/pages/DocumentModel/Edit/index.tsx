@@ -215,7 +215,7 @@ const DocumentModelEdit: React.FC = () => {
 
       history.push(`/documentmodel/edit/${response.data}`)
       setDocumentId(response.data)
-      DocumentEdit()
+      // DocumentEdit()
       
       if(fromheader == false && fromVisualize == false){
         addToast({
@@ -356,7 +356,7 @@ const DocumentModelEdit: React.FC = () => {
       const documentImage = localStorage.getItem('@Gojur:documentImage')
 
       if (documentImage){
-        const newDocumentText = documentText.replaceAll('<img>', `'<img src=${documentImage} />'`)
+        const newDocumentText = documentText.replaceAll('<img>', `<img src=${documentImage} />`)
         setDocumentText(newDocumentText)
         localStorage.removeItem('@Gojur:documentImage')
       }

@@ -143,7 +143,7 @@ const DocumentModelVizualize: React.FC = () => {
       const documentImage = localStorage.getItem('@Gojur:documentImage')
 
       if (documentImage){
-        const newDocumentText = documentText.replaceAll('<img>', `'<img src=${documentImage} />'`)
+        const newDocumentText = documentText.replaceAll('<img>', `<img src=${documentImage} />`)
         setDocumentText(newDocumentText)
         localStorage.removeItem('@Gojur:documentImage')
       }

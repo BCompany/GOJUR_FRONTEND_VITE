@@ -120,7 +120,7 @@ const HeaderFooterModal = (props) => {
       const documentImage = localStorage.getItem('@Gojur:documentImage')
 
       if (documentImage){
-        const newDocumentText = headerTextModal.replaceAll('<img>', `'<img src=${documentImage} />'`)
+        const newDocumentText = headerTextModal.replaceAll('<img>', `<img src=${documentImage} />`)
         setHeaderTextModal(newDocumentText)
         localStorage.removeItem('@Gojur:documentImage')
       }
@@ -136,7 +136,7 @@ const HeaderFooterModal = (props) => {
       const documentImage = localStorage.getItem('@Gojur:documentImage')
 
       if (documentImage){
-        const newDocumentText = footerTextModal.replaceAll('<img>', `'<img src=${documentImage} />'`)
+        const newDocumentText = footerTextModal.replaceAll('<img>', `<img src=${documentImage} />`)
         setFooterTextModal(newDocumentText)
         localStorage.removeItem('@Gojur:documentImage')
       }
