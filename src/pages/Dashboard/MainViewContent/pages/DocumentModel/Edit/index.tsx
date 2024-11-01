@@ -215,7 +215,7 @@ const DocumentModelEdit: React.FC = () => {
 
       history.push(`/documentmodel/edit/${response.data}`)
       setDocumentId(response.data)
-      // DocumentEdit()
+      DocumentEdit()
       
       if(fromheader == false && fromVisualize == false){
         addToast({
@@ -606,7 +606,13 @@ const DocumentModelEdit: React.FC = () => {
 			}
 		},
 		table: {
-			contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
+			contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties'],
+      tableProperties: {tableAlignment: 'center', borderColors: customColorPalette, backgroundColors: customColorPalette,
+        defaultProperties: {borderColor: '#000000'},
+      },
+      tableCellProperties: {borderColors: customColorPalette, backgroundColors: customColorPalette,
+        defaultProperties: {borderColor: '#000000'},
+      }
 		},
 		translations: [translations]
 	}

@@ -285,7 +285,13 @@ const DocumentModelVizualize: React.FC = () => {
 		},
 		placeholder: '',
 		table: {
-			contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
+			contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties'],
+      tableProperties: {tableAlignment: 'center', borderColors: customColorPalette, backgroundColors: customColorPalette,
+        defaultProperties: {borderColor: '#000000'},
+      },
+      tableCellProperties: {borderColors: customColorPalette, backgroundColors: customColorPalette,
+        defaultProperties: {borderColor: '#000000'},
+      }
 		},
 		translations: [translations]
 	};
@@ -308,6 +314,7 @@ const DocumentModelVizualize: React.FC = () => {
                       <CKEditor
                         editor={ClassicEditor}
                         ref={editorRef}
+                        data={documentText}
                         config={editorConfig}
                         onChange={(event, editor) => {
                           const data = editor.getData();
