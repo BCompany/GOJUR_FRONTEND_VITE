@@ -49,6 +49,7 @@ export default function DocumentModal() {
     handleResetValues();
   }, [isCustomerDocumentModalOpen])
 
+
   useEffect(() => {
 
     loadProcess("")
@@ -56,6 +57,7 @@ export default function DocumentModal() {
     handleResetValues();
 
   }, [])
+
 
   useDelay(() => {
     
@@ -66,6 +68,7 @@ export default function DocumentModal() {
     handleLoadDocumentModelList("'CL', 'PR'", documentModelName);
 
   },[documentModelName], 1000)
+
 
   useEffect(() => {
 
@@ -162,6 +165,7 @@ export default function DocumentModal() {
     }
   },[idReportGenerate])
 
+
   // Check is report is already 
   const CheckReportPending = useCallback(async (checkInterval) => {
     if (isGeneratingReport){
@@ -199,6 +203,7 @@ export default function DocumentModal() {
         }
     }
   },[isGeneratingReport, idReportGenerate])
+
 
   // Open link with report
   const OpenReportAmazon = async() => {
@@ -621,6 +626,7 @@ export default function DocumentModal() {
     }
   }
 
+
   const handleModelDocumentValue = (item: any) => {
     handleBlockButton(true)
 
@@ -634,6 +640,7 @@ export default function DocumentModal() {
     }
   }
 
+
   const handleProcessDocumentValue = (item: any) => {
     
     if (item){
@@ -642,6 +649,7 @@ export default function DocumentModal() {
       setDocumentProcessId('')
     }
   }
+
 
   const handleLegalPersonDocumentValue = (item: any) => {
     if (item){
@@ -652,6 +660,7 @@ export default function DocumentModal() {
     }
   }
 
+
   const handlePrepostoDocumentValue = (item: any) => {
     if (item){
       setDocumentPrepostoId(item.id)
@@ -661,12 +670,13 @@ export default function DocumentModal() {
     }
   }
 
+
   const handleModelDocumentExtensionValue = (item: any) => {
     
     if (item){
+      handleBlockButton(false);
       setSelectedFormat(item);
       setDocumentExtensionId(item.id);
-      handleBlockButton(false);
 
       if(item.id == 1){
         setDisableVisualizeButton(false);
@@ -674,16 +684,19 @@ export default function DocumentModal() {
       else if(item.id == 2){
         setDisableVisualizeButton(true);
       }
-    }else{
+    }
+    else{
       setSelectedFormat(null);
       setDocumentExtensionId('');
       handleBlockButton(true);
     }
   }
 
+  
   const [buttonText, setButtonText] = useState("Gerar Relatório");
   const changeText = (text) => setButtonText(text);
 
+  
   return (
     <Modal
       isOpen={isCustomerDocumentModalOpen}
