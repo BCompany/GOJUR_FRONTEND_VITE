@@ -19,6 +19,11 @@ import { selectStyles, useDelay } from 'Shared/utils/commonFunctions';
 import { loadingMessage, noOptionsMessage } from 'Shared/utils/commonConfig';
 import { Container } from './styles';
 
+export const documentExtensionsList = [
+  {id: "1", label: "PDF"},
+  {id: "2", label: "WORD (.docx)"}
+];
+
 export default function DocumentModal() {
   // Context imports
   const { isCustomerDocumentModalOpen, handleCloseCustomerDocumentModal } = useCustomer();
@@ -26,6 +31,7 @@ export default function DocumentModal() {
   const { addToast } = useToast();
   const [isGeneratingReport, setIsGeneratingReport] = useState<boolean>(false); 
   const [isVisualizeReport, setIsVisualizeReport] = useState<boolean>(false); 
+  const [disableVisualizeButton, setDisableVisualizeButton] = useState<boolean>(false); 
   const [generateWithoutMatter, setGenerateWithoutMatter] = useState<boolean>(false); 
   const [documentModelName, setDocumentModelName] = useState(''); 
   const [documentModelId, setDocumentModelId] = useState(''); 
@@ -34,11 +40,15 @@ export default function DocumentModal() {
   const [documentPrepostoId, setDocumentPrepostoId] = useState('');
   const history = useHistory();
   const token = localStorage.getItem('@GoJur:token');
+  const [documentExtensionId, setDocumentExtensionId] = useState(''); 
+  const [selectedFormat, setSelectedFormat] = useState(null);
+
 
   useEffect(() => {
     changeText("Gerar Documento ")
     handleResetValues();
   }, [isCustomerDocumentModalOpen])
+
 
   useEffect(() => {
 
@@ -47,6 +57,7 @@ export default function DocumentModal() {
     handleResetValues();
 
   }, [])
+
 
   useDelay(() => {
     
@@ -57,6 +68,7 @@ export default function DocumentModal() {
     handleLoadDocumentModelList("'CL', 'PR'", documentModelName);
 
   },[documentModelName], 1000)
+
 
   useEffect(() => {
 
@@ -104,6 +116,14 @@ export default function DocumentModal() {
 
   }, [addToast, customerQtdeProcess, documentList]);
 
+
+  useEffect(() => {
+    const defaultFormat = documentExtensionsList[0]; 
+    setSelectedFormat(defaultFormat);
+    handleModelDocumentExtensionValue(defaultFormat); 
+  }, []);
+
+
   // visualize report
   const validateParameters = () => {
 
@@ -145,6 +165,7 @@ export default function DocumentModal() {
     }
   },[idReportGenerate])
 
+
   // Check is report is already 
   const CheckReportPending = useCallback(async (checkInterval) => {
     if (isGeneratingReport){
@@ -158,6 +179,13 @@ export default function DocumentModal() {
           clearInterval(checkInterval);
           setIsGeneratingReport(false)
           OpenReportAmazon()
+        }
+
+        if (response.data == "W" && isGeneratingReport){
+          
+          clearInterval(checkInterval);
+          setIsGeneratingReport(false)
+          GetWarningProcessMessage()
         }
 
         if (response.data == "E"){
@@ -176,6 +204,7 @@ export default function DocumentModal() {
     }
   },[isGeneratingReport, idReportGenerate])
 
+
   // Open link with report
   const OpenReportAmazon = async() => {
     const response = await api.post(`/ProcessosGOJUR/Editar`, {
@@ -189,8 +218,33 @@ export default function DocumentModal() {
     handleCloseCustomerDocumentModal();
     setDocumentModelId('');
     setDocumentModelName('')
+    setDocumentExtensionId('');
     changeText("Gerar Documento ")
   } 
+
+
+   // Get the warning message
+   const GetWarningProcessMessage = async() => {
+    const response = await api.post(`/ProcessosGOJUR/Editar`, {
+      id: idReportGenerate,
+      token: localStorage.getItem('@GoJur:token')
+    });      
+
+    addToast({
+      type: "info",
+      title: "Operação não realizada",
+      description: response.data.des_ErroProcessoGOJUR
+    })
+
+    setIdReportGenerate(0)  
+    handleResetValues();
+    handleCloseCustomerDocumentModal();
+    setDocumentModelId('');
+    setDocumentModelName('')
+    setDocumentExtensionId('');
+    changeText("Gerar Documento ")
+  } 
+
 
   // generate report
   const handleGenerateReport = useCallback(async () => {
@@ -235,6 +289,22 @@ export default function DocumentModal() {
         .map(i => i.id),
     );
 
+    const extensionId = Number(
+      documentExtensionsList
+        .filter(extension => extension.id === documentExtensionId)
+        .map(extension => extension.id),
+    );
+
+    if(extensionId == 0){
+      addToast({
+        title: 'Não foi possivel completar a operação',
+        type: 'info',
+        description: 'Para gerar um documento do tipo processo favor selecionar um formato',
+      });     
+      setIsGeneratingReport(false)   
+      return;
+    }
+
     // validation if same process was selected
     if (typeDocument == 'PR' && idMatter == 0 && !generateWithoutMatter){
         addToast({
@@ -261,6 +331,7 @@ export default function DocumentModal() {
             printAllCustomer: 'notset',
             caller: 'customerModule',
             token,
+            documentExtensionId: extensionId
           }, 
         ) ;
 
@@ -287,6 +358,7 @@ export default function DocumentModal() {
             representativeAgentId: prepostoId === 0  || prepostoList.length === 1 ? null : prepostoId,
             des_Titulo: filteredDocument? filteredDocument.label.toString(): "",
             token,
+            documentExtensionId: extensionId
           },
         );
 
@@ -304,6 +376,7 @@ export default function DocumentModal() {
         // setIsGeneratingReport(false)    
         setDocumentModelId('');
         setDocumentModelName('')
+        setDocumentExtensionId('');
         handleResetValues(); 
         // handleCloseCustomerDocumentModal()
         setGenerateWithoutMatter(false)
@@ -321,6 +394,7 @@ export default function DocumentModal() {
             representativeAgentId: prepostoId === 0 || prepostoList.length === 1 ? null : prepostoId,
             des_Titulo: filteredDocument? filteredDocument.label.toString(): "",
             token,
+            documentExtensionId: extensionId
           },
         );
 
@@ -338,7 +412,7 @@ export default function DocumentModal() {
         // handleCloseCustomerDocumentModal()
       }
     }
-  }, [addToast, customerQtdeLegalPerson, customerQtdeProcess, documentLPId, documentList, documentLPId, documentModelName, documentPrepostoId, documentProcessId, legalPersonList, peopleId, prepostoList, processList]);
+  }, [addToast, customerQtdeLegalPerson, customerQtdeProcess, documentLPId, documentList, documentLPId, documentModelName, documentPrepostoId, documentProcessId, legalPersonList, peopleId, prepostoList, processList, documentExtensionId]);
 
   
   const handleVisualizeReport = async () => {
@@ -446,6 +520,7 @@ export default function DocumentModal() {
 
         setDocumentModelId('');
         setDocumentModelName('')
+        setDocumentExtensionId('');
         handleResetValues();
         handleCloseCustomerDocumentModal();
         setIsVisualizeReport(false)
@@ -489,6 +564,7 @@ export default function DocumentModal() {
         setDocumentModelId('');
         setDocumentModelName('')
         handleResetValues();
+        setDocumentExtensionId('');
         handleCloseCustomerDocumentModal();
         setIsVisualizeReport(false)
         setGenerateWithoutMatter(false)
@@ -528,6 +604,7 @@ export default function DocumentModal() {
 
           setDocumentModelId('');
           setDocumentModelName('')
+          setDocumentExtensionId('');
           handleResetValues();
           handleCloseCustomerDocumentModal();
           setIsVisualizeReport(false)
@@ -549,6 +626,7 @@ export default function DocumentModal() {
     }
   }
 
+
   const handleModelDocumentValue = (item: any) => {
     handleBlockButton(true)
 
@@ -562,6 +640,7 @@ export default function DocumentModal() {
     }
   }
 
+
   const handleProcessDocumentValue = (item: any) => {
     
     if (item){
@@ -570,6 +649,7 @@ export default function DocumentModal() {
       setDocumentProcessId('')
     }
   }
+
 
   const handleLegalPersonDocumentValue = (item: any) => {
     if (item){
@@ -580,6 +660,7 @@ export default function DocumentModal() {
     }
   }
 
+
   const handlePrepostoDocumentValue = (item: any) => {
     if (item){
       setDocumentPrepostoId(item.id)
@@ -589,9 +670,33 @@ export default function DocumentModal() {
     }
   }
 
+
+  const handleModelDocumentExtensionValue = (item: any) => {
+    
+    if (item){
+      handleBlockButton(false);
+      setSelectedFormat(item);
+      setDocumentExtensionId(item.id);
+
+      if(item.id == 1){
+        setDisableVisualizeButton(false);
+      }
+      else if(item.id == 2){
+        setDisableVisualizeButton(true);
+      }
+    }
+    else{
+      setSelectedFormat(null);
+      setDocumentExtensionId('');
+      handleBlockButton(true);
+    }
+  }
+
+  
   const [buttonText, setButtonText] = useState("Gerar Relatório");
   const changeText = (text) => setButtonText(text);
 
+  
   return (
     <Modal
       isOpen={isCustomerDocumentModalOpen}
@@ -599,6 +704,8 @@ export default function DocumentModal() {
         setDocumentModelId('');
         handleResetValues();
         handleCloseCustomerDocumentModal();
+        setDocumentExtensionId('');
+        setDisableVisualizeButton(false);
       }}
       overlayClassName="react-modal-overlay"
       className="react-modal-content"
@@ -611,6 +718,8 @@ export default function DocumentModal() {
             handleResetValues();
             setDocumentModelId('');
             handleCloseCustomerDocumentModal();
+            setDocumentExtensionId('');
+            setDisableVisualizeButton(false);
           }}
         >
           <FiX size={20} />
@@ -708,11 +817,28 @@ export default function DocumentModal() {
           )}
         </div>
 
+          <AutoCompleteSelect>
+                <p>Formato</p>  
+                <Select
+                  isSearchable   
+                  isClearable
+                  isLoading={isLoadingDocumentData}
+                  placeholder="Selecione um formato"
+                  onChange={(item) => handleModelDocumentExtensionValue(item)}
+                  loadingMessage={loadingMessage}
+                  noOptionsMessage={noOptionsMessage}
+                  styles={selectStyles}                 
+                  options={documentExtensionsList}
+                  defaultValue={documentExtensionsList[0]}
+                  value={selectedFormat} 
+                />
+          </AutoCompleteSelect>
+
         <footer>
 
 
           <button
-            disabled={isBlockButton}
+            disabled={disableVisualizeButton}
             className="buttonClick" 
             type="button"
             onClick={() => setTimeout(() => handleVisualizeReport(), 500)}

@@ -31,12 +31,18 @@ export interface ISelectData{
   flg_Principal: string
 }
 
+export const documentExtensionsList = [
+  {id: "1", label: "PDF"},
+  {id: "2", label: "WORD (.docx)"}
+];
+
 export default function DocumentModal() {
 
   const { handleLoadDocumentModelList, handleOpenDocumentModal, handleBlockButton, isBlockButton,isOpenDocumentModal, isLoadingDocumentData, documentList, legalPersonList, legalPersonTermSearch, prepostoList, legalPrepostoTermSearch, customerQtdeLegalPerson, loadLegalPerson, loadLegalPreposto, handleLegalPersonTermSearchTerm, handleLoadInitialPropsFromDocument, handleResetValues, handlePrepostoSearchTerm } = useDocument();
   const { addToast } = useToast();
   const [isGeneratingReport, setIsGeneratingReport] = useState<boolean>(false); 
   const [isVisualizeReport, setIsVisualizeReport] = useState<boolean>(false); 
+  const [disableVisualizeButton, setDisableVisualizeButton] = useState<boolean>(false); 
   const [documentModelName, setDocumentModelName] = useState(''); 
   const [documentModelId, setDocumentModelId] = useState(''); 
   const [idReportGenerate, setIdReportGenerate] = useState<number>(0)
@@ -49,7 +55,8 @@ export default function DocumentModal() {
   const history = useHistory();
   const [peopleId, setPeopleId] = useState<string>("0")
   const [customerList, setCustomerList] = useState<ISelectData[]>([]);
-  
+  const [documentExtensionId, setDocumentExtensionId] = useState(''); 
+  const [selectedFormat, setSelectedFormat] = useState(null);
   const token = localStorage.getItem('@GoJur:token');
 
   useEffect(() => {
@@ -91,6 +98,14 @@ export default function DocumentModal() {
     handleEffects();
 
   }, [addToast, customerQtdeLegalPerson , documentModelId]);
+
+
+  useEffect(() => {
+    const defaultFormat = documentExtensionsList[0]; 
+    setSelectedFormat(defaultFormat);
+    handleModelDocumentExtensionValue(defaultFormat); 
+  }, []);
+  
 
   useDelay(() => {
     
@@ -320,6 +335,22 @@ export default function DocumentModal() {
     
     const filteredDocument = documentList.find(i => i.id === documentModelId);
 
+    const extensionId = Number(
+      documentExtensionsList
+        .filter(extension => extension.id === documentExtensionId)
+        .map(extension => extension.id),
+    );
+
+    if(extensionId == 0){
+      addToast({
+        title: 'Não foi possivel completar a operação',
+        type: 'info',
+        description: 'Para gerar um documento do tipo processo favor selecionar um formato',
+      });     
+      setIsGeneratingReport(false)   
+      return;
+    }
+
     let legalPersonId
     let caller = "matterModule"
 
@@ -353,6 +384,7 @@ export default function DocumentModal() {
         printAllCustomer: parameterValue,
         caller,
         token,
+        documentExtensionId: extensionId
       },
     );
     
@@ -360,7 +392,7 @@ export default function DocumentModal() {
     
     localStorage.removeItem('@GoJur:matterId')
 
-  }, [documentList, documentModelId, isGeneratingReport, parameterValue, totalCustomer, legalPersonList, documentLPId, prepostoList, documentPrepostoId, parameterValue, peopleId]);
+  }, [documentList, documentModelId, isGeneratingReport, parameterValue, totalCustomer, legalPersonList, documentLPId, prepostoList, documentPrepostoId, parameterValue, peopleId, documentExtensionId]);
 
     // when exists report id verify if is avaiable every 2 seconds
     useEffect(() => {
@@ -382,6 +414,13 @@ export default function DocumentModal() {
             clearInterval(checkInterval);
             setIsGeneratingReport(false)
             OpenReportAmazon()
+          }
+
+          if (response.data == "W" && isGeneratingReport){
+          
+            clearInterval(checkInterval);
+            setIsGeneratingReport(false)
+            GetWarningProcessMessage()
           }
 
           if (response.data == "E"){
@@ -415,6 +454,30 @@ export default function DocumentModal() {
     setDocumentModelName('')
     changeText("Gerar Documento ")
   } 
+
+
+  // Get the warning message
+  const GetWarningProcessMessage = async() => {
+    const response = await api.post(`/ProcessosGOJUR/Editar`, {
+      id: idReportGenerate,
+      token: localStorage.getItem('@GoJur:token')
+    });      
+
+    addToast({
+      type: "info",
+      title: "Operação não realizada",
+      description: response.data.des_ErroProcessoGOJUR
+    })
+
+    setIdReportGenerate(0)  ;
+    handleCloseModal();
+    handleResetValues();
+    setDocumentModelId('');
+    setDocumentModelName('')
+    setDocumentExtensionId('');
+    changeText("Gerar Documento ")
+  } 
+
 
   const handleCloseModal = () => {
 
@@ -485,6 +548,26 @@ export default function DocumentModal() {
     }
 
   }
+
+  const handleModelDocumentExtensionValue = (item: any) => {
+    
+    if (item){
+      setSelectedFormat(item);
+      setDocumentExtensionId(item.id);
+      handleBlockButton(false);
+
+      if(item.id == 1){
+        setDisableVisualizeButton(false);
+      }
+      else if(item.id == 2){
+        setDisableVisualizeButton(true);
+      }
+    }else{
+      setSelectedFormat(null);
+      setDocumentExtensionId('');
+      handleBlockButton(true);
+    }
+  }
   
   // const optionsParameter = [
   //   {
@@ -501,7 +584,8 @@ export default function DocumentModal() {
     <Modal
       isOpen={isOpenDocumentModal}
       onRequestClose={() => {
-        setDocumentModelId('')
+        setDocumentModelId('');
+        setDisableVisualizeButton(false);
       }}
       overlayClassName="react-modal-overlay"
       className="react-modal-content"
@@ -520,7 +604,7 @@ export default function DocumentModal() {
       )} */}
 
       <Container>
-        <h1>Escolha na lista acima um modelo para gerar o documento</h1>
+        <h1>Escolha na lista abaixo um modelo para gerar o documento</h1>
         <div>
 
           <AutoCompleteSelect>
@@ -611,12 +695,28 @@ export default function DocumentModal() {
             </AutoCompleteSelect>
           )}
           
+          <AutoCompleteSelect>
+                <p>Formato</p>  
+                <Select
+                  isSearchable   
+                  isClearable
+                  placeholder="Selecione um formato"
+                  onChange={(item) => handleModelDocumentExtensionValue(item)}
+                  loadingMessage={loadingMessage}
+                  noOptionsMessage={noOptionsMessage}
+                  styles={selectStyles}                 
+                  options={documentExtensionsList}
+                  defaultValue={documentExtensionsList[0]}
+                  value={selectedFormat} 
+                />
+          </AutoCompleteSelect>
+
         </div>
 
         <footer>
 
           <button
-            disabled={isBlockButton}
+            disabled={disableVisualizeButton}
             className="buttonClick" 
             type="button"
             onClick={() => setTimeout(() => handleVisualizeDocument(), 500)}

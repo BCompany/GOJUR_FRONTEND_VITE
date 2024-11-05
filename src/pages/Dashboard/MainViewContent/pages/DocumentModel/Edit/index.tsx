@@ -13,6 +13,7 @@ import { HeaderPage } from 'components/HeaderPage';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import { useModal } from 'context/modal';
 import api from 'services/api';
+import UploadAdapter from "./upload_adapter";
 import {CKEditor} from '@ckeditor/ckeditor5-react';
 import {ClassicEditor, AccessibilityHelp, Alignment, AutoImage, Autosave, BlockQuote, Bold, CloudServices, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, Heading, ImageBlock, ImageCaption, ImageInline, ImageInsertViaUrl, ImageResize, ImageStyle, ImageTextAlternative, ImageToolbar, ImageUpload, Indent, IndentBlock, Italic, Link, LinkImage, List, ListProperties, PageBreak, Paragraph, SelectAll, SourceEditing, Strikethrough, Table, TableCaption, TableCellProperties, TableColumnResize, TableProperties, TableToolbar, Underline, Undo} from 'ckeditor5';
 import {customColorPalette} from 'Shared/dataComponents/graphicsColors';
@@ -20,6 +21,9 @@ import translations from 'ckeditor5/translations/pt-br.js';
 import Uploader from './Uploader'
 import HeaderFooterModal from '../HeaderFooterModal/index';
 import { Container, Content, Editor, Elements, ModalInformation, OverlayDocument, ModalWarning } from './styles';
+import { AutoCompleteSelect } from 'Shared/styles/GlobalStyle';
+import Select from 'react-select'
+import { selectStyles, useDelay } from 'Shared/utils/commonFunctions';
 
 export interface IDocumentModelData{
   cod_DocumentoModelo: string;
@@ -33,7 +37,13 @@ export interface IDocumentModelData{
   des_RodapePersonalizado: string;
 }
 
+export const documentExtensionsList = [
+  {id: "1", label: "PDF"},
+  {id: "2", label: "WORD (.docx)"}
+];
+
 const DocumentModelEdit: React.FC = () => {
+  // #region STATES
   const { addToast } = useToast();
   const token = localStorage.getItem('@GoJur:token');
   const history = useHistory();
@@ -64,18 +74,23 @@ const DocumentModelEdit: React.FC = () => {
   const [buttonElementDiv, setButtonElementDiv] = useState<string>('Expandir editor')
   const MDLFAT = localStorage.getItem('@GoJur:moduleCode');
   const [fromCaller, setFromCaller] = useState<string>("")
+  const [documentExtensionId, setDocumentExtensionId] = useState('')
   const editorContainerRef = useRef(null);
 	const editorRef = useRef(null);
+  const [selectedFormat, setSelectedFormat] = useState(null);
 
 
+  // #region USE EFFECT
   useEffect(() => {
     DocumentEdit()
   }, [])
+  
 
 
   useEffect(() => {
     setDocumentId(pathname.substr(20))
   }, [documentId])
+
 
 
   useEffect(() => {
@@ -88,6 +103,7 @@ const DocumentModelEdit: React.FC = () => {
     if(confirmWarning)
       handleEditSave()
   }, [confirmWarning])
+
 
 
   useEffect(() => {
@@ -108,6 +124,14 @@ const DocumentModelEdit: React.FC = () => {
     else
       setButtonElementDiv("Reexibir campos")
   }, [showElementsDiv])
+  // #endregion
+
+
+  useEffect(() => {
+    const defaultFormat = documentExtensionsList[0]; 
+    setSelectedFormat(defaultFormat);
+    handleModelDocumentExtensionValue(defaultFormat); 
+  }, []);
 
 
   const DocumentEdit = async() => {
@@ -158,6 +182,7 @@ const DocumentModelEdit: React.FC = () => {
   }
 
 
+
   const handleHeaderFooterModalClick = async () => {
 
     setFromCaller("headerAndFooter")
@@ -173,10 +198,12 @@ const DocumentModelEdit: React.FC = () => {
   }
 
 
+
   const ConfirmDocumentTypeChange = () => {
     setDocumentTypeId(newDocumentTypeId)
     setOpenInformationModal(false)
   }
+
 
 
   const DiscardDocumentTypeChange = () => {
@@ -185,9 +212,11 @@ const DocumentModelEdit: React.FC = () => {
   }
 
 
+
   const handleEditClose = () => {
     history.push(`/documentModel/list`)
   }
+
 
 
   const handleEditSave = useCallback(async(fromheader = false, fromVisualize = false) => {
@@ -269,6 +298,7 @@ const DocumentModelEdit: React.FC = () => {
   },[documentTitle, documentText, documentTypeId, headerTypeId, headerText, footerTypeId, footerText, confirmWarning, visualize, fromCaller, documentId ])
 
 
+
   const handleHeaderFooterCallback = (headerType: string, footerType: string, headerText: string, footerText: string ) => {
 
     setHeaderTypeId(headerType)
@@ -310,6 +340,12 @@ const DocumentModelEdit: React.FC = () => {
       setIsGenerating(true)
       const token = localStorage.getItem('@GoJur:token');
 
+      const extensionId = Number(
+        documentExtensionsList
+          .filter(extension => extension.id === documentExtensionId)
+          .map(extension => extension.id),
+      );
+
       if(documentId == "0")
       {
         addToast({
@@ -321,6 +357,17 @@ const DocumentModelEdit: React.FC = () => {
         return;
       }
 
+      if(extensionId == 0 && extensionId == null)
+        {
+          addToast({
+            type: "info",
+            title: "Atenção",
+            description: "Favor selecionar o formato antes de visualizar."
+          })
+          setIsGenerating(false)
+          return;
+        }
+
       const response = await api.post('/DocumentosModelo/VisualizarModelo', {
         id: documentId,
         type: documentTypeId,
@@ -330,24 +377,35 @@ const DocumentModelEdit: React.FC = () => {
         headerText,
         footerType: footerTypeId,
         footerText,
-        token
+        token,
+        documentExtensionId: extensionId
       })
       
-      if (response.data.id == "OK")
-      {
-        window.open(`${response.data.value}`, '_blank');
+      window.open(`${response.data.value}`, '_blank');
+      
+      setIsGenerating(false)
+    }
+    catch (err: any) {
+
+      if (err.response.data.typeError.warning == "awareness") {
+
+        setIsGenerating(false);
+        addToast({
+          type: "info",
+          title: "Falha ao gerar documento.",
+          description: err.response.data.Message
+        })
       }
-      
-      setIsGenerating(false)
+      else {
+        setIsGenerating(false)
+        addToast({
+          type: "error",
+          title: "Falha ao gerar documento.",
+          description: err.response.data.Message
+        })
+      }
     }
-    catch (err) {
-      setIsGenerating(false)
-      addToast({
-        type: "error",
-        title: "Falha ao gerar documento.",
-      })
-    }
-  },[documentTitle, documentText, documentTypeId, headerTypeId, headerText, footerTypeId, footerText, pathname, documentId])
+  },[documentTitle, documentText, documentTypeId, headerTypeId, headerText, footerTypeId, footerText, pathname, documentId, documentExtensionId]);
 
 
   // update img src to S3 amazon
@@ -370,6 +428,7 @@ const DocumentModelEdit: React.FC = () => {
     setConfirmWarning(true)
     setOpenWarningModal(false)
   }
+
 
 
   const DiscardWarning = () => {
@@ -470,6 +529,18 @@ const DocumentModelEdit: React.FC = () => {
   //     </div>
   //   )
   
+  // },[documentText])
+
+
+  const handleModelDocumentExtensionValue = (item) => { 
+    if (item) {
+      setSelectedFormat(item);
+      setDocumentExtensionId(item.id); 
+    } else {
+      setSelectedFormat(null); 
+      setDocumentExtensionId(''); 
+    }
+  };
   // },[documentText])
 
 
@@ -979,8 +1050,8 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
         <>
           <div id='TextElements' style={{height:'1400px', overflow:'auto', width:'850px', margin:'auto'}}>
 
-            <div id='Bottons' style={{float:'right', marginRight:'5%'}}>
-              <div style={{float:'left', width:'160px'}}>
+            <div id='Bottons' style={{float:'right', marginRight:'5%', display: "flex", alignItems: "center"}}>
+              <div style={{float:'left', width:'160px', marginTop:'20px'}}>
                 <button 
                   type='button'
                   className="buttonClick"
@@ -996,8 +1067,24 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
                   {buttonElementDiv}
                 </button>
               </div>
+
+              <div style={{float:'left', width:'265px', marginRight:"20px"}}>
+                <AutoCompleteSelect style={{width: "265px"}}>
+                    <p>Formato</p>  
+                    <Select
+                      isSearchable   
+                      isClearable
+                      placeholder="Selecione um formato"
+                      onChange={(item) => handleModelDocumentExtensionValue(item)}
+                      styles={selectStyles}                 
+                      options={documentExtensionsList}
+                      defaultValue={documentExtensionsList[0]}
+                      value={selectedFormat} 
+                    />
+                </AutoCompleteSelect>
+              </div>
               
-              <div style={{float:'left', width:'120px'}}>
+              <div style={{float:'left', width:'120px', marginTop:'20px'}}>
                 <button 
                   type='button'
                   className="buttonClick"
@@ -1009,7 +1096,7 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
                 </button>
               </div>
               
-              <div style={{float:'left', width:'120px'}}>
+              <div style={{float:'left', width:'120px', marginTop:'20px'}}>
                 <button 
                   className="buttonClick"
                   type='button'
@@ -1021,7 +1108,7 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
                 </button>
               </div>
                         
-              <div style={{float:'left', width:'120px'}}>
+              <div style={{float:'left', width:'120px', marginTop:'20px'}}>
                 <button 
                   type='button'
                   className="buttonClick"
@@ -1034,7 +1121,7 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
               </div>
             </div>
 
-            <div id='Space' style={{width:'100%', height:'60px'}}><></></div>
+            <div id='Space' style={{width:'100%', height:'90px'}}><></></div>
 
             <Editor>
               <div className="main-container">
@@ -1074,7 +1161,24 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
             <div id='Space' style={{width:'100%', height:'40px'}}><></></div>
 
             <div id='Bottons' style={{float:'right', marginRight:'5%'}}>
-              <div style={{float:'left', width:'120px'}}>
+
+            <div style={{float:'left', width:'265px', marginRight:"20px"}}>
+                <AutoCompleteSelect style={{width: "265px"}}>
+                    <p>Formato</p>  
+                    <Select
+                      isSearchable   
+                      isClearable
+                      placeholder="Selecione um formato"
+                      onChange={(item) => handleModelDocumentExtensionValue(item)}
+                      styles={selectStyles}                 
+                      options={documentExtensionsList}
+                      defaultValue={documentExtensionsList[0]}
+                      value={selectedFormat} 
+                    />
+                </AutoCompleteSelect>
+              </div>
+
+              <div style={{float:'left', width:'120px', marginTop: "25px"}}>
                 <button 
                   type='button'
                   className="buttonClick"
@@ -1086,7 +1190,7 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
                 </button>
               </div>
               
-              <div style={{float:'left', width:'120px'}}>
+              <div style={{float:'left', width:'120px', marginTop: "25px"}}>
                 <button 
                   className="buttonClick"
                   type='button'
@@ -1098,7 +1202,7 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
                 </button>
               </div>
                         
-              <div style={{float:'left', width:'120px'}}>
+              <div style={{float:'left', width:'120px', marginTop: "25px"}}>
                 <button 
                   type='button'
                   className="buttonClick"

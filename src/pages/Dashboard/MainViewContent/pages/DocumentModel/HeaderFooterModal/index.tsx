@@ -18,6 +18,7 @@ import {customColorPalette} from 'Shared/dataComponents/graphicsColors';
 import translations from 'ckeditor5/translations/pt-br.js';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
 import { useConfirmBox } from 'context/confirmBox';
+import UploadAdapter from "../Edit/upload_adapter";
 import Uploader from '../Edit/Uploader';
 import { ModalHeaderFooter, Editor, ModalInformation, OverlayDocument, OverlayHeader, OverlayFooter } from './styles';
 
@@ -84,6 +85,7 @@ const HeaderFooterModal = (props) => {
   }, [footerTypeId, headerTypeId])
 
   
+
   useEffect(() => {
     if (isCancelMessage){
       if (caller === 'changeDefaultHeader')
@@ -95,6 +97,7 @@ const HeaderFooterModal = (props) => {
       setWarningCaller("")
     }
   }, [isCancelMessage, caller]);
+
 
 
   useEffect(() => {
@@ -114,6 +117,7 @@ const HeaderFooterModal = (props) => {
   }, [isConfirmMessage, caller]);
 
 
+
   // update img src to S3 amazon
   useEffect(() => {
     if (headerImage){
@@ -128,6 +132,7 @@ const HeaderFooterModal = (props) => {
       setHeaderImage(false)
     }
   }, [headerImage])
+
 
 
   // update img src to S3 amazon
@@ -214,6 +219,7 @@ const HeaderFooterModal = (props) => {
   }
 
 
+
   // CHANGE FOOTER SELECT
   const handleChangeFooterType = (item) => {
     setFooterTypeIdModal(item.target.value)
@@ -233,6 +239,7 @@ const HeaderFooterModal = (props) => {
       setButtonChangeFooter(false)
     }
   }
+
 
 
   // CREATE DEFAULT HEADER
@@ -312,14 +319,14 @@ const HeaderFooterModal = (props) => {
 
   function HeaderCustomAdapter( editor ) {
     editor.plugins.get( 'FileRepository' ).createUploadAdapter = ( loader ) => {
-        return new Uploader( loader );
+      return new UploadAdapter( loader );
     };
   }
 
 
   function FooterCustomAdapter( editor ) {
     editor.plugins.get( 'FileRepository' ).createUploadAdapter = ( loader ) => {
-        return new Uploader( loader );
+      return new UploadAdapter( loader );
     };
   }
 

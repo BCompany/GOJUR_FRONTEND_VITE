@@ -7,6 +7,7 @@ import {FaRegTimesCircle, FaFileAlt} from 'react-icons/fa'
 import {useToast} from 'context/toast';
 import {HeaderPage} from 'components/HeaderPage';
 import LoaderWaiting from 'react-spinners/ClipLoader';
+import UploadAdapter from "../Edit/upload_adapter";
 import {CKEditor} from '@ckeditor/ckeditor5-react';
 import {ClassicEditor, AccessibilityHelp, Alignment, AutoImage, Autosave, BlockQuote, Bold, CloudServices, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, Heading, ImageBlock, ImageCaption, ImageInline, ImageInsertViaUrl, ImageResize, ImageStyle, ImageTextAlternative, ImageToolbar, ImageUpload, Indent, IndentBlock, Italic, Link, LinkImage, List, ListProperties, PageBreak, Paragraph, SelectAll, SourceEditing, Strikethrough, Table, TableCaption, TableCellProperties, TableColumnResize, TableProperties, TableToolbar, Underline, Undo} from 'ckeditor5';
 import {customColorPalette} from 'Shared/dataComponents/graphicsColors';
@@ -16,18 +17,36 @@ import api from 'services/api';
 
 import Uploader from '../Edit/Uploader';
 import { Container, Content, Editor } from './styles';
+import { AutoCompleteSelect } from 'Shared/styles/GlobalStyle';
+import Select from 'react-select'
+import { selectStyles, useDelay } from 'Shared/utils/commonFunctions';
+
+
+export const documentExtensionsList = [
+  {id: "1", label: "PDF"},
+  {id: "2", label: "WORD (.docx)"}
+];
 
 const DocumentModelVizualize: React.FC = () => {
-  const { addToast } = useToast()
-  const token = localStorage.getItem('@GoJur:token')
-  const history = useHistory()
-  const { pathname  } = useLocation()
-  const [documentText, setDocumentText] = useState<string>(localStorage.getItem('@GoJur:documentText')??"")
-  const [keyWord, setKeyWord] = useState<string>('')
-  const [htmlChangeData, setHtmlChangeData] = useState(false)
-  const [isGenerating, setIsGenerating] = useState(false)
+  const { addToast } = useToast();
+  const token = localStorage.getItem('@GoJur:token');
+  const history = useHistory();
+  const { pathname  } = useLocation();
+  const [documentText, setDocumentText] = useState<string>(localStorage.getItem('@GoJur:documentText')??"");  
+  const [keyWord, setKeyWord] = useState<string>('');
+  const [htmlChangeData, setHtmlChangeData] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [documentExtensionId, setDocumentExtensionId] = useState(''); 
   const editorContainerRef = useRef(null);
 	const editorRef = useRef(null);
+  const [selectedFormat, setSelectedFormat] = useState(null);
+
+
+  useEffect(() => {
+    const defaultFormat = documentExtensionsList[0]; 
+    setSelectedFormat(defaultFormat);
+    handleModelDocumentExtensionValue(defaultFormat); 
+  }, []);
 
   
   const handleEditClose = () => {
@@ -85,7 +104,7 @@ const DocumentModelVizualize: React.FC = () => {
 
   function CustomAdapter( editor ) {
     editor.plugins.get( 'FileRepository' ).createUploadAdapter = ( loader ) => {
-        return new Uploader( loader );
+      return new Uploader( loader );
     };
   }
 
@@ -93,30 +112,61 @@ const DocumentModelVizualize: React.FC = () => {
   const VisualizeDocument = useCallback(async() => {
     try {
       setIsGenerating(true)
-      const id = pathname.substr(25)
+      const id = pathname.substr(25);
+
+      const extensionId = Number(
+        documentExtensionsList
+          .filter(extension => extension.id === documentExtensionId)
+          .map(extension => extension.id),
+      );
+
+      if(extensionId == 0){
+        addToast({
+          title: 'Não foi possivel completar a operação',
+          type: 'info',
+          description: 'Para gerar um documento do tipo processo favor selecionar um formato',
+        });     
+        setIsGenerating(false)   
+        return;
+      }
 
       const response = await api.post('/DocumentosModelo/GerarDocumento', {
         id,
         text: documentText,
-        token
+        token,
+        documentExtensionId: extensionId
       })
-      
-      if (response.data.id == "OK")
-      {
-        window.open(`${response.data.value}`, '_blank');
-      }
-      
+         
+      window.open(`${response.data.value}`, '_blank');
+        
       setIsGenerating(false)
       localStorage.removeItem('@Gojur:documentText')
     }
-    catch (err) {
-      setIsGenerating(false)
-      addToast({
-        type: "error",
-        title: "Falha ao gerar documento.",
-      })
+    catch (err: any) {
+
+      if (err.response.data.typeError.warning == "awareness") {
+
+        setIsGenerating(false);
+
+        setTimeout(function(){
+            addToast({
+              type: "error",
+              title: "Falha ao gerar documento.",
+              description: err.response.data.Message,
+            });    
+        }, 5000);
+      }
+      else {
+        setIsGenerating(false)
+        addToast({
+          type: "error",
+          title: "Falha ao gerar documento.",
+          description: err.response.data.Message
+        })
+      }
     }
-  },[documentText]);
+  },[documentText, documentExtensionId]);
+
 
 
   const colors = [
@@ -297,6 +347,19 @@ const DocumentModelVizualize: React.FC = () => {
 	};
 
 
+
+   const handleModelDocumentExtensionValue = (item: any) => {
+  
+      if (item){
+        setSelectedFormat(item);
+        setDocumentExtensionId(item.id);
+      }else{
+        setSelectedFormat(null);
+        setDocumentExtensionId('');
+      }
+    }
+
+
   return (
     <Container>
       <HeaderPage />
@@ -334,7 +397,22 @@ const DocumentModelVizualize: React.FC = () => {
 
             <div style={{width:'100%', height:'50px'}}><></></div>
 
-            <div id='Buttons' style={{float:'right', marginRight:'5%'}}>
+            <div style={{float:'right', marginRight:'5%'}}>
+
+              <AutoCompleteSelect style={{marginLeft: 0, width: "265px"}}>
+                  <p>Formato</p>  
+                  <Select
+                    isSearchable   
+                    isClearable
+                    placeholder="Selecione um formato"
+                    onChange={(item) => handleModelDocumentExtensionValue(item)}
+                    styles={selectStyles}                 
+                    options={documentExtensionsList}
+                    defaultValue={documentExtensionsList[0]}
+                    value={selectedFormat} 
+                  />
+              </AutoCompleteSelect>
+
               <div style={{float:'left', width:'160px'}}>
                 <button type='button' className="buttonClick" onClick={() => VisualizeDocument()} style={{width:'150px'}}>
                   <FaFileAlt />
