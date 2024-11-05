@@ -193,7 +193,7 @@ const DocumentModelVizualize: React.FC = () => {
       const documentImage = localStorage.getItem('@Gojur:documentImage')
 
       if (documentImage){
-        const newDocumentText = documentText.replaceAll('<img>', `'<img src=${documentImage} />'`)
+        const newDocumentText = documentText.replaceAll('<img>', `<img src=${documentImage} />`)
         setDocumentText(newDocumentText)
         localStorage.removeItem('@Gojur:documentImage')
       }
@@ -335,7 +335,13 @@ const DocumentModelVizualize: React.FC = () => {
 		},
 		placeholder: '',
 		table: {
-			contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
+			contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties'],
+      tableProperties: {tableAlignment: 'center', borderColors: customColorPalette, backgroundColors: customColorPalette,
+        defaultProperties: {borderColor: '#000000'},
+      },
+      tableCellProperties: {borderColors: customColorPalette, backgroundColors: customColorPalette,
+        defaultProperties: {borderColor: '#000000'},
+      }
 		},
 		translations: [translations]
 	};
@@ -371,6 +377,7 @@ const DocumentModelVizualize: React.FC = () => {
                       <CKEditor
                         editor={ClassicEditor}
                         ref={editorRef}
+                        data={documentText}
                         config={editorConfig}
                         onChange={(event, editor) => {
                           const data = editor.getData();

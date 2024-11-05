@@ -124,7 +124,7 @@ const HeaderFooterModal = (props) => {
       const documentImage = localStorage.getItem('@Gojur:documentImage')
 
       if (documentImage){
-        const newDocumentText = headerTextModal.replaceAll('<img>', `'<img src=${documentImage} />'`)
+        const newDocumentText = headerTextModal.replaceAll('<img>', `<img src=${documentImage} />`)
         setHeaderTextModal(newDocumentText)
         localStorage.removeItem('@Gojur:documentImage')
       }
@@ -141,7 +141,7 @@ const HeaderFooterModal = (props) => {
       const documentImage = localStorage.getItem('@Gojur:documentImage')
 
       if (documentImage){
-        const newDocumentText = footerTextModal.replaceAll('<img>', `'<img src=${documentImage} />'`)
+        const newDocumentText = footerTextModal.replaceAll('<img>', `<img src=${documentImage} />`)
         setFooterTextModal(newDocumentText)
         localStorage.removeItem('@Gojur:documentImage')
       }
@@ -460,7 +460,13 @@ const HeaderFooterModal = (props) => {
 		},
 		placeholder: '',
 		table: {
-			contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
+			contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties'],
+      tableProperties: {tableAlignment: 'center', borderColors: customColorPalette, backgroundColors: customColorPalette,
+        defaultProperties: {borderColor: '#000000'},
+      },
+      tableCellProperties: {borderColors: customColorPalette, backgroundColors: customColorPalette,
+        defaultProperties: {borderColor: '#000000'},
+      }
 		},
     shouldNotGroupWhenFull: true,
 		translations: [translations]
@@ -596,7 +602,13 @@ const HeaderFooterModal = (props) => {
 		},
 		placeholder: '',
 		table: {
-			contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
+			contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties'],
+      tableProperties: {tableAlignment: 'center', borderColors: customColorPalette, backgroundColors: customColorPalette,
+        defaultProperties: {borderColor: '#000000'},
+      },
+      tableCellProperties: {borderColors: customColorPalette, backgroundColors: customColorPalette,
+        defaultProperties: {borderColor: '#000000'},
+      }
 		},
     shouldNotGroupWhenFull: true,
 		translations: [translations]
@@ -705,6 +717,7 @@ const HeaderFooterModal = (props) => {
                               <CKEditor
                                 editor={ClassicEditor}
                                 ref={editorRef}
+                                data={headerTextModal}
                                 config={editorConfigHeader}
                                 onChange={(event, editor) => {
                                   const data = editor.getData();
@@ -722,86 +735,6 @@ const HeaderFooterModal = (props) => {
                         </div>
                       </div>
                     </Editor>
-
-                    {/* <Editor>
-                      <div className="App">
-                        <CKEditor
-                          data={headerTextModal}
-                          editor={DecoupledEditor}
-                          config={{
-                            extraPlugins: [ HeaderCustomAdapter ],
-                            removePlugins: [ "TableColumnResize"],
-                            language: 'pt-br',
-                            toolbar: ["heading", "|", "fontfamily", "fontsize", "fontColor", "fontBackgroundColor", "|", "bold", "italic", "underline", "strikethrough", "link", "|", "alignment", "|", "numberedList", "bulletedList", "|", "outdent", "indent", "|", "uploadImage", "blockquote", "insertTable", "tableColumn", "tableRow", "mergeTableCells", "|", "undo", "redo", "sourceEditing"],
-                            image: {
-                              insert: {
-                                type: 'inline'
-                              },
-                              resizeUnit: 'px',
-                              toolbar: [ 'ImageInline' ]
-                            },
-                            heading: {
-                              options: [
-                                  { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
-                              ]
-                          },
-                            shouldNotGroupWhenFull: true,
-                            tableColumnResize: {
-                              isEnabled: false,
-                            },
-                            fontSize: {
-                              options: [ 9, 10, 11, 12, 13, 14, 15, 17, 19, 21 ]
-                            },
-                            fontColor: {
-                              colors: customColorPalette
-                            },
-                            fontBackgroundColor: {
-                              colors: customColorPalette
-                            },
-                            table: {   
-                              tableAlignment: 'center',
-                              contentToolbar: [
-                                  'tableColumn', 'tableRow', 'mergeTableCells',
-                                  'tableProperties', 'tableCellProperties'
-                              ],
-                  
-                              tableProperties: {
-                                borderColors: customColorPalette,
-                                backgroundColors: customColorPalette
-                            },
-                
-                            // Set the palettes for table cells.
-                            tableCellProperties: {
-                                borderColors: customColorPalette,
-                                backgroundColors: customColorPalette
-                            }
-        
-                            }
-                          }}
-                          onReady={(editor) => {
-                            editor.ui.getEditableElement().parentElement.prepend(editor.ui.view.toolbar.element);
-
-                            editor.keystrokes.set( 'Tab', ( data, cancel ) => {
-                              editor.model.change(writer => {
-                                writer.insertText("            ", editor.model.document.selection.getFirstPosition() );
-                              });
-                              cancel();
-                            });
-                          }}
-                          onChange={(event, editor) => {
-                            const data = editor.getData();
-
-                            // if exists image save set change tag image as true
-                            const documentImage = localStorage.getItem('@Gojur:documentImage');
-                            if (documentImage){
-                              setHeaderImage(true)
-                            }
-
-                            setHeaderTextModal(data)
-                          }}
-                        />
-                      </div>
-                    </Editor> */}
                   </div>
                 )}
 
@@ -820,6 +753,7 @@ const HeaderFooterModal = (props) => {
                                 <CKEditor
                                   editor={ClassicEditor}
                                   ref={editorRef}
+                                  data={headerTextModal}
                                   config={editorConfigHeader}
                                   onChange={(event, editor) => {
                                     const data = editor.getData();
@@ -837,81 +771,6 @@ const HeaderFooterModal = (props) => {
                           </div>
                         </div>
                       </Editor>
-
-                      {/* <Editor>
-                        <div className="App">
-                          <CKEditor
-                            data={headerTextModal}
-                            editor={DecoupledEditor}
-                            config={{
-                              extraPlugins: [ HeaderCustomAdapter ],
-                              removePlugins: [ "TableColumnResize"],
-                              language: 'pt-br',
-                              toolbar: ["heading", "|", "fontfamily", "fontsize", "fontColor", "fontBackgroundColor", "|", "bold", "italic", "underline", "strikethrough", "link", "|", "alignment", "|", "numberedList", "bulletedList", "|", "outdent", "indent", "|", "uploadImage", "blockquote", "insertTable", "tableColumn", "tableRow", "mergeTableCells", "|", "undo", "redo", "sourceEditing"],
-                              image: {
-                                insert: {
-                                  type: 'inline'
-                                },
-                                resizeUnit: 'px',
-                                toolbar: [ 'ImageInline' ]
-                              },
-                              heading: {
-                                options: [
-                                    { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
-                                ]
-                            },
-                              fontSize: {
-                                options: [ 9, 10, 11, 12, 13, 14, 15, 17, 19, 21 ]
-                              },
-                              fontColor: {
-                                colors: customColorPalette
-                              },
-                              fontBackgroundColor: {
-                                colors: customColorPalette
-                              },
-                              table: {   
-                                tableAlignment: 'center',
-                                contentToolbar: [
-                                    'tableColumn', 'tableRow', 'mergeTableCells',
-                                    'tableProperties', 'tableCellProperties'
-                                ],
-                    
-                                tableProperties: {
-                                  borderColors: customColorPalette,
-                                  backgroundColors: customColorPalette
-                                },
-                  
-                                // Set the palettes for table cells.
-                                tableCellProperties: {
-                                  borderColors: customColorPalette,
-                                  backgroundColors: customColorPalette
-                                }
-                              }
-                            }}
-                            onReady={(editor) => {
-                              editor.ui.getEditableElement().parentElement.prepend(editor.ui.view.toolbar.element);
-
-                              editor.keystrokes.set( 'Tab', ( data, cancel ) => {
-                                editor.model.change(writer => {
-                                  writer.insertText("            ", editor.model.document.selection.getFirstPosition() );
-                                });
-                                cancel();
-                              });
-                            }}
-                            onChange={(event, editor) => {
-                              const data = editor.getData();
-
-                              // if exists image save set change tag image as true
-                              const documentImage = localStorage.getItem('@Gojur:documentImage');
-                              if (documentImage){
-                                setHeaderImage(true)
-                              }
-
-                              setHeaderTextModal(data)
-                            }}
-                          />
-                        </div>
-                      </Editor> */}
                     </div>
                   </OverlayHeader>
                 )}
@@ -957,6 +816,7 @@ const HeaderFooterModal = (props) => {
                               <CKEditor
                                 editor={ClassicEditor}
                                 ref={editorRef}
+                                data={footerTextModal}
                                 config={editorConfigFooter}
                                 onChange={(event, editor) => {
                                   const data = editor.getData();
@@ -974,82 +834,6 @@ const HeaderFooterModal = (props) => {
                         </div>
                       </div>
                     </Editor>
-
-                    {/* <Editor>
-                      <div className="App">
-                        <CKEditor
-                          data={footerTextModal}
-                          editor={DecoupledEditor}
-                          config={{
-                            extraPlugins: [ FooterCustomAdapter ],
-                            language: 'pt-br',
-                            removePlugins: [ "TableColumnResize"],
-                            toolbar: ["heading", "|", "fontfamily", "fontsize", "fontColor", "fontBackgroundColor", "|", "bold", "italic", "underline", "strikethrough", "link", "|", "alignment", "|", "numberedList", "bulletedList", "|", "outdent", "indent", "|", "uploadImage", "blockquote", "insertTable", "tableColumn", "tableRow", "mergeTableCells", "|", "undo", "redo", "sourceEditing"],
-                            image: {
-                              insert: {
-                                type: 'inline'
-                              },
-                              resizeUnit: 'px',
-                              toolbar: [ 'ImageInline' ]
-                            },
-                            heading: {
-                              options: [
-                                  { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
-                              ]
-                          },
-                            fontSize: {
-                              options: [ 9, 10, 11, 12, 13, 14, 15, 17, 19, 21 ]
-                            },
-                            fontColor: {
-                              colors: customColorPalette
-                            },
-                            fontBackgroundColor: {
-                              colors: customColorPalette
-                            },
-                            table: {   
-                              tableAlignment: 'center',
-                              contentToolbar: [
-                                  'tableColumn', 'tableRow', 'mergeTableCells',
-                                  'tableProperties', 'tableCellProperties'
-                              ],
-                  
-                              tableProperties: {
-                                borderColors: customColorPalette,
-                                backgroundColors: customColorPalette
-                            },
-                
-                            // Set the palettes for table cells.
-                            tableCellProperties: {
-                                borderColors: customColorPalette,
-                                backgroundColors: customColorPalette
-                            }
-        
-                            }
-                          }}
-                          onReady={(editor) => {
-                            editor.ui.getEditableElement().parentElement.prepend(editor.ui.view.toolbar.element);
-
-                            editor.keystrokes.set( 'Tab', ( data, cancel ) => {
-                              editor.model.change(writer => {
-                                writer.insertText("            ", editor.model.document.selection.getFirstPosition() );
-                              });
-                              cancel();
-                            });
-                          }}
-                          onChange={(event, editor) => {
-                            const data = editor.getData();
-
-                            // if exists image save set change tag image as true
-                            const documentImage = localStorage.getItem('@Gojur:documentImage');
-                            if (documentImage){
-                              setFooterImage(true)
-                            }
-
-                            setFooterTextModal(data)
-                          }}
-                        />
-                      </div>
-                    </Editor> */}
                   </div>
                 )}
 
@@ -1068,6 +852,7 @@ const HeaderFooterModal = (props) => {
                                 <CKEditor
                                   editor={ClassicEditor}
                                   ref={editorRef}
+                                  data={footerTextModal}
                                   config={editorConfigFooter}
                                   onChange={(event, editor) => {
                                     const data = editor.getData();
@@ -1085,90 +870,13 @@ const HeaderFooterModal = (props) => {
                           </div>
                         </div>
                       </Editor>
-
-                      {/* <Editor>
-                        <div className="App">
-                          <CKEditor
-                            data={footerTextModal}
-                            editor={DecoupledEditor}
-                            config={{
-                              extraPlugins: [ FooterCustomAdapter ],
-                              language: 'pt-br',
-                              removePlugins: [ "TableColumnResize"],
-                              items: ["heading", "|", "fontfamily", "fontsize", "fontColor", "fontBackgroundColor", "|", "bold", "italic", "underline", "strikethrough", "link", "|", "alignment", "|", "numberedList", "bulletedList", "|", "outdent", "indent", "|", "uploadImage", "blockquote", "pageBreak", "insertTable", "tableColumn", "tableRow", "mergeTableCells", "|", "undo", "redo", "sourceEditing"],
-                              image: {
-                                insert: {
-                                  type: 'inline'
-                                },
-                                resizeUnit: 'px',
-                                toolbar: [ 'ImageInline' ]
-                              },
-                              heading: {
-                                options: [
-                                    { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
-                                ]
-                            },
-                              fontSize: {
-                                options: [ 9, 10, 11, 12, 13, 14, 15, 17, 19, 21 ]
-                              },
-                              fontColor: {
-                                colors: customColorPalette
-                              },
-                              fontBackgroundColor: {
-                                colors: customColorPalette
-                              },
-                              table: {   
-                                tableAlignment: 'center',
-                                contentToolbar: [
-                                    'tableColumn', 'tableRow', 'mergeTableCells',
-                                    'tableProperties', 'tableCellProperties'
-                                ],
-                    
-                                tableProperties: {
-                                  borderColors: customColorPalette,
-                                  backgroundColors: customColorPalette
-                              },
-                  
-                              // Set the palettes for table cells.
-                              tableCellProperties: {
-                                  borderColors: customColorPalette,
-                                  backgroundColors: customColorPalette
-                              }
-          
-                              }
-                            }}
-                            onReady={(editor) => {
-                              editor.ui.getEditableElement().parentElement.prepend(editor.ui.view.toolbar.element);
-
-                              editor.keystrokes.set( 'Tab', ( data, cancel ) => {
-                                editor.model.change(writer => {
-                                  writer.insertText("            ", editor.model.document.selection.getFirstPosition() );
-                                });
-                                cancel();
-                              });
-                            }}
-                            onChange={(event, editor) => {
-                              const data = editor.getData();
-
-                              // if exists image save set change tag image as true
-                              const documentImage = localStorage.getItem('@Gojur:documentImage');
-                              if (documentImage){
-                                setFooterImage(true)
-                              }
-
-                              setFooterTextModal(data)
-                            }}
-                          />
-                        </div>
-                      </Editor> */}
                     </div>
                   </OverlayFooter>
                 )}
               </>
             )}
 
-            <br />
-            <br />
+            <br /><br />
 
             <div id='SaveCloseButtons' style={{float:'right', marginRight:'83px'}}>
               <div style={{float:'left'}}>
@@ -1197,9 +905,7 @@ const HeaderFooterModal = (props) => {
             </div>
 
             <div style={{width:'100%', height:'60px'}}><></></div>
-
           </div>
-          
         </ModalHeaderFooter>
       )}
 
@@ -1258,7 +964,6 @@ const HeaderFooterModal = (props) => {
       )}
 
       {(openInformationModal) && <OverlayDocument /> }
-
     </>
   )
 
