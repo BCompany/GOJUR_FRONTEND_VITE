@@ -7,15 +7,13 @@ import {FaRegTimesCircle, FaFileAlt} from 'react-icons/fa'
 import {useToast} from 'context/toast';
 import {HeaderPage} from 'components/HeaderPage';
 import LoaderWaiting from 'react-spinners/ClipLoader';
-import UploadAdapter from "../Edit/upload_adapter";
+import Uploader from '../Edit/Uploader';
 import {CKEditor} from '@ckeditor/ckeditor5-react';
 import {ClassicEditor, AccessibilityHelp, Alignment, AutoImage, Autosave, BlockQuote, Bold, CloudServices, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, Heading, ImageBlock, ImageCaption, ImageInline, ImageInsertViaUrl, ImageResize, ImageStyle, ImageTextAlternative, ImageToolbar, ImageUpload, Indent, IndentBlock, Italic, Link, LinkImage, List, ListProperties, PageBreak, Paragraph, SelectAll, SourceEditing, Strikethrough, Table, TableCaption, TableCellProperties, TableColumnResize, TableProperties, TableToolbar, Underline, Undo} from 'ckeditor5';
 import {customColorPalette} from 'Shared/dataComponents/graphicsColors';
 import translations from 'ckeditor5/translations/pt-br.js';
 import {Overlay} from 'Shared/styles/GlobalStyle';
 import api from 'services/api';
-
-import Uploader from '../Edit/Uploader';
 import { Container, Content, Editor } from './styles';
 import { AutoCompleteSelect } from 'Shared/styles/GlobalStyle';
 import Select from 'react-select'

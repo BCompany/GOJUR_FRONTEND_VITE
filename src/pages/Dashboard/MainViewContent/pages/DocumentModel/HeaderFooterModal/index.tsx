@@ -18,7 +18,6 @@ import {customColorPalette} from 'Shared/dataComponents/graphicsColors';
 import translations from 'ckeditor5/translations/pt-br.js';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
 import { useConfirmBox } from 'context/confirmBox';
-import UploadAdapter from "../Edit/upload_adapter";
 import Uploader from '../Edit/Uploader';
 import { ModalHeaderFooter, Editor, ModalInformation, OverlayDocument, OverlayHeader, OverlayFooter } from './styles';
 
@@ -319,14 +318,14 @@ const HeaderFooterModal = (props) => {
 
   function HeaderCustomAdapter( editor ) {
     editor.plugins.get( 'FileRepository' ).createUploadAdapter = ( loader ) => {
-      return new UploadAdapter( loader );
+      return new Uploader( loader );
     };
   }
 
 
   function FooterCustomAdapter( editor ) {
     editor.plugins.get( 'FileRepository' ).createUploadAdapter = ( loader ) => {
-      return new UploadAdapter( loader );
+      return new Uploader( loader );
     };
   }
 

@@ -13,7 +13,6 @@ import { HeaderPage } from 'components/HeaderPage';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import { useModal } from 'context/modal';
 import api from 'services/api';
-import UploadAdapter from "./upload_adapter";
 import {CKEditor} from '@ckeditor/ckeditor5-react';
 import {ClassicEditor, AccessibilityHelp, Alignment, AutoImage, Autosave, BlockQuote, Bold, CloudServices, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, Heading, ImageBlock, ImageCaption, ImageInline, ImageInsertViaUrl, ImageResize, ImageStyle, ImageTextAlternative, ImageToolbar, ImageUpload, Indent, IndentBlock, Italic, Link, LinkImage, List, ListProperties, PageBreak, Paragraph, SelectAll, SourceEditing, Strikethrough, Table, TableCaption, TableCellProperties, TableColumnResize, TableProperties, TableToolbar, Underline, Undo} from 'ckeditor5';
 import {customColorPalette} from 'Shared/dataComponents/graphicsColors';
@@ -541,7 +540,6 @@ const DocumentModelEdit: React.FC = () => {
       setDocumentExtensionId(''); 
     }
   };
-  // },[documentText])
 
 
   const editorConfig = {
