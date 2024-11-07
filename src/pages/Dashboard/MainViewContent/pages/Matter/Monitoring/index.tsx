@@ -26,7 +26,6 @@ interface StatusOperationDTO {
 }
 
 const Monitoring: React.FC = () => {
-
   const history = useHistory();
   const [primaryInstanceListBase, setPrimaryInstanceListBase] = useState<StatusOperationDTO[]>([]);
   const [primaryInstanceList, setPrimaryInstanceList] = useState<StatusOperationDTO[]>([]);
@@ -36,11 +35,15 @@ const Monitoring: React.FC = () => {
   const [desUF, setDesUF] = useState<string>("00")
   const [secretJustice, setSecretJustice] = useState<string>("00")
   const [multiFilter, setMultiFilter] = useState<filterProps[]>([]); // MULTI FILTER VALUE
-  const [showSearchList, setShowSearchList] = useState<boolean>(false);
 
   useEffect(() => {
     LoadStatusOperation()
   }, [])
+
+
+  useEffect(() => {
+    console.log('MultiFilter', multiFilter)
+  }, [multiFilter])
 
 
   async function LoadStatusOperation() {
@@ -130,7 +133,7 @@ const Monitoring: React.FC = () => {
       }
 
       setPrimaryInstanceList(filterList1)
-  }, [desUF, secretJustice]);
+  }, [desUF, secretJustice, multiFilter]);
 
 
   if (isLoading) {
@@ -141,15 +144,17 @@ const Monitoring: React.FC = () => {
           <LoaderWaiting size={15} color="var(--blue-twitter)" />
         </div>
       </Container>
-    );
+    )
   }
 
 
-const optionsMonitoringFilter = [
-  { value: 'SJ', label: 'Segredo de Justiça' },
-  { value: 'PP', label: 'Processos Públicos' },
-  { value: 'TM', label: 'Tribunais em Manutenção' },
-];
+  const optionsMonitoringFilter = [
+    { value: '00', label: 'Todos' },
+    { value: 'SJ', label: 'Segredo de Justiça' },
+    { value: 'PP', label: 'Processos Públicos' },
+    { value: 'TM', label: 'Tribunais em Manutenção' },
+  ]
+
 
   return (
     <>
@@ -167,24 +172,20 @@ const optionsMonitoringFilter = [
           </div>
 
           <div className="filters">
+            <div id='DivMulti' style={{marginTop:"-5px"}}>
+              <label htmlFor="type" style={{float:"left", width:'250px', marginTop:'-6px'}}>
+                Status
+                <MultiSelect
+                  options={optionsMonitoringFilter}
+                  value={ multiFilter }
+                  onChange={(values: []) => {setMultiFilter(values)}}
+                  labelledBy='selecione'
+                  className='select'
+                />
+              </label>
+            </div>
 
-            <label htmlFor="type" style={{float:"left", width:'150px'}}>
-              Status
-              <MultiSelect
-              options={optionsMonitoringFilter}
-              value={ multiFilter }
-              onChange={(values: []) => {
-                setShowSearchList(showSearchList),
-                setIsLoading(!showSearchList)
-                setMultiFilter(values)
-              }}
-              labelledBy='selecione'
-              className='select'
-              />
-
-            </label>
-
-            <label htmlFor="type" style={{float:"left", width:'150px'}}>
+            <label htmlFor="type" style={{float:"left", width:'150px', marginLeft:'50px'}}>
               Segredo de Justiça
               <select
                 className='desUFSelect'
@@ -243,7 +244,6 @@ const optionsMonitoringFilter = [
               <BsFunnel />
               Filtrar
             </button>
-
           </div>
         </TollBar>
 

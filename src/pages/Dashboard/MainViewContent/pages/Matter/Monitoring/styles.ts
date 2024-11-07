@@ -12,21 +12,21 @@ export const Container = styled.div`
 
 
 export const TollBar = styled.div`
-  display:flex;
-  font-size:0.7rem;
-  justify-content:space-between;
-  color:#0177C0;
-  width:80%;
-  margin-left:10%;
+  display: flex;
+  font-size: 0.7rem;
+  justify-content: space-between;
+  color: #0177C0;
+  width: 80%;
+  margin-left: 10%;
 
   .buttonReturn {
-    font-size:0.8rem;
-    width:10%;
+    font-size: 0.8rem;
+    width: 10%;
   }
 
   .filters {
-    font-size:0.8rem;
-    width:80%;
+    font-size: 0.8rem;
+    width: 85%;
 
     input, select {
       flex: 1;
