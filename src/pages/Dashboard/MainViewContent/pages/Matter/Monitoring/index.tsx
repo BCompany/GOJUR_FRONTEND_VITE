@@ -9,6 +9,9 @@ import { BsFunnel } from 'react-icons/bs';
 import { FcApproval, FcCancel } from "react-icons/fc";
 import { MdWarning } from "react-icons/md";
 import { Container, Table, Center, TollBar } from './styles';
+import { MultiSelect } from 'react-multi-select-component';
+import { filterProps } from '../../Interfaces/ICalendar';
+
 
 interface StatusOperationDTO {
   id: string;
@@ -32,6 +35,8 @@ const Monitoring: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [desUF, setDesUF] = useState<string>("00")
   const [secretJustice, setSecretJustice] = useState<string>("00")
+  const [multiFilter, setMultiFilter] = useState<filterProps[]>([]); // MULTI FILTER VALUE
+  const [showSearchList, setShowSearchList] = useState<boolean>(false);
 
   useEffect(() => {
     LoadStatusOperation()
@@ -123,7 +128,7 @@ const Monitoring: React.FC = () => {
           }
         })
       }
-      
+
       setPrimaryInstanceList(filterList1)
   }, [desUF, secretJustice]);
 
@@ -139,6 +144,12 @@ const Monitoring: React.FC = () => {
     );
   }
 
+
+const optionsMonitoringFilter = [
+  { value: 'SJ', label: 'Segredo de Justiça' },
+  { value: 'PP', label: 'Processos Públicos' },
+  { value: 'TM', label: 'Tribunais em Manutenção' },
+];
 
   return (
     <>
@@ -156,9 +167,26 @@ const Monitoring: React.FC = () => {
           </div>
 
           <div className="filters">
+
+            <label htmlFor="type" style={{float:"left", width:'150px'}}>
+              Status
+              <MultiSelect
+              options={optionsMonitoringFilter}
+              value={ multiFilter }
+              onChange={(values: []) => {
+                setShowSearchList(showSearchList),
+                setIsLoading(!showSearchList)
+                setMultiFilter(values)
+              }}
+              labelledBy='selecione'
+              className='select'
+              />
+
+            </label>
+
             <label htmlFor="type" style={{float:"left", width:'150px'}}>
               Segredo de Justiça
-              <select 
+              <select
                 className='desUFSelect'
                 name="type"
                 value={secretJustice}
@@ -173,7 +201,7 @@ const Monitoring: React.FC = () => {
 
             <label htmlFor="type" style={{float:"left", width:'150px', marginLeft:'50px'}}>
               Estado
-              <select 
+              <select
                 className='desUFSelect'
                 name="type"
                 value={desUF}
@@ -293,7 +321,7 @@ const Monitoring: React.FC = () => {
           <br />
 
           <div style={{ color: "red" }} className='title'>Tribunais não Atendidos</div>
-          
+
           {/* OS TRIBUNAIS ABAIXO FORAM COLOCADOS DE FORMA FIXA POIS NO MOMENTO NÃO SÃO ATENDIDOS PELO LEGAL DATA
           FOI SUGERIDO A CRIAÇÃO DE UM STATUS ESPECÍFICO PARA ESTES CASOS, MAS FOI DEFINIDO COLOCAR DE FORMA FIXA NO CÓDIGO MESMO
           CONFORME REUNIÃO REALIZADA EM 27/02/2024: MARCELO | MATHEUS | SIDNEY */}
@@ -312,7 +340,7 @@ const Monitoring: React.FC = () => {
                   </tr>
 
                   <tr>
-                    <td style={{ width: '50%', textAlign: 'left' }}>Tribunal de Justiça TO - EProc</td> 
+                    <td style={{ width: '50%', textAlign: 'left' }}>Tribunal de Justiça TO - EProc</td>
                     <td style={{ width: '10%' }}>TO</td>
                     <td style={{ width: '10%' }}>1 e 2º</td>
                     <td style={{ width: '10%' }}>N</td>
