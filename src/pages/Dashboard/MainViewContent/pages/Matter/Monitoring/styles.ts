@@ -7,7 +7,7 @@ export const Container = styled.div`
   overflow: auto;
   font-size: 12px;
   height: 100%;
-  background-color: #EDF0F7;  
+  background-color: #EDF0F7;
 `;
 
 
@@ -40,7 +40,23 @@ export const TollBar = styled.div`
       &:focus {
         border-bottom: 1px solid var(--orange);
       }
+
     }
+  }
+
+  .select{
+    flex: 1;
+      font-size: 0.675rem;
+      padding: 0.25rem;
+      background-color: rgba(255,255,255,0.25);
+      width: 99%;
+      border-bottom: 1px solid rgba(0,0,0,0.15);
+      color: var(--secondary);
+
+
+      &:focus {
+        border-bottom: 1px solid var(--orange);
+      }
   }
 
 `;
@@ -58,7 +74,7 @@ export const Table = styled.div`
     tr:nth-child(odd) {
       background-color:#D9ECEC;
     }
-    
+
     th {
       color: white;
       font-weight: 400;
@@ -90,7 +106,7 @@ export const Table = styled.div`
 
       svg
       {
-        width:1.1rem; 
+        width:1.1rem;
         height:1.1rem;
         cursor:pointer;
       }
