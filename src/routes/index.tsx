@@ -58,6 +58,7 @@ const Routes: React.FC = () => {
       <Route path="/documentModel/list" exact component={DashBoard} isPrivate />
       <Route path="/documentModel/edit/:cod_DocumentoModelo" exact component={DashBoard} isPrivate />
       <Route path="/documentModel/visualize/:id" exact component={DashBoard} isPrivate />
+      <Route path="/documentModel/labeditor" exact component={DashBoard} isPrivate />
       <Route path="/calendar" exact component={DashboardPath} isPrivate />
       <Route path="/cadastro" exact component={DashboardPath} isPrivate />
       <Route path="/conta" exact component={DashboardPath} isPrivate />
@@ -115,6 +116,13 @@ const Routes: React.FC = () => {
       <Route path="/Holiday" exact component={DashboardPath} isPrivate />
       <Route path="/DocumentType" exact component={DashboardPath} isPrivate />
       <Route path="/AccountInformation" exact component={DashboardPath} isPrivate />
+      <Route path="/financeiro/report/refundlist" exact component={DashboardPath} isPrivate />
+      <Route path="/financeiro/report/honorariumsummarylist" exact component={DashboardPath} isPrivate />
+      <Route path="/financeiro/report/honorariumlist" exact component={DashboardPath} isPrivate />
+      <Route path="/financeiro/report/incomeexpenselist" exact component={DashboardPath} isPrivate />
+      <Route path="/financeiro/report/cashflowlist" exact component={DashboardPath} isPrivate />
+      <Route path="/ReportParameters" exact component={DashboardPath} isPrivate />
+      <Route path="/CustomerLawyer" exact component={CustomerLawyer} isPrivate />
       <Route path="/financeiro/report/refundlist" exact component={DashboardPath} isPrivate />
       <Route path="/financeiro/report/honorariumsummarylist" exact component={DashboardPath} isPrivate />
       <Route path="/financeiro/report/honorariumlist" exact component={DashboardPath} isPrivate />

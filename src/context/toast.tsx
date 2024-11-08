@@ -28,7 +28,9 @@ const ToastProvider: React.FC = ({ children }) => {
   },[]);
 
   const removeToast = useCallback((id: string) => {
-    setMessages(state => state.filter(message => message.id !== id));
+    setTimeout(function(){
+        setMessages(state => state.filter(message => message.id !== id));
+      }, 3000)
   }, []);
 
   return (

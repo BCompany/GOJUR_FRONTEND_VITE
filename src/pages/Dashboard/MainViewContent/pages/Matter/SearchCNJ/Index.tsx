@@ -18,10 +18,12 @@ import { Container } from './styles'
 import { ISearchCNJ } from '../Interfaces/IMatter';
 import { AutoCompleteSelect } from 'Shared/styles/GlobalStyle';
 import { loadingMessage, noOptionsMessage } from 'Shared/utils/commonConfig';
+import CredentialModal from '../Credentials';
+import CredentialsDataSourceModal from '../Credentials/EditModal';
 import { customStyles, selectStyles } from 'Shared/utils/commonFunctions';
 import { useHistory } from 'react-router-dom'
-import CredentialsDataSourceModal from '../Credentials/EditModal';
 import AwarenessModal from 'components/AwarenessModal';
+
 
 export interface ISelectData {
   id: string;
@@ -260,6 +262,7 @@ export default function SearchCNJ () {
     setCredentialValue(description);
   }
 
+
   const handleCloseAwarenessModal = async () => {
     setShowAwarenessModal(false)
     setAwarenessModalMessage('')
@@ -343,7 +346,7 @@ export default function SearchCNJ () {
               </>
             )}
           </div>
-  
+
           <button 
             className="buttonLinkClick buttonAddNew" 
             onClick={handleAddNumber}
