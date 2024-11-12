@@ -22,9 +22,6 @@ const Coverages: React.FC = () => {
   useEffect(() => {
     async function LoadCoverages() {
       try {
-
-        console.log('API: ', api)
-
         const response = await api.post<CoveragesDTO[]>('/Abrangencias/Listar', {
         });
 
@@ -42,7 +39,6 @@ const Coverages: React.FC = () => {
   return (
     <>   
       <Container>
-
         <Center>
           <div className="flex-box container-box">
             <div className="content-box">
@@ -95,7 +91,6 @@ const Coverages: React.FC = () => {
         <br />
         <br />
         <br />
-
       </Container>
     </>
   );

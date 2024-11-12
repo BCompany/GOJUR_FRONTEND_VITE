@@ -1075,7 +1075,7 @@ const Publication: React.FC = () => {
 
   const handleCoveragesList = () => {
     const page = Coverages;
-    window.open("/publication/coverages", "_blank")
+    window.open("/coverages", "_blank")
   }
 
 

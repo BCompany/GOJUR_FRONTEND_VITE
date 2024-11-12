@@ -64,7 +64,7 @@ const Routes: React.FC = () => {
       <Route path="/conta" exact component={DashboardPath} isPrivate />
       <Route path="/financeiro" exact component={DashboardPath} isPrivate />
       <Route path="/processo" exact component={DashboardPath} isPrivate />
-      <Route path="/publication/coverages" exact component={Covarages} isPrivate />
+      <Route path="/coverages" exact component={Covarages} isPrivate />
       <Route path="/subscriber" exact component={Subscriber} isPrivate />
       <Route path="/financialInformation" exact component={FinancialInformation} isPrivate />
       <Route path="/userlist" exact component={DashboardPath} isPrivate />

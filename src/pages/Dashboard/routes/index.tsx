@@ -107,7 +107,7 @@ const Routes: React.FC = () => {
       <Route path="/matter/list" exact component={Matter} isPrivate />
       <Route path="/matter/printer/cover" exact component={MatterPrint} isPrivate />
       <Route path="/publication" exact component={Publication} isPrivate />
-      <Route path="/publication/coverages/" exact component={Coverages} isPrivate />
+      <Route path="/coverages/" exact component={Coverages} isPrivate />
       <Route path="/apidocumentation/" exact component={APIDocumentation} isPrivate />
       <Route path="/subscriber/" exact component={Subscriber} isPrivate />
       <Route path="/financialInformation" exact component={FinancialInformation} isPrivate />
