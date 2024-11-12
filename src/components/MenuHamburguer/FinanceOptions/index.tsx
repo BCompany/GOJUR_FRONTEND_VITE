@@ -226,43 +226,7 @@ const FinanceOptionsMenu = (props) => {
                 <HeaderPageCustom callback={{handlePaymentSlip}} />
               </div>
             </>
-          )}
-
-          {(checkFinancialIntegration && companyPlan != 'GOJURFR') &&(
-            <>
-              <div style={{display:(showConfigMenu?'grid':'none')}}>
-                <hr />
-                <button type="button" className="menuLink" onClick={() => {handleFinancialIntegration()}}
-                >
-                  Integrador Financeiro
-                </button>
-              </div>
-            </>
-          )}
-
-          {(checkMarkedPaid && companyPlan != 'GOJURFR') && (
-            <>
-              <div style={{display:(showConfigMenu?'grid':'none')}}>
-                <hr />
-                <button type="button" className="menuLink" onClick={() => {handleMarkedPaid()}}
-                >
-                  Realizar baixas
-                </button>
-              </div>
-            </>
-          )}
-
-          {(checkConfigInvoice && companyPlan != 'GOJURFR') && (
-            <>
-              <div style={{display:(showConfigMenu?'grid':'none')}}>
-                <hr />
-                <button type="button" className="menuLink" onClick={() => {handleConfigureInvoice()}}
-                >
-                  Configurar Fatura
-                </button>
-              </div>
-            </>
-          )}
+          )}        
 
           {checkCategory &&(
             <>
@@ -316,6 +280,18 @@ const FinanceOptionsMenu = (props) => {
             </>
           )}
 
+          {(checkConfigInvoice && companyPlan != 'GOJURFR') && (
+            <>
+              <div style={{display:(showConfigMenu?'grid':'none')}}>
+                <hr />
+                <button type="button" className="menuLink" onClick={() => {handleConfigureInvoice()}}
+                >
+                  Configurar Fatura
+                </button>
+              </div>
+            </>
+          )}
+
           {checkAccount &&(
             <>
               <div style={{display:(showConfigMenu?'grid':'none')}}>
@@ -350,13 +326,29 @@ const FinanceOptionsMenu = (props) => {
             </>
           )}
 
-          {checkServiceType &&(
+          {(checkFinancialIntegration && companyPlan != 'GOJURFR') &&(
             <>
               <div style={{display:(showConfigMenu?'grid':'none')}}>
-                <ServiceTypeCustom callback={{handleServiceType}} />
+                <hr />
+                <button type="button" className="menuLink" onClick={() => {handleFinancialIntegration()}}
+                >
+                  Integrador Financeiro
+                </button>
               </div>
             </>
-          )}
+          )}      
+
+          {(checkMarkedPaid && companyPlan != 'GOJURFR') && (
+            <>
+              <div style={{display:(showConfigMenu?'grid':'none')}}>
+                <hr />
+                <button type="button" className="menuLink" onClick={() => {handleMarkedPaid()}}
+                >
+                  Realizar Baixas
+                </button>
+              </div>
+            </>
+          )} 
 
           {checkFinancialStatus &&(
             <>
@@ -371,6 +363,14 @@ const FinanceOptionsMenu = (props) => {
                 >
                   Status Financeiro
                 </button>
+              </div>
+            </>
+          )}
+
+          {checkServiceType &&(
+            <>
+              <div style={{display:(showConfigMenu?'grid':'none')}}>
+                <ServiceTypeCustom callback={{handleServiceType}} />
               </div>
             </>
           )}
@@ -464,43 +464,7 @@ const FinanceOptionsMenu = (props) => {
                 <HeaderPageCustom callback={{handlePaymentSlip}} />
               </div>
             </>
-          )}
-
-          {(checkFinancialIntegration && companyPlan != 'GOJURFR') &&(
-            <>
-              <div style={{display:(showConfigMenu?'grid':'none')}}>
-                <hr />
-                <button type="button" className="menuLink" onClick={() => {handleFinancialIntegration()}}
-                >
-                  Integrador Financeiro
-                </button>
-              </div>
-            </>
-          )}
-
-          {(checkMarkedPaid && companyPlan != 'GOJURFR') && (
-            <>
-              <div style={{display:(showConfigMenu?'grid':'none')}}>
-                <hr />
-                <button type="button" className="menuLink" onClick={() => {handleMarkedPaid()}}
-                >
-                  Realizar baixas
-                </button>
-              </div>
-            </>
-          )}
-
-          {(checkConfigInvoice && companyPlan != 'GOJURFR') && (
-            <>
-              <div style={{display:(showConfigMenu?'grid':'none')}}>
-                <hr />
-                <button type="button" className="menuLink" onClick={() => {handleConfigureInvoice()}}
-                >
-                  Configurar Fatura
-                </button>
-              </div>
-            </>
-          )}
+          )}    
 
           {checkCategory &&(
             <>
@@ -554,6 +518,18 @@ const FinanceOptionsMenu = (props) => {
             </>
           )}
 
+          {(checkConfigInvoice && companyPlan != 'GOJURFR') && (
+            <>
+              <div style={{display:(showConfigMenu?'grid':'none')}}>
+                <hr />
+                <button type="button" className="menuLink" onClick={() => {handleConfigureInvoice()}}
+                >
+                  Configurar Fatura
+                </button>
+              </div>
+            </>
+          )}
+
           {checkAccount &&(
             <>
               <div style={{display:(showConfigMenu?'grid':'none')}}>
@@ -588,10 +564,26 @@ const FinanceOptionsMenu = (props) => {
             </>
           )}
 
-          {checkServiceType &&(
+          {(checkFinancialIntegration && companyPlan != 'GOJURFR') &&(
             <>
               <div style={{display:(showConfigMenu?'grid':'none')}}>
-                <ServiceTypeCustom callback={{handleServiceType}} />
+                <hr />
+                <button type="button" className="menuLink" onClick={() => {handleFinancialIntegration()}}
+                >
+                  Integrador Financeiro
+                </button>
+              </div>
+            </>
+          )}      
+
+          {(checkMarkedPaid && companyPlan != 'GOJURFR') && (
+            <>
+              <div style={{display:(showConfigMenu?'grid':'none')}}>
+                <hr />
+                <button type="button" className="menuLink" onClick={() => {handleMarkedPaid()}}
+                >
+                  Realizar Baixas
+                </button>
               </div>
             </>
           )}
@@ -609,6 +601,14 @@ const FinanceOptionsMenu = (props) => {
                 >
                   Status Financeiro
                 </button>
+              </div>
+            </>
+          )}
+
+          {checkServiceType &&(
+            <>
+              <div style={{display:(showConfigMenu?'grid':'none')}}>
+                <ServiceTypeCustom callback={{handleServiceType}} />
               </div>
             </>
           )}
