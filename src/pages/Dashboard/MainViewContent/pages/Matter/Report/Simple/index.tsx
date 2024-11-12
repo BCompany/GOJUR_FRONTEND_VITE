@@ -31,7 +31,7 @@ import LoaderWaiting from 'react-spinners/ClipLoader';
 import { Overlay } from 'Shared/styles/GlobalStyle';
 import { useForm } from 'react-hook-form';
 import { Container, Content, Form, ItemList, TollBar } from './styles';
-import { ISelectData, IDefaultsProps, IMatterReportData, ISubject, ICustomerGroup, ICustomerPosition, IAutoCompleteData, IAutoCompleteCourtData, IOpposing, ILawyer, ILegalCause, IMatterStatus, IMatterSolution, IMatterProbability, ICourt, IMatterPhase, ILegalNature, IMatterEventType, IMatterDemandType, IResponsible } from '../../../Interfaces/IMatter';
+import { ISelectData, IDefaultsProps, IMatterReportData, ISubject, ICustomerGroup, ICustomerPosition, IAutoCompleteData, IAutoCompleteCourtData, IOpposing, ILawyer, ILegalCause, IMatterStatus, IMatterSolution, IMatterProbability, ICourt, IMatterPhase, ILegalNature, IMatterEventType, IMatterDemandType, IResponsible, IAdvisoryType } from '../../../Interfaces/IMatter';
 
 
 
@@ -133,6 +133,13 @@ const [legalNatureTerm, setLegalNatureTerm] = useState('');
 const [legalNatureValue, setLegalNatureValue] = useState('');
 const [legalNatureDesc, setLegalNatureDesc] = useState('');
 const [legalNatureReportList, setLegalNatureReportList] = useState<ISelectData[]>([]);
+
+const [matterAdvisoryType, setMatterAdvisoryType] = useState<IAutoCompleteData[]>([]);
+const [matterAdvisoryTypeId, setMatterAdvisoryTypeId] = useState('');
+const [matterAdvisoryTypeTerm, setMatterAdvisoryTypeTerm] = useState('');
+const [matterAdvisoryTypeValue, setMatterAdvisoryValue] = useState('');
+const [matterAdvisoryTypeDesc, setMatterAdvisoryDesc] = useState('');
+const [matterAdvisoryTypeReportList, setMatterAdvisoryTypeReportList] = useState<ISelectData[]>([])
 
 const [stateReportList, setStateReportList] = useState<ISelectData[]>([]);
 const [states, setStates] = useState<IAutoCompleteData[]>([]);
@@ -394,6 +401,12 @@ useDelay(() => {
 }, [legalNatureTerm], 1000)
 
 useDelay(() => {
+  if (matterAdvisoryTypeTerm.length > 0){
+    LoadAdvisoryType()
+  }
+}, [legalNatureTerm], 1000)
+
+useDelay(() => {
   if (matterEventTypeTerm.length > 0){
     LoadMatterEventType()
   }
@@ -429,7 +442,7 @@ useEffect(() => {
   LoadMatterEventType()
   LoadMatterDemandType()
   LoadResponsible()
-
+  LoadAdvisoryType()
 },[])
 
 
@@ -892,6 +905,44 @@ const LoadLegalNature = async (stateValue?: string) => {
   }
 }
 
+const LoadAdvisoryType = async (stateValue?: string) => {
+
+  if (isLoadingComboData){
+    return false;
+  }
+
+  let filter = stateValue == "initialize"? matterAdvisoryTypeValue:matterAdvisoryTypeTerm
+  if (stateValue == 'reset'){
+    filter = ''
+  }
+
+  try {
+    const response = await api.get<IAdvisoryType[]>('/TipoConsultivo/ListarCombo', {
+      params:{
+      filterClause: filter,
+      rows: 50,
+      token,
+      }
+    });
+
+    const listMatterAdvisoryType: IAutoCompleteData[] = []
+
+    response.data.map(item => {
+      return listMatterAdvisoryType.push({
+        id: item.id,
+        label: item.value
+      })
+    })
+    
+    setMatterAdvisoryType(listMatterAdvisoryType)
+
+    setIsLoadingComboData(false)
+    
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 
 const LoadStates = async () => {
 
@@ -1122,10 +1173,23 @@ const LoadResponsible = async (userName?: string) => {
     })
 
 
+    let advisoryTypeListItens = 'advisoryType=';
+    matterAdvisoryTypeReportList.map((advisoryType) => {
+      return advisoryTypeListItens += `${advisoryType.id};`
+    })
+
+
+    let advisoryTypeListItensDesc = '';
+    matterAdvisoryTypeReportList.map((advisoryType) => {
+      return advisoryTypeListItensDesc += `${advisoryType.label} ,`
+    })
+
+
     let matterStatusListItens = 'matterStatus=';
     matterStatusReportList.map((matterStatus) => {
       return matterStatusListItens += `${matterStatus.id};`
     })
+
 
     let matterStatusListItensDesc = '';
     matterStatusReportList.map((matterStatus) => {
@@ -1249,6 +1313,8 @@ const LoadResponsible = async (userName?: string) => {
       lawyerDesc: lawyerListItensDesc,
       legalCauseId: legalCauseListItens,
       legalCauseDesc: legalCauseListItensDesc,
+      matterAdvisoryTypeId: advisoryTypeListItens,
+      matterAdvisoryTypeDesc: advisoryTypeListItensDesc,
       matterStatusId: matterStatusListItens,
       matterStatusDesc: matterStatusListItensDesc,
       matterSolutionId: matterSolutionListItens,
@@ -1312,7 +1378,7 @@ const LoadResponsible = async (userName?: string) => {
       description: err.response.data.Message
     })
   }
-},[addToast, customerReportList, customerGroupReportList, customerPositionReportList, opposingReportList, lawyerReportList, legalCauseReportList, matterStatusReportList, matterSolutionReportList, matterProbabilityReportList, courtReportList, matterPhaseReportList, legalNatureReportList, stateReportList, matterEventTypeReportList, matterDemandTypeReportList, responsibleReportList, markersReportList, reportType, hudeDataWarning, printHudeData, customerId, customerDesc, customerGroupId, customerGroupDesc, customerPositionId, customerPositionDesc, opposingId, opposingDesc, lawyerId, lawyerDesc, legalCauseId, legalCauseDesc, matterStatusId, matterStatusDesc, matterSolutionId, matterSolutionDesc, matterProbabilityId, matterProbabilityDesc, courtId, courtDesc, federalUnitName, matterPhaseId, matterPhaseDesc, legalNatureId, legalNatureDesc, matterEventTypeId, matterEventTypeDesc, matterDemandTypeId, matterDemandTypeDesc, responsibleId, responsibleDesc, matterTitle, calendarEventQty, matterEventQty, dtaEventStart, dtaEventEnd, daysWithoutQty, daysWithQty, dtaDistributionStart, dtaDistributionEnd, dtaEntradaStart, dtaEntradaEnd, dtaEncerramentoStart, dtaEncerramentoEnd, matterType, stateId, stateDesc, privateEvent, orderBy, reportLayout]); 
+},[addToast, customerReportList, customerGroupReportList, customerPositionReportList, opposingReportList, lawyerReportList, legalCauseReportList, matterStatusReportList, matterSolutionReportList, matterProbabilityReportList, courtReportList, matterPhaseReportList, legalNatureReportList, stateReportList, matterEventTypeReportList, matterDemandTypeReportList, responsibleReportList, markersReportList, reportType, hudeDataWarning, printHudeData, customerId, customerDesc, customerGroupId, customerGroupDesc, customerPositionId, customerPositionDesc, opposingId, opposingDesc, lawyerId, lawyerDesc, legalCauseId, legalCauseDesc, matterStatusId, matterStatusDesc, matterSolutionId, matterSolutionDesc, matterProbabilityId, matterProbabilityDesc, courtId, courtDesc, federalUnitName, matterPhaseId, matterPhaseDesc, legalNatureId, legalNatureDesc, matterAdvisoryTypeId, matterAdvisoryTypeDesc, matterEventTypeId, matterEventTypeDesc, matterDemandTypeId, matterDemandTypeDesc, responsibleId, responsibleDesc, matterTitle, calendarEventQty, matterEventQty, dtaEventStart, dtaEventEnd, daysWithoutQty, daysWithQty, dtaDistributionStart, dtaDistributionEnd, dtaEntradaStart, dtaEntradaEnd, dtaEncerramentoStart, dtaEncerramentoEnd, matterType, stateId, stateDesc, privateEvent, orderBy, reportLayout]); 
 
 
 
@@ -1691,6 +1757,42 @@ const handleRemoveItemLegalNature = (legalNature) => {
   setLegalNatureReportList(legalNatureListUpdate)
 }
 
+
+const handleAdvisoryTypeSelected = (item) => { 
+    
+  if (item){
+    setMatterAdvisoryValue(item.label)
+    setMatterAdvisoryDesc(item.label)
+    handleListAdvisoryType(item)
+
+    setMatterType("advisory")
+  }else{
+    setMatterAdvisoryValue('')
+    LoadAdvisoryType('reset')
+    setMatterAdvisoryTypeId('')
+  }
+}
+
+const handleListAdvisoryType = (AdvisoryType) => {
+
+  // if is already add on list return false
+  const existItem = matterAdvisoryTypeReportList.filter(item => item.id === AdvisoryType.id);
+  if (existItem.length > 0){
+    return;
+  }
+
+  setMatterAdvisoryTypeReportList(previousValues => [...previousValues, AdvisoryType])
+}
+
+const handleRemoveItemAdvisoryType = (AdvisoryType) => {
+
+  const matterAdvisoryTypeListUpdate = matterAdvisoryTypeReportList.filter(item => item.id != AdvisoryType.id);
+  setMatterAdvisoryTypeReportList(matterAdvisoryTypeListUpdate)
+
+  if(matterAdvisoryTypeListUpdate.length == 0){
+    setMatterType("legal")
+  }
+}
 
 const handleStateSelected = (item) => { 
   setReportStateValue(item.target.children[item.target.selectedIndex].label)
@@ -2087,6 +2189,36 @@ const handleRemoveItemMarkers = (markers) => {
                   )
                 })} 
 
+              </ItemList>
+
+              <AutoCompleteSelect className="selectAdvisoryType">
+                <p>Assunto</p>
+                <Select
+                   isSearchable   
+                   value={matterAdvisoryType.filter(options => options.id == matterAdvisoryTypeId)}
+                   onChange={handleAdvisoryTypeSelected}
+                   onInputChange={(term) => setMatterAdvisoryTypeTerm(term)}
+                   isClearable
+                   placeholder=""
+                   isLoading={isLoadingComboData}
+                   loadingMessage={loadingMessage}
+                   noOptionsMessage={noOptionsMessage}
+                   styles={selectStyles}              
+                   options={matterAdvisoryType}
+                />
+              </AutoCompleteSelect>
+
+              <ItemList>
+                {matterAdvisoryTypeReportList.map(item => {
+                  return (
+                    <span>
+                      {item.label}
+                      <p className="buttonLinkClick" onClick={() => handleRemoveItemAdvisoryType(item)}> 
+                        Excluir
+                      </p> 
+                    </span>
+                  )
+                })} 
               </ItemList>
 
 
