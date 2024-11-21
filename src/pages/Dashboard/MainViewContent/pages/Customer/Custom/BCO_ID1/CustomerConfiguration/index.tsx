@@ -22,6 +22,7 @@ import { FiEdit, FiSearch, FiSave, FiArrowLeft } from 'react-icons/fi';
 import { IoReload } from "react-icons/io5";
 import { MdHelp } from 'react-icons/md';
 import { RiNewspaperFill, RiUserAddFill, RiAccountPinBoxLine } from 'react-icons/ri';
+import { SiMinutemailer } from "react-icons/si";
 import { months, financialYears } from 'Shared/utils/commonListValues';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
 import { AutoCompleteSelect } from 'Shared/styles/GlobalStyle';
@@ -38,7 +39,7 @@ import Search from 'components/Search';
 import { useLocation, useHistory } from 'react-router-dom'
 import api from 'services/api';
 import LogModal from 'components/LogModal';
-import { IUserData, ICustomerPendingData, ICustomerListData, ICustomerInformation, ICustomerPlanData, IPlanData, IResourcesData, ICustomerData, ISelectData, ISelectPlanData, ISelectResourcesData } from '../../../../Interfaces/ICustomerConfiguration';
+import { IUserData, ICustomerPendingData, ICustomerListData, ICustomerInformation, ICustomerPlanData, IPlanData, IResourcesData, ICustomerData, ISelectData, ISelectPlanData, ISelectResourcesData, IEmailData } from '../../../../Interfaces/ICustomerConfiguration';
 import CustomerRobotModalEdit from './RobotModal';
 import CustomerCancelPlanModalEdit from './CancelPlanModal';
 import PublicationDateModal from './PublicationDateModal';
@@ -2371,6 +2372,24 @@ const CustomerConfiguration: React.FC = () => {
   }
 
 
+  const handleClickSendConfirmationEmail = useCallback(async () => {
+    setCustomerCaller("sendCustomSubscriptionConfirmationEmail")
+
+    try {
+      const response = await api.post('/CustomBCO_ID1/CustomerEmail/EnviarEmail', {
+        referenceId: companyId,
+        token,
+      })
+
+      addToast({type: "success", title: "E-mail enviado com sucesso", description: "O e-mail de confirmação de assinatura foi enviado!"})
+    }
+    catch (err: any) {
+      setIsLoading(false)
+      addToast({type: "error", title: "Falha ao enviar o e-mail.", description: err.response.data.Message})
+    }
+  },[companyId]);
+
+
   return (
     <Container>
 
@@ -2719,6 +2738,29 @@ const CustomerConfiguration: React.FC = () => {
                     <>
                       <RiNewspaperFill />
                       <span>Classificar Publicações</span>
+                    </>
+                  )}
+
+                </button>
+              </div>
+
+              <div className='headerButtons'>
+                <button
+                  className="buttonLinkClick buttonInclude"
+                  type="submit"
+                  onClick={handleClickSendConfirmationEmail}
+                >
+                  {customerCaller == "sendCustomSubscriptionConfirmationEmail" && (
+                    <>
+                      <SiMinutemailer style={{ color: "orange" }} />
+                      <span style={{ color: "orange" }}>Enviar e-mail de confirmação de assinatura</span>
+                    </>
+                  )}
+
+                  {customerCaller != "sendCustomSubscriptionConfirmationEmail" && (
+                    <>
+                      <SiMinutemailer />
+                      <span>Enviar e-mail de confirmação de assinatura</span>
                     </>
                   )}
 
