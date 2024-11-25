@@ -2374,10 +2374,11 @@ const CustomerConfiguration: React.FC = () => {
 
   const handleClickSendConfirmationEmail = useCallback(async () => {
     setCustomerCaller("sendCustomSubscriptionConfirmationEmail")
+    const customerId = pathname.substr(24)
 
     try {
       const response = await api.post('/CustomBCO_ID1/CustomerEmail/EnviarEmail', {
-        referenceId: companyId,
+        referenceId: customerId,
         token,
       })
 
@@ -2387,7 +2388,7 @@ const CustomerConfiguration: React.FC = () => {
       setIsLoading(false)
       addToast({type: "error", title: "Falha ao enviar o e-mail.", description: err.response.data.Message})
     }
-  },[companyId]);
+  },[]);
 
 
   return (
