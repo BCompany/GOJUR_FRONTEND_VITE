@@ -85,3 +85,9 @@ export interface IUserData{
     id: string;
     label: string;
   }
+
+  export interface IEmailData {
+    referenceId: number;
+    companyId: number;
+    tokem: string;
+  }
