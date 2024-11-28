@@ -133,6 +133,16 @@ const FinancialIntegrationEdit: React.FC = () => {
 
   const SavePaymentSlipContract = useCallback(async() => {
     try {
+      if (penaltyPackages == '0') {
+        addToast({type: "info", title: "Operação NÃO realizada", description: `Necessário definir um valor para a multa`})
+        return;
+      }
+
+      if (ratesPackage == '0') {
+        addToast({type: "info", title: "Operação NÃO realizada", description: `Necessário definir uma valor para os juros`})
+        return;
+      }
+
       if (isSaving) {
         addToast({type: "info", title: "Operação NÃO realizada", description: `Já existe uma operação em andamento`})
         return;
