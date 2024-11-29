@@ -34,8 +34,8 @@ export interface IPaymentSlipContractData{
   name: string
   partnerToken: string
   partnerId: string
-  penaltyPackages: string
-  ratesPackage: string
+  penaltyPackages: number
+  ratesPackage: number
 }
 
 const FinancialIntegrationEdit: React.FC = () => {
@@ -50,8 +50,8 @@ const FinancialIntegrationEdit: React.FC = () => {
   const [bank, setBank] = useState("AS")
   const [paymentSlipContractId, setPaymentSlipContractId] = useState<string>("")
   const [paymentSlipContractDescription, setPaymentSlipContractDescription] = useState<string>("ASAAS Gestão Financeira Instituição de Pagamento S.A.")
-  const [penaltyPackages, setPenaltyPackages] = useState<string>("")
-  const [ratesPackage, setRatesPackage] = useState<string>("")
+  const [penaltyPackages, setPenaltyPackages] = useState<number>(0)
+  const [ratesPackage, setRatesPackage] = useState<number>(0)
   const [bankToken, setBankToken] = useState<string>("")
   const [isValid, setIsValid] = useState<boolean>(false)
 
@@ -133,15 +133,19 @@ const FinancialIntegrationEdit: React.FC = () => {
 
   const SavePaymentSlipContract = useCallback(async() => {
     try {
-      if (penaltyPackages == '0') {
-        addToast({type: "info", title: "Operação NÃO realizada", description: `Necessário definir um valor para a multa`})
-        return;
-      }
 
-      if (ratesPackage == '0') {
-        addToast({type: "info", title: "Operação NÃO realizada", description: `Necessário definir uma valor para os juros`})
-        return;
-      }
+      // console.log(penaltyPackages)
+      // if (penaltyPackages == 0) {
+      //   addToast({type: "info", title: "Operação NÃO realizada", description: `Necessário definir um valor para a multa`})
+      //   return;
+      // }
+
+      
+      // console.log(ratesPackage)
+      // if (ratesPackage == 0) {
+      //   addToast({type: "info", title: "Operação NÃO realizada", description: `Necessário definir uma valor para os juros`})
+      //   return;
+      // }
 
       if (isSaving) {
         addToast({type: "info", title: "Operação NÃO realizada", description: `Já existe uma operação em andamento`})
@@ -196,6 +200,19 @@ const FinancialIntegrationEdit: React.FC = () => {
   }
 
 
+  const handleValuePenalty = (event, value, maskedValue) => {
+    event.preventDefault();
+
+    setPenaltyPackages(value)
+  };
+
+
+  const handleValueRates = (event, value, maskedValue) => {
+    event.preventDefault();
+
+    setRatesPackage(value)
+  };
+
   return (
     <Container>
       <HeaderPage />
@@ -240,7 +257,7 @@ const FinancialIntegrationEdit: React.FC = () => {
                 currency="BRL"
                 config={currencyConfig}
                 value={penaltyPackages}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setPenaltyPackages(e.target.value)}
+                onChange={handleValuePenalty}
                 required
               />
             </label>
@@ -251,7 +268,7 @@ const FinancialIntegrationEdit: React.FC = () => {
                 currency="BRL"
                 config={currencyConfig}
                 value={ratesPackage}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setRatesPackage(e.target.value)}
+                onChange={handleValueRates}
                 required
               />
             </label>
