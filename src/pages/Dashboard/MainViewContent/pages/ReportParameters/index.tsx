@@ -573,7 +573,7 @@ img.src = imageSrc;
                   </select>
                 </label>
 
-                <MdHelp className='infoMessage' title="Inclua um texto ou uma imagem como cabeçalho nos relatórios." />
+                <MdHelp className='infoMessage' title="Inclua um texto ou uma imagem como cabeçalho nos relatórios. Recomendamos o tamanho 800x80px para as imagens." />
               </div>
 
               <div className='informationDiv'>
