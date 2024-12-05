@@ -68,12 +68,9 @@ const FinancialInformation: React.FC = () => {
       setFromEmail(true)
     }
 
-    console.log(location)
-
     if(location.search.includes('?showFinancialMessage=')){
       const flagValue = location.search.substring(49).split("=")[1].substring(0,1)
 
-      console.log(flagValue)
       if(flagValue == "1"){
         setShowFinancialMessage(true)
       }
