@@ -839,9 +839,13 @@ const FinancialDeal: React.FC = () => {
     }
     else
     {
-      setDealValue1((dealValue / 100) * lawyerValue);
-      setDealValue2(value);
-      setDealValue3(value);
+      const lawyerDealValue = (dealValue / 100) * lawyerValue
+      const customerDealvalue = (dealValue - lawyerDealValue).toFixed(2)
+      const totalLawyerDealValue = ((dealValue / 100) * lawyerValue).toFixed(2)
+
+      setDealValue1(Number(totalLawyerDealValue));
+      setDealValue2(Number(customerDealvalue));
+      setDealValue3(Number(customerDealvalue));
     }
 
     setDescription1(`ACORDO CLIENTE ${peopleValue} - Receita do escritório do acordo`);
