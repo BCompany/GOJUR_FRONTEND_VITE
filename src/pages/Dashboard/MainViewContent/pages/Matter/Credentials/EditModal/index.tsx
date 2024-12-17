@@ -318,7 +318,7 @@ return (
                 checked={twoFactorAuth}
                 onChange={(e) => setTwoFactorAuth(e.target.checked)}
               />
-              <span style={{ marginLeft: '8px' }}>Autenticação</span>
+              <span style={{ marginLeft: '8px' }}>Autenticação de Dois Fatores</span>
             </label>
           </div>
         )}
