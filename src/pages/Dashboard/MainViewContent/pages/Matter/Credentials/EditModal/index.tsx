@@ -191,10 +191,12 @@ const GetCredential = async (id: number) => {
 
     if (response.data.qrCode) {
       setTwoFactorAuth(true);
+      setFlgQrCode(true);
       setQrCode(response.data.qrCode);
     } else {
       setTwoFactorAuth(false);
       setQrCode('');
+      setFlgQrCode(true);
     }
 
   } catch (err: any) {
@@ -316,7 +318,7 @@ return (
                 checked={twoFactorAuth}
                 onChange={(e) => setTwoFactorAuth(e.target.checked)}
               />
-              <span style={{ marginLeft: '8px' }}>Autenticação 2 fatores</span>
+              <span style={{ marginLeft: '8px' }}>Autenticação</span>
             </label>
           </div>
         )}
