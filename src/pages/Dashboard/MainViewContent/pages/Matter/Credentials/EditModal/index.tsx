@@ -184,19 +184,27 @@ const GetCredential = async (id: number) => {
       },
     );
 
-    setDes_user(response.data.des_Username)
-    setDescription(response.data.des_Credential)
-    setCourtId(response.data.id_Court)
-    setDes_Court(response.data.courtName)
+    setDes_user(response.data.des_Username);
+    setDescription(response.data.des_Credential);
+    setCourtId(response.data.id_Court);
+    setDes_Court(response.data.courtName);
+
+    if (response.data.qrCode) {
+      setTwoFactorAuth(true);
+      setQrCode(response.data.qrCode);
+    } else {
+      setTwoFactorAuth(false);
+      setQrCode('');
+    }
 
   } catch (err: any) {
     addToast({
       type: "info",
       title: "Operação não realizada",
       description: err.response.data.Message
-    })
+    });
   }
-}
+};
 
 const handleCourtSelected = (item) => { 
       
