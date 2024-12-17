@@ -50,6 +50,7 @@ const AuthProvider: React.FC = ({ children }) => {
     return {} as AuthState;
   });
 
+
   const signIn = useCallback(async ({ email, password }) => {
     const response = await api.post('/Usuario/Logar', {
       email,
@@ -81,11 +82,13 @@ const AuthProvider: React.FC = ({ children }) => {
     }
   }, []);
 
+
   const signOut = useCallback(() => {
     localStorage.clear();
 
     setData({} as AuthState);
   }, []);
+
 
   return (
     <AuthContext.Provider
@@ -106,6 +109,7 @@ const AuthProvider: React.FC = ({ children }) => {
   );
 };
 
+
 function useAuth(): AuthContextData {
   const context = useContext(AuthContext);
 
@@ -115,4 +119,5 @@ function useAuth(): AuthContextData {
 
   return context;
 }
+
 export { AuthProvider, useAuth };

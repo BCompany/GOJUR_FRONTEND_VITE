@@ -162,15 +162,7 @@ export function HeaderPage() {
   useEffect(() => {
     const imageStorage = localStorage.getItem("@GoJur:Avatar")
 
-    // if(!imageStorage){
-    //   signOut()
-    // }
-    // else{
-    //   const path = `${imageStorage}`
-    //   setImagePath(path)
-    // }
-
-    if(imageStorage){
+    if(imageStorage != ''){
       const path = `${imageStorage}`
       setImagePath(path)
     }
