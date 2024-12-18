@@ -174,6 +174,7 @@ const PaymentFormEdit = () => {
                 <option value="C">Cartão de Crédito</option>
                 <option value="H">Cheque</option>
                 <option value="D">Dinheiro</option>
+                <option value="P">PIX</option>
               </select>
             </label>
             <br />
@@ -246,6 +247,7 @@ const PaymentFormEdit = () => {
                 <option value="C">Cartão de Crédito</option>
                 <option value="H">Cheque</option>
                 <option value="D">Dinheiro</option>
+                <option value="P">PIX</option>
               </select>
             </label>
             <br />
