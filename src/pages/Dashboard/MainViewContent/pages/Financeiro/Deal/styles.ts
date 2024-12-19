@@ -342,7 +342,7 @@ export const Content = styled.div`
   .remove-person-btn {
     background: none;
     border: none;
-    font-size: 0.75rem; /* Pequeno, mas visível */
+    font-size: 0.75rem; 
     font-weight: bold;
     cursor: pointer;
     margin-left: 0.2rem;

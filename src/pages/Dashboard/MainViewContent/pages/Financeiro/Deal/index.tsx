@@ -885,7 +885,6 @@ const FinancialDeal: React.FC = () => {
       selectedPeopleList.map((people) => {
         return peopleIdsItems += `${people.id},`
       })
-      console.log(peopleIdsItems)
 
       const response = await api.post('/Acordo/Salvar', {
         cod_Acordo: dealId,
@@ -1104,11 +1103,6 @@ const FinancialDeal: React.FC = () => {
       setIsSaving(true);
       setShowMovementModalOptions(false);
 
-      let peopleIdsItems = '';
-      selectedPeopleList.map((people) => {
-        return peopleIdsItems += `${people.id},`
-      })
-
       if (dealParcelas != '1' && movementActionSave.length == 0 && dealId != '0')
       {
         setShowMovementModalOptions(true);
@@ -1157,7 +1151,7 @@ const FinancialDeal: React.FC = () => {
       setCheckValueModal(false);
       addToast({ type: "info", title: "Falha ao salvar acordo.", description: err.response.data.Message });
     }
-  }, [dealId, dealParcelas, deal1Id, deal2Id, deal3Id, dealDate1, dealDate2, dealDate3, dealValue1, dealValue2, dealValue3, description1, description2, description3, categoryId1, categoryId2, categoryId3, paymentFormId1, paymentFormId2, paymentFormId3, centerCostId1, centerCostId2, centerCostId3, movementActionSave, parcelaAtual, movement1Id, movement2Id, movement3Id, selectedPeopleList]);
+  }, [dealId, dealParcelas, deal1Id, deal2Id, deal3Id, dealDate1, dealDate2, dealDate3, dealValue1, dealValue2, dealValue3, description1, description2, description3, categoryId1, categoryId2, categoryId3, paymentFormId1, paymentFormId2, paymentFormId3, centerCostId1, centerCostId2, centerCostId3, movementActionSave, parcelaAtual, movement1Id, movement2Id, movement3Id]);
 
 
   const handleReminders = (item:any) => {
