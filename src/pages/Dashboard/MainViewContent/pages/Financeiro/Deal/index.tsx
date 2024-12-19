@@ -123,6 +123,10 @@ const FinancialDeal: React.FC = () => {
   const [peopleId, setPeopleId] = useState('');
   const [peopleValue, setPeopleValue] = useState('');
   const [peopleTerm, setPeopleTerm] = useState('');
+  const [selectedPeopleList, setSelectedPeopleList] = useState<ISelectData[]>([]);
+  const [checkPeopleList, setCheckPeopleList] = useState<boolean>(false);
+  const [showNotifyPeople, setShowNotifyPeople] = useState<boolean>(false);
+  const [peopleDescription, setPeopleDescription] = useState<string>('');
 
   const [categoryList, setCategoryList] = useState<ISelectData[]>([]);
   const [categoryId1, setCategoryId1] = useState('');
@@ -356,6 +360,8 @@ const FinancialDeal: React.FC = () => {
       setFlgNotifyPeople(response.data.flg_NotificaPessoa);
       setFlgNotifyEmail(response.data.flg_NotificaEmail);
       setFlgNotifyWhatsApp(response.data.flg_NotificaWhatsApp);
+      setSelectedPeopleList(response.data.UserList)
+      setShowNotifyPeople(response.data.UserList.length > 0 && response.data.Lembrete != null)
 
       if(response.data.cod_Processo != 0 && response.data.cod_Processo != null )
       {
@@ -459,14 +465,14 @@ const FinancialDeal: React.FC = () => {
       filter = '';
 
     try {
-      const response = await api.get<IPeopleData[]>('/Pessoas/ListarPorTipo', { params:{ filterClause: filter, peopleType: "C", token}});
+      const response = await api.get<ISelectData[]>('/Pessoas/ListarPorEmpresa', { params:{ filterClause: filter, peopleTypeSelected: "CLTO", token}});
 
       const listPeople: ISelectData[] = [];
 
       response.data.map(item => {
         return listPeople.push({
           id: item.id,
-          label: item.value
+          label: item.label
         })
       })
 
@@ -548,17 +554,18 @@ const FinancialDeal: React.FC = () => {
   };
 
 
-  const handlePeopleSelected = (item) => { 
+  const handlePeopleSelected = (item) => {
     if (item){
-      setPeopleId(item.id);
-      setPeopleValue(item.label);
+      setPeopleId(item.id)
+      setPeopleDescription(item.label)
+      setShowNotifyPeople(reminders != '00' && reminders != null)
+      handleListItemPeople(item)
+    }else{
+      setPeopleId('')
+      setPeopleDescription('')
+      LoadPeople()
     }
-    else{
-      setPeopleId('');
-      LoadPeople('reset');
-      setPeopleValue('');
-    }
-  };
+  }
 
 
   const handleCategorySelected1 = (item) => {
@@ -874,9 +881,15 @@ const FinancialDeal: React.FC = () => {
       financialDealDetailFilterList.push({cod_Acordo: dealId, cod_AcordoDetalhe: deal2Id, tpo_AcordoDetalhe: "RC", dta_AcordoDetalhe: dealDate2, vlr_AcordoDetalhe: dealValue2, des_AcordoDetalhe: description2, cod_Categoria: categoryId2, cod_FormaPagamento: paymentFormId2, cod_CentroCusto: centerCostId2});
       financialDealDetailFilterList.push({cod_Acordo: dealId, cod_AcordoDetalhe: deal3Id, tpo_AcordoDetalhe: "PC", dta_AcordoDetalhe: dealDate3, vlr_AcordoDetalhe: dealValue3, des_AcordoDetalhe: description3, cod_Categoria: categoryId3, cod_FormaPagamento: paymentFormId3, cod_CentroCusto: centerCostId3});
 
+      let peopleIdsItems = '';
+      selectedPeopleList.map((people) => {
+        return peopleIdsItems += `${people.id},`
+      })
+      console.log(peopleIdsItems)
+
       const response = await api.post('/Acordo/Salvar', {
         cod_Acordo: dealId,
-        cod_Pessoa: peopleId,
+        peopleIds: peopleIdsItems,
         cod_Conta: accountId,
         cod_Processo: matterId,
         vlr_Acordo: dealValue,
@@ -906,7 +919,7 @@ const FinancialDeal: React.FC = () => {
       setIsSaving(false);
       addToast({ type: "info", title: "Falha ao salvar acordo.", description: err.response.data.Message });
     }
-  }, [dealId, peopleId, matterId, dealValue, dealParcelas, dealDate, period, prorating, lawyerValue, customerValue, deal1Id, deal2Id, deal3Id, dealDate1, dealDate2, dealDate3, dealValue1, dealValue2, dealValue3, description1, description2, description3, categoryId1, categoryId2, categoryId3, paymentFormId1, paymentFormId2, paymentFormId3, centerCostId1, centerCostId2, centerCostId3, actionSave, parcelaAtual, changeInstallments, reminders, flgNotifyPeople, flgNotifyEmail, flgNotifyWhatsApp]);
+  }, [dealId, peopleId, matterId, dealValue, dealParcelas, dealDate, period, prorating, lawyerValue, customerValue, deal1Id, deal2Id, deal3Id, dealDate1, dealDate2, dealDate3, dealValue1, dealValue2, dealValue3, description1, description2, description3, categoryId1, categoryId2, categoryId3, paymentFormId1, paymentFormId2, paymentFormId3, centerCostId1, centerCostId2, centerCostId3, actionSave, parcelaAtual, changeInstallments, reminders, flgNotifyPeople, flgNotifyEmail, flgNotifyWhatsApp, selectedPeopleList]);
 
 
   const Validate =() => {
@@ -917,11 +930,11 @@ const FinancialDeal: React.FC = () => {
       return;
     }
 
-    if(peopleId == "")
-    {
-      addToast({ type: "info", title: "Alerta", description: "O campo Cliente deve ser preenchido" });
-      isValid = false;
-    }
+    // if(peopleId == "")
+    // {
+      // addToast({ type: "info", title: "Alerta", description: "O campo Cliente deve ser preenchido" });
+      // isValid = false;
+    // }
     if(dealValue == 0)
     {
       addToast({ type: "info", title: "Alerta", description: "O campo Valor deve ser preenchido" });
@@ -1091,6 +1104,11 @@ const FinancialDeal: React.FC = () => {
       setIsSaving(true);
       setShowMovementModalOptions(false);
 
+      let peopleIdsItems = '';
+      selectedPeopleList.map((people) => {
+        return peopleIdsItems += `${people.id},`
+      })
+
       if (dealParcelas != '1' && movementActionSave.length == 0 && dealId != '0')
       {
         setShowMovementModalOptions(true);
@@ -1139,12 +1157,15 @@ const FinancialDeal: React.FC = () => {
       setCheckValueModal(false);
       addToast({ type: "info", title: "Falha ao salvar acordo.", description: err.response.data.Message });
     }
-  }, [dealId, dealParcelas, deal1Id, deal2Id, deal3Id, dealDate1, dealDate2, dealDate3, dealValue1, dealValue2, dealValue3, description1, description2, description3, categoryId1, categoryId2, categoryId3, paymentFormId1, paymentFormId2, paymentFormId3, centerCostId1, centerCostId2, centerCostId3, movementActionSave, parcelaAtual, movement1Id, movement2Id, movement3Id]);
+  }, [dealId, dealParcelas, deal1Id, deal2Id, deal3Id, dealDate1, dealDate2, dealDate3, dealValue1, dealValue2, dealValue3, description1, description2, description3, categoryId1, categoryId2, categoryId3, paymentFormId1, paymentFormId2, paymentFormId3, centerCostId1, centerCostId2, centerCostId3, movementActionSave, parcelaAtual, movement1Id, movement2Id, movement3Id, selectedPeopleList]);
 
 
   const handleReminders = (item:any) => {
     const value =item? item.id: ''
     setReminders(value)
+
+    const showNotifyPeople = (value != '00' && value != '') && selectedPeopleList.length > 0;
+    setShowNotifyPeople(showNotifyPeople)
   };
 
 
@@ -1156,6 +1177,27 @@ const FinancialDeal: React.FC = () => {
   const handleCloseMatterFileModal = async () => {
     setShowFileModal(false)
   };
+
+
+  const handleListItemPeople = (people) => {
+    const existItem = selectedPeopleList.filter(item => item.id === people.id);
+
+    if (existItem.length > 0){
+      return;
+    }
+
+    selectedPeopleList.push(people)
+    setSelectedPeopleList(selectedPeopleList)
+    setCheckPeopleList(!checkPeopleList)
+  }
+
+
+  const handleRemoveItemPeople = (people) => {
+    const selectedPeopleUpdate = selectedPeopleList.filter(item => item.id != people.id);
+    setSelectedPeopleList(selectedPeopleUpdate)
+    setCheckPeopleList(!checkPeopleList)
+    setShowNotifyPeople(selectedPeopleUpdate.length > 0 && reminders != '00')
+  }
 
 
   return(
@@ -1192,12 +1234,12 @@ const FinancialDeal: React.FC = () => {
         {!isMOBILE && (
           <Content id='Content'>
 
-            <div id='SelectPeople' className='selectPeople'>
+            <div id="SelectPeople" className="selectPeople">
               <AutoCompleteSelect>
-                <p>Cliente</p>
+                <p>Pessoas</p>
                 <Select
                   isSearchable
-                  value={{ id: peopleId, label: peopleValue }}
+                  value={{ id: peopleId, label: peopleDescription }}
                   onChange={handlePeopleSelected}
                   onInputChange={(term) => setPeopleTerm(term)}
                   isClearable
@@ -1210,7 +1252,24 @@ const FinancialDeal: React.FC = () => {
                   isDisabled={isEdit}
                 />
               </AutoCompleteSelect>
+
+              <div className="selected-people-inline">
+                {selectedPeopleList.map((item) => (
+                  <span key={item.id} className="selected-person-chip" title={item.label}>
+                    {item.label.substring(0,20)}
+                    {!isEdit && (
+                      <button
+                        className="remove-person-btn"
+                        onClick={() => handleRemoveItemPeople(item)}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </span>
+                ))}
+              </div>
             </div>
+
 
             <div id='AttachMatter' className='attachMatter'>
               <Process>
@@ -1258,7 +1317,10 @@ const FinancialDeal: React.FC = () => {
                 )}
               </Process>
             </div>
-            <br /><br /><br />
+
+            <br/><br/><br/>           
+                  
+            <br/>
 
             <div id='Valor' className='valorAcordo'>
               <label htmlFor="valor">
@@ -2061,23 +2123,44 @@ const FinancialDeal: React.FC = () => {
         {isMOBILE && (
           <ContentMobile>
             <div id='SelectPeople' className='selectPeople'>
-              <AutoCompleteSelect style={{margin:0}}>
-                <p>Cliente</p>
-                <Select
-                  isSearchable
-                  value={{ id: peopleId, label: peopleValue }}
-                  onChange={handlePeopleSelected}
-                  onInputChange={(term) => setPeopleTerm(term)}
-                  isClearable
-                  placeholder=""
-                  isLoading={isLoadingComboData}
-                  loadingMessage={loadingMessage}
-                  noOptionsMessage={noOptionsMessage}
-                  styles={selectStyles}
-                  options={peopleList}
-                  isDisabled={isEdit}
-                />
-              </AutoCompleteSelect>
+            <AutoCompleteSelect>
+                <p>Pessoas</p>
+                    <Select
+                      isSearchable
+                      value={{ id: peopleId, label: peopleDescription }}
+                      onChange={handlePeopleSelected}
+                      onInputChange={(term) => setPeopleTerm(term)}
+                      isClearable
+                      placeholder=""
+                      isLoading={isLoadingComboData}
+                      loadingMessage={loadingMessage}
+                      noOptionsMessage={noOptionsMessage}
+                      styles={selectStyles}
+                      options={peopleList}
+                      isDisabled={isEdit}
+                    />
+                </AutoCompleteSelect>       
+            </div>
+
+            <div className="personList">              
+                {isMOBILE && (
+                  <>
+                    <br />
+                    <br />
+                    <br />
+                  </>
+                )}
+        
+                {selectedPeopleList.map(item => {
+                  return (
+                    <p>
+                      {item.label}
+                      {!isEdit && ( 
+                         <FiTrash onClick={() => handleRemoveItemPeople(item)} />
+                      )}                  
+                    </p>
+                  )
+                })}
             </div>
 
             <div id='AttachMatter' className='attachMatter'>

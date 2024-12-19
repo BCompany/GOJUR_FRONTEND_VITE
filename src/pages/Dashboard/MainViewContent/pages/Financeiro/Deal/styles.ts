@@ -29,13 +29,14 @@ export const Content = styled.div`
 
   .selectPeople {
     float: left;
-    width: 44%;
+    width: 53%;
     margin-Left: 5%;
+    padding-left: 5%;
   }
 
   .attachMatter {
     float: left;
-    width: 43%;
+    width: 35%;
     margin-Left: 3%;
     margin-top: 3px;
   }
@@ -309,6 +310,47 @@ export const Content = styled.div`
         color: var(--red);
       }
     }
+  }
+
+  .selectPeople {
+  margin: 0.5rem 0;
+}
+
+  .selected-people-inline {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap; 
+    gap: 0.2rem; 
+    overflow-x: auto; 
+    margin-top: 0.5rem;
+    padding-left: 1%;
+  }
+
+  .selected-person-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1rem 0.3rem; 
+    background-color: #f8f8f8;
+    border: 1px solid #ddd;
+    border-radius: 5px; 
+    font-size: 40%; 
+    color: #333;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+
+  .remove-person-btn {
+    background: none;
+    border: none;
+    font-size: 0.75rem; /* Pequeno, mas visível */
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 0.2rem;
+    color: #999;
+  }
+
+  .remove-person-btn:hover {
+    color: #ff0000;
   }
 
 `;
