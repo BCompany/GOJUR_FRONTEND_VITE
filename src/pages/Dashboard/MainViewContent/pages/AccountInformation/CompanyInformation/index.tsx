@@ -23,6 +23,7 @@ import { ICepProps } from 'context/Interfaces/ICustomer';
 import { Overlay } from 'Shared/styles/GlobalStyle';
 import { Container, Content, Form, TaskBar} from './styles';
 
+
 export interface ISelectData{
   id: string;
   label: string;
@@ -64,15 +65,14 @@ const CompanyInformation: React.FC = () => {
   const [customerCitysDefault , setCustomerCitysDefault] = useState<ISelectData[]>([]);
   const accessCode = localStorage.getItem('@GoJur:accessCode')
   const token = localStorage.getItem('@GoJur:token');
-  const caller = localStorage.getItem('@GoJur:ConfigureInvoice');
-
 
   useEffect(() => { 
     GetCompanyInformations();
-  }, [])
 
+  },[])
 
   useDelay(() => {
+
     async function LoadCities() {
 
       if (customerCityValue.length == 0 && !isLoading) {
@@ -84,12 +84,19 @@ const CompanyInformation: React.FC = () => {
       const token = localStorage.getItem('@GoJur:token');
 
       try {
-        const response = await api.post('/Cidades/ListarCidades', {filterClause: customerCityValue, token});
+
+        const response = await api.post('/Cidades/ListarCidades', {
+          filterClause: customerCityValue,
+          token,
+        });
 
         const listCities: ISelectData[] = [];
 
         response.data.map((item) => {
+
+          // fill object to match with react-select
           listCities.push({ id: item.id, label: item.value })
+
           return listCities;
         })
 
@@ -99,78 +106,119 @@ const CompanyInformation: React.FC = () => {
         if (customerCityValue.length == 0) {
           setCustomerCitysDefault(listCities)
         }
-      }
-      catch (err) {
+
+      } catch (err) {
         console.log(err);
       }
     }
 
     LoadCities()
-  }, [customerCityValue], 1000)
 
+  }, [customerCityValue], 1000)
 
   const GetCompanyInformations = useCallback(async() => {
     try {
 
-      const response = await api.get<ICompanyData>('/Empresa/InformacoesDaEmpresa', {params: {token}})
+    const response = await api.get<ICompanyData>('/Empresa/InformacoesDaEmpresa', {
+      params: {
+        token
+      }   
+    })
 
-      setCompanyName(response.data.companyName)
-      setDesEmail(response.data.des_Email)
-      setNumTelefone(response.data.num_Telefone)
-      setDocumentNumber(response.data.num_CPF_CNJP)
-      setCep(response.data.num_CEP)
-      setBairro(response.data.des_Bairro)
-      setEndereco(response.data.des_Endereco)
-      setMunicipioId(response.data.cod_Municipio)
-      setMunicipioDesc(response.data.nom_Municipio)
+    setCompanyName(response.data.companyName)
+    setDesEmail(response.data.des_Email)
+    setNumTelefone(response.data.num_Telefone)
+    setDocumentNumber(response.data.num_CPF_CNJP)
+    setCep(response.data.num_CEP)
+    setBairro(response.data.des_Bairro)
+    setEndereco(response.data.des_Endereco)
+    setMunicipioId(response.data.cod_Municipio)
+    setMunicipioDesc(response.data.nom_Municipio)
 
-      if(response.data.companyType != null){
-        setCompanyType(response.data.companyType)
-      }
-
-      setIsLoading(false)
+    if(response.data.companyType != null){
+      setCompanyType(response.data.companyType)
     }
-    catch (err: any) {
-      setIsLoading(false)
-      addToast({type: "error", title: "Falha ao carregar informações da empresa.", description:  err.response.data.Message})
-    }
-  }, [companyName, desEmail, numTelefone, companyType, documentNumber, cep, bairro, endereco, municipioId, municipioDesc]);
 
+    setIsLoading(false)
+
+  } catch (err: any) {
+    setIsLoading(false)
+    addToast({
+      type: "error",
+      title: "Falha ao carregar informações da empresa.",
+      description:  err.response.data.Message
+    })
+  }
+
+  },[companyName, desEmail, numTelefone, companyType, documentNumber, cep, bairro, endereco, municipioId, municipioDesc]);
 
   const saveCompanyInformation = useCallback(async() => {
-    if (isSaving) {
-      addToast({type: "info", title: "Operação NÃO realizada", description: `Já existe uma operação em andamento`})
-      return;
-    }
-
-    if(documentNumber != null && documentNumber != ""){
-      if (companyType == "J" && isValidCNPJ(documentNumber) == false){
-        addToast({type: "info", title: "Operação NÃO realizada", description: `O número do CNPJ não é válido`})
+  
+      if (isSaving) {
+        addToast({
+          type: "info",
+          title: "Operação NÃO realizada",
+          description: `Já existe uma operação em andamento`
+        })
+  
         return;
       }
 
-      if (companyType == "F" && isValidCPF(documentNumber) == false){
-        addToast({type: "info", title: "Operação NÃO realizada", description: `O número do CPF não é válido`})
-        return;
+      if(documentNumber != null && documentNumber != ""){
+
+        if (companyType == "J" && isValidCNPJ(documentNumber) == false){
+          addToast({
+            type: "info",
+            title: "Operação NÃO realizada",
+            description: `O número do CNPJ não é válido`
+          })
+    
+          return;
+        }
+  
+        if (companyType == "F" && isValidCPF(documentNumber) == false){
+          addToast({
+            type: "info",
+            title: "Operação NÃO realizada",
+            description: `O número do CPF não é válido`
+          })
+    
+          return;
+        }
       }
-    }
      
-    if (companyName == ""){
-      addToast({type: "info", title: "Operação NÃO realizada", description: `É necessário que o campo Nome esteja preenchido para prosseguir`})
-      return;
-    }
+      if (companyName == ""){
+        addToast({
+          type: "info",
+          title: "Operação NÃO realizada",
+          description: `É necessário que o campo Nome esteja preenchido para prosseguir`
+        })
+  
+        return;
+      }
 
-    if (desEmail == ""){
-      addToast({type: "info", title: "Operação NÃO realizada", description: `É necessário que o campo E-mail esteja preenchido para prosseguir`})
-      return;
-    }
+      if (desEmail == ""){
+        addToast({
+          type: "info",
+          title: "Operação NÃO realizada",
+          description: `É necessário que o campo E-mail esteja preenchido para prosseguir`
+        })
+  
+        return;
+      }
 
-    if (numTelefone == ""){
-      addToast({type: "info", title: "Operação NÃO realizada", description: `É necessário que o campo Telefone esteja preenchido para prosseguir`})
-      return;
-    }
+      if (numTelefone == ""){
+        addToast({
+          type: "info",
+          title: "Operação NÃO realizada",
+          description: `É necessário que o campo Telefone esteja preenchido para prosseguir`
+        })
+  
+        return;
+      }
 
-    try {
+      try {
+
       setisSaving(true)
       
       await api.post('/Empresa/SalvarInformacoes', { 
@@ -186,27 +234,45 @@ const CompanyInformation: React.FC = () => {
         token
       })
       
-      addToast({type: "success", title: "Informações da Empresa Salva", description: "As informações da empresa foram salvas no sistema."})
+      addToast({
+        type: "success",
+        title: "Informações da Empresa Salva",
+        description: "As informações da empresa foram salvas no sistema."
+      })
+      
       setisSaving(false)
-    }
-    catch (err: any) {
+      
+    } catch (err: any) {
       setisSaving(false)
-      addToast({type: "error", title: "Falha ao salvar informações da empresa.", description:  err.response.data.Message})
+      addToast({
+        type: "error",
+        title: "Falha ao salvar informações da empresa.",
+        description:  err.response.data.Message
+      })
     }
-  }, [isSaving, companyName, companyType, desEmail, numTelefone, documentNumber, cep, endereco, bairro, municipioId, token]);
+  },[isSaving, companyName, companyType, desEmail, numTelefone, documentNumber, cep, endereco, bairro, municipioId, token]);
   
-
   const handleLoadAddressFromCep = useCallback(async(cepNumber, type: 'c') => {
+
     try {
+
       if (changeCEP == false)
       {
         return
       }
 
-      const response = await api.post<ICepProps>('/Cidades/ListarPorCep', {cep: cepNumber, token});
+      const response = await api.post<ICepProps>('/Cidades/ListarPorCep', {
+        cep: cepNumber,
+        token,
+      });
 
       if(response.data.Status !== 'OK') {
-        addToast({type: "info", title: "Cep invalido", description: "O CEP digitado não foi encontrado , tente novamente com outro cep"})
+        addToast({
+          type: "info",
+          title: "Cep invalido",
+          description: "O CEP digitado não foi encontrado , tente novamente com outro cep"
+        })
+
         return;
       }
 
@@ -215,12 +281,12 @@ const CompanyInformation: React.FC = () => {
       setMunicipioId(response.data.Localidade_Cod)
       setMunicipioDesc(response.data.Localidade)
       setChangeCEP(false)
-    }
-    catch (err) {
+
+    } catch (err) {
       console.log(err);
     }
-  },[addToast, changeCEP]);
 
+    },[addToast, changeCEP]);
 
   const handleCityChangeAddress = (item: any) => {
     if(item)
@@ -234,24 +300,17 @@ const CompanyInformation: React.FC = () => {
     }
   }
 
-
   const handleChangeCep = (item) => {
     setCep(item)
     setChangeCEP(true)
   }
 
-
   const handleClickReturn = () => {
-    if(caller == "configureInvoice"){
-      localStorage.removeItem('@GoJur:ConfigureInvoice');
-      history.push(`/ConfigureInvoice`)
-    }
-    else
-      history.push(`/AccountInformation`)
+    history.push(`/AccountInformation`)
   };
 
-
   return (
+
     <Container>
 
       {isLoading && (
@@ -281,6 +340,7 @@ const CompanyInformation: React.FC = () => {
       </div>
       
       <TaskBar>
+
         <div>
           <div>
             <button
@@ -291,20 +351,30 @@ const CompanyInformation: React.FC = () => {
             >
               <AiOutlineArrowLeft />
               <span>Retornar</span>
+
             </button>
           </div>         
         </div>
+      
       </TaskBar>
       
+      
       <Content>
+
         <header>
+
           <div>
+        
             Informações da Empresa
+            
           </div>
+
         </header>
 
         <Form>
+
           <section>
+
             <div style={{display:"flex"}}>
               <div className='companyName'>
                 <label htmlFor="companyName">
@@ -357,6 +427,7 @@ const CompanyInformation: React.FC = () => {
             </div>
 
             <div style={{display:"flex", marginTop:"2%"}}>
+
               <div className='companyType'>
                 <label htmlFor="companyType">   
                   <p>CPF/CNPJ:</p> 
@@ -401,9 +472,11 @@ const CompanyInformation: React.FC = () => {
                   </label>
                 </div>
               )}
+
             </div>
 
             <div style={{display:"flex", marginTop:"2%"}}>
+
               <label htmlFor="cep" className='cep'>
                 Cep:
                 <input
@@ -440,6 +513,7 @@ const CompanyInformation: React.FC = () => {
                   style={{backgroundColor:"white"}}
                 />
               </label>
+
             </div>
 
             <div style={{display:"flex", marginTop:"2%"}}>
@@ -487,10 +561,17 @@ const CompanyInformation: React.FC = () => {
                 </button>
               </div>
             </div>
+
           </section>
+
         </Form>
+
       </Content>
+      
+        
     </Container>
+    
+  
   );
 };
 

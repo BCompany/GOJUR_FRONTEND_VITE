@@ -8,7 +8,6 @@ export const Container = styled.div`
   flex-direction: column;
 `;
 
-
 export const Content = styled.div`
   flex: 1;
   padding: 0.5rem 2rem;
@@ -17,12 +16,6 @@ export const Content = styled.div`
   border-radius: 0.25rem;
   box-shadow: 1px 1px 4px 0.5px rgba(0,0,0,0.15);
   overflow: auto;
-
-  > svg {
-    width: 24px;
-    height: 24px;
-    color: var(--blue-twitter);
-  }
 
   .log {
     float: left;
@@ -77,7 +70,6 @@ export const Content = styled.div`
         font-size: 0.675rem;
         color: var(--primary);
         margin:0.3rem;
-        font-weight: 500;
 
         > svg {
           width:1rem;
@@ -146,21 +138,9 @@ export const Content = styled.div`
         }
     }
 
-    > svg {
-      width: 24px;
-      height: 24px;
-      color: var(--blue-twitter);
-    }
-
     .flexDiv {
       font-size: 12px;
       flex: 1;
-
-      > svg {
-        width: 24px;
-        height: 24px;
-        color: var(--blue-twitter);
-      }
     }
 
     .personList {
@@ -292,25 +272,17 @@ export const Content = styled.div`
       color: var(--grey);
     }
 
-    .erase {
-      height: 18px;
-      width: 18px;
-      color: var(--blue-twitter);
-    }
-
   }
 `;
 
 
 export const Process = styled.div`
-  width: 98%;
-  height: 40px;
+  width: 33%;
   background: transparent;
   padding-top: 0.5rem;
   padding-bottom: 0.25rem;
   display: flex;
   align-items: center;
-  float: left;
 
   @media (max-width: 480px) {
     width: 100%;
@@ -408,42 +380,6 @@ export const Process = styled.div`
 `;
 
 
-export const BankPaymentSlip = styled.div`
-  width: 33%;
-  height: 40px;
-  background: transparent;
-  padding-top: 0.5rem;
-  padding-bottom: 0.25rem;
-  display: flex;
-  align-items: center;
-  float: left;
-  margin-left: 40px;
-  cursor: pointer;
-  color: blue;
-
-  @media (max-width: 480px) {
-    width: 100%;
-  }
-
-  > label {
-    font-size: 12px;
-  }
-
-  > p {
-    font-size: 12px;
-  }
-
-  > div {
-    > svg {
-      width: 24px;
-      height: 24px;
-      color: var(--blue-twitter);
-    }
-  }
-
-`;
-
-
 export const ChangeInstallmentsOptions = styled.div`
   border: 1px solid var(--blue-twitter);
   font-size:0.7rem;
@@ -478,6 +414,7 @@ export const ChangeInstallmentsOptions = styled.div`
 
 
 export const GridSubContainer = styled.div`
+
   width: 100%;
   font-family: Montserrat;
   margin-top:20px;
@@ -519,7 +456,6 @@ export const GridSubContainer = styled.div`
   }
 `;
 
-
 export const ModalPaymentInformation = styled.div`
   border: 1px solid var(--blue-twitter);
   font-size:0.7rem;
@@ -550,306 +486,5 @@ export const ModalPaymentInformation = styled.div`
       color: var(--orange);
     }
   }
-`;
-
-
-export const ModalBankPaymentSlip = styled.div`
-  border: 1px solid var(--blue-twitter);
-  font-size: 0.7rem;
-  box-shadow: 1px 1px 4px 0.5px rgba(0,0,0,0.15);
-  width: 30rem;
-  height: 11rem;
-  background-color: var(--white);
-  position: absolute;
-  z-index: 2;
-  justify-content: center;
-  margin-left: 22%;
-  margin-top: 5%;
-
-  .menuSection {
-    font-size:0.65rem;
-    padding: 0.25rem 0.5rem;
-    color:var(--blue-twitter);
-    text-align:right;
-    cursor:pointer;
-
-    > svg {
-      width:0.85rem;
-      height:0.85rem; 
-    }
-
-    &:hover {
-      color: var(--orange);
-    }
-  }
-`;
-
-
-export const ModalBankPaymentSlipErrors = styled.div`
-  border: 1px solid var(--blue-twitter);
-  font-size: 0.7rem;
-  box-shadow: 1px 1px 4px 0.5px rgba(0,0,0,0.15);
-  width: 30rem;
-  height: 11rem;
-  background-color: var(--white);
-  position: absolute;
-  z-index: 2;
-  justify-content: center;
-  margin-left: 22%;
-  margin-top: 10%;
-
-  .menuTitle {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
-    color: black;
-    text-align: center;
-    float: left;
-    width: 93%;
-    background-color: #dcdcdc;
-    height: 27px;
-    font-weight: 500;
-  }
-
-  .menuSection {
-    font-size: 0.65rem;
-    padding: 0.25rem 0.5rem;
-    color: var(--blue-twitter);
-    text-align: right;
-    cursor: pointer;
-    float: left;
-    width: 6.95%;
-    background-color: #dcdcdc;
-    height: 27px;
-
-    > svg {
-      width: 0.85rem;
-      height: 0.85rem;
-      stroke-width: 3px;
-    }
-
-    &:hover {
-      color: var(--orange);
-    }
-  }
-  
-`;
-
-
-export const ModalBankPaymentSlipSecond = styled.div`
-  border: 1px solid var(--blue-twitter);
-  font-size: 0.7rem;
-  box-shadow: 1px 1px 4px 0.5px rgba(0,0,0,0.15);
-  width: 28rem;
-  height: 25rem;
-  background-color: #EDEDED;
-  position: absolute;
-  z-index: 2;
-  justify-content: center;
-  margin-left: 25%;
-  margin-top: 5%;
-
-  .menuSection {
-    font-size:0.65rem;
-    padding: 0.25rem 0.5rem;
-    color:var(--blue-twitter);
-    text-align:right;
-    cursor:pointer;
-
-    > svg {
-      width:0.85rem;
-      height:0.85rem; 
-    }
-
-    &:hover {
-      color: var(--orange);
-    }
-  }
-
-  input, select {
-    flex: 1;
-    font-size: 0.675rem;
-    padding: 0.25rem;
-    background-color: white;
-    width: 99%;
-    border-bottom: 1px solid rgba(0,0,0,0.15);
-    color: var(--secondary);
-
-    &:focus {
-      border-bottom: 1px solid var(--orange);
-    }
-  }
-  
-`;
-
-
-export const Line = styled.div`
-  width: 100%;
-  height: 75px;
-  justify-content: space-around;
-`;
-
-
-export const ItemLine = styled.div`
-  float: left;
-  width: 25%;
-  height: 64px;
-
-  .disableDiv {
-    flex:1;
-    font-size: 0.675rem;
-    color: var(--primary);
-    margin:0.3rem;
-
-    > svg {
-      width:1rem;
-      height:1rem;
-      color:var(--blue-twitter);
-      cursor:pointer;
-      float: right;
-      margin-right: -25px;
-      margin-top: -30px;
-
-      &:hover {
-          color: var(--orange);
-      }
-    }
-
-    input, select {
-      flex: 1;
-      font-size: 0.675rem;
-      padding: 0.25rem;
-      background-color: #FFFFFF;
-      width: 99%;
-      border-bottom: 1px solid rgba(0,0,0,0.15);
-      color: var(--secondary);
-
-      &:focus {
-        border-bottom: 1px solid var(--orange);
-      }
-    }
-
-    textarea {
-      flex: 1;
-      font-size: 0.675rem;
-      padding: 0.25rem;
-      background-color: #FFFFFF;
-      width: 100%;
-      color: var(--secondary);
-      border: 1px solid #B3B3B3;
-      min-height: 70px;
-      height: auto;
-      border-radius: 0.25rem;
-
-      &:focus {
-        border-bottom: 1px solid var(--orange);
-      }
-    }
-
-    .inputField {
-      font-size: 0.675rem;
-      background-color: #FFFFFF;
-      width: 100%;
-      height:40px;
-      border-bottom: 1px solid rgba(0,0,0,0.15);
-      color: var(--secondary);
-      margin-top:-2px;
-
-      &:focus {
-        border-bottom: 1px solid var(--orange);
-      }
-    }
-
-    &:focus-within {
-      color: var(--orange);
-
-      &.required{
-        color: var(--red);
-      }
-    }
-  }
-
-  > div {
-    width: 95%;
-    font-size: 0.675rem;
-    color: var(--primary);
-    font-weight: 500;
-
-    input, select {
-      font-size: 0.675rem;
-      padding: 0.25rem;
-      background-color: #FFFFFF;
-      width: 95%;
-      border-bottom: 1px solid rgba(0,0,0,0.15);
-      color: var(--secondary);
-
-      &:focus {
-        border-bottom: 1px solid var(--orange);
-      }
-    }
-
-    .inputField {
-      width: 99%;
-      font-size: 0.675rem;
-      background-color: #FFFFFF;
-      height: 35px;
-      border-bottom: 1px solid rgba(0,0,0,0.15);
-      color: var(--secondary);
-      margin-top:2px;
-      &:focus {
-          border-bottom: 1px solid var(--orange);
-      }
-    }
-  }
-
-`;
-
-
-export const ModalPlan = styled.div`
-  border: 1px solid var(--blue-twitter);
-  font-size: 0.7rem;
-  box-shadow: 1px 1px 4px 0.5px rgba(0,0,0,0.15);
-  width: 30rem;
-  height: 11rem;
-  background-color: var(--white);
-  position: absolute;
-  z-index: 2;
-  justify-content: center;
-  margin-left: 22%;
-  margin-top: 10%;
-
-  .menuTitle {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
-    color: black;
-    text-align: center;
-    float: left;
-    width: 93%;
-    background-color: #dcdcdc;
-    height: 27px;
-    font-weight: 500;
-  }
-
-  .menuSection {
-    font-size: 0.65rem;
-    padding: 0.25rem 0.5rem;
-    color: var(--blue-twitter);
-    text-align: right;
-    cursor: pointer;
-    float: left;
-    width: 6.95%;
-    background-color: #dcdcdc;
-    height: 27px;
-
-    > svg {
-      width: 0.85rem;
-      height: 0.85rem;
-      stroke-width: 3px;
-    }
-
-    &:hover {
-      color: var(--orange);
-    }
-  }
-  
 `;
 

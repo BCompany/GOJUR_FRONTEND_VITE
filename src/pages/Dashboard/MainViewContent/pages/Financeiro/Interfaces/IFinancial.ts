@@ -3,12 +3,6 @@ export interface ISelectData {
   label: string;
 }
 
-export interface IPaymentFormData {
-  id: string;
-  label: string;
-  type: string;
-}
-
 export interface IAccount {
   id: string;
   value: string;

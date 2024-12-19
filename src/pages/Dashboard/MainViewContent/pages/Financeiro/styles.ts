@@ -366,35 +366,3 @@ export const HamburguerHeader = styled.div`
     }
   }
 `;
-
-
-export const ModalMarkedPaid = styled.div`
-  border: 1px solid var(--blue-twitter);
-  font-size: 0.7rem;
-  box-shadow: 1px 1px 4px 0.5px rgba(0,0,0,0.15);
-  width: 630px;
-  height: 150px;
-  background-color: var(--white);
-  position: absolute;
-  z-index: 2;
-  justify-content: center;
-  left: 30%;
-  margin-top: 10%;
-
-  .menuSection {
-    font-size:0.65rem;
-    padding: 0.25rem 0.5rem;
-    color:var(--blue-twitter);
-    text-align:right;
-    cursor:pointer;
-
-    > svg {
-      width:0.85rem;
-      height:0.85rem; 
-    }
-
-    &:hover {
-      color: var(--orange);
-    }
-  }
-`;

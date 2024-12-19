@@ -21,8 +21,6 @@ import { FiTrash, FiEdit, FiX } from 'react-icons/fi';
 import { FaRegTimesCircle, FaCheck, FaFileContract, FaFileInvoiceDollar, FaHandshake } from 'react-icons/fa';
 import { CgFileDocument } from 'react-icons/cg';
 import { RiMoneyDollarBoxFill } from 'react-icons/ri';
-import ConfirmBoxModal from 'components/ConfirmBoxModal';
-import { useConfirmBox } from 'context/confirmBox';
 import { useDevice } from "react-use-device";
 import { useToast } from 'context/toast';
 import { envProvider } from 'services/hooks/useEnv';
@@ -46,14 +44,12 @@ import { format } from 'date-fns';
 import { IFinancialTotal, IAccount, ISelectData, IFinancial, IFinancialDeal } from './Interfaces/IFinancial';
 import FinancialDocumentModal from './DocumentModal';
 import FinancialPaymentModal from './PaymentModal';
+import { Container, Content, GridContainerFinancial, ModalDeleteOptions, OverlayFinancial, HamburguerHeader } from './styles';
 import DealDefaultModal from './Category/Modal/DealDefaultModal';
-import FinanceOptionsMenu from 'components/MenuHamburguer/FinanceOptions';
-import { Container, Content, GridContainerFinancial, ModalDeleteOptions, OverlayFinancial, HamburguerHeader, ModalMarkedPaid } from './styles';
 
 const Financeiro: React.FC = () => {
   const { addToast } = useToast();
   const { signOut } = useAuth();
-  const {isConfirmMessage, isCancelMessage, handleCancelMessage, handleConfirmMessage, caller} = useConfirmBox();
   const { isMenuOpen, handleIsMenuOpen, isOpenMenuDealDefaultCategory, handleIsOpenMenuDealDefaultCategory } = useMenuHamburguer();
   const baseUrl = envProvider.redirectUrl;
   const { handleJsonStateObject, handleStateType, jsonStateObject, stateType }  = useStateContext();
@@ -88,10 +84,6 @@ const Financeiro: React.FC = () => {
   const [checkBillingContract, setCheckBillingContract] = useState<boolean>(false);
   const [parcelaAtual, setParcelaAtual] = useState('');
   const [isDeal, setIsDeal] = useState<boolean>(false);
-  const [showValidateFinancialIntegration, setShowValidateFinancialIntegration] = useState<boolean>(false);
-  const [showMarkedPaidModal, setShowMarkedPaidModal] = useState<boolean>(false);
-  const [endMarkedPaid, setEndMarkedPaid] = useState<boolean>(false);
-  const [countMarkedPaid, setCountMarkedPaid] = useState<number>(0);
 
   // GRID
   const [pageSizes] = useState([10, 20, 30, 50]);
@@ -118,33 +110,6 @@ const Financeiro: React.FC = () => {
     {
       setCheckBillingContract(true)
     }
-  }, [])
-
-    
-  useEffect(() => {
-    if (isCancelMessage)
-    {
-      if(caller == "validateFinancialIntegration"){
-        setShowValidateFinancialIntegration(false)
-        handleCancelMessage(false)
-      }
-    }
-  }, [isCancelMessage, caller])
-
-
-  useEffect(() => {
-    if(isConfirmMessage)
-    {
-      if (caller == "validateFinancialIntegration"){
-        handleConfirmMessage(false)
-        Delete(true, false)
-      }
-    }
-  }, [isConfirmMessage, caller])
-
-
-  useEffect(() => {
-    Initialize()
   }, [])
 
 
@@ -921,7 +886,7 @@ const Financeiro: React.FC = () => {
   }
 
 
-  const Delete = useCallback(async (deleteAll: boolean, validateFinancialIntegration: boolean) => {
+  const Delete = useCallback(async (deleteAll) => {
     try {
       setIsDeleting(true)
 
@@ -929,8 +894,7 @@ const Financeiro: React.FC = () => {
         params:{
           token,
           id: movementId,
-          deleteAll,
-          validateFinancialIntegration
+          deleteAll
         }
       });
 
@@ -941,19 +905,12 @@ const Financeiro: React.FC = () => {
       setShowConfirmDelete(false)
       setIsLoading(true)
       setIsDeleting(false)
-      setShowValidateFinancialIntegration(false)
-    } 
-    catch (err:any) {
+
+    } catch (err) {
       setShowDeleteOptions(false)
       setShowDeleteDealOptions(false)
       setShowConfirmDelete(false)
-      
-      if (err.response.data.typeError.warning == "awareness"){
-        setShowValidateFinancialIntegration(true)
-      }
-      else{
-        console.log(err.response.data);
-      }
+      console.log(err);
     }
   }, [movementId, token]);
 
@@ -1334,40 +1291,9 @@ const Financeiro: React.FC = () => {
   }, [accountId, year, month, captureText, captureType, visualizeType, currentPage, pageSize]);
 
 
-  const handleMarkedPaid = async () => {
-    setEndMarkedPaid(false)
-    setCountMarkedPaid(0)
-    setShowMarkedPaidModal(true)
-    handleIsMenuOpen(false)
-  };
-  
-  
-  const ConfirmMarkedPaid = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      
-      const response = await api.post(`/BoletoBancario/RealizarBaixas`, {token: token, paymentSlipPartnerId: 'AS'});
-     
-      setEndMarkedPaid(true)
-      setCountMarkedPaid(response.data)
-    }
-    catch (err:any) {
-      setEndMarkedPaid(false)
-      setCountMarkedPaid(0)
-
-      if (err.response.data.typeError.warning == "awareness"){
-        setShowMarkedPaidModal(false)
-        addToast({type: 'error', title: 'Falha ao baixar os pagamentos', description: err.response.data.Message});
-      }
-      else{
-        addToast({type: 'error', title: 'Falha ao baixar os pagamentos', description: err.response.data.Message});
-      }
-    }
-  }, []);
-
-
   return (
     <Container>
+
       <HeaderPage />
 
       <HamburguerHeader>
@@ -1380,9 +1306,7 @@ const Financeiro: React.FC = () => {
           </button>
 
           {isMenuOpen ? (
-            <FinanceOptionsMenu callbackList={{
-              handleMarkedPaid
-            }} />
+            <MenuHamburguer name='financeOptions' />
           ) : null}
         </div>
       </HamburguerHeader>
@@ -2100,15 +2024,6 @@ const Financeiro: React.FC = () => {
         </Content>
       )}
 
-      {showValidateFinancialIntegration && (
-        <ConfirmBoxModal
-          title="Integrador Financeiro"
-          caller="validateFinancialIntegration"
-          useCheckBoxConfirm
-          message="Não existe um integrador financeiro para o boleto vinculado a este movimento. Ao confirmar, o movimento será excluído mas o boleto permanecera existente em seu banco."
-        />
-      )}
-
       {(showPaymentModal) && <OverlayFinancial /> }
       {(showPaymentModal) && <FinancialPaymentModal callbackFunction={{movementId, invoice, visualizeType, ClosePaymentModal, LoadMovementsByPeriod, LoadTotalByPeriod, LoadMovementsByExtract, LoadTotalByExtract }} /> }
 
@@ -2129,7 +2044,7 @@ const Financeiro: React.FC = () => {
                 <button
                   className="buttonClick"
                   type='button'
-                  onClick={()=> Delete(false, true)}
+                  onClick={()=> Delete(false)}
                   style={{width:'120px'}}
                 >
                   Excluir este
@@ -2140,7 +2055,7 @@ const Financeiro: React.FC = () => {
                 <button
                   className="buttonClick"
                   type='button'
-                  onClick={()=> Delete(true, true)}
+                  onClick={()=> Delete(true)}
                   style={{width:'120px'}}
                 >
                   Excluir todos
@@ -2256,7 +2171,7 @@ const Financeiro: React.FC = () => {
                 <button
                   className="buttonClick"
                   type='button'
-                  onClick={()=> Delete(false, true)}
+                  onClick={()=> Delete(false)}
                   style={{width:'100px'}}
                 >
                   <FaCheck />
@@ -2281,70 +2196,6 @@ const Financeiro: React.FC = () => {
         </ModalDeleteOptions>
       )}
 
-      {showMarkedPaidModal && <OverlayFinancial /> }
-      {showMarkedPaidModal && (
-        <ModalMarkedPaid>
-          <div className='menuSection'>
-            <FiX onClick={(e) => {setShowMarkedPaidModal(false)}} />
-          </div>
-
-          {endMarkedPaid == true ? (
-            <>
-              <div style={{marginLeft:'5%'}}>
-                <label>Foi realizada a baixa de {totalCount} pagamentos.</label>
-              </div>
-              <br /><br />
-              <div style={{float:'left', width:'100px', marginLeft:'40%'}}>
-                <button
-                  type='button'
-                  className="buttonClick"
-                  onClick={() => {setShowMarkedPaidModal(false)}}
-                  style={{width:'100px'}}
-                >
-                  <FaRegTimesCircle />
-                  Fechar
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div style={{marginLeft:'5%'}}>
-                Realizar a baixa dos pagamentos ?
-                <br /><br /><br />
-                <div style={{float:'right', marginRight:'32%', bottom:0}}>
-                  <div style={{float:'left'}}>
-                    <button
-                      className="buttonClick"
-                      type='button'
-                      onClick={()=> ConfirmMarkedPaid()}
-                      style={{width:'100px'}}
-                    >
-                      <FaCheck />
-                      Sim
-                    </button>
-                  </div>
-
-                  <div style={{float:'left', width:'100px'}}>
-                    <button
-                      type='button'
-                      className="buttonClick"
-                      onClick={() => {setShowMarkedPaidModal(false)}}
-                      style={{width:'100px'}}
-                    >
-                      <FaRegTimesCircle />
-                      Não
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-
-          
-
-        </ModalMarkedPaid>
-      )}
-
       {(isLoading || isDeleting) && (
         <>
           <Overlay />
@@ -2358,7 +2209,7 @@ const Financeiro: React.FC = () => {
       )}
 
       {(isOpenMenuDealDefaultCategory) && <OverlayFinancial /> }
-      {isOpenMenuDealDefaultCategory && <DealDefaultModal /> }
+      {isOpenMenuDealDefaultCategory && <DealDefaultModal />}
 
     </Container>
   );

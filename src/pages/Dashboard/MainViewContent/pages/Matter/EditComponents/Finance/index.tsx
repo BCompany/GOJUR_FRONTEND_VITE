@@ -26,7 +26,7 @@ import FinancialModal from '../../../Financeiro/Modal';
 const Finance = (props) => {
   const { matterId, load } = props;
   const history = useHistory();
-  const {isConfirmMessage, isCancelMessage, handleCancelMessage, handleConfirmMessage, caller, handleCaller} = useConfirmBox();
+  const { handleCaller, caller, isCancelMessage, isConfirmMessage } = useConfirmBox();
   const [ isLoading, setIsLoading] = useState<boolean>(true)
   const { addToast } = useToast();
   const { isMOBILE } = useDevice();
@@ -44,11 +44,7 @@ const Finance = (props) => {
   const [ isDeal, setIsDeal] = useState<boolean>(false);
   const [ installmentNum, setInstallmentNum] = useState<number>(0);
   const [ dealDetailId, setDealDetailId] = useState<number>(0);
-  const [showValidateFinancialIntegration, setShowValidateFinancialIntegration] = useState<boolean>(false);
-  const [isDeleteAll, setIsDeleteAll] = useState<boolean>(false);
-  const [ movementIdToDelete, setMovementIdToDelete] = useState<number>(0);
 
-  
   useEffect(() => {
     if (load)
       LoadFinance()
@@ -58,11 +54,6 @@ const Finance = (props) => {
   useEffect(() => {
     if(caller == 'deal' && isCancelMessage)
       setIsDeal(false);
-
-    if(caller == "validateFinancialIntegration" && isCancelMessage){
-      setShowValidateFinancialIntegration(false)
-      handleCancelMessage(false)
-    }
   }, [isCancelMessage, caller]);
 
 
@@ -72,24 +63,7 @@ const Finance = (props) => {
       setIsDeal(false);  
       handleRedirect();
     }
-
-    if (caller == "validateFinancialIntegration" && isConfirmMessage){
-      handleConfirmMessage(false)
-      DeleteDoubleCheck(movementIdToDelete, isDeleteAll, false)
-    }
-
   }, [isConfirmMessage, caller]);
-
-
-  const DeleteDoubleCheck = async (id: number, deleteAll: boolean, validateFinancialIntegration: boolean) => {
-      setStatePage('deleting')
-      Reset();
-
-      const response = await DeleteMatterFinance(id, deleteAll, validateFinancialIntegration)
-      setMovementIdToDelete(0)
-      LoadFinance()
-      setShowValidateFinancialIntegration(false)
-  }
 
 
   const LoadFinance = async () => {
@@ -137,23 +111,14 @@ const Finance = (props) => {
   }
 
 
-  const handleDelete = async (id: number, deleteAll: boolean, validateFinancialIntegration: boolean) => {
+  const handleDelete = async (id: number, deleteAll: boolean) => {
     if (currentObject)
     {
       setStatePage('deleting')
       Reset();
-
-      const response = await DeleteMatterFinance(currentObject.id, deleteAll, validateFinancialIntegration)
-
-      if(response == "awareness"){
-        setShowValidateFinancialIntegration(true)
-        setIsDeleteAll(deleteAll)
-        setMovementIdToDelete(id)
-      }
-      else{
-        setMovementIdToDelete(0)
+      DeleteMatterFinance(currentObject.id, deleteAll).then(() => {
         LoadFinance()
-      }
+      })
     }
   }
 
@@ -163,14 +128,14 @@ const Finance = (props) => {
       if (currentObject.qtde_Installment > 1)
         setShowMessageDelete(true)
       else
-        handleDelete(currentObject.id, false, true)
+        handleDelete(currentObject.id, false)
     }
   },[caller, currentObject])
 
 
   useEffect(() => {
     if (currentObject && showMessageDelete && isConfirmMessage && caller == 'matterFinanceDelete'){
-        handleDelete(currentObject.id, false, true)
+        handleDelete(currentObject.id, false)
     }else if (caller === 'hasCanceled'){
       Reset()
     }
@@ -179,7 +144,7 @@ const Finance = (props) => {
 
   useEffect(() => {
     if (currentObject && showMessageDelete && isCancelMessage && caller == 'matterFinanceDelete'){
-        handleDelete(currentObject.id, true, true)
+        handleDelete(currentObject.id, true)
     }else if (caller === 'hasCanceled'){
       Reset()
     }
@@ -460,15 +425,6 @@ const Finance = (props) => {
           />
         )}
       </Container>
-
-      {showValidateFinancialIntegration && (
-        <ConfirmBoxModal
-          title="Integrador Financeiro"
-          caller="validateFinancialIntegration"
-          useCheckBoxConfirm
-          message="Não existe um integrador financeiro para o boleto vinculado a este movimento. Ao confirmar, o movimento será excluído mas o boleto permanecera existente em seu banco."
-        />
-      )}
 
       {showMessageDelete && (
         <ConfirmBoxModal

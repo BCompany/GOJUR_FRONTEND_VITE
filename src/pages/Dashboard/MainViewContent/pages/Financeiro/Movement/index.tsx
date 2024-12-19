@@ -10,7 +10,6 @@ import DatePicker from 'components/DatePicker';
 import IntlCurrencyInput from "react-intl-currency-input";
 import Select from 'react-select';
 import ModalOptions from 'components/ModalOptions';
-import ModalBankPaymentSlipOptions from 'components/ModalBankPaymentSlipOptions';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import { languageGridEmpty} from 'Shared/utils/commonConfig';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
@@ -18,13 +17,12 @@ import { useConfirmBox } from 'context/confirmBox';
 import { useStateContext } from 'context/statesContext';
 import { useDelay, currencyConfig, selectStyles, FormatCurrency, FormatFileName, AmazonPost } from 'Shared/utils/commonFunctions';
 import { useModal } from 'context/modal';
-import { AiOutlineBarcode, AiOutlineMail } from 'react-icons/ai';
 import { IoIosPaper } from 'react-icons/io';
 import { BiSave } from 'react-icons/bi'
 import { BsImage } from 'react-icons/bs';
 import { CgFileDocument } from 'react-icons/cg';
-import { FaCheck, FaRegTimesCircle, FaRegCopy, FaFileAlt, FaFilePdf, FaWhatsapp, FaFileInvoiceDollar } from 'react-icons/fa';
-import { FiTrash, FiEdit, FiX, FiDownloadCloud, FiMail, FiPrinter } from 'react-icons/fi';
+import { FaCheck, FaRegTimesCircle, FaRegCopy, FaFileAlt, FaFilePdf, FaWhatsapp } from 'react-icons/fa';
+import { FiTrash, FiEdit, FiX, FiDownloadCloud, FiMail } from 'react-icons/fi';
 import { HiDocumentText } from 'react-icons/hi';
 import { MdHelp, MdAttachMoney } from 'react-icons/md';
 import { RiFolder2Fill, RiEraserLine } from 'react-icons/ri';
@@ -42,26 +40,14 @@ import LogModal from 'components/LogModal';
 import { DataTypeProvider, PagingState, CustomPaging, IntegratedPaging, SortingState, IntegratedSorting } from '@devexpress/dx-react-grid';
 import { Grid, Table, TableHeaderRow, PagingPanel } from '@devexpress/dx-react-grid-material-ui';
 import GridSelectProcess from '../../Dashboard/resorces/DashboardComponents/CreateAppointment/GridSelectProcess';
-import { ISelectData, MatterData, IMovementUploadFile, IPaymentFormData } from '../Interfaces/IFinancial';
+import { ISelectData, MatterData, IMovementUploadFile } from '../Interfaces/IFinancial';
 import { IPayments } from '../Interfaces/IPayments';
 import FinancialPaymentModal from '../PaymentModal';
 import FinancialDocumentModal from '../DocumentModal';
-import BankPaymentSlipSecondCopyModal from '../BankPaymentSlipSecondCopy';
 import { ModalDeleteOptions, OverlayFinancial } from '../styles';
-import { Container, Content, Process, GridSubContainer, ModalPaymentInformation, ModalBankPaymentSlip, ModalBankPaymentSlipErrors, ModalPlan, Line, ItemLine } from './styles';
-
-
-export interface IBankPaymentSlip{
-  paymentSlipId: string;
-  dueDate: string;
-  hasBankPaymentSlip: boolean;
-  bankPaymentSlipLink: string;
-  paymentSlipPartnerId: string;
-  hasFinancialIntegration: boolean;
-};
+import { Container, Content, Process, GridSubContainer, ModalPaymentInformation } from './styles';
 
 const FinancialMovement: React.FC = () => {
-  // #region STATES
   const {isConfirmMessage, isCancelMessage, handleCancelMessage, handleConfirmMessage, caller} = useConfirmBox();
   const { handleStateType }  = useStateContext();
   const token = localStorage.getItem('@GoJur:token');
@@ -74,10 +60,9 @@ const FinancialMovement: React.FC = () => {
   const [accountId, setAccountId] = useState('');
   const [movementId, setMovementId] = useState('');
   const [movementType, setMovementType] = useState('');
-  const [paymentFormList, setPaymentFormList] = useState<IPaymentFormData[]>([]);
+  const [paymentFormList, setPaymentFormList] = useState<ISelectData[]>([]);
   const [paymentFormId, setPaymentFormId] = useState('');
   const [paymentFormDescription, setPaymentFormDescription] = useState<string>("")
-  const [paymentFormType, setPaymentFormType] = useState<string>("")
   const [paymentFormTerm, setPaymentFormTerm] = useState('');
   const [categoryList, setCategoryList] = useState<ISelectData[]>([]);
   const [categoryId, setCategoryId] = useState('');
@@ -95,7 +80,6 @@ const FinancialMovement: React.FC = () => {
   const [paymentMessage, setPaymentMessage] = useState<string>('');
   const [movementDate, setMovementDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [movementValue, setMovementValue] = useState<number>();
-  const [cod_Parcelamento, setCod_Parcelamento] = useState('');
   const [movementParcelas, setMovementParcelas] = useState('1');
   const [movementParcelasFirst, setMovementParcelasFirst] = useState('1');
   const [movementParcelasDatas, setMovementParcelasDatas] = useState('M');
@@ -140,144 +124,30 @@ const FinancialMovement: React.FC = () => {
   const [totalRows, setTotalRows] = useState<number>(0);
   const [tokenContinuation, setTokenContinuation] = useState<string | null>('');
   const [showLog, setShowLog] = useState(false);
-  const [showChangePaymentForm, setShowChangePaymentForm] = useState<boolean>(false);
-  const [changePaymentForm, setChangePaymentForm] = useState<boolean>(false);
-  const [showInstallmentInvoiceConfirm, setShowInstallmentInvoiceConfirm] = useState<boolean>(false);
-  const [showInstallmentPaymentSlipConfirm, setShowInstallmentPaymentSlipConfirm] = useState<boolean>(false);
-
-  const [discountPercetage, setDiscountPercentage] = useState<number>(0)
-  const [discountValue, setDiscountValue] = useState<number>(0)
-  const [billingInvoiceId, setBillingInvoiceId] = useState<string>('')
-  const [pixKey, setPixKey] = useState<string>('')
-
-  const [showBankPaymentSlipSecondCopyModal, setShowBankPaymentSlipSecondCopyModal] = useState<boolean>(false);
-  const [hasFinancialIntegration, setHasFinancialIntegration] = useState<boolean>(false);
-  const [hasBankPaymentSlip, setHasBankPaymentSlip] = useState<boolean>(false);
-  const [paymentSlipId, setPaymentSlipId] = useState<string>('');
-  const [bankPaymentSlipDate, setBankPaymentSlipDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
-  const [bankPaymentSlipLinkDate, setBankPaymentSlipLinkDate] = useState<string>("");
-  const [bankPaymentSlipLink, setBankPaymentSlipLink] = useState<string>('');
-  const [paymentSlipPartnerId, setPaymentSlipPartnerId] = useState<string>('');
-  const [actionGenerate, setActionGenerate] = useState<string>('');
-  const [hasBankPaymentSlipErrors, setHasBankPaymentSlipErrors] = useState<boolean>(false);
-  const [bankPaymentSlipErrors, setBankPaymentSlipErrors] = useState<string>('');
-  const [showValidateFinancialIntegration, setShowValidateFinancialIntegration] = useState<boolean>(false);
-  const [isTotalPaid, setIsTotalPaid] = useState<boolean>(false);
-  const [idReportGenerate, setIdReportGenerate] = useState<number>(0)
-  const [isGeneratingReport, setIsGeneratingReport] = useState<boolean>(false)
-  const [showModalPlan, setShowModalPlan] = useState<boolean>(false)
-  const companyPlan = localStorage.getItem('@GoJur:companyPlan')
-
   const ref = useRef<any>(null);
   const DateFormatter = ({ value }) => format(new Date(value), 'dd/MM/yyyy HH:mm');
   const DateTypeProvider = props => (
     <DataTypeProvider formatterComponent={DateFormatter} {...props} />
   )
-  // #endregion
 
   
-  // #region USE EFFECT
-  useEffect(() => {
-    if (idReportGenerate > 0){
-      const checkInterval = setInterval(() => {
-        CheckReportPending(checkInterval)
-      }, 2000);
-    }
-  }, [idReportGenerate])
-
-
-  const CheckReportPending = useCallback(async (checkInterval) => {
-    if (isGeneratingReport){
-      const response = await api.post(`/ProcessosGOJUR/VerificarStatus`, {
-        id: idReportGenerate,
-        token: localStorage.getItem('@GoJur:token')
-      })
-
-      if (response.data == "F" && isGeneratingReport){
-        clearInterval(checkInterval);
-        setIsGeneratingReport(false)
-        OpenReportAmazon()
-      }
-    }
-  }, [isGeneratingReport, idReportGenerate])
-
-
-  const OpenReportAmazon = async() => {
-    const response = await api.post(`/ProcessosGOJUR/Editar`, {
-      id: idReportGenerate,
-      token: localStorage.getItem('@GoJur:token')
-    });
-
-    setIdReportGenerate(0)
-    window.open(`${response.data.des_Parametro}`, '_blank');
-    setIsGeneratingReport(false)
-  }
-
-
   useEffect(() => {
     if (isCancelMessage)
     {
-      if(caller == "changeDefaultHeader"){
-        setShowChangeInstallments(false)
-        handleCancelMessage(false)
-      }
-
-      if(caller == "changePaymentForm"){
-        setShowChangePaymentForm(false)
-        handleCancelMessage(false)
-      }
-
-      if(caller == "validateFinancialIntegration"){
-        setShowValidateFinancialIntegration(false)
-        handleCancelMessage(false)
-      }
-
-      if(caller == "invoiceInstallment"){
-        setShowInstallmentInvoiceConfirm(false)
-        handleCancelMessage(false)
-      }
-
-      if(caller == "paymentSlipInstallment"){
-        setShowInstallmentPaymentSlipConfirm(false)
-        handleCancelMessage(false)
-      }
+      setShowChangeInstallments(false)
+      handleCancelMessage(false)
     }
-  }, [isCancelMessage, caller])
+  }, [isCancelMessage, caller]);
 
 
   useEffect(() => {
     if(isConfirmMessage)
     {
-      if(caller == "changeDefaultHeader"){
-        handleConfirmMessage(false)
-        handleConfirmChangeInstallments()
-        setShowChangeInstallments(false)
-      }
-
-      if (caller == "changePaymentForm"){
-        handleConfirmMessage(false)
-        setChangePaymentForm(true)
-        Save('', true)
-      }
-
-      if (caller == "validateFinancialIntegration"){
-        handleConfirmMessage(false)
-        Delete(true, false)
-      }
-
-      if(caller == "invoiceInstallment"){
-        handleConfirmMessage(false)
-        setShowInstallmentInvoiceConfirm(false)
-        CreateInvoice(false)
-      }
-
-      if(caller == "paymentSlipInstallment"){
-        handleConfirmMessage(false)
-        setShowInstallmentPaymentSlipConfirm(false)
-        GeneratePaymentSlip('all', false, false)
-      }
+      handleConfirmChangeInstallments()
+      setShowChangeInstallments(false)
+      handleConfirmMessage(false)
     }
-  }, [isConfirmMessage, caller])
+  }, [isConfirmMessage, caller]);
 
 
   useEffect(() => {
@@ -313,22 +183,6 @@ const FinancialMovement: React.FC = () => {
   }, [movementId])
 
 
-  useEffect (() => {
-    if (actionSave.length > 0){
-      Save('', false);
-    }
-  }, [actionSave])
-
-
-  useEffect(() => {
-    if (uploadingStatus  === 'conclude') {
-      handleValidateFiles();
-    }
-  }, [uploadingStatus])
-  // #endregion
-
-
-  // #region USE DELAY
   useDelay(() => {
     if (peopleTerm.length > 0 && !isLoading){
       LoadPeople()
@@ -355,10 +209,15 @@ const FinancialMovement: React.FC = () => {
       LoadCenterCost()
     }
   }, [centerCostTerm], 750)
-  // #endregion
 
 
-  // #region MOVEMENT
+  useEffect (() => {
+    if (actionSave.length > 0){
+      Save('');
+    }
+  }, [actionSave])
+
+
   const Initialize = async () => {
     await LoadStates()
     LoadPaymentForm()
@@ -394,13 +253,11 @@ const FinancialMovement: React.FC = () => {
       setMovementDate(format(new Date(response.data.dta_Movimento), "yyyy-MM-dd"))
       setMovementValue(response.data.vlr_Movimento)
       setMovementType(movementType)
-      setCod_Parcelamento(response.data.cod_Parcelamento.toString())
       setMovementParcelas(response.data.qtd_Parcelamento.toString())
       setMovementParcelasFirst(response.data.qtd_Parcelamento.toString())
       setMovementParcelasDatas(response.data.Periodicidade)
       setPaymentFormId(response.data.cod_FormaPagamento)
       setPaymentFormDescription(response.data.des_FormaPagamento)
-      setPaymentFormType(response.data.tpo_FormaPagamento)
       setCategoryId(response.data.cod_Categoria)
       setCategoryDescription(response.data.nom_Categoria)
       setCenterCostId(response.data.cod_CentroCusto)
@@ -420,17 +277,6 @@ const FinancialMovement: React.FC = () => {
       setPaymentQtd(response.data.qtd_Parcelamento)
       setInvoice(response.data.cod_FaturaParcela)
       setSequence(response.data.num_SequenciaFatura)
-      setBankPaymentSlipDate(format(new Date(response.data.dta_Movimento), "yyyy-MM-dd"))
-      setPixKey(response.data.des_ChavePix)
-      setBillingInvoiceId(response.data.num_Fatura)
-
-      console.log('DATA: ', response.data)
-
-      if(response.data.pct_Desconto != null)
-      {
-        setDiscountPercentage(response.data.pct_Desconto)
-        setDiscountValue((response.data.vlr_Movimento / 100) * response.data.pct_Desconto )
-      }
 
       if(response.data.qtd_Parcelamento != "1"){
         setEnablePayments(false)
@@ -444,7 +290,6 @@ const FinancialMovement: React.FC = () => {
 
       await LoadPayments()
       await LoadDocuments()
-      await LoadBankPaymentSlip(movementId)
 
       setIsLoading(false);
     }
@@ -475,7 +320,6 @@ const FinancialMovement: React.FC = () => {
         setShowPayments(true)
         const message = paymentListReturn[0].tpo_Movimento == "D" ? 'Pago' : 'Recebido';
         setPaymentMessage(message)
-        setIsTotalPaid(true)
       }
       else{
         setShowPayments(true)
@@ -492,7 +336,7 @@ const FinancialMovement: React.FC = () => {
 
   const LoadPaymentForm = async () => {
     try {
-      const  response = await api.get<IPaymentFormData[]>('FormaDePagamento/ListarPorFiltro', { params:{filterClause: paymentFormTerm, token}})
+      const  response = await api.get<ISelectData[]>('FormaDePagamento/ListarPorFiltro', { params:{filterClause: paymentFormTerm, token}})
       setPaymentFormList(response.data)
     }
     catch (err:any) {
@@ -542,13 +386,13 @@ const FinancialMovement: React.FC = () => {
 
   const handleMovementDate = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setMovementDate(event.target.value)
-  }, [])
+  }, []);
 
 
   const handleValue = (event, value, maskedValue) => {
     event.preventDefault();
     setMovementValue(value)
-  }
+  };
 
 
   const handleChangeParcelas = (id: string) => {
@@ -565,28 +409,6 @@ const FinancialMovement: React.FC = () => {
   }
 
 
-  const ChangeDiscountPercentage = (event, value) => {
-    event.preventDefault();
-    setDiscountPercentage(value)
-  }
-
-
-  const BlurDiscountPercentage = async() => {
-    if(movementValue == 0)
-      return;
-
-    if(discountPercetage > 100)
-    {
-      addToast({ type: "info", title: "Alerta", description: "O percentual do campo Desconto não pode ser maior que 100%" });
-      setDiscountValue(0);
-      return;
-    }
-
-    setDiscountValue((movementValue / 100) * (100 - discountPercetage))
-
-  }
-
-
   const handleCategorySelected = (item) => {
     if (item){
       setCategoryId(item.id)
@@ -600,18 +422,12 @@ const FinancialMovement: React.FC = () => {
 
 
   const handlePaymentFormSelected = (item) => {
-    
-    console.log('Item: ', item)
-    
     if (item){
       setPaymentFormId(item.id)
       setPaymentFormDescription(item.label)
-      setPaymentFormType(item.paymentFormType)
-    }
-    else{
+    }else{
       setPaymentFormId('')
       setPaymentFormDescription('')
-      setPaymentFormType('')
       LoadPaymentForm()
     }
   }
@@ -678,14 +494,13 @@ const FinancialMovement: React.FC = () => {
   }
 
 
-  const Save = useCallback(async(caller: string, changePaymentForm: boolean) => {
+  const Save = useCallback(async(caller: string) => {
     try {
 
       if (!Validate()) return;
 
       setIsSaving(true)
       setShowModalOptions(false)
-      setChangePaymentForm(false)
 
       let peopleIdsItems = '';
       selectedPeopleList.map((people) => {
@@ -700,7 +515,6 @@ const FinancialMovement: React.FC = () => {
         qtd_Parcelamento: movementParcelas,
         Periodicidade: movementParcelasDatas,
         cod_FormaPagamento: paymentFormId,
-        tpo_FormaPagamento: paymentFormType,
         cod_Categoria: categoryId,
         cod_CentroCusto: centerCostId,
         num_NotaFiscal: taxInvoice,
@@ -715,14 +529,10 @@ const FinancialMovement: React.FC = () => {
         flg_Reembolso: flgReembolso,
         cod_Processo: matterId,
         cod_Conta: accountId,
-        changePaymentForm,
-        des_ChavePix: pixKey,
-        pct_Desconto: discountPercetage,
-        num_Fatura: billingInvoiceId,
         token
       })
 
-      addToast({type: "success", title: "Operação realizada com sucesso", description: `${  movementType == 'R'? 'Receita': 'Despesa'  } salva com sucesso`})
+      addToast({type: "success", title: "Operação realizada com sucess", description: `${  movementType == 'R'? 'Receita': 'Despesa'  } salva com sucesso`})
 
       handleStateType('Inactive')
 
@@ -738,17 +548,11 @@ const FinancialMovement: React.FC = () => {
         setShowPaymentModal(true)
       }
     } catch (err:any) {
+      addToast({type: "info", title: "Falha ao salvar movimento.", description: err.response.data.Message})
       setIsSaving(false)
       setShowChangeInstallments(false)
-
-      if (err.response.data.typeError.warning == "awareness"){
-        setShowChangePaymentForm(true)
-      }
-      else {
-        addToast({type: "info", title: "Falha ao salvar movimento.", description: err.response.data.Message})
-      }
     }
-  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp, paymentFormType, pixKey, discountPercetage, billingInvoiceId]);
+  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp]);
 
 
   const Copy = useCallback(async() => {
@@ -784,8 +588,6 @@ const FinancialMovement: React.FC = () => {
         flg_Reembolso: flgReembolso,
         cod_Processo: matterId,
         cod_Conta: accountId,
-        des_ChavePix:pixKey,
-        pct_Desconto: discountPercetage,
         token
       })
 
@@ -799,7 +601,7 @@ const FinancialMovement: React.FC = () => {
       addToast({type: "info", title: "Falha ao copiar movimento.", description: err.response.data.Message})
       setIsSaving(false)
     }
-  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgNotifyEmail, flgNotifyWhatsApp, pixKey, discountPercetage]);
+  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgNotifyEmail, flgNotifyWhatsApp]);
 
 
   const CheckDeleteType = (qtd) => {
@@ -813,7 +615,7 @@ const FinancialMovement: React.FC = () => {
   }
 
 
-  const Delete = useCallback(async (deleteAll: boolean, validateFinancialIntegration: boolean) => {
+  const Delete = useCallback(async (deleteAll) => {
     try {
       if (movementId == '0') {
         addToast({type: "info", title: "Operação NÃO realizada", description: `O movimento ainda não foi salvo no sistema`})
@@ -821,7 +623,7 @@ const FinancialMovement: React.FC = () => {
         return;
       }
 
-      const response = await api.delete('/Financeiro/Deletar', { params:{ token, id: movementId, deleteAll, validateFinancialIntegration }});
+      const response = await api.delete('/Financeiro/Deletar', { params:{ token, id: movementId, deleteAll }});
 
       handleStateType('Inactive')
       setShowDeleteOptions(false)
@@ -829,12 +631,7 @@ const FinancialMovement: React.FC = () => {
       history.push(`/financeiro`)
     }
     catch (err:any) {
-      if (err.response.data.typeError.warning == "awareness"){
-        setShowValidateFinancialIntegration(true)
-      }
-      else{
-        addToast({type: "info", title: "Operação não realizada", description: err.response.data})
-      }
+      addToast({type: "info", title: "Operação não realizada", description: err.response.data})
     }
   }, [movementId]);
 
@@ -938,7 +735,7 @@ const FinancialMovement: React.FC = () => {
 
   const ClosePaymentModal = () => {
     setShowPaymentModal(false)
-    LoadMovement(movementId)
+    LoadMovement(movementId);
   }
 
 
@@ -1092,7 +889,7 @@ const FinancialMovement: React.FC = () => {
     }
 
     return <Table.Cell {...props} />;
-  }
+  };
 
 
   const handleClick = (props: any) => {
@@ -1106,6 +903,13 @@ const FinancialMovement: React.FC = () => {
       handleDeleteFile(props.row.fileName)
     }
   }
+
+
+  useEffect(() => {
+    if (uploadingStatus  === 'conclude') {
+      handleValidateFiles();
+    }
+  }, [uploadingStatus])
 
 
   const handleValidateFiles = async () => {
@@ -1256,7 +1060,7 @@ const FinancialMovement: React.FC = () => {
     else{
       setShowPaymentModal(true)
     }
-  }, [movementId])
+  }, [movementId]);
 
 
   const handleConfirmChangeInstallments = async () => {
@@ -1267,7 +1071,7 @@ const FinancialMovement: React.FC = () => {
 
   const SaveByPaymentInformation = () => {
     setShowPaymentInformation(false)
-    Save('payment', false)
+    Save('payment')
   }
 
 
@@ -1292,228 +1096,28 @@ const FinancialMovement: React.FC = () => {
 
   const handleLogOnDisplay = useCallback(async () => {
     setShowLog(true);
-  }, [])
+  }, []);
 
 
   const handleCloseLog = () => {
     setShowLog(false)
   }
-  // #endregion
-
-
-  // #region BANK PAYMENT SLIP
-  const LoadBankPaymentSlip = async (movementId:number) => {
-    try{
-      const response = await api.get<IBankPaymentSlip>('/BoletoBancario/ObterPorMovimento', { params:{ movementId, partnerId: 'AS', token }});
-
-      setHasFinancialIntegration(response.data.hasFinancialIntegration)
-
-      if (response.data.paymentSlipId != "0"){
-        setPaymentSlipId(response.data.paymentSlipId)
-        setBankPaymentSlipLinkDate(response.data.dueDate)
-        setHasBankPaymentSlip(response.data.hasBankPaymentSlip)
-        setBankPaymentSlipLink(response.data.bankPaymentSlipLink)
-        setPaymentSlipPartnerId(response.data.paymentSlipPartnerId)
-      }
-    }
-    catch (err:any) {
-      addToast({type: "info", title: "Operação não realizada", description: err.response.data})
-    }
-  }
-
-
-  const HandleCreateInvoice = () => {
-    if (paymentFormType == "B"){
-      // Boleto parcelado
-      if (movementParcelas != '1'){
-        setShowInstallmentPaymentSlipConfirm(true)
-        return;
-      }
-      // Boleto único
-      else {
-        GeneratePaymentSlip('justOne', false, true)
-        return;
-      }
-    }
-    else {
-      CreateInvoice(true)
-    }
-  }
-
-
-  const CreateInvoice = useCallback(async (checkInstallment:boolean) => {
-    try{
-      if(checkInstallment){
-        if(movementParcelas != '1'){
-          setShowInstallmentInvoiceConfirm(true)
-          return
-        }
-      }
-
-      setIsSaving(true)
-
-      let peopleIdsItems = '';
-      selectedPeopleList.map((people) => {
-        return peopleIdsItems += `${people.id},`
-      })
-
-      const response = await api.post('/Fatura/GerarFaturaPorMovimento', {
-        cod_Movimento: movementId,
-        peopleIds: peopleIdsItems,
-        tpo_FormaPagamento: paymentFormType,
-        token
-      })
-
-      setIsSaving(false)
-      LoadMovement(movementId)
-    }
-    catch(err:any){
-      setIsSaving(false)
-
-      if (err.response.data.typeError.warning == "awareness"){
-        setShowModalPlan(true)
-      }
-      else{
-        addToast({type: "info", title: "Falha ao criar fatura", description: err.response.data.Message})
-      }
-    }
-  }, [movementId, movementParcelas, selectedPeopleList, paymentFormType])
-
-
-  const GeneratePaymentSlip = useCallback(async(actionGenerate: string, secondPayment: boolean, checkInstallment:boolean) => {
-    try {
-      if(checkInstallment){
-        if(movementParcelas != '1'){
-          setShowInstallmentInvoiceConfirm(true)
-          return
-        }
-      }
-
-      setIsSaving(true)
-      setShowModalOptions(false)
-
-      let peopleIdsItems = '';
-      selectedPeopleList.map((people) => {
-        return peopleIdsItems += `${people.id},`
-      })
-
-      const response = await api.post('/BoletoBancario/Gerar', {
-        cod_Movimento: movementId,
-        dta_Movimento: movementDate,
-        vlr_Movimento: movementValue,
-        tpo_Movimento : movementType,
-        cod_Parcelamento: cod_Parcelamento,
-        qtd_Parcelamento: movementParcelas,
-        Periodicidade: movementParcelasDatas,
-        cod_FormaPagamento: paymentFormId,
-        tpo_FormaPagamento: paymentFormType,
-        cod_Categoria: categoryId,
-        cod_CentroCusto: centerCostId,
-        num_NotaFiscal: taxInvoice,
-        des_Movimento: movementDescription,
-        peopleIds: peopleIdsItems,
-        flg_NotificaPessoa: flgNotifyPeople,
-        flg_NotificaEmail: flgNotifyEmail,
-        flg_NotificaWhatsApp: flgNotifyWhatsApp,
-        flg_Status: flgStatus,
-        Lembrete: reminders,
-        editChild: actionGenerate,
-        flg_Reembolso: flgReembolso,
-        cod_Processo: matterId,
-        cod_Conta: accountId,
-        dta_VencimentoBoleto: bankPaymentSlipDate,
-        secondPayment,
-        paymentSlipId,
-        paymentSlipPartnerId: 'AS',
-        token
-      })
-
-      setBillingInvoiceId(response.data.num_Fatura)
-
-      addToast({type: "success", title: "Operação realizada com sucesso", description: "Boleto criado com sucesso"})
-
-      await LoadBankPaymentSlip(Number(movementId))
-      setIsSaving(false)
-      setShowBankPaymentSlipSecondCopyModal(false)
-    }
-    catch (err:any) {
-      setIsSaving(false)
-      setShowBankPaymentSlipSecondCopyModal(false)
-
-      if (err.response.data.typeError.warning == "awareness"){
-        setBankPaymentSlipErrors(err.response.data.Message)
-        setHasBankPaymentSlipErrors(true)
-      }
-      else {
-        addToast({type: "info", title: "Falha ao gerar boleto.", description: err.response.data.Message})
-      }
-    }
-  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, cod_Parcelamento, movementParcelas, movementParcelasDatas, paymentFormId, paymentFormType, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp, bankPaymentSlipDate, paymentSlipPartnerId, paymentSlipId])
-
-
-  const OpenBankPaymentSlipNewWindow = (item) => {
-    window.open(item.bankPaymentSlipLink, '_blank')
-  }
-
-
-  const GenerateSecondBankPaymentSlip = () => {
-    setShowBankPaymentSlipSecondCopyModal(true)
-  }
-
-
-  const PrintBillingInvoice = useCallback(async() => {
-    try{
-      setIsGeneratingReport(true)
-      
-      const response = await api.post('/Fatura/EmitirFatura', {
-        cod_Movimento: movementId,
-        tpo_FormaPagamento: paymentFormType,
-        bankPaymentSlipLink,
-        token
-      })
-
-      setIdReportGenerate(response.data)
-    }
-    catch (err:any) {
-      setIsGeneratingReport(false)
-      addToast({type: "info", title: "Falha ao gerar boleto.", description: err.response.data.Message}) 
-    }
-  }, [movementId, paymentFormType, bankPaymentSlipLink])
-
-
-  const SendEmailBillingInvoice = useCallback(async() => {
-    try{
-      setIsLoading(true)
-
-      let peopleIdsItems = '';
-      selectedPeopleList.map((people) => {
-        return peopleIdsItems += `${people.id},`
-      })
-      
-      const response = await api.post('/Fatura/EnviarEmailFatura', {
-        cod_Movimento: movementId,
-        tpo_FormaPagamento: paymentFormType,
-        bankPaymentSlipLink,
-        peopleIds: peopleIdsItems,
-        token
-      })
-
-      setIdReportGenerate(response.data)
-      setIsLoading(false)
-    }
-    catch (err:any) {
-      setIsLoading(false)
-      addToast({type: "info", title: "Falha ao gerar boleto.", description: err.response.data.Message}) 
-    }
-  }, [movementId, paymentFormType, selectedPeopleList, bankPaymentSlipLink])
-  // #endregion
 
 
   return (
+
     <Container>
+
       <HeaderPage />
 
-      <Content id='Content'>
+      {matterAttachedModal &&(<OverlayFinancial />)}
+      {matterAttachedModal &&(<GridSelectProcess />)}
+
+      {(showDocumentModal) && <OverlayFinancial /> }
+      {(showDocumentModal) && <FinancialDocumentModal callbackFunction={{movementId, invoice, CloseDocumentModal}} /> }
+
+      <Content>
+
         {isLoading || isSaving && (
           <>
             <Overlay />
@@ -1524,219 +1128,138 @@ const FinancialMovement: React.FC = () => {
           </>
         )}
 
-        <div style={{height:'50px'}}>
+        <div>
           {movementType == "R" && <span>RECEITA</span> }
           {movementType == "D" && <span>DESPESA</span> }
-          {billingInvoiceId != "" && (
+          {invoice != 0 && (
             <span className='invoiceWarning'>
-              Fatura nº &nbsp; {billingInvoiceId}
+              Movimento gerado automaticamente pela Fatura nº
               &nbsp;
+              {sequence}
+              &nbsp;
+              <MdHelp
+                style={{color:'#2C8ED6'}}
+                className='help'
+                title="Esta movimentação foi gerada automaticamente através de uma fatura. Qualquer alteração deve ser executada em sua origem."
+              />
             </span>
           )}
         </div>
+        <br />
 
-        <Line id='Line1'>
-          <ItemLine id='ItemLine1'>
-            <div>
-              <label htmlFor='Data'>
-                <DatePicker title="Vencimento" onChange={handleMovementDate} value={movementDate} />
-              </label>
-            </div>
-          </ItemLine>
+        <section id='FirstElements'>
+          <label htmlFor='Data'>
+            <DatePicker
+              title="Vencimento"
+              onChange={handleMovementDate}
+              value={movementDate}
+            />
+          </label>
 
-          <ItemLine id='ItemLine2'>
-            <div>
-              <label htmlFor="valor">
-                Valor
-                <IntlCurrencyInput currency="BRL" config={currencyConfig} value={movementValue} className='inputField' onChange={handleValue} />
-              </label>
-            </div>
-          </ItemLine>
+          <label htmlFor="valor">
+            Valor
+            <IntlCurrencyInput
+              currency="BRL"
+              config={currencyConfig}
+              value={movementValue}
+              className='inputField'
+              onChange={handleValue}
+            />
+          </label>
 
-          <ItemLine id='ItemLine3'>
-            <div style={{height:'60px'}}>
-              <div style={{float:'left', width:'50%'}}>
-                <label htmlFor="Desconto" style={{height:'50px'}}>
-                  % Desconto
-                  <IntlCurrencyInput
-                    currency="BRL"
-                    config={currencyConfig}
-                    value={discountPercetage}
-                    className='inputField'
-                    onChange={ChangeDiscountPercentage}
-                    onBlur={BlurDiscountPercentage}
-                  />
-                </label>
-              </div>
+          <label htmlFor="parcela">
+            Parcelas ?
+            <Select
+              autoComplete="off"
+              styles={selectStyles}
+              value={parcelas.filter(options => options.id === movementParcelas)}
+              onChange={(item) => handleChangeParcelas(item? item.id: '')}
+              options={parcelas}
+            />
+          </label>
 
-              <div style={{float:'left', width:'50%'}}>
-                <label htmlFor="Liquido" style={{height:'40px'}}>
-                  Liquido
-                  <IntlCurrencyInput
-                    currency="BRL"
-                    config={currencyConfig}
-                    value={discountValue}
-                    className='inputField'
-                    disabled
-                  />
-                </label>
-              </div>
-            </div>
-          </ItemLine>
-
-          <ItemLine id='ItemLine4'>
-            <div style={{height:'60px'}}>
-              <div style={{float:'left', width:'50%'}}>
-                <label htmlFor="parcela">
-                  Parcelas ?
-                  <Select
-                    autoComplete="off"
-                    styles={selectStyles}
-                    value={parcelas.filter(options => options.id === movementParcelas)}
-                    onChange={(item) => handleChangeParcelas(item? item.id: '')}
-                    options={parcelas}
-                  />
-                </label>
-              </div>
-
-              <div style={{float:'left', width:'50%', marginTop:'-6px'}}>
-                {showParcelasDatas && (
-                  <div
-                    className='disableDiv'
-                    style={{pointerEvents: ((!enablePayments && movementId != '0')? 'none': 'auto'), opacity:((!enablePayments && movementId != '0')? '0.5': '1')}}
-                  >
-                    <label htmlFor="parcelaData">
-                      &nbsp;
-                      <Select
-                        disabled={enablePayments}
-                        autoComplete="off"
-                        styles={selectStyles}
-                        placeholder="Selecionar"
-                        value={parcelasDatas. filter(options => options.id === movementParcelasDatas)}
-                        onChange={(item) => setMovementParcelasDatas(item? item.id: '')}
-                        options={parcelasDatas}
-                      />
-                    </label>
-                  </div>
-                )}
-
-                {!showParcelasDatas && <label />}
-              </div>
-            </div>
-          </ItemLine>
-        </Line>
-
-        <Line id='Line2'>
-          <ItemLine id='ItemLine1'>
-            <div>
-              <label htmlFor='Categoria'>
-                Categoria
+          {showParcelasDatas && (
+            <div
+              className='disableDiv'
+              style={{pointerEvents: ((!enablePayments && movementId != '0')? 'none': 'auto'), opacity:((!enablePayments && movementId != '0')? '0.5': '1')}}
+            >
+              <label htmlFor="parcelaData">
+                &nbsp;
                 <Select
-                  isSearchable
-                  value={{ id: categoryId, label: categoryDescription }}
-                  onChange={handleCategorySelected}
-                  onInputChange={(term) => setCategoryTerm(term)}
-                  isClearable
-                  placeholder=""
+                  disabled={enablePayments}
+                  autoComplete="off"
                   styles={selectStyles}
-                  options={categoryList}
-                  required
+                  placeholder="Selecionar"
+                  value={parcelasDatas. filter(options => options.id === movementParcelasDatas)}
+                  onChange={(item) => setMovementParcelasDatas(item? item.id: '')}
+                  options={parcelasDatas}
                 />
               </label>
             </div>
-          </ItemLine>
-
-          <ItemLine id='ItemLine2'>
-            <div>
-              <label htmlFor='CentroCusto'>
-                Centro de Custo
-                <Select
-                  isSearchable
-                  isClearable
-                  value={{ id: centerCostId, label: centerCostDescription }}
-                  onChange={handleCenterCostSelected}
-                  onInputChange={(term) => setCenterCostTerm(term)}
-                  required
-                  placeholder=""
-                  styles={selectStyles}
-                  options={centerCostList}
-                />
-              </label>
-            </div>
-          </ItemLine>
-
-          <ItemLine id='ItemLine3'>
-            <div>
-              <label htmlFor='FormaPagamento'>
-                Forma Pagto.
-                <Select
-                  isSearchable
-                  isClearable
-                  value={{ id: paymentFormId, label: paymentFormDescription }}
-                  onChange={handlePaymentFormSelected}
-                  onInputChange={(term) => setPaymentFormTerm(term)}
-                  required
-                  placeholder=""
-                  styles={selectStyles}
-                  options={paymentFormList}
-                />
-              </label>
-            </div>
-          </ItemLine>
-
-          {paymentFormType == "P" ? (
-            <ItemLine id='ItemLine4'>
-              <div>
-                <label htmlFor="chavePIX">
-                  Chave Pix
-                  <input
-                    type="text"
-                    className='inputField'
-                    maxLength={200}
-                    value={pixKey}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setPixKey(e.target.value)}
-                  />
-                </label>
-              </div>
-            </ItemLine>
-          ) : (
-            <ItemLine id='ItemLine4'>
-              <div>
-                <label htmlFor="NotaFiscal">
-                  Nota Fiscal
-                  <input
-                    type="text"
-                    className='inputField'
-                    maxLength={20}
-                    value={taxInvoice}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setTaxInvoice(e.target.value)}
-                  />
-                </label>
-              </div>
-            </ItemLine>
           )}
-        </Line>
 
-        {paymentFormType == "P" &&(
-          <Line id='Line2'>
-            <ItemLine id='ItemLine4'>
-              <div>
-                <label htmlFor="NotaFiscal">
-                  Nota Fiscal
-                  <input
-                    type="text"
-                    className='inputField'
-                    maxLength={20}
-                    value={taxInvoice}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setTaxInvoice(e.target.value)}
-                  />
-                </label>
-              </div>
-            </ItemLine>
-          </Line>
-        )}
+          {!showParcelasDatas && <label />}
+        </section>
 
-        <section id='Description'>
+        <section id='SecondElements'>
+          <label>
+            Categoria
+            <Select
+              isSearchable
+              value={{ id: categoryId, label: categoryDescription }}
+              onChange={handleCategorySelected}
+              onInputChange={(term) => setCategoryTerm(term)}
+              isClearable
+              placeholder=""
+              styles={selectStyles}
+              options={categoryList}
+              required
+            />
+          </label>
+
+          <label>
+            Forma Pagto.
+            <Select
+              isSearchable
+              isClearable
+              value={{ id: paymentFormId, label: paymentFormDescription }}
+              onChange={handlePaymentFormSelected}
+              onInputChange={(term) => setPaymentFormTerm(term)}
+              required
+              placeholder=""
+              styles={selectStyles}
+              options={paymentFormList}
+            />
+          </label>
+
+          <label>
+            Centro de Custo
+            <Select
+              isSearchable
+              isClearable
+              value={{ id: centerCostId, label: centerCostDescription }}
+              onChange={handleCenterCostSelected}
+              onInputChange={(term) => setCenterCostTerm(term)}
+              required
+              placeholder=""
+              styles={selectStyles}
+              options={centerCostList}
+            />
+          </label>
+
+          <label htmlFor="valor">
+            Nota Fiscal
+            <input
+              type="text"
+              className='inputField'
+              maxLength={20}
+              value={taxInvoice}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setTaxInvoice(e.target.value)}
+            />
+          </label>
+        </section>
+
+        <section id='ThirdElements'>
           <label htmlFor="description">
             Descrição
             <textarea
@@ -1747,7 +1270,7 @@ const FinancialMovement: React.FC = () => {
           </label>
         </section>
 
-        <section id='PeopleAndReminders'>
+        <section id='FouthElements'>
           <label htmlFor="pessoas">
             Pessoas
             <Select
@@ -1800,7 +1323,7 @@ const FinancialMovement: React.FC = () => {
           </label>
         </section>
 
-        <section id='PeopleListAdd'>
+        <section id='FifthElements'>
           <div className="personList">
 
             {isMOBILE && (
@@ -1859,66 +1382,50 @@ const FinancialMovement: React.FC = () => {
         </section>
         <br />
 
-        <section id='MatterAndPaymentSlip'>
-          <div id='AttachMatter' className="flexDiv" style={{marginLeft:'10px'}}>
-            <Process>
-              {processTitle === 'Associar Processo' && (
-                <button type="button" id="associar" onClick={handleGridSelectProcess}>
-                  <p>{processTitle}</p>
-                </button>
-              )}
-
-              {processTitle !== 'Associar Processo' && (
-                <>
-                  <span style={{fontSize:'0.625rem', fontWeight:500, fontFamily:'montserrat'}}>Processo:&nbsp;</span>
-                  <span style={{fontSize:'0.625rem', fontWeight:500, fontFamily:'montserrat'}}>{processTitle}</span>
-                </>
-              )}
-
-              {processTitle === 'Associar Processo' && (
-                <button type="button" onClick={handleGridSelectProcess}>
-                  &nbsp;&nbsp;
-                  <RiFolder2Fill className='erase' />
-                </button>
-              )}
-
-              {processTitle !== 'Associar Processo' && (
-                <button type="button" onClick={() => {setProcessTitle('Associar Processo'); setAppointmentMatter(undefined); setMatterId('0')}}>
-                  &nbsp;&nbsp;
-                  {!blockAssociateMatter && <RiEraserLine className='erase' /> }
-                </button>
-              )}
-            </Process>
-          </div>
-
-          <div id='BankPaymentSlip' className="flexDiv">
-            {hasBankPaymentSlip &&(
-              <div id='BankPaymentSlip' style={{marginTop:'6px'}}>
-                <div style={{float:'left'}}>
-                  <button type="button" onClick={(e) => OpenBankPaymentSlipNewWindow({bankPaymentSlipLink})}>
-                    <AiOutlineBarcode 
-                      style={{height:'30px', width:'25px', color:'blue'}} 
-                      title={`Vencimento do boleto em: ${(format(new Date(bankPaymentSlipLinkDate), 'dd/MM/yyyy'))} `}
-                    />
-                  </button>
-                </div>
-                <div style={{float:'left', fontSize:'13px', marginLeft:'7px', marginTop:'6px'}}>
-                  <a href={bankPaymentSlipLink} target="blank" style={{color:'blue'}}>Ver boleto - Venc.({(format(new Date(bankPaymentSlipLinkDate), 'dd/MM/yyyy'))})</a>
-                </div>
-              </div>
+        <div id='AttachMatter'>
+          <Process>
+            {processTitle === 'Associar Processo' && (
+              <button
+                type="button"
+                id="associar"
+                onClick={handleGridSelectProcess}
+              >
+                <p>{processTitle}</p>
+              </button>
             )}
-          </div>
-          <div className="flexDiv">
-            <>
-              {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B" && companyPlan != 'GOJURFR' && !isTotalPaid && hasBankPaymentSlip) &&(
-                <button className="buttonClick" type='button' onClick={()=> GenerateSecondBankPaymentSlip()}>
-                  <FaFileInvoiceDollar  />
-                  Gerar 2ª Via Boleto
-                </button>
-              )}
-            </>
-          </div>
-        </section>
+
+            {processTitle !== 'Associar Processo' && (
+              // <p style={{fontSize:'0.625rem', fontWeight:500, fontFamily:'montserrat'}}>{processTitle}</p>
+              <>
+                <span style={{fontSize:'0.625rem', fontWeight:500, fontFamily:'montserrat'}}>Processo:&nbsp;</span>
+                <span style={{fontSize:'0.625rem', fontWeight:500, fontFamily:'montserrat'}}>{processTitle}</span>
+              </>
+            )}
+
+            {processTitle === 'Associar Processo' && (
+              <button
+                type="button"
+                onClick={handleGridSelectProcess}
+              >
+                <RiFolder2Fill />
+              </button>
+            )}
+
+            {processTitle !== 'Associar Processo' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setProcessTitle('Associar Processo');
+                  setAppointmentMatter(undefined);
+                  setMatterId('0');
+                }}
+              >
+                &nbsp;&nbsp;
+                {!blockAssociateMatter && <RiEraserLine /> }
+              </button>
+            )}
+          </Process>
+        </div>
         <br />
 
         <div id='PaymentElements' className='paymentElements'>
@@ -2056,62 +1563,54 @@ const FinancialMovement: React.FC = () => {
             )}
           </div>
 
-          <div id='Buttons' style={{float:'right'}}>
-            <button className="buttonClick" type='button' onClick={()=> Save('', false)}>
+          <div style={{float:'right'}}>
+            <button
+              className="buttonClick"
+              type='button'
+              onClick={()=> Save('')}
+            >
               <BiSave />
               Salvar
             </button>
 
             {(movementId != '0' && invoice == 0) && (
-              <button className="buttonClick" type='button' onClick={()=> Copy()}>
+              <button
+                className="buttonClick"
+                type='button'
+                onClick={()=> Copy()}
+              >
                 <FaRegCopy />
                 Copiar
               </button>
             )}
 
-            {(movementId != '0' && invoice == 0 && movementType == "R" && billingInvoiceId == "0" && paymentFormType != "" && !hasBankPaymentSlip) && (
-              <button className="buttonClick" type='button' onClick={()=> HandleCreateInvoice()}>
-                <FaRegCopy />
-                Faturar
-              </button>
-            )}
-
-            {(movementId != '0' && movementType == "R" && companyPlan != 'GOJURFR' && paymentFormType == "B" && billingInvoiceId != "0" && !hasBankPaymentSlip) && (
-              <button className="buttonClick" type='button' onClick={()=> GeneratePaymentSlip('justOne', false, true)}>
-                <FaRegCopy />
-                Gerar Boleto
-              </button>
-            )}
-
-            {(!isMOBILE && movementId != '0' && movementType == "R" && billingInvoiceId != "") &&(
-              <>
-                <button className="buttonClick" type='button' onClick={()=> PrintBillingInvoice()}>
-                  <FiPrinter />
-                  Emitir Fatura
-                </button>
-
-                <button className="buttonClick" type='button' onClick={()=> SendEmailBillingInvoice()}>
-                  <AiOutlineMail />
-                  Fatura Por E-Mail
-                </button>
-              </>
-            )}
-
             {(!isMOBILE && movementId != '0' && invoice == 0) &&(
-              <button className="buttonClick" type='button' onClick={()=> GenerateDocument()}>
+              <button
+                className="buttonClick"
+                type='button'
+                onClick={()=> GenerateDocument()}
+              >
                 <CgFileDocument />
                 Documento
               </button>
             )}
 
             {(movementId != '0' && invoice == 0) && (
-              <button className="buttonClick" type='button' onClick={()=> CheckDeleteType(paymentQtd)}>
+              <button
+                className="buttonClick"
+                type='button'
+                onClick={()=> CheckDeleteType(paymentQtd)}
+              >
                 <FiTrash />
                 Excluir
               </button>
             )}
 
-            <button type='button' className="buttonClick" onClick={() => { handleStateType('Inactive'); history.push(`/financeiro`)}}>
+            <button
+              type='button'
+              className="buttonClick"
+              onClick={() => { handleStateType('Inactive'); history.push(`/financeiro`) }}
+            >
               <FaRegTimesCircle />
               Fechar
             </button>
@@ -2127,12 +1626,6 @@ const FinancialMovement: React.FC = () => {
 
         &nbsp;
       </Content>
-
-      {(showDocumentModal) && <OverlayFinancial /> }
-      {(showDocumentModal) && <FinancialDocumentModal callbackFunction={{movementId, invoice, CloseDocumentModal}} /> }
-
-      {matterAttachedModal &&(<OverlayFinancial />)}
-      {matterAttachedModal &&(<GridSelectProcess />)}
 
       {(showPaymentModal) && <OverlayFinancial /> }
       {(showPaymentModal) && <FinancialPaymentModal callbackFunction={{movementId, ClosePaymentModal }} /> }
@@ -2154,20 +1647,14 @@ const FinancialMovement: React.FC = () => {
           <div style={{marginLeft:'5%'}}>
             Este movimento está parcelado, deseja excluir também as outras parcelas ?
             <br />
-            {hasBankPaymentSlip == true ? (
-              <>
-                Os boletos também serão removidos.
-                <br />
-              </>
-            ) : <br />}
-            
+            <br />
             <br />
             <div style={{float:'right', marginRight:'7%', bottom:0}}>
               <div style={{float:'left'}}>
                 <button
                   className="buttonClick"
                   type='button'
-                  onClick={()=> Delete(false, true)}
+                  onClick={()=> Delete(false)}
                   style={{width:'120px'}}
                 >
                   Excluir este
@@ -2178,7 +1665,7 @@ const FinancialMovement: React.FC = () => {
                 <button
                   className="buttonClick"
                   type='button'
-                  onClick={()=> Delete(true, true)}
+                  onClick={()=> Delete(true)}
                   style={{width:'120px'}}
                 >
                   Excluir todos
@@ -2217,7 +1704,7 @@ const FinancialMovement: React.FC = () => {
                 <button
                   className="buttonClick"
                   type='button'
-                  onClick={()=> Delete(false, true)}
+                  onClick={()=> Delete(false)}
                   style={{width:'100px'}}
                 >
                   <FaCheck />
@@ -2250,7 +1737,8 @@ const FinancialMovement: React.FC = () => {
           </div>
           <div style={{marginLeft:'5%'}}>
             Você esta em um processo de inclusão do registo, para prosseguir é necessário salva-lo, deseja realizar este processo agora ?
-            <br /><br />
+            <br />
+            <br />
             <div style={{float:'right', marginRight:'7%', bottom:0}}>
               <div style={{float:'left'}}>
                 <button
@@ -2281,31 +1769,6 @@ const FinancialMovement: React.FC = () => {
         </ModalPaymentInformation>
       )}
 
-      {showBankPaymentSlipSecondCopyModal && <OverlayFinancial /> }
-      {showBankPaymentSlipSecondCopyModal && <BankPaymentSlipSecondCopyModal callbackFunction={{setShowBankPaymentSlipSecondCopyModal, setBankPaymentSlipDate, setMovementValue, movementId, movementValue, GeneratePaymentSlip }} /> }
-      
-      {hasBankPaymentSlipErrors && <OverlayFinancial /> }
-      {hasBankPaymentSlipErrors && (
-        <ModalBankPaymentSlipErrors>
-          <div className='menuTitle'>
-            &nbsp;&nbsp;&nbsp;&nbsp;ATENÇÃO
-          </div>
-          <div className='menuSection'>
-            <FiX onClick={(e) => {setHasBankPaymentSlipErrors(false)}} />
-          </div>
-          <br />
-
-          <div id='Message' style={{marginLeft:'30px', marginTop:'20px', height:'110px'}} dangerouslySetInnerHTML={{ __html: bankPaymentSlipErrors }} />
-
-          <div id='Button' style={{textAlign:'center'}}>
-            <button type='button' className="buttonClick" onClick={()=> {setHasBankPaymentSlipErrors(false)}} style={{width:'150px'}}>
-              <FaRegTimesCircle />
-              Fechar
-            </button>
-          </div>
-        </ModalBankPaymentSlipErrors>
-      )}
-
       {showChangeInstallments && (
         <ConfirmBoxModal
           title="Alterar parcelas do movimento"
@@ -2313,71 +1776,6 @@ const FinancialMovement: React.FC = () => {
           useCheckBoxConfirm
           message="Foi alterado o número de parcelas do movimento, o reparcelamento implica em alterar todas as parcelas considerando os dados do movimento atual. Eventuais liquidações serão mantidas desde que a parcela não seja removida (no caso de redução de parcelas)."
         />
-      )}
-
-      {showChangePaymentForm && (
-        <ConfirmBoxModal
-          title="Alterar forma de pagamento"
-          caller="changePaymentForm"
-          useCheckBoxConfirm
-          message="Você está alterando a forma de pagamento de um movimento com boleto cadastrado. Ao confirmar o boleto será excluído."
-        />
-      )}
-
-      {showValidateFinancialIntegration && (
-        <ConfirmBoxModal
-          title="Integrador Financeiro"
-          caller="validateFinancialIntegration"
-          useCheckBoxConfirm
-          message="Não existe um integrador financeiro para o boleto vinculado a este movimento. Ao confirmar, o movimento será excluído mas o boleto permanecera existente em seu banco."
-        />
-      )}
-
-      {showInstallmentInvoiceConfirm && (
-        <ConfirmBoxModal
-          title="Faturar"
-          caller="invoiceInstallment"
-          useCheckBoxConfirm
-          message="Este movimento está parcelado, todas as parcelas serão faturadas."
-        />
-      )}
-
-      {showInstallmentPaymentSlipConfirm && (
-        <ConfirmBoxModal
-          title="Gerar Boletos"
-          caller="paymentSlipInstallment"
-          message="Este movimento está parcelado, serão gerados os boletos para todas as parcelas com período de vencimento posterior a hoje."
-        />
-      )}
-
-      {showModalPlan && <OverlayFinancial /> }
-      {showModalPlan && (
-        <ModalPlan>
-          <div className='menuTitle'>
-            &nbsp;&nbsp;&nbsp;&nbsp;ATENÇÃO
-          </div>
-          <div className='menuSection'>
-            <FiX onClick={(e) => {setHasBankPaymentSlipErrors(false)}} />
-          </div>
-          <br /><br />
-
-          &nbsp;&nbsp;Atenção, você já atingiu o limite de geração de boleto para o seu plano.<br />
-          &nbsp;&nbsp;Você pode adquirir mais através de um dos nossos planos.<br />
-          &nbsp;&nbsp;Confira nossas opções a seguir.
-
-          <br /><br /><br />
-
-          <div id='Button' style={{textAlign:'center'}}>
-            <button type='button' className="buttonClick" onClick={()=> {history.push('/changeplan')}} style={{width:'150px'}}>
-              <FaRegTimesCircle />
-              Trocar Plano
-            </button>
-            <button type='button' className="buttonClick" onClick={()=> {setShowModalPlan(false)}} style={{width:'150px'}}>
-              <FaRegTimesCircle />
-              Fechar
-            </button>
-          </div>
-        </ModalPlan>
       )}
 
       {isLoading && (
@@ -2390,16 +1788,7 @@ const FinancialMovement: React.FC = () => {
         </>
       )}
 
-      {isGeneratingReport && (
-        <>
-          <Overlay />
-          <div className='waitingMessage'>
-            <LoaderWaiting size={15} color="var(--blue-twitter)" />
-            &nbsp;&nbsp; Gerando fatura...
-          </div>
-        </>
-      )}
-
+      {/* warning uploading file */}
       {(uploadingStatus != 'none') && (
         <>
           <OverlayFinancial />
@@ -2411,6 +1800,7 @@ const FinancialMovement: React.FC = () => {
         </>
       )}
 
+      {/* warning uploading file */}
       {(isDeletingFile) && (
         <>
           <OverlayFinancial />

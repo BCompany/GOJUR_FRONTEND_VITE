@@ -354,7 +354,7 @@ const PaymentSlipContractList = () => {
           <div style={{width:'100%', marginTop:'20px'}}>
 
             <div style={{float:'left', marginLeft:'150px', marginTop:'12px', fontSize:'13px'}}>
-              Número de integradores financeiros:&nbsp;
+              Número de carteiras de cobrança:&nbsp;
               {totalPageCount}
             </div>
 

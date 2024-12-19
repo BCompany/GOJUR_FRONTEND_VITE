@@ -1921,7 +1921,7 @@ const handleConfiguraInstallment = useCallback((item, method: String) => {
 
       installmentValueNew = installmentValue > 0 ? installmentValueNew : 0
    
-      if ((i: number) => 0 && i < (installmentsQty - 1)){
+      if (i => 0 && i < (installmentsQty - 1)){
    
         item.vlr_Parcela = installmentValueNew // eslint-disable-line no-param-reassign
 
