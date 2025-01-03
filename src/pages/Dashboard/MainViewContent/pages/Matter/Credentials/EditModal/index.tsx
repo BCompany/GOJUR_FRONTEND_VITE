@@ -71,6 +71,12 @@ export default function CredentialsDataSourceModal(props) {
       }
     },[credentialId])
 
+    useEffect(() => {
+      if (!flgQrCode) {
+        setQrCode('');
+      }
+    }, [flgQrCode]);
+
   const LoadAllCredentialList = async () => {
     try {
 
@@ -323,7 +329,7 @@ return (
           </div>
         )}
 
-        {twoFactorAuth && (
+        {flgQrCode && twoFactorAuth && (
           <div style={{ marginLeft: '2.5%', marginTop: '10px' }}>
             <label htmlFor="qrcode" style={{ marginBottom: '8px', display: 'block' }}>
               Código QRCode
