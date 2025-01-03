@@ -920,73 +920,10 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
                     >
                       <option value="0">Selecione...</option>
                       <option value="#data">Data do Dia</option>
-                      <option value="#nomeCliente">Nome</option>
-                      <option value="#cnpjcpfCliente">CNPJ ou CPF</option>
-                      <option value="#rgCliente">RG</option>
-                      <option value="#enderecoCliente">Endereço</option>
-                    </select>
-                  </label>
-                </div>
-              )}
-
-              {documentTypeId == "FI" &&(
-                <div style={{float:'left', width:'19%'}}>
-                  <label htmlFor="type">
-                    Advogado
-                    <br />
-                    <select 
-                      id="lawyer" 
-                      onChange={handleComboChange}
-                      // onChange={(e) => setKeyWord(e.target.value)}
-                    >
-                      <option value="0">Selecione...</option>
-                      <option value="#data">Data do Dia</option>
-                      <option value="#nomeAdvogado">Nome</option>
-                      <option value="#cnpjcpfAdvogado">CPF ou CNPJ</option>
-                      <option value="#rgAdvogado">RG</option>
-                      <option value="#enderecoAdvogado">Endereço</option>
-                    </select>
-                  </label>
-                </div>
-              )}
-              
-              {documentTypeId == 'FI' &&(
-                <div style={{float:'left', width:'19%'}}>
-                  <label htmlFor="type">
-                    Terceiro
-                    <br />
-                    <select 
-                      id="financePeople" 
-                      onChange={handleComboChange}
-                      // onChange={(e) => setKeyWord(e.target.value)}
-                    >
-                      <option value="0">Selecione...</option>
-                      <option value="#data">Data do Dia</option>
-                      <option value="#nomeTerceiro">Nome</option>
-                      <option value="#cnpjcpfTerceiro">CNPJ ou CPF</option>
-                      <option value="#rgTerceiro">RG</option>
-                      <option value="#enderecoTerceiro">Endereço</option>
-                    </select>
-                  </label>
-                </div>
-              )}
-
-              {documentTypeId == 'FI' &&(
-                <div style={{float:'left', width:'19%'}}>
-                  <label htmlFor="type">
-                    Contrário
-                    <br />
-                    <select 
-                      id="financePeople" 
-                      onChange={handleComboChange}
-                      // onChange={(e) => setKeyWord(e.target.value)}
-                    >
-                      <option value="0">Selecione...</option>
-                      <option value="#data">Data do Dia</option>
-                      <option value="#nomeContrario">Nome</option>
-                      <option value="#cnpjcpfContrario">CNPJ ou CPF</option>
-                      <option value="#rgContrario">RG</option>
-                      <option value="#enderecoContrario">Endereço</option>
+                      <option value="#nomePessoa">Nome</option>
+                      <option value="#cnpjcpfPessoa">CNPJ ou CPF</option>
+                      <option value="#rgPessoa">RG</option>
+                      <option value="#enderecoPessoa">Endereço</option>
                     </select>
                   </label>
                 </div>
