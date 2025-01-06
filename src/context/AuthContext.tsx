@@ -43,7 +43,7 @@ const AuthProvider: React.FC = ({ children }) => {
     const userPhoto = localStorage.getItem('@GoJur:Avatar');
     const tpoUser = localStorage.getItem('@GoJur:tpoUser');
 
-    if (token && name && id && companyId && userPhoto && tpoUser) {
+    if (token && name && id && companyId && tpoUser) {
       return { token, name, companyId, id, userPhoto, tpoUser };
     }
 
