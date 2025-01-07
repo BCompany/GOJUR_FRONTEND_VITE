@@ -325,6 +325,9 @@ return (
                 onChange={(e) => setTwoFactorAuth(e.target.checked)}
               />
               <span style={{ marginLeft: '8px' }}>Autenticação de Dois Fatores</span>
+              <a href="https://gojur.tawk.help/article/vincula" target="_blank" rel="noopener noreferrer" style={{ marginLeft: '8px' }}>
+                Guia para o código QRCode
+              </a>
             </label>
           </div>
         )}
