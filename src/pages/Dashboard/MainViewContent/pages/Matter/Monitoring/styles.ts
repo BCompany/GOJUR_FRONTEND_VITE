@@ -29,11 +29,9 @@ export const TollBar = styled.div`
     width: 85%;
 
     input, select {
-      flex: 1;
       font-size: 0.675rem;
       padding: 0.25rem;
       background-color: rgba(255,255,255,0.25);
-      width: 99%;
       border-bottom: 1px solid rgba(0,0,0,0.15);
       color: var(--secondary);
 
@@ -52,7 +50,6 @@ export const TollBar = styled.div`
       width: 99%;
       border-bottom: 1px solid rgba(0,0,0,0.15);
       color: var(--secondary);
-
 
       &:focus {
         border-bottom: 1px solid var(--orange);
