@@ -531,7 +531,7 @@ const FinancialMovement: React.FC = () => {
 
   const LoadPeople = async () => {
     try {
-      const response = await api.get<ISelectData[]>('/Pessoas/ListarPorEmpresa', { params:{ filterClause: peopleTerm, peopleTypeSelected: 'CLT', token }})
+      const response = await api.get<ISelectData[]>('/Pessoas/ListarPorEmpresa', { params:{ filterClause: peopleTerm, peopleTypeSelected: 'CLTO', token }})
       setPeopleList(response.data)
     }
     catch (err:any) {

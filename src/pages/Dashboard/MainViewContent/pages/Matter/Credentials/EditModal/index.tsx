@@ -21,11 +21,13 @@ import { FaIdCard, FaRegTimesCircle } from 'react-icons/fa';
 export interface ISelectData {
   id: string;
   label: string;
+  flg_QrCode: string;
 }
 
 export interface IDataSource {
   id_Court: string;
   courtName: string;
+  flg_QrCode: string;
 }
 
 export interface ICredential {
@@ -34,6 +36,7 @@ export interface ICredential {
   UserPassword: string;
   des_Credential: string;
   id_Court: string;
+  qrCode: string;
   courtName: string;
 }
 
@@ -50,6 +53,9 @@ export default function CredentialsDataSourceModal(props) {
   const [id_Court, setCourtId] = useState<string>('');
   const [des_Court, setDes_Court] = useState<string>('');
   const [courtTerm, setCourtTerm] = useState<string>('');
+  const [twoFactorAuth, setTwoFactorAuth] = useState(false);
+  const [qrCode, setQrCode] = useState('');
+  const [flgQrCode, setFlgQrCode] = useState(false);
 
   const token = localStorage.getItem('@GoJur:token')
 
@@ -64,6 +70,12 @@ export default function CredentialsDataSourceModal(props) {
 
       }
     },[credentialId])
+
+    useEffect(() => {
+      if (!flgQrCode) {
+        setQrCode('');
+      }
+    }, [flgQrCode]);
 
   const LoadAllCredentialList = async () => {
     try {
@@ -83,8 +95,9 @@ export default function CredentialsDataSourceModal(props) {
         return listCourts.push({
           id: item.id_Court,
           label: item.courtName,
-        })
-      })
+          flg_QrCode: item.flg_QrCode,
+        });
+      });
       
       setListCourt(listCourts)
 
@@ -139,6 +152,7 @@ export default function CredentialsDataSourceModal(props) {
           UserPassword: password,
           Description: description,
           id_Court: id_Court,
+          qrCode : qrCode,
           token,
         },
       );
@@ -176,149 +190,194 @@ const GetCredential = async (id: number) => {
       },
     );
 
-    setDes_user(response.data.des_Username)
-    setDescription(response.data.des_Credential)
-    setCourtId(response.data.id_Court)
-    setDes_Court(response.data.courtName)
+    setDes_user(response.data.des_Username);
+    setDescription(response.data.des_Credential);
+    setCourtId(response.data.id_Court);
+    setDes_Court(response.data.courtName);
+
+    if (response.data.qrCode) {
+      setTwoFactorAuth(true);
+      setFlgQrCode(true);
+      setQrCode(response.data.qrCode);
+    } else {
+      setTwoFactorAuth(false);
+      setQrCode('');
+      setFlgQrCode(true);
+    }
 
   } catch (err: any) {
     addToast({
       type: "info",
       title: "Operação não realizada",
       description: err.response.data.Message
-    })
+    });
   }
-}
+};
 
 const handleCourtSelected = (item) => { 
       
   if (item){
     setDes_Court(item.label)
     setCourtId(item.id)
+    setFlgQrCode(item.flg_QrCode === 'S');
   }else{
     setDes_Court('')
     setCourtId('')
     setCourtTerm("")
+    setFlgQrCode(false)
   }
 }
 
-  return (
-    <>
-      <Modal
-        isOpen
-        overlayClassName="react-modal-overlay"
-        className="react-modal-content-medium"
-        style={{ overlay: { zIndex: 99999 } }}
-      >
-        <Container>
-          <header>
-            <h1>Tribunais</h1>
-            <h5>Selecione um tribunal onde será utilizada a credencial.</h5>
-          </header>
-  
-          <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
-            <div style={{ flex: 1 }}>
-              <label htmlFor="txt" style={{ marginBottom: '8px', display: 'block', marginLeft : '5%' }}>
-                Usuário
-                <input
-                  maxLength={50}
-                  type="text"
-                  name="txt"
-                  value={des_user}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => setDes_user(e.target.value)}
-                  readOnly={readOnly}
-                  onFocus={() => setReadOnly(false)}
-                  required
-                  style={{ display: 'block', width: '94%', backgroundColor: 'white', height: '30px' }}
-                />
-              </label>
-            </div>
-  
-            <div style={{ flex: 1 }}>
-              <label htmlFor="password" style={{ marginBottom: '8px', display: 'white' }}>
-                Senha
-                <input
-                  maxLength={50}
-                  type="password"
-                  name="txt"
-                  value={password}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-                  readOnly={readOnly}
-                  onFocus={() => setReadOnly(false)}
-                  required
-                  style={{ display: 'block', width: '94%', backgroundColor: 'white',  height: '30px' }}
-                />
-              </label>
-            </div>
-          </div>
-  
-          <div style={{ marginLeft: '2.5%'}}>
-            <label htmlFor="text" style={{ marginBottom: '8px', display: 'white' }}>
-              Descrição
+return (
+  <>
+    <Modal
+      isOpen
+      overlayClassName="react-modal-overlay"
+      className="react-modal-content-medium"
+      style={{ overlay: { zIndex: 99999 } }}
+    >
+      <Container>
+        <header>
+          <h1>Tribunais</h1>
+          <h5>Selecione um tribunal onde será utilizada a credencial.</h5>
+        </header>
+
+        <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+          <div style={{ flex: 1 }}>
+            <label htmlFor="txt" style={{ marginBottom: '8px', display: 'block', marginLeft: '5%' }}>
+              Usuário
               <input
-                maxLength={100}
+                maxLength={50}
                 type="text"
                 name="txt"
-                value={description}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setDescription(e.target.value)}
+                value={des_user}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setDes_user(e.target.value)}
                 readOnly={readOnly}
                 onFocus={() => setReadOnly(false)}
                 required
-                style={{ display: 'block', width: '97%', backgroundColor: 'white',  height: '30px' }}
+                style={{ display: 'block', width: '94%', backgroundColor: 'white', height: '30px' }}
               />
             </label>
           </div>
-  
-          <div style={{ display: 'flex', marginLeft: '1%' }}>
-            <AutoCompleteSelect className="selectDestinationUsers" style={{ width: '96.5%' }}>
-              Tribunais
-              <Select
-                isSearchable   
-                value={{ id: id_Court, label: des_Court }}
-                onChange={handleCourtSelected}
-                onInputChange={(term) => setCourtTerm(term)}
-                isClearable
-                placeholder=""
-                isLoading={isLoadingComboData}
-                loadingMessage={loadingMessage}
-                noOptionsMessage={noOptionsMessage}           
-                options={listCourt}
-                styles={customStyles}
-                menuPortalTarget={document.body}
-                menuPosition={'fixed'}
-              />
-            </AutoCompleteSelect>
-          </div>
-  
-          <br />
 
-          <div style={{ flex: '0 0 auto', padding: '5px', width: '100%', textAlign: 'center', marginTop: "2%" }}>
-            <div style={{ display: 'inline-block', marginRight: '10px' }}>
-              <button
-                type='button'
-                className="buttonClick"
-                onClick={() => handleSaveCredentials()}
-                style={{ width: '100px' }}
-              >
-                <FaIdCard  />
-                Salvar
-              </button>
-            </div>
-  
-            <div style={{ display: 'inline-block', marginRight: '10px' }}>
-              <button 
-                className="buttonClick" 
-                title="Clique para incluir uma ação judícial"
-                type="submit"
-                onClick={() => handleCloseEditModal()}
-              >
-                <FaRegTimesCircle />
-                Cancelar
-              </button>
-            </div>
+          <div style={{ flex: 1 }}>
+            <label htmlFor="password" style={{ marginBottom: '8px', display: 'white' }}>
+              Senha
+              <input
+                maxLength={50}
+                type="password"
+                name="txt"
+                value={password}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                readOnly={readOnly}
+                onFocus={() => setReadOnly(false)}
+                required
+                style={{ display: 'block', width: '94%', backgroundColor: 'white', height: '30px' }}
+              />
+            </label>
           </div>
-        </Container>
-      </Modal>
-    </>
-  );
+        </div>
+
+        <div style={{ marginLeft: '2.5%' }}>
+          <label htmlFor="text" style={{ marginBottom: '8px', display: 'white' }}>
+            Descrição
+            <input
+              maxLength={100}
+              type="text"
+              name="txt"
+              value={description}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setDescription(e.target.value)}
+              readOnly={readOnly}
+              onFocus={() => setReadOnly(false)}
+              required
+              style={{ display: 'block', width: '97%', backgroundColor: 'white', height: '30px' }}
+            />
+          </label>
+        </div>
+
+        <div style={{ display: 'flex', marginLeft: '1%' }}>
+          <AutoCompleteSelect className="selectDestinationUsers" style={{ width: '96.5%' }}>
+            Tribunais
+            <Select
+              isSearchable
+              value={{ id: id_Court, label: des_Court }}
+              onChange={handleCourtSelected}
+              onInputChange={(term) => setCourtTerm(term)}
+              isClearable
+              placeholder=""
+              isLoading={isLoadingComboData}
+              loadingMessage={loadingMessage}
+              noOptionsMessage={noOptionsMessage}
+              options={listCourt}
+              styles={customStyles}
+              menuPortalTarget={document.body}
+              menuPosition={'fixed'}
+            />
+          </AutoCompleteSelect>
+        </div>
+
+        {flgQrCode && (
+          <div style={{ marginLeft: '2.5%', marginTop: '10px' }}>
+            <label style={{ display: 'flex', alignItems: 'center' }}>
+              <input
+                type="checkbox"
+                checked={twoFactorAuth}
+                onChange={(e) => setTwoFactorAuth(e.target.checked)}
+              />
+              <span style={{ marginLeft: '8px' }}>Autenticação de Dois Fatores</span>
+              <a href="https://gojur.tawk.help/article/vincula" target="_blank" rel="noopener noreferrer" style={{ marginLeft: '8px' }}>
+                Guia para o código QRCode
+              </a>
+            </label>
+          </div>
+        )}
+
+        {flgQrCode && twoFactorAuth && (
+          <div style={{ marginLeft: '2.5%', marginTop: '10px' }}>
+            <label htmlFor="qrcode" style={{ marginBottom: '8px', display: 'block' }}>
+              Código QRCode
+              <input
+                maxLength={100}
+                type="text"
+                name="qrcode"
+                value={qrCode}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setQrCode(e.target.value)}
+                required
+                style={{ display: 'block', width: '97%', backgroundColor: 'white', height: '30px' }}
+              />
+            </label>
+          </div>
+        )}
+
+        <br />
+
+        <div style={{ flex: '0 0 auto', padding: '5px', width: '100%', textAlign: 'center', marginTop: "2%" }}>
+          <div style={{ display: 'inline-block', marginRight: '10px' }}>
+            <button
+              type='button'
+              className="buttonClick"
+              onClick={handleSaveCredentials}
+              style={{ width: '100px' }}
+            >
+              <FaIdCard />
+              Salvar
+            </button>
+          </div>
+
+          <div style={{ display: 'inline-block', marginRight: '10px' }}>
+            <button
+              className="buttonClick"
+              title="Clique para incluir uma ação judícial"
+              type="submit"
+              onClick={handleCloseEditModal}
+            >
+              <FaRegTimesCircle />
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </Container>
+    </Modal>
+  </>
+);
 }
