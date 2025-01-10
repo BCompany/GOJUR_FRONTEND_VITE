@@ -424,8 +424,6 @@ const FinancialMovement: React.FC = () => {
       setPixKey(response.data.des_ChavePix)
       setBillingInvoiceId(response.data.num_Fatura)
 
-      console.log('DATA: ', response.data)
-
       if(response.data.pct_Desconto != null)
       {
         setDiscountPercentage(response.data.pct_Desconto)
@@ -600,9 +598,6 @@ const FinancialMovement: React.FC = () => {
 
 
   const handlePaymentFormSelected = (item) => {
-    
-    console.log('Item: ', item)
-    
     if (item){
       setPaymentFormId(item.id)
       setPaymentFormDescription(item.label)
@@ -1425,6 +1420,7 @@ const FinancialMovement: React.FC = () => {
         secondPayment,
         paymentSlipId,
         paymentSlipPartnerId: 'AS',
+        vlr_MovimentoDesconto: discountValue,
         token
       })
 
@@ -1448,7 +1444,7 @@ const FinancialMovement: React.FC = () => {
         addToast({type: "info", title: "Falha ao gerar boleto.", description: err.response.data.Message})
       }
     }
-  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, cod_Parcelamento, movementParcelas, movementParcelasDatas, paymentFormId, paymentFormType, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp, bankPaymentSlipDate, paymentSlipPartnerId, paymentSlipId])
+  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, cod_Parcelamento, movementParcelas, movementParcelasDatas, paymentFormId, paymentFormType, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp, bankPaymentSlipDate, paymentSlipPartnerId, paymentSlipId, discountValue])
 
 
   const OpenBankPaymentSlipNewWindow = (item) => {
