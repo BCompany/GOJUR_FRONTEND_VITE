@@ -1906,7 +1906,7 @@ const FinancialMovement: React.FC = () => {
           </div>
           <div className="flexDiv">
             <>
-              {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B" && companyPlan != 'GOJURFR' && !isTotalPaid && hasBankPaymentSlip) &&(
+              {(!isMOBILE && movementId != '0' && movementType == "R" && paymentFormType == "B" && !isTotalPaid && hasBankPaymentSlip) &&(
                 <button className="buttonClick" type='button' onClick={()=> GenerateSecondBankPaymentSlip()}>
                   <FaFileInvoiceDollar  />
                   Gerar 2ª Via Boleto
@@ -2072,7 +2072,7 @@ const FinancialMovement: React.FC = () => {
               </button>
             )}
 
-            {(movementId != '0' && movementType == "R" && companyPlan != 'GOJURFR' && paymentFormType == "B" && billingInvoiceId != "0" && !hasBankPaymentSlip) && (
+            {(movementId != '0' && movementType == "R" && paymentFormType == "B" && billingInvoiceId != "0" && !hasBankPaymentSlip) && (
               <button className="buttonClick" type='button' onClick={()=> GeneratePaymentSlip('justOne', false, true)}>
                 <FaRegCopy />
                 Gerar Boleto
@@ -2316,7 +2316,7 @@ const FinancialMovement: React.FC = () => {
           title="Alterar forma de pagamento"
           caller="changePaymentForm"
           useCheckBoxConfirm
-          message="Você está alterando a forma de pagamento de um movimento com boleto cadastrado. Ao confirmar o boleto será excluído."
+          message="Você está informações de um movimento com boleto cadastrado. Ao confirmar o boleto será excluído."
         />
       )}
 

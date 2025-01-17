@@ -280,7 +280,7 @@ const FinanceOptionsMenu = (props) => {
             </>
           )}
 
-          {(checkConfigInvoice && companyPlan != 'GOJURFR') && (
+          {(checkConfigInvoice) && (
             <>
               <div style={{display:(showConfigMenu?'grid':'none')}}>
                 <hr />
@@ -326,7 +326,7 @@ const FinanceOptionsMenu = (props) => {
             </>
           )}
 
-          {(checkFinancialIntegration && companyPlan != 'GOJURFR') &&(
+          {(checkFinancialIntegration) &&(
             <>
               <div style={{display:(showConfigMenu?'grid':'none')}}>
                 <hr />
@@ -338,7 +338,7 @@ const FinanceOptionsMenu = (props) => {
             </>
           )}      
 
-          {(checkMarkedPaid && companyPlan != 'GOJURFR') && (
+          {(checkMarkedPaid) && (
             <>
               <div style={{display:(showConfigMenu?'grid':'none')}}>
                 <hr />
@@ -518,7 +518,7 @@ const FinanceOptionsMenu = (props) => {
             </>
           )}
 
-          {(checkConfigInvoice && companyPlan != 'GOJURFR') && (
+          {(checkConfigInvoice) && (
             <>
               <div style={{display:(showConfigMenu?'grid':'none')}}>
                 <hr />
@@ -564,7 +564,7 @@ const FinanceOptionsMenu = (props) => {
             </>
           )}
 
-          {(checkFinancialIntegration && companyPlan != 'GOJURFR') &&(
+          {(checkFinancialIntegration) &&(
             <>
               <div style={{display:(showConfigMenu?'grid':'none')}}>
                 <hr />
@@ -576,7 +576,7 @@ const FinanceOptionsMenu = (props) => {
             </>
           )}      
 
-          {(checkMarkedPaid && companyPlan != 'GOJURFR') && (
+          {(checkMarkedPaid) && (
             <>
               <div style={{display:(showConfigMenu?'grid':'none')}}>
                 <hr />

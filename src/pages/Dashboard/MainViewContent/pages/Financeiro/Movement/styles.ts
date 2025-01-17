@@ -595,7 +595,7 @@ export const ModalBankPaymentSlipErrors = styled.div`
   position: absolute;
   z-index: 2;
   justify-content: center;
-  margin-left: 22%;
+  margin-left: 25%;
   margin-top: 10%;
 
   .menuTitle {
