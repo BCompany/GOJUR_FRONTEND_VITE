@@ -424,10 +424,14 @@ const FinancialMovement: React.FC = () => {
       setPixKey(response.data.des_ChavePix)
       setBillingInvoiceId(response.data.num_Fatura)
 
-      if(response.data.pct_Desconto != null)
+      if(response.data.pct_Desconto != null && response.data.pct_Desconto != 0)
       {
         setDiscountPercentage(response.data.pct_Desconto)
         setDiscountValue((response.data.vlr_Movimento / 100) * response.data.pct_Desconto )
+      }
+      else
+      {
+        setDiscountValue(response.data.vlr_Movimento)
       }
 
       if(response.data.qtd_Parcelamento != "1"){
@@ -1435,6 +1439,7 @@ const FinancialMovement: React.FC = () => {
     catch (err:any) {
       setIsSaving(false)
       setShowBankPaymentSlipSecondCopyModal(false)
+      GetInvoiceNumber(Number(movementId))
 
       if (err.response.data.typeError.warning == "awareness"){
         setBankPaymentSlipErrors(err.response.data.Message)
@@ -1445,6 +1450,12 @@ const FinancialMovement: React.FC = () => {
       }
     }
   }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, cod_Parcelamento, movementParcelas, movementParcelasDatas, paymentFormId, paymentFormType, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp, bankPaymentSlipDate, paymentSlipPartnerId, paymentSlipId, discountValue])
+
+
+  const GetInvoiceNumber = async (movementId:number) => {
+    const response = await api.get('/Financeiro/Editar', { params:{ id: Number(movementId), token }})
+    setBillingInvoiceId(response.data.num_Fatura)
+  }
 
 
   const OpenBankPaymentSlipNewWindow = (item) => {
