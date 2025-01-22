@@ -55,6 +55,7 @@ const Subscriber: React.FC = () => {
   const [errorPhone, setErrorPhone] = useState<string>('')
   const [errorChanel, setErrorChanel] = useState<string>('')
   const [errorTerm, setErrorTerm] = useState<string>('')
+  const [plan, setPlan] = useState<string>('GOJURFR')
   const { isMOBILE } = useDevice()
 
   const validateFields = () => {
@@ -228,7 +229,7 @@ const Subscriber: React.FC = () => {
 
               <InputLabel>Plano</InputLabel><br />
               <SelectField
-                onChange={(e: ChangeEvent<HTMLSelectElement>) => setChanel(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLSelectElement>) => setPlan(e.target.value)}
               >
                 <option value="GOJURFR">PLANO FREE</option>
                 <option value="GOJURLT">PLANO LIGHT</option>
