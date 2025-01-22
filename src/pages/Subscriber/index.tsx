@@ -224,7 +224,19 @@ const Subscriber: React.FC = () => {
                   style={{width:'100%', minHeight:'40px', fontSize:'14px', lineHeight:'1.8', padding:'6px 12px', verticalAlign:'middle', color:'#333', border:'solid 1px #ddd', borderRadius:'3px'}}
                   onChange={(e: ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
                 />
-                <br /><br />
+                <br />
+
+              <InputLabel>Plano</InputLabel><br />
+              <SelectField
+                onChange={(e: ChangeEvent<HTMLSelectElement>) => setChanel(e.target.value)}
+              >
+                <option value="GOJURFR">PLANO FREE</option>
+                <option value="GOJURLT">PLANO LIGHT</option>
+                <option value="GOJURSM">PLANO SMART</option>
+                <option value="GOJURES">PLANO ESSENTIAL</option>
+                <option value="GOJURTP">PLANO TOP</option>
+              </SelectField>
+              <br /><br />
 
               <InputLabel>Como nos conheceu ?</InputLabel><br />
               <SelectField
