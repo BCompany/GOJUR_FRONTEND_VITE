@@ -6,13 +6,14 @@
 /* eslint-disable radix */
 /* eslint-disable react/jsx-one-expression-per-line */
 
-import React, { useState, ChangeEvent, useCallback } from 'react';
+import React, { useState, ChangeEvent, useCallback, useEffect } from 'react';
 import api from 'services/api';
 import { useDevice } from "react-use-device";
 import { FaCheck } from 'react-icons/fa';
 import { Overlay } from 'Shared/styles/GlobalStyle';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import InputMask from 'components/InputMask';
+import { useLocation } from 'react-router-dom';
 import {
   Container,
   Header,
@@ -56,7 +57,18 @@ const Subscriber: React.FC = () => {
   const [errorChanel, setErrorChanel] = useState<string>('')
   const [errorTerm, setErrorTerm] = useState<string>('')
   const [plan, setPlan] = useState<string>('GOJURFR')
+  const location = useLocation();
   const { isMOBILE } = useDevice()
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const planParam = params.get('plan');
+    if (planParam) {
+      setPlan(planParam);
+    } else {
+      setPlan('GOJURFR');
+    }
+  }, [location]);
 
   const validateFields = () => {
     let error = false;
