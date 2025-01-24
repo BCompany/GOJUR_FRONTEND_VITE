@@ -6,7 +6,7 @@
 /* eslint-disable radix */
 /* eslint-disable react/jsx-one-expression-per-line */
 
-import React, { useState, ChangeEvent, useCallback } from 'react';
+import React, { useState, ChangeEvent, useCallback, useEffect } from 'react';
 import api from 'services/api';
 import { useDevice } from "react-use-device";
 import { FaCheck } from 'react-icons/fa';
@@ -39,6 +39,7 @@ import {
   ModalAlert,
   OverlaySubscriber
 } from './styles';
+import { set } from 'date-fns';
   
 const Subscriber: React.FC = () => {
   const [name, setName] = useState<string>('')
@@ -55,8 +56,17 @@ const Subscriber: React.FC = () => {
   const [errorPhone, setErrorPhone] = useState<string>('')
   const [errorChanel, setErrorChanel] = useState<string>('')
   const [errorTerm, setErrorTerm] = useState<string>('')
+  const [genericError, setGenericError] = useState<string>('')
   const [plan, setPlan] = useState<string>('GOJURFR')
   const { isMOBILE } = useDevice()
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const planParam = urlParams.get('plan');
+    if (planParam) {
+      setPlan(planParam);
+    }
+  }, []);
 
   const validateFields = () => {
     let error = false;
@@ -107,12 +117,14 @@ const Subscriber: React.FC = () => {
         password,
         phone,
         chanel,
+        plan
       });
   
       window.open(`/newFirstAccess?token=${response.data.token}`, '_parent');
     } catch (err: any) {
       setIsLoading(false);
-      alert(err.response.data.Message);
+      setHasError(true);
+      setGenericError(err.response.data.Message);
     }
   }, [name, email, password, phone, chanel, checkTerm]);
   
@@ -124,6 +136,7 @@ const Subscriber: React.FC = () => {
     setErrorPhone('');
     setErrorChanel('');
     setErrorTerm('');
+    setGenericError('');
   };
 
   return (
@@ -230,6 +243,7 @@ const Subscriber: React.FC = () => {
               <InputLabel>Plano</InputLabel><br />
               <SelectField
                 onChange={(e: ChangeEvent<HTMLSelectElement>) => setPlan(e.target.value)}
+                value={plan}
               >
                 <option value="GOJURFR">PLANO FREE</option>
                 <option value="GOJURLT">PLANO LIGHT</option>
