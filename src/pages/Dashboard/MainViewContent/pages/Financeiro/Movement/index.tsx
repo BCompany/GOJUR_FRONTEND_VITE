@@ -1370,6 +1370,10 @@ const FinancialMovement: React.FC = () => {
       setIsSaving(false)
 
       if (err.response.data.typeError.warning == "awareness"){
+        setBankPaymentSlipErrors(err.response.data.Message)
+        setHasBankPaymentSlipErrors(true)
+      }
+      else if (err.response.data.typeError.warning == "awarenessPlan"){
         setShowModalPlan(true)
       }
       else{
@@ -1424,6 +1428,7 @@ const FinancialMovement: React.FC = () => {
         secondPayment,
         paymentSlipId,
         paymentSlipPartnerId: 'AS',
+        pct_Desconto: discountPercetage,
         vlr_MovimentoDesconto: discountValue,
         token
       })
@@ -1432,6 +1437,7 @@ const FinancialMovement: React.FC = () => {
 
       addToast({type: "success", title: "Operação realizada com sucesso", description: "Boleto criado com sucesso"})
 
+      LoadMovement(movementId)
       await LoadBankPaymentSlip(Number(movementId))
       setIsSaving(false)
       setShowBankPaymentSlipSecondCopyModal(false)
@@ -1439,7 +1445,8 @@ const FinancialMovement: React.FC = () => {
     catch (err:any) {
       setIsSaving(false)
       setShowBankPaymentSlipSecondCopyModal(false)
-      GetInvoiceNumber(Number(movementId))
+      // GetInvoiceNumber(Number(movementId))
+      LoadMovement(movementId)
 
       if (err.response.data.typeError.warning == "awareness"){
         setBankPaymentSlipErrors(err.response.data.Message)
@@ -1449,7 +1456,7 @@ const FinancialMovement: React.FC = () => {
         addToast({type: "info", title: "Falha ao gerar boleto.", description: err.response.data.Message})
       }
     }
-  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, cod_Parcelamento, movementParcelas, movementParcelasDatas, paymentFormId, paymentFormType, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp, bankPaymentSlipDate, paymentSlipPartnerId, paymentSlipId, discountValue])
+  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, cod_Parcelamento, movementParcelas, movementParcelasDatas, paymentFormId, paymentFormType, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp, bankPaymentSlipDate, paymentSlipPartnerId, paymentSlipId, discountPercetage, discountValue])
 
 
   const GetInvoiceNumber = async (movementId:number) => {
@@ -1534,7 +1541,7 @@ const FinancialMovement: React.FC = () => {
         <div style={{height:'50px'}}>
           {movementType == "R" && <span>RECEITA</span> }
           {movementType == "D" && <span>DESPESA</span> }
-          {billingInvoiceId != "" && (
+          {(billingInvoiceId != null && billingInvoiceId != "")&& (
             <span className='invoiceWarning'>
               Fatura nº &nbsp; {billingInvoiceId}
               &nbsp;
@@ -2076,21 +2083,21 @@ const FinancialMovement: React.FC = () => {
               </button>
             )}
 
-            {(movementId != '0' && invoice == 0 && movementType == "R" && billingInvoiceId == "0" && paymentFormType != "" && !hasBankPaymentSlip) && (
+            {(movementId != '0' && invoice == 0 && movementType == "R" && billingInvoiceId == null && paymentFormType != "" && !hasBankPaymentSlip) && (
               <button className="buttonClick" type='button' onClick={()=> HandleCreateInvoice()}>
                 <FaRegCopy />
                 Faturar
               </button>
             )}
 
-            {(movementId != '0' && movementType == "R" && paymentFormType == "B" && billingInvoiceId != "0" && !hasBankPaymentSlip) && (
+            {(movementId != '0' && movementType == "R" && paymentFormType == "B" && billingInvoiceId != null && !hasBankPaymentSlip) && (
               <button className="buttonClick" type='button' onClick={()=> GeneratePaymentSlip('justOne', false, true)}>
                 <FaRegCopy />
                 Gerar Boleto
               </button>
             )}
 
-            {(!isMOBILE && movementId != '0' && movementType == "R" && billingInvoiceId != "") &&(
+            {(!isMOBILE && movementId != '0' && movementType == "R" && billingInvoiceId != null) &&(
               <>
                 <button className="buttonClick" type='button' onClick={()=> PrintBillingInvoice()}>
                   <FiPrinter />
@@ -2324,10 +2331,10 @@ const FinancialMovement: React.FC = () => {
 
       {showChangePaymentForm && (
         <ConfirmBoxModal
-          title="Alterar forma de pagamento"
+          title="Alteração no Movimento"
           caller="changePaymentForm"
           useCheckBoxConfirm
-          message="Você está informações de um movimento com boleto cadastrado. Ao confirmar o boleto será excluído."
+          message="Você está alterando informações de um movimento com boleto cadastrado. Ao confirmar o boleto será excluído."
         />
       )}
 

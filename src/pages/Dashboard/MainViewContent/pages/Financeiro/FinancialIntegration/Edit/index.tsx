@@ -171,13 +171,13 @@ const FinancialIntegrationEdit: React.FC = () => {
         token
       })
       
-      addToast({type: "success", title: "Carteira de cobrança salva", description: "A carteira de cobrança foi adicionada no sistema."})
+      addToast({type: "success", title: "Integrador financeiro salvo", description: "O Integrador financeiro foi adicionada no sistema."})
       setisSaving(false)
       Close()
     }
     catch (err:any) {
       setisSaving(false)
-      addToast({type: "error", title: "Falha ao salvar carteira de cobrança.", description: err.response.data.Message})
+      addToast({type: "error", title: "Falha ao salvar Integrador financeiro.", description: err.response.data.Message})
     }
   }, [isSaving, paymentSlipContractId, paymentSlipContractDescription, penaltyPackages, ratesPackage, bankToken])
 
