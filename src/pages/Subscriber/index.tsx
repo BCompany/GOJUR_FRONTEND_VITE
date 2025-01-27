@@ -40,6 +40,7 @@ import {
   ModalAlert,
   OverlaySubscriber
 } from './styles';
+import { set } from 'date-fns';
   
 const Subscriber: React.FC = () => {
   const [name, setName] = useState<string>('')
@@ -56,19 +57,18 @@ const Subscriber: React.FC = () => {
   const [errorPhone, setErrorPhone] = useState<string>('')
   const [errorChanel, setErrorChanel] = useState<string>('')
   const [errorTerm, setErrorTerm] = useState<string>('')
+  const [genericError, setGenericError] = useState<string>('')
   const [plan, setPlan] = useState<string>('GOJURFR')
   const location = useLocation();
   const { isMOBILE } = useDevice()
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const planParam = params.get('plan');
+    const urlParams = new URLSearchParams(window.location.search);
+    const planParam = urlParams.get('plan');
     if (planParam) {
       setPlan(planParam);
-    } else {
-      setPlan('GOJURFR');
     }
-  }, [location]);
+  }, []);
 
   const validateFields = () => {
     let error = false;
@@ -119,12 +119,14 @@ const Subscriber: React.FC = () => {
         password,
         phone,
         chanel,
+        plan
       });
   
       window.open(`/newFirstAccess?token=${response.data.token}`, '_parent');
     } catch (err: any) {
       setIsLoading(false);
-      alert(err.response.data.Message);
+      setHasError(true);
+      setGenericError(err.response.data.Message);
     }
   }, [name, email, password, phone, chanel, checkTerm]);
   
@@ -136,6 +138,7 @@ const Subscriber: React.FC = () => {
     setErrorPhone('');
     setErrorChanel('');
     setErrorTerm('');
+    setGenericError('');
   };
 
   return (
@@ -242,6 +245,7 @@ const Subscriber: React.FC = () => {
               <InputLabel>Plano</InputLabel><br />
               <SelectField
                 onChange={(e: ChangeEvent<HTMLSelectElement>) => setPlan(e.target.value)}
+                value={plan}
               >
                 <option value="GOJURFR">PLANO FREE</option>
                 <option value="GOJURLT">PLANO LIGHT</option>
