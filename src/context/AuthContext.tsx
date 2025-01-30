@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import api from 'services/api';
+import { parse, differenceInDays } from 'date-fns';
 import { envProvider } from '../services/hooks/useEnv';
 
 interface AuthState {
@@ -56,16 +57,14 @@ const AuthProvider: React.FC = ({ children }) => {
       email,
       password,
     });
-
-    if (response.data.companyAccessType == "CS")
-    {
+  
+    if (response.data.companyAccessType === "CS") {
       localStorage.setItem('@GoJur:accessCode', response.data.accessCode);
       localStorage.setItem('@GoJur:token', response.data.token);
       localStorage.setItem('@GoJur:financialInformationCaller', 'login');
-      window.open(`/financialInformation`)
-    }
-    else{
-      const { token, name, companyId, id, userPhoto, tpoUser, accessCode, compayName } = response.data;
+      window.open(`/financialInformation`);
+    } else {
+      const { token, name, companyId, id, userPhoto, tpoUser, accessCode, compayName, periodTest } = response.data;
 
       localStorage.setItem('@GoJur:accessCode', accessCode);
       localStorage.setItem('@GoJur:token', token);
@@ -79,6 +78,19 @@ const AuthProvider: React.FC = ({ children }) => {
       setData({ token, name, companyId, id, userPhoto, tpoUser });
   
       localStorage.setItem('@GoJur:Authenticated', 'S');
+  
+      // Check if companyAccessType is "TG" and periodTest is greater than 15 days
+      if (response.data.companyAccessType === "TG") {
+        let periodTestDays = 0;
+        if (periodTest) {
+          const periodTestDate = parse(periodTest, 'dd/MM/yyyy', new Date());
+          periodTestDays = differenceInDays(new Date(), periodTestDate);
+        }
+  
+        if (periodTestDays > 15) {
+          window.open(`/TestPeriod`);
+        }
+      }     
     }
   }, []);
 
