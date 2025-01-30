@@ -64,33 +64,38 @@ const AuthProvider: React.FC = ({ children }) => {
       localStorage.setItem('@GoJur:financialInformationCaller', 'login');
       window.open(`/financialInformation`);
     } else {
-      const { token, name, companyId, id, userPhoto, tpoUser, accessCode, compayName, periodTest } = response.data;
+      const { token, name, companyId, id, userPhoto, tpoUser, accessCode, compayName, periodTest, dateCreation } = response.data;
 
-      localStorage.setItem('@GoJur:accessCode', accessCode);
-      localStorage.setItem('@GoJur:token', token);
-      localStorage.setItem('@GoJur:name', name);
       localStorage.setItem('@GoJur:companyId', companyId);
+      localStorage.setItem('@GoJur:token', token);
+      localStorage.setItem('@GoJur:accessCode', accessCode);
+      localStorage.setItem('@GoJur:name', name);
       localStorage.setItem('@GoJur:userCompanyId', id);
       localStorage.setItem('@GoJur:Avatar', userPhoto);
       localStorage.setItem('@GoJur:tpoUser', tpoUser);
       localStorage.setItem('@GoJur:companyName', compayName);
-  
-      setData({ token, name, companyId, id, userPhoto, tpoUser });
-  
-      localStorage.setItem('@GoJur:Authenticated', 'S');
-  
-      // Check if companyAccessType is "TG" and periodTest is greater than 15 days
+    
+      // Check if companyAccessType is "TG" and periodTest is greater than 15 days from dateCreation
       if (response.data.companyAccessType === "TG") {
         let periodTestDays = 0;
-        if (periodTest) {
+        if (periodTest && dateCreation) {
           const periodTestDate = parse(periodTest, 'dd/MM/yyyy', new Date());
-          periodTestDays = differenceInDays(new Date(), periodTestDate);
+          const dateCreationDate = parse(dateCreation, 'dd/MM/yyyy', new Date());
+          periodTestDays = differenceInDays(periodTestDate, dateCreationDate);
         }
   
-        if (periodTestDays > 15) {
+        if (periodTestDays > 15) {       
           window.open(`/TestPeriod`);
+
+          return;
         }
-      }     
+
+        localStorage.setItem('@GoJur:Authenticated', 'S');
+    
+        setData({ token, name, companyId, id, userPhoto, tpoUser });
+    
+      }
+      
     }
   }, []);
 
