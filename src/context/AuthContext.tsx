@@ -85,7 +85,7 @@ const AuthProvider: React.FC = ({ children }) => {
         }
   
         if (periodTestDays > 15) {       
-          window.open(`/TestPeriod`);
+          window.location.href = `/TestPeriod`;
 
           return;
         }
