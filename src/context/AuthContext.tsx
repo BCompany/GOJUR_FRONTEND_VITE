@@ -88,13 +88,12 @@ const AuthProvider: React.FC = ({ children }) => {
           window.location.href = `/TestPeriod`;
 
           return;
-        }
-
-        localStorage.setItem('@GoJur:Authenticated', 'S');
-    
-        setData({ token, name, companyId, id, userPhoto, tpoUser });
-    
+        }        
       }
+
+      localStorage.setItem('@GoJur:Authenticated', 'S');
+    
+      setData({ token, name, companyId, id, userPhoto, tpoUser });
       
     }
   }, []);
