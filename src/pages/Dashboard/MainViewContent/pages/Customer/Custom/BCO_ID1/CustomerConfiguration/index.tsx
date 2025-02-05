@@ -15,11 +15,11 @@ import { Overlay } from 'Shared/styles/GlobalStyle';
 import { AiOutlineArrowLeft } from 'react-icons/ai';
 import { useConfirmBox } from 'context/confirmBox';
 import { BiSearchAlt, BiTime, BiTrash } from 'react-icons/bi'
-import { FaFileAlt, FaKey, FaUserCheck, FaUserCog, FaUsers, FaUserSlash, FaRegTimesCircle, FaArrowAltCircleRight, FaPlus, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaFileAlt, FaKey, FaUserCheck, FaUserCog, FaUsers, FaUserSlash, FaRegTimesCircle, FaArrowAltCircleRight, FaPlus, FaChevronLeft, FaChevronRight, FaBusinessTime } from 'react-icons/fa';
 import { FcAbout } from 'react-icons/fc';
 import { RiDashboardFill } from "react-icons/ri";
 import { FiEdit, FiSearch, FiSave, FiArrowLeft } from 'react-icons/fi';
-import { IoReload } from "react-icons/io5";
+import { IoCompassOutline, IoReload } from "react-icons/io5";
 import { MdHelp } from 'react-icons/md';
 import { RiNewspaperFill, RiUserAddFill, RiAccountPinBoxLine } from 'react-icons/ri';
 import { SiMinutemailer } from "react-icons/si";
@@ -124,6 +124,11 @@ const CustomerConfiguration: React.FC = () => {
   const [nom_Empresa, setNom_Empresa] = useState<string>("")
   const [fromUserListByEmailCompanyId, setFromUserListByEmailCompanyId] = useState<string>("")
   const [pageNumber, setPageNumber] = useState(1);
+
+  const [tpo_StatusAcesso, setTpo_StatusAcesso] = useState<string>("")
+  const [dta_Ativo, setDta_Ativo] = useState<string>("")
+  const [dta_Teste, setDta_Teste] = useState<string>("")
+  const [showTeste, setShowTeste] = useState<boolean>(false)
 
   // CustomerCompany Select Box
   const [customerCompanyValue, setCustomerCompanyValue] = useState('');
@@ -1091,6 +1096,9 @@ const CustomerConfiguration: React.FC = () => {
       setCustomerStatus(response.data.des_Status)
       setCompanyId(response.data.cod_Empresa)
       setCustomerCompanyValue(response.data.nom_Company)
+      setTpo_StatusAcesso(response.data.tpo_StatusAcesso)
+      setDta_Ativo(response.data.dta_Ativo)
+      setDta_Teste(response.data.dta_Teste)
       setCustomerCompanyId(customerId)
       localStorage.setItem('@GoJur:customerId', customerId);
       setIsLoading(false)
@@ -1098,6 +1106,10 @@ const CustomerConfiguration: React.FC = () => {
 
       if (fromUserListByEmail == true) {
         setCustomerCaller("userList")
+      }
+
+      if(response.data.tpo_StatusAcesso == "TG"){
+        setShowTeste(true)
       }
 
       setChangeCompanyByUser(false)
@@ -2243,6 +2255,10 @@ const CustomerConfiguration: React.FC = () => {
     }
   }
 
+  const handleClickTeste = () => {
+    setCustomerCaller("testInformation")
+  }
+
 
   const addResource = useCallback(() => {
     if (resourcesId == "") {
@@ -2390,6 +2406,10 @@ const CustomerConfiguration: React.FC = () => {
     }
   },[]);
 
+  const handleExtendTestPeriod = () => {
+    // Function to extend the test period
+    // Add your logic here
+  };
 
   return (
     <Container>
@@ -2767,6 +2787,31 @@ const CustomerConfiguration: React.FC = () => {
 
                 </button>
               </div>
+
+              {showTeste == true && (
+                <div className='headerButtons'>
+                <button
+                  className="buttonLinkClick buttonInclude"
+                  type="submit"
+                  onClick={handleClickTeste}
+                >
+                  {customerCaller == "businessInformation" && (
+                    <>
+                      <FaBusinessTime style={{ color: "orange" }} />
+                      <span style={{ color: "orange" }}>Periodo de Teste</span>
+                    </>
+                  )}
+
+                  {customerCaller != "businessInformation" && (
+                    <>
+                      <FaBusinessTime />
+                      <span>Periodo de Teste</span>
+                    </>
+                  )}
+
+                </button>
+              </div>
+              )}
 
             </>
           )}
@@ -3543,6 +3588,44 @@ const CustomerConfiguration: React.FC = () => {
 
             {customerCaller == "publicationClassification" && (
               <PublicationClassification />
+            )}
+
+            {customerCaller == "testInformation" && (
+              <>
+                <div className='headerLabel' id='headerLabel'>
+                  <div>
+                    Período de Teste
+                  </div>
+                </div>
+
+                <br />
+
+                <div id='teste' style={{ width: '100%' }}>
+
+                  <div style={{ marginBottom: '10px', marginTop: '5%', display: 'flex', flexDirection: 'column' }}>
+
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                      <label style={{ width: '150px', fontSize: '16px', fontWeight: 'bold' }}>Data Criação:</label>
+                      <span style={{ fontSize: '16px' }}>{dta_Ativo}</span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <label style={{ width: '150px', fontSize: '16px', fontWeight: 'bold' }}>Teste Válido Até:</label>
+                      <span style={{ fontSize: '16px' }}>{dta_Teste}</span>
+                    </div>
+
+                  </div>
+
+                  <div style={{ alignItems: 'center', display: 'flex', marginTop: '15%', marginLeft: '17%' }}>
+                    <button
+                      style={{ padding: '10px 20px', backgroundColor: 'var(--blue-twitter)', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
+                    >
+                      Prorrogar Teste
+                    </button>
+                  </div>
+                  
+                </div>
+              </>
             )}
 
           </section>

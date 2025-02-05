@@ -37,6 +37,9 @@ export interface IUserData{
     des_Plan: string;
     nom_Company: string;
     cod_Empresa: number;
+    tpo_StatusAcesso: string;
+    dta_Ativo: string;
+    dta_Teste: string;
   }
   
   export interface ICustomerPlanData{
