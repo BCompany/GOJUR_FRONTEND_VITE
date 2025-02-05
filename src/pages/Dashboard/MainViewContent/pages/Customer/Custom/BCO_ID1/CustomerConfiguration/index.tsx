@@ -2411,6 +2411,31 @@ const CustomerConfiguration: React.FC = () => {
     // Add your logic here
   };
 
+  const ExtendTest = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await api.post('/CustomBCO_ID1/ConfiguracaoCliente/ProrrogarTeste', {
+        companyId,
+        token,
+      });
+
+      addToast({
+        type: "success",
+        title: "Teste Prorrogado",
+        description: "O período de teste foi prorrogado com sucesso.",
+      });
+
+      CustomerInformation();
+    } catch (err: any) {
+      setIsLoading(false);
+      addToast({
+        type: "error",
+        title: "Falha ao prorrogar o teste.",
+        description: err.response.data.Message,
+      });
+    }
+  }, [companyId, token]);
+
   return (
     <Container>
 
@@ -3619,6 +3644,7 @@ const CustomerConfiguration: React.FC = () => {
                   <div style={{ alignItems: 'center', display: 'flex', marginTop: '15%', marginLeft: '17%' }}>
                     <button
                       style={{ padding: '10px 20px', backgroundColor: 'var(--blue-twitter)', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
+                      onClick={() => ExtendTest()}
                     >
                       Prorrogar Teste
                     </button>
