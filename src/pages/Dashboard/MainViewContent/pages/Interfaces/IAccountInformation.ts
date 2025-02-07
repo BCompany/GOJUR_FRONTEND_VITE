@@ -42,4 +42,5 @@ export interface IPlanData {
     cod_ResourceReference: string;
     cod_PlanReference: string;
     resourceValue: string;
+    cod_PlanoComercial: number;
   }

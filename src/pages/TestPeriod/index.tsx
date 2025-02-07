@@ -45,7 +45,12 @@ const TestPeriod: React.FC = () => {
 
       setPlanInformationList(response.data);
 
-      console.log(response.data);
+      for (let i = 0; i < response.data.length; i++) {
+        if (response.data[i].cod_PlanoComercial > 0) {
+          setSelectPlanId(response.data[i].cod_PlanoComercial.toString())
+
+        }
+      }
       
     }
     catch (err) {
