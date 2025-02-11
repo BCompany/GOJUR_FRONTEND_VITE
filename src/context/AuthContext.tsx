@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import api from 'services/api';
-import { parse, differenceInDays } from 'date-fns';
+import { parse, isAfter } from 'date-fns';
 import { envProvider } from '../services/hooks/useEnv';
 
 interface AuthState {
@@ -74,27 +74,23 @@ const AuthProvider: React.FC = ({ children }) => {
       localStorage.setItem('@GoJur:Avatar', userPhoto);
       localStorage.setItem('@GoJur:tpoUser', tpoUser);
       localStorage.setItem('@GoJur:companyName', compayName);
-    
-      // Check if companyAccessType is "TG" and periodTest is greater than 15 days from dateCreation
-      if (response.data.companyAccessType === "TG") {
-        let periodTestDays = 0;
-        if (periodTest && dateCreation) {
-          const periodTestDate = parse(periodTest, 'dd/MM/yyyy', new Date());
-          const dateCreationDate = parse(dateCreation, 'dd/MM/yyyy', new Date());
-          periodTestDays = differenceInDays(periodTestDate, dateCreationDate);
-        }
-  
-        if (periodTestDays > 15) {       
-          window.location.href = `/TestPeriod`;
-
-          return;
-        }        
-      }
 
       localStorage.setItem('@GoJur:Authenticated', 'S');
     
       setData({ token, name, companyId, id, userPhoto, tpoUser });
-      
+    
+      // Check if companyAccessType is "TG" and periodTest is greater than 15 days from dateCreation
+      // Check if companyAccessType is "TG" and periodTest is past the current date
+    // if (response.data.companyAccessType === "TG" && periodTest) {
+    //   const periodTestDate = parse(periodTest, 'dd/MM/yyyy', new Date());
+    //   const currentDate = new Date();
+
+    //   if (isAfter(currentDate, periodTestDate)) {
+    //     window.location.href = `/changeplan`;
+    //     return;
+    //   }
+    // }
+   
     }
   }, []);
 

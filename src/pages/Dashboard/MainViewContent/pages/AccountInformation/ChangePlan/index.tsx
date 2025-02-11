@@ -166,6 +166,8 @@ const ChangePlan: React.FC = () => {
   const [whatsAppAnualQtd, setWhatsAppAnualQtd] = useState<string>("0")
   const [whatsAppAnualValue, setWhatsAppAnualValue] = useState("")
   const [whatsAppAnualDesc, setWhatsAppAnualDesc] = useState("")
+
+  const tpoAccess = localStorage.getItem('@GoJur:tpoAccess')
   // #endregion
 
 
@@ -553,7 +555,8 @@ const ChangePlan: React.FC = () => {
           tpo_Recurso: item.tpo_Recurso,
           cod_ResourceReference: item.cod_ResourceReference,
           cod_PlanReference: '',
-          resourceValue: item.resourceValue
+          resourceValue: item.resourceValue,
+          cod_PlanoComercial: 0
         })
       })
 
@@ -757,7 +760,7 @@ const ChangePlan: React.FC = () => {
   
 
   const savePlan = useCallback(async(planId) => {
-    if (companyPlan == "GOJURFR"){
+    if (companyPlan == "GOJURFR" || tpoAccess == "TG"){
       setSelectPlanId(planId)
       handleOpenCustomerModal()
       return
@@ -1050,12 +1053,16 @@ const ChangePlan: React.FC = () => {
 
                     </ul>
 
-                    {companyPlan == "GOJURLT" && (
+                    {companyPlan == "GOJURLT" && tpoAccess != "TG" && (
                       <div className="btn"><button type='button' onClick={() => {handleOpenInformationModal("GOJURLT", planLightValue, planLightId)}}>Plano Ativo</button></div>
                     )}
 
                     {companyPlan != "GOJURLT" && (
                       <div className="btn"><button type='button' onClick={() => {handleSelectPlan("GOJURLT", planLightValue, planLightId)}}>Contratar</button></div>
+                    )}
+
+                    {companyPlan == "GOJURLT" && tpoAccess == "TG" && (
+                      <div className="btn"><button type='button' onClick={() => {handleSelectPlan("GOJURLT", planLightValue, planLightId)}}>Confirmar Plano</button></div>
                     )}
                   </div>
 
@@ -1116,7 +1123,7 @@ const ChangePlan: React.FC = () => {
                   
                     </ul>
 
-                    {companyPlan == "GOJURSM" && (
+                    {companyPlan == "GOJURSM" && tpoAccess != "TG" && (
                       <div className="btn"><button type='button' onClick={() => {handleOpenInformationModal("GOJURSM", planSmartValue, planSmartId)}}>Plano Ativo</button></div>
                     )}
 
@@ -1124,6 +1131,10 @@ const ChangePlan: React.FC = () => {
                       <div className="btn"><button type='button' onClick={() => {handleSelectPlan("GOJURSM", planSmartValue, planSmartId)}}>Contratar</button></div>
                     )}
 
+                    {companyPlan == "GOJURSM" && tpoAccess == "TG" && (
+                      <div className="btn"><button type='button' onClick={() => {handleSelectPlan("GOJURSM", planSmartValue, planSmartId)}}>Confirmar Plano</button></div>
+                    )}
+                    
                   </div>
 
                   <div className="table essential">
@@ -1183,13 +1194,18 @@ const ChangePlan: React.FC = () => {
                   
                     </ul>
 
-                    {companyPlan == "GOJURES" && (
+                    {companyPlan == "GOJURES" && tpoAccess != "TG" && (
                       <div className="btn"><button type='button' onClick={() => {handleOpenInformationModal("GOJURES", planEssentialValue, planEssentialId)}}>Plano Ativo</button></div>
                     )}
 
                     {companyPlan != "GOJURES" && (
                       <div className="btn"><button type='button' onClick={() => {handleSelectPlan("GOJURES", planEssentialValue, planEssentialId)}}>Contratar</button></div>
                     )}
+
+                    {companyPlan == "GOJURES" && tpoAccess == "TG" && (
+                      <div className="btn"><button type='button' onClick={() => {handleSelectPlan("GOJURES", planSmartValue, planSmartId)}}>Confirmar Plano</button></div>
+                    )}
+
                   </div>
 
                   <div className="table top">
@@ -1245,13 +1261,18 @@ const ChangePlan: React.FC = () => {
                       
                     </ul>
 
-                    {companyPlan == "GOJURTP" && (
+                    {companyPlan == "GOJURTP" && tpoAccess != "TG" && (
                       <div className="btn"><button type='button' onClick={() => {handleOpenInformationModal("GOJURTP", planTopValue, planTopId)}}>Plano Ativo</button></div>
                     )}
 
                     {companyPlan != "GOJURTP" && (
                       <div className="btn"><button type='button' onClick={() => {handleSelectPlan("GOJURTP", planTopValue, planTopId)}}>Contratar</button></div>
                     )}
+
+                    {companyPlan == "GOJURTP" && tpoAccess == "TG" && (
+                      <div className="btn"><button type='button' onClick={() => {handleSelectPlan("GOJURTP", planSmartValue, planSmartId)}}>Confirmar Plano</button></div>
+                    )}
+
                   </div>
 
                   <div className="table user">
@@ -1309,12 +1330,16 @@ const ChangePlan: React.FC = () => {
                       
                     </ul>
 
-                    {companyPlan == "GOJURUS" && (
+                    {companyPlan == "GOJURUS" && tpoAccess != "TG" && (
                       <div className="btn"><button type='button' onClick={() => {handleOpenInformationModal("GOJURUS", planUserValue, planUserId)}}>Plano Ativo</button></div>
                     )}
 
                     {companyPlan != "GOJURUS" && (
                       <div className="btn"><button type='button' onClick={() => {handleSelectPlan("GOJURUS", planUserValue, planUserId)}}>Contratar</button></div>
+                    )}
+
+                    {companyPlan == "GOJURUS" && tpoAccess == "TG" && (
+                      <div className="btn"><button type='button' onClick={() => {handleSelectPlan("GOJURUS", planSmartValue, planSmartId)}}>Confirmar Plano</button></div>
                     )}
 
                   </div>
@@ -1384,13 +1409,18 @@ const ChangePlan: React.FC = () => {
 
                     </ul>
 
-                    {companyPlan == "GOJURLTAN" && (
+                    {companyPlan == "GOJURLTAN" && tpoAccess != "TG" && (
                       <div className="btn"><button type='button' onClick={() => {handleOpenInformationModal("GOJURLTAN", planLightAnualValue, planLightAnualId)}}>Plano Ativo</button></div>
                     )}
 
                     {companyPlan != "GOJURLTAN" && (
                       <div className="btn"><button type='button' onClick={() => {handleSelectPlan("GOJURLTAN", planLightAnualValue, planLightAnualId)}}>Contratar</button></div>
                     )}
+
+                    {companyPlan == "GOJURLTAN" && tpoAccess == "TG" && (
+                      <div className="btn"><button type='button' onClick={() => {handleSelectPlan("GOJURLTAN", planSmartValue, planSmartId)}}>Confirmar Plano</button></div>
+                    )}
+
                   </div>
 
                   <div className="table smart">
@@ -1456,13 +1486,18 @@ const ChangePlan: React.FC = () => {
               
                     </ul>
 
-                    {companyPlan == "GOJURSMAN" && (
+                    {companyPlan == "GOJURSMAN" && tpoAccess != "TG" && (
                       <div className="btn"><button type='button' onClick={() => {handleOpenInformationModal("GOJURSMAN", planSmartAnualValue, planSmartAnualId)}}>Plano Ativo</button></div>
                     )}
 
                     {companyPlan != "GOJURSMAN" && (
                       <div className="btn"><button type='button' onClick={() => {handleSelectPlan("GOJURSMAN", planSmartAnualValue, planSmartAnualId)}}>Contratar</button></div>
                     )}
+
+                    {companyPlan == "GOJURSMAN" && tpoAccess == "TG" && (
+                      <div className="btn"><button type='button' onClick={() => {handleSelectPlan("GOJURSMAN", planSmartValue, planSmartId)}}>Confirmar Plano</button></div>
+                    )}
+
                   </div>
 
                   <div className="table essential">
@@ -1527,13 +1562,18 @@ const ChangePlan: React.FC = () => {
                       
                     </ul>
 
-                    {companyPlan == "GOJURESAN" && (
+                    {companyPlan == "GOJURESAN" && tpoAccess != "TG" && (
                       <div className="btn"><button type='button' onClick={() => {handleOpenInformationModal("GOJURESAN", planEssentialAnualValue, planEssentialAnualId)}}>Plano Ativo</button></div>
                     )}
 
                     {companyPlan != "GOJURESAN" && (                
                       <div className="btn"><button type='button' onClick={() => {handleSelectPlan("GOJURESAN", planEssentialAnualValue, planEssentialAnualId)}}>Contratar</button></div>            
                     )}
+
+                    {companyPlan == "GOJURESAN" && tpoAccess == "TG" && (
+                      <div className="btn"><button type='button' onClick={() => {handleSelectPlan("GOJURESAN", planSmartValue, planSmartId)}}>Confirmar Plano</button></div>
+                    )}
+                    
                   </div>
 
                   <div className="table top">
@@ -1595,13 +1635,18 @@ const ChangePlan: React.FC = () => {
 
                     </ul>
 
-                    {companyPlan == "GOJURTPAN" && (
+                    {companyPlan == "GOJURTPAN" && tpoAccess != "TG" && (
                       <div className="btn"><button type='button' onClick={() => {handleOpenInformationModal("GOJURTPAN", planTopAnualValue, planTopAnualId)}}>Plano Ativo</button></div>
                     )}
 
                     {companyPlan != "GOJURTPAN" && (
                       <div className="btn"><button type='button' onClick={() => {handleSelectPlan("GOJURTPAN", planTopAnualValue, planTopAnualId)}}>Contratar</button></div>
                     )}
+
+                    {companyPlan == "GOJURTPAN" && tpoAccess == "TG" && (
+                      <div className="btn"><button type='button' onClick={() => {handleSelectPlan("GOJURTPAN", planSmartValue, planSmartId)}}>Confirmar Plano</button></div>
+                    )}
+
                   </div>
 
                   <div className="table user">
@@ -1665,13 +1710,18 @@ const ChangePlan: React.FC = () => {
 
                     </ul>
 
-                    {companyPlan == "GOJURUSAN" && (
+                    {companyPlan == "GOJURUSAN" && tpoAccess != "TG" && (
                       <div className="btn"><button type='button' onClick={() => {handleOpenInformationModal("GOJURUSAN", planUserAnualValue, planUserAnualId)}}>Plano Ativo</button></div>
                     )}
 
                     {companyPlan != "GOJURUSAN" && (
                       <div className="btn"><button type='button' onClick={() => {handleSelectPlan("GOJURUSAN", planUserAnualValue, planUserAnualId)}}>Contratar</button></div>
                     )}
+
+                    {companyPlan == "GOJURUSAN" && tpoAccess == "TG" && (
+                      <div className="btn"><button type='button' onClick={() => {handleSelectPlan("GOJURUSAN", planSmartValue, planSmartId)}}>Confirmar Plano</button></div>
+                    )}
+
                   </div>
                 </>
               )}
