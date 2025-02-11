@@ -13,6 +13,8 @@ import api from 'services/api';
 import { useHistory } from 'react-router-dom';
 import { AiOutlineArrowLeft } from 'react-icons/ai';
 import { FaFileContract, FaRegTimesCircle } from 'react-icons/fa';
+import { FaWhatsapp } from 'react-icons/fa';
+import { MdEmail } from 'react-icons/md';
 import { loadingMessage, noOptionsMessage } from 'Shared/utils/commonConfig';
 import { selectStyles} from 'Shared/utils/commonFunctions';
 import { GridSubContainer } from 'Shared/styles/GlobalStyle';
@@ -168,6 +170,7 @@ const ChangePlan: React.FC = () => {
   const [whatsAppAnualDesc, setWhatsAppAnualDesc] = useState("")
 
   const tpoAccess = localStorage.getItem('@GoJur:tpoAccess')
+  const endTest = localStorage.getItem('@GoJur:endTest')
   // #endregion
 
 
@@ -991,7 +994,80 @@ const ChangePlan: React.FC = () => {
           <button type='button' className='toggle-btn' onClick={handleClickMonth}>Mensal</button>
           <button type='button' className='toggle-btn' onClick={handleClickYear}>Anual</button>
         </div>
-             
+
+      {tpoAccess == "TG" && endTest == "true" && (
+        <>
+          <div style={{ 
+            padding: '20px', 
+            margin: '20px 0', 
+            backgroundColor: '#f8f9fa',
+            borderRadius: '5px',
+            textAlign: 'center',
+            fontSize: '14px',
+            lineHeight: '1.6'
+          }}>
+            <p style={{ marginBottom: '15px', color: 'var(--blue-twitter)' }}>
+              O seu período de testes no GOJUR expirou - confirme abaixo o plano desejado para efetivar a sua assinatura.
+              <br />
+              Caso tenha dúvidas em relação aos planos entre em contato conosco pelos canais abaixo:
+            </p>
+            
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              gap: '20px',
+              alignItems: 'center' 
+            }}>
+              <a
+                href="https://tawk.to/chat/6257202e7b967b11798a9c59/1g0i5bdqg"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  color: 'var(--blue-twitter)', 
+                  textDecoration: 'none',
+                  gap: '5px'
+                }}
+              >
+                <BsFillChatDotsFill size={20} />
+                Chat
+              </a>
+
+              <a
+                href="https://web.whatsapp.com/send?phone=5511941792466"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  color: '#25D366', 
+                  textDecoration: 'none',
+                  gap: '5px'
+                }}
+              >
+                <FaWhatsapp size={20} />
+                WhatsApp: (11) 94179-2466
+              </a>
+
+              <a
+                href="mailto:suporte@bcompany.com.br"
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  color: '#EA4335', 
+                  textDecoration: 'none',
+                  gap: '5px'
+                }}
+              >
+                <MdEmail size={20} />
+                Email: suporte@bcompany.com.br
+              </a>
+            </div>
+          </div>
+        </>
+      )}
+                    
         <Content>
           <body>
             <div className="wrapper">

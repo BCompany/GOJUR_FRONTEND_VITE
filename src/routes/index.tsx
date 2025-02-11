@@ -29,7 +29,6 @@ import DashBoard from 'pages/Dashboard';
 import EletronicIntimation from 'pages/Dashboard';
 import PublicationConfiguration from 'pages/Dashboard';
 import Route from './Route';
-import TestPeriod from 'pages/TestPeriod';
 
 // This route file configuration config the name of route and should be the same from file
 // srcpages/dashboard/routes/index.ts
@@ -234,7 +233,6 @@ const Routes: React.FC = () => {
       <Route path="/matter/monitoring" exact component={Matter} isPrivate />
       <Route path="/apidocumentation" exact component={APIDocumentation} isPrivate />
 
-      <Route path="/TestPeriod" exact component={TestPeriod} isPrivate />
     </Switch>
   );
 };

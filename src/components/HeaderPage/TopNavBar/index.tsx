@@ -135,6 +135,7 @@ const TopNavBar: React.FC<NavigationProps> = ({
         const currentDate = new Date();
 
         if (isAfter(currentDate, periodTestDate)) {
+          localStorage.setItem('@GoJur:endTest', "true");
           window.location.href = `/changeplan`;
         }
       }
