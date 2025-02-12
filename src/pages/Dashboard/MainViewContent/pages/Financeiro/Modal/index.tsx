@@ -274,7 +274,7 @@ const FinancialModal = (props) => {
       const response = await api.get<ISelectData[]>('/Pessoas/ListarPorEmpresa', {
         params:{
           filterClause: peopleTerm,
-          peopleTypeSelected: 'CLT',
+          peopleTypeSelected: 'CLTO',
           token
         }
             })
