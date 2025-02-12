@@ -366,7 +366,7 @@ const ChangePlan: React.FC = () => {
           setPlanLightValue(item.planValue)
           setPlanLightId(item.cod_PlanoComercial)
 
-          if (companyPlan == "GOJURLT" && (addMonitor == 'true' || addResourceAditional == "true")){
+          if (companyPlan == "GOJURLT" && (addMonitor == 'true' || addResourceAditional == "true" )){
             setSelectedPlan("GOJURLT")
             setSelectedPlanValue(item.planValue)
             setSelectedPlanId(item.cod_PlanoComercial)
@@ -489,7 +489,7 @@ const ChangePlan: React.FC = () => {
             setSelectedPlanId(item.cod_PlanoComercial)
             ModifyPlan(item.cod_PlanoComercial)
             LoadResources()
-          }
+          }     
         }
       })
    
@@ -764,6 +764,7 @@ const ChangePlan: React.FC = () => {
 
   const savePlan = useCallback(async(planId) => {
     if (companyPlan == "GOJURFR" || tpoAccess == "TG"){
+      ModifyPlan(planId)
       setSelectPlanId(planId)
       handleOpenCustomerModal()
       return
@@ -771,6 +772,7 @@ const ChangePlan: React.FC = () => {
 
     try {
       setisSaving(true)
+
       const reponse = await api.post('/Conta/SalvarPlano', {
         companyId,
         fromFree: false,
