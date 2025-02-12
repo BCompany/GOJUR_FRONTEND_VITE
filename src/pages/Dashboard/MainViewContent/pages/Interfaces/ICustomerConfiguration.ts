@@ -40,6 +40,7 @@ export interface IUserData{
     tpo_StatusAcesso: string;
     dta_Ativo: string;
     dta_Teste: string;
+    cod_PlanReference: string;
   }
   
   export interface ICustomerPlanData{
@@ -50,6 +51,7 @@ export interface IUserData{
     tpo_Recurso: string;
     cod_ResourceReference: string;
     cod_PlanReference: string;
+    flg_PermiteAdicional: string;
   }
   
   export interface IPlanData {

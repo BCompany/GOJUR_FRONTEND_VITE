@@ -750,6 +750,8 @@ const ChangePlan: React.FC = () => {
         }
       });
 
+      console.log(response.data)
+
       setPlanInformationList(response.data)
       setDefaultPlanInformationList(response.data)
       setIsLoading(false)

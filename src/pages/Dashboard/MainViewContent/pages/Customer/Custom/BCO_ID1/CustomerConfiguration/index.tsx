@@ -113,6 +113,7 @@ const CustomerConfiguration: React.FC = () => {
   const [customerCaller, setCustomerCaller] = useState<string>("");
   const [companyDescription, setCompanyDescription] = useState<string>("")
   const [planDescription, setPlanDescription] = useState<string>("")
+  const [planReference, setPlanReference] = useState<string>("")
   const [customerStatus, setCustomerStatus] = useState<string>("")
   const [showRobotModal, setShowRobotModal] = useState<boolean>(false);
   const [showCancelPlanModal, setCancelPlanModal] = useState<boolean>(false);
@@ -1099,6 +1100,7 @@ const CustomerConfiguration: React.FC = () => {
       setTpo_StatusAcesso(response.data.tpo_StatusAcesso)
       setDta_Ativo(response.data.dta_Ativo)
       setDta_Teste(response.data.dta_Teste)
+      setPlanReference(response.data.cod_PlanReference)
       setCustomerCompanyId(customerId)
       localStorage.setItem('@GoJur:customerId', customerId);
       setIsLoading(false)
@@ -1108,7 +1110,7 @@ const CustomerConfiguration: React.FC = () => {
         setCustomerCaller("userList")
       }
 
-      if(response.data.tpo_StatusAcesso == "TG"){
+      if(response.data.tpo_StatusAcesso == "TG" && planReference != "GOJURFR") {
         setShowTeste(true)
       }
 
@@ -1357,6 +1359,8 @@ const CustomerConfiguration: React.FC = () => {
           token,
         }
       });
+
+      console.log(response.data)
 
       setAccountInformationList(response.data)
       setPlanId("")
