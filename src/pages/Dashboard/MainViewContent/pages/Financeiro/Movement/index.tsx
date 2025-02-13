@@ -48,6 +48,7 @@ import { ModalDeleteOptions, OverlayFinancial } from '../styles';
 import { Container, Content, Process, GridSubContainer, ModalPaymentInformation } from './styles';
 
 const FinancialMovement: React.FC = () => {
+  // #region STATES
   const {isConfirmMessage, isCancelMessage, handleCancelMessage, handleConfirmMessage, caller} = useConfirmBox();
   const { handleStateType }  = useStateContext();
   const token = localStorage.getItem('@GoJur:token');
@@ -63,6 +64,7 @@ const FinancialMovement: React.FC = () => {
   const [paymentFormList, setPaymentFormList] = useState<ISelectData[]>([]);
   const [paymentFormId, setPaymentFormId] = useState('');
   const [paymentFormDescription, setPaymentFormDescription] = useState<string>("")
+  const [paymentFormType, setPaymentFormType] = useState<string>("")
   const [paymentFormTerm, setPaymentFormTerm] = useState('');
   const [categoryList, setCategoryList] = useState<ISelectData[]>([]);
   const [categoryId, setCategoryId] = useState('');
@@ -126,11 +128,15 @@ const FinancialMovement: React.FC = () => {
   const [showLog, setShowLog] = useState(false);
   const ref = useRef<any>(null);
   const DateFormatter = ({ value }) => format(new Date(value), 'dd/MM/yyyy HH:mm');
-  const DateTypeProvider = props => (
-    <DataTypeProvider formatterComponent={DateFormatter} {...props} />
-  )
+  const DateTypeProvider = props => (<DataTypeProvider formatterComponent={DateFormatter} {...props} />)
+
+  const [billingInvoiceId, setBillingInvoiceId] = useState<string>('')
+  const [hasBankPaymentSlip, setHasBankPaymentSlip] = useState<boolean>(false);
+  
+  // #endregion
 
   
+  // #region USE EFFECT
   useEffect(() => {
     if (isCancelMessage)
     {
@@ -213,11 +219,13 @@ const FinancialMovement: React.FC = () => {
 
   useEffect (() => {
     if (actionSave.length > 0){
-      Save('');
+      Save('', false);
     }
   }, [actionSave])
+  // #endregion
 
 
+  // #region MOVEMENT
   const Initialize = async () => {
     await LoadStates()
     LoadPaymentForm()
@@ -277,6 +285,7 @@ const FinancialMovement: React.FC = () => {
       setPaymentQtd(response.data.qtd_Parcelamento)
       setInvoice(response.data.cod_FaturaParcela)
       setSequence(response.data.num_SequenciaFatura)
+      setBillingInvoiceId(response.data.num_Fatura)
 
       if(response.data.qtd_Parcelamento != "1"){
         setEnablePayments(false)
@@ -494,7 +503,7 @@ const FinancialMovement: React.FC = () => {
   }
 
 
-  const Save = useCallback(async(caller: string) => {
+  const Save = useCallback(async(caller: string, faturar: boolean) => {
     try {
 
       if (!Validate()) return;
@@ -529,6 +538,7 @@ const FinancialMovement: React.FC = () => {
         flg_Reembolso: flgReembolso,
         cod_Processo: matterId,
         cod_Conta: accountId,
+        faturar: faturar,
         token
       })
 
@@ -1071,7 +1081,7 @@ const FinancialMovement: React.FC = () => {
 
   const SaveByPaymentInformation = () => {
     setShowPaymentInformation(false)
-    Save('payment')
+    Save('payment', false)
   }
 
 
@@ -1102,6 +1112,7 @@ const FinancialMovement: React.FC = () => {
   const handleCloseLog = () => {
     setShowLog(false)
   }
+  // #endregion
 
 
   return (
@@ -1131,17 +1142,13 @@ const FinancialMovement: React.FC = () => {
         <div>
           {movementType == "R" && <span>RECEITA</span> }
           {movementType == "D" && <span>DESPESA</span> }
-          {invoice != 0 && (
+          
+          {movementType == "R" && billingInvoiceId }
+          
+          {(billingInvoiceId != null && billingInvoiceId != "")&& (
             <span className='invoiceWarning'>
-              Movimento gerado automaticamente pela Fatura nº
+              Fatura nº &nbsp; {billingInvoiceId}
               &nbsp;
-              {sequence}
-              &nbsp;
-              <MdHelp
-                style={{color:'#2C8ED6'}}
-                className='help'
-                title="Esta movimentação foi gerada automaticamente através de uma fatura. Qualquer alteração deve ser executada em sua origem."
-              />
             </span>
           )}
         </div>
@@ -1567,7 +1574,7 @@ const FinancialMovement: React.FC = () => {
             <button
               className="buttonClick"
               type='button'
-              onClick={()=> Save('')}
+              onClick={()=> Save('', false)}
             >
               <BiSave />
               Salvar
@@ -1581,6 +1588,14 @@ const FinancialMovement: React.FC = () => {
               >
                 <FaRegCopy />
                 Copiar
+              </button>
+            )}
+
+            {/* {(movementId != '0' && invoice == 0 && movementType == "R" && billingInvoiceId == null && paymentFormType != "" && !hasBankPaymentSlip) && ( */}
+            {(movementId != '0') && (
+              <button className="buttonClick" type='button' onClick={()=> Save('', true)}>
+                <FaRegCopy />
+                Faturar
               </button>
             )}
 
