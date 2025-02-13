@@ -1110,7 +1110,7 @@ const CustomerConfiguration: React.FC = () => {
         setCustomerCaller("userList")
       }
 
-      if(response.data.tpo_StatusAcesso == "TG" && planReference != "GOJURFR") {
+      if(response.data.tpo_StatusAcesso == "TG" || planReference != "GOJURFR") {
         setShowTeste(true)
       }
 
@@ -2337,11 +2337,11 @@ const CustomerConfiguration: React.FC = () => {
     // If Resources not in List, add new Resource in List
     if (objIndex <= 0) {
       if (planQtd == "0") {
-        const resourceOjb = { cod_RecursoSistema: resourcesId, des_RecursoSistema: resourcesValue, tpo_ItemList: "RA", qtd_RecursoIncluso: "ILIMITADO", tpo_Recurso: resourceTpo, cod_ResourceReference: codReferenceResource, cod_PlanReference: codReferencePlan }
+        const resourceOjb = { cod_RecursoSistema: resourcesId, des_RecursoSistema: resourcesValue, tpo_ItemList: "RA", qtd_RecursoIncluso: "ILIMITADO", tpo_Recurso: resourceTpo, cod_ResourceReference: codReferenceResource, cod_PlanReference: codReferencePlan, flg_PermiteAdicional: null }
         setAccountInformationList(previousValues => [...previousValues, resourceOjb])
       }
       else {
-        const resourceOjb = { cod_RecursoSistema: resourcesId, des_RecursoSistema: resourcesValue, tpo_ItemList: "RA", qtd_RecursoIncluso: planQtd, tpo_Recurso: resourceTpo, cod_ResourceReference: codReferenceResource, cod_PlanReference: codReferencePlan }
+        const resourceOjb = { cod_RecursoSistema: resourcesId, des_RecursoSistema: resourcesValue, tpo_ItemList: "RA", qtd_RecursoIncluso: planQtd, tpo_Recurso: resourceTpo, cod_ResourceReference: codReferenceResource, cod_PlanReference: codReferencePlan, flg_PermiteAdicional: null }
         setAccountInformationList(previousValues => [...previousValues, resourceOjb])
       }
 
@@ -2423,7 +2423,8 @@ const CustomerConfiguration: React.FC = () => {
         description: "O período de teste foi prorrogado com sucesso.",
       });
 
-      // CustomerInformation();
+      CustomerInformation();
+      
     } catch (err: any) {
       setIsLoading(false);
       addToast({
