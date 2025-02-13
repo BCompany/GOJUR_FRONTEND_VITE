@@ -20,6 +20,7 @@ import ConfirmBoxModal from 'components/ConfirmBoxModal';
 import { useConfirmBox } from 'context/confirmBox';
 import Uploader from '../Edit/Uploader';
 import { ModalHeaderFooter, Editor, ModalInformation, OverlayDocument, OverlayHeader, OverlayFooter } from './styles';
+import { FcAbout } from 'react-icons/fc';
 
 
 export interface IHeaderFooterData {
@@ -651,7 +652,7 @@ const HeaderFooterModal = (props) => {
 
             <div style={{width:'100%', height:'50px'}}><></></div>
 
-            <div id='HeaderFooterSelect' style={{height:'70px'}}>
+            <div id='HeaderFooterSelect' style={{height:'70px', display:'flex',justifyContent:'space-between'}}>
               <div style={{float:'left', width:'30%', marginLeft:'5%'}}>
                 <label htmlFor="type">
                   Cabeçalho
@@ -664,6 +665,12 @@ const HeaderFooterModal = (props) => {
                   </select>
                 </label>
               </div>
+
+              <FcAbout
+                className='icons' 
+                title='Tamanho máximo recomendado para imagens: 655x90 px'
+                style={{minWidth: '20px', minHeight: '20px', marginTop:'25px'}}
+              />
 
               <div style={{float:'right', width:'30%', marginRight:'5%'}}>
                 <label htmlFor="type">
