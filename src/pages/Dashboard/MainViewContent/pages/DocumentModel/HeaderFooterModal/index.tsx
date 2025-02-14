@@ -653,9 +653,10 @@ const HeaderFooterModal = (props) => {
             <div style={{width:'100%', height:'50px'}}><></></div>
 
             <div id='HeaderFooterSelect' style={{height:'70px', display:'flex',justifyContent:'space-between'}}>
-              <div style={{float:'left', width:'30%', marginLeft:'5%'}}>
+
+              <div style={{float:'left', width:'40%', marginLeft:'5%'}}>
                 <label htmlFor="type">
-                  Cabeçalho
+                  Cabeçalho <span style={{fontSize: '0.575rem', color:'grey', marginLeft:'5%'}}>Largura máxima recomendada para imagens: 670px.</span>
                   <br />
                   <select name="userType" value={headerTypeIdModal} onChange={(e: ChangeEvent<HTMLSelectElement>) => handleChangeHeaderType(e)}>
                     <option disabled value="0">Selecione...</option>
@@ -666,13 +667,7 @@ const HeaderFooterModal = (props) => {
                 </label>
               </div>
 
-              <FcAbout
-                className='icons' 
-                title='Tamanho máximo recomendado para imagens: 655x90 px'
-                style={{minWidth: '20px', minHeight: '20px', marginTop:'25px'}}
-              />
-
-              <div style={{float:'right', width:'30%', marginRight:'5%'}}>
+              <div style={{float:'right', width:'40%', marginRight:'5%'}}>
                 <label htmlFor="type">
                   Rodapé
                   <br />
