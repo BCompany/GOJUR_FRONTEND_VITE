@@ -17,6 +17,7 @@ import { useToast } from 'context/toast';
 import { useDefaultSettings } from 'context/defaultSettings';
 import HelpAssistent from './HelpAssistent';
 import EnvelopeNotificationList from './EnvelopeNotificationList';
+import { parse, isAfter } from 'date-fns';
 import { Container, IconNotification } from './styles';
 
 interface NavigationProps {
@@ -73,42 +74,40 @@ const TopNavBar: React.FC<NavigationProps> = ({
 
   
   const handleDefaults = async () => {
-
     try {
       const response = await api.post<Props[]>('/Defaults/Listar', { token });
 
-      const permissionAccessCode = response.data.find(item => item.id === 'accessCode')
-      if (permissionAccessCode){
-        localStorage.setItem('@GoJur:accessCode', permissionAccessCode.value)
+      const permissionAccessCode = response.data.find(item => item.id === 'accessCode');
+      if (permissionAccessCode) {
+        localStorage.setItem('@GoJur:accessCode', permissionAccessCode.value);
       }
 
-      const permissionModuleCode = response.data.find(item => item.id === 'moduleCode')
-      if (permissionModuleCode){
-        localStorage.setItem('@GoJur:moduleCode', permissionModuleCode.value)
+      const permissionModuleCode = response.data.find(item => item.id === 'moduleCode');
+      if (permissionModuleCode) {
+        localStorage.setItem('@GoJur:moduleCode', permissionModuleCode.value);
       }
 
       // verify if user need to see a video trainning at the first time access
-      const videoTrainningConfig = response.data.find(item => item.id === 'defaultUserLogFirstAccess')
+      const videoTrainningConfig = response.data.find(item => item.id === 'defaultUserLogFirstAccess');
       if (videoTrainningConfig) {
-
-        if (pathname.includes('/calendar') || pathname.includes('/matter/list') || pathname.includes('/publication')){
-          const seeTrainningVideo = !(videoTrainningConfig.value??"").includes(pathname.replace('/', ''))
-          handleShowVideoTrainning(seeTrainningVideo)
+        if (pathname.includes('/calendar') || pathname.includes('/matter/list') || pathname.includes('/publication')) {
+          const seeTrainningVideo = !(videoTrainningConfig.value ?? "").includes(pathname.replace('/', ''));
+          handleShowVideoTrainning(seeTrainningVideo);
         }
       }
 
       // get permission user module
-      const userPermissions = response.data.filter(item => item.id === 'defaultModulePermissions')
-      const permissionUser = userPermissions[0].value.split('|')
+      const userPermissions = response.data.filter(item => item.id === 'defaultModulePermissions');
+      const permissionUser = userPermissions[0].value.split('|');
       handleUserPermission(permissionUser);
 
-      const companyPlan = response.data.find(item => item.id === 'companyPlan')
-      if (companyPlan){
-        localStorage.setItem('@GoJur:companyPlan', companyPlan.value)
+      const companyPlan = response.data.find(item => item.id === 'companyPlan');
+      if (companyPlan) {
+        localStorage.setItem('@GoJur:companyPlan', companyPlan.value);
       }
 
-      const defaultFilterNames = response.data.find(item => item.id === 'defaultFilterNames')
-      if (defaultFilterNames){
+      const defaultFilterNames = response.data.find(item => item.id === 'defaultFilterNames');
+      if (defaultFilterNames) {
         localStorage.setItem('@GoJur:PublicationFilterName', defaultFilterNames.value);
       }
 
@@ -116,24 +115,39 @@ const TopNavBar: React.FC<NavigationProps> = ({
       const settingsData = response.data;
       if (settingsData[3].value === 'enabled') {
         setChat(true);
-      }
-      else{
+      } else {
         setChat(false);
       }
 
-      const codApiKey = response.data.find(item => item.id === 'apiKey')
-      if (codApiKey){
-        localStorage.setItem('@GoJur:apiKey', codApiKey.value)
+      const codApiKey = response.data.find(item => item.id === 'apiKey');
+      if (codApiKey) {
+        localStorage.setItem('@GoJur:apiKey', codApiKey.value);
       }
 
-      setIsLoading(false)
+      // Check if tpoAccess is "TG" and periodTest is past the current date
+      const tpoAccess = response.data.find(item => item.id === 'tpoAccess')?.value;
+      localStorage.setItem('@GoJur:tpoAccess', tpoAccess);
+
+      const periodTest = response.data.find(item => item.id === 'periodTest')?.value;
+
+      if (tpoAccess === "TG" && periodTest && pathname !== '/changeplan') {
+        const periodTestDate = parse(periodTest, 'dd/MM/yyyy', new Date());
+        const currentDate = new Date();
+
+        if (isAfter(currentDate, periodTestDate)) {
+          localStorage.setItem('@GoJur:endTest', "true");
+          window.location.href = `/changeplan`;
+        }
+      }
+
+      setIsLoading(false);
     } catch (error) {
       setChat(chat);
-      setIsLoading(false)
+      setIsLoading(false);
       // Token Invalid Error Validation
-      ValidateAuthenticationError(error)
+      ValidateAuthenticationError(error);
     }
-  }
+  };
 
   useEffect(() => {
     if (isLoading) return;
