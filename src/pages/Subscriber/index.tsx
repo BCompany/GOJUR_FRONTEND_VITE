@@ -66,7 +66,7 @@ const Subscriber: React.FC = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const planParam = urlParams.get('plan');
     if (planParam) {
-      setPlan(planParam);
+      setPlan(planParam.toUpperCase());
     }
   }, []);
 
@@ -252,6 +252,7 @@ const Subscriber: React.FC = () => {
                 <option value="GOJURSM">PLANO SMART</option>
                 <option value="GOJURES">PLANO ESSENTIAL</option>
                 <option value="GOJURTP">PLANO TOP</option>
+                <option value="GOJURUS">PLANO USUÁRIO</option>
               </SelectField>
               <br /><br />
 
