@@ -42,7 +42,6 @@ export default function DocumentModal() {
   const { addToast } = useToast();
   const [isGeneratingReport, setIsGeneratingReport] = useState<boolean>(false); 
   const [isVisualizeReport, setIsVisualizeReport] = useState<boolean>(false); 
-  const [disableVisualizeButton, setDisableVisualizeButton] = useState<boolean>(false); 
   const [documentModelName, setDocumentModelName] = useState(''); 
   const [documentModelId, setDocumentModelId] = useState(''); 
   const [idReportGenerate, setIdReportGenerate] = useState<number>(0)
@@ -555,13 +554,6 @@ export default function DocumentModal() {
       setSelectedFormat(item);
       setDocumentExtensionId(item.id);
       handleBlockButton(false);
-
-      if(item.id == 1){
-        setDisableVisualizeButton(false);
-      }
-      else if(item.id == 2){
-        setDisableVisualizeButton(true);
-      }
     }else{
       setSelectedFormat(null);
       setDocumentExtensionId('');
@@ -585,7 +577,6 @@ export default function DocumentModal() {
       isOpen={isOpenDocumentModal}
       onRequestClose={() => {
         setDocumentModelId('');
-        setDisableVisualizeButton(false);
       }}
       overlayClassName="react-modal-overlay"
       className="react-modal-content"
@@ -716,7 +707,7 @@ export default function DocumentModal() {
         <footer>
 
           <button
-            disabled={disableVisualizeButton}
+            disabled={isBlockButton}
             className="buttonClick" 
             type="button"
             onClick={() => setTimeout(() => handleVisualizeDocument(), 500)}

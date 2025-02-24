@@ -155,7 +155,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   const [confirmSave, setConfirmSave] = useState(false)
   const [confirmDeleteCalendarEvent, setConfirmDeleteCalendarEvent] = useState<boolean>(false)
   const { handleCancelMessage, handleConfirmMessage, isCancelMessage, isConfirmMessage } = useConfirmBox();
-
+  const [completeLink, setCompleteLink] = useState<boolean>(false);
 
   useEffect(() => {
     if (isCancelMessage) {
@@ -343,6 +343,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
           const matterType = response.data.typeAdvisorId == null? 'legal': 'advisory'
           const url = `/matter/edit/${matterType}/${data.matter.matterId}`
           setRedirectLink(url);
+          setCompleteLink(true)
         })
 
         setProcessTitle(
@@ -622,8 +623,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         const matterType = response.data.typeAdvisorId == null? 'legal': 'advisory'
         const url = `/matter/edit/${matterType}/${matterSelected.matterId}`
         setRedirectLink(url)
+        setCompleteLink(true)
       })
-
     } 
     else {
       setProcessTitle('Associar Processo');
@@ -2246,9 +2247,13 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                     </button>
                   )}
                   {processTitle !== 'Associar Processo' && (
-                    <a href={redirectLink}>
-                      <p>{processTitle}</p>
-                    </a>
+                    <>
+                      {completeLink && (
+                        <a href={redirectLink}>
+                          <p>{processTitle}</p>
+                        </a>
+                      )}
+                    </>
                   )}
 
                   {processTitle !== 'Associar Processo' && (
@@ -3015,10 +3020,15 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                       <p>{processTitle}</p>
                     </button>
                   )}
+
                   {processTitle !== 'Associar Processo' && (
-                    <a href={redirectLink}>
-                      <p>{processTitle}</p>
-                    </a>
+                    <>
+                      {completeLink && (
+                        <a href={redirectLink}>
+                          <p>{processTitle}</p>
+                        </a>
+                      )}
+                    </>
                   )}
 
                   {processTitle !== 'Associar Processo' && (

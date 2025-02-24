@@ -1,3 +1,4 @@
+import InputMask from 'components/InputMask';
 import styled from 'styled-components';
 
 export const Container = styled.div`
@@ -10,7 +11,6 @@ export const Container = styled.div`
   font-size: 12px;
   background-color: #FFFFFF;
 `;
-
 
 export const Center = styled.div`
   .flex-box {
@@ -29,8 +29,7 @@ export const Center = styled.div`
   }
 `;
 
-
-export const OverlaySubscriber = styled.div `
+export const OverlaySubscriber = styled.div`
   background-color: rgba(0, 0, 0, 0.4);
   position: absolute;
   top: 0;
@@ -62,7 +61,6 @@ export const OverlaySubscriber = styled.div `
   }
 `;
 
-
 export const ModalAlert = styled.div`
   border: 1px solid var(--blue-twitter);
   font-size: 0.7rem;
@@ -88,7 +86,7 @@ export const ModalAlert = styled.div`
     color: var(--secondary);
 
     &:focus {
-    border-bottom: 1px solid var(--orange);
+      border-bottom: 1px solid var(--orange);
     }
   }
 
@@ -124,4 +122,175 @@ export const ModalAlert = styled.div`
       color: var(--orange);
     }
   }
+`;
+
+export const Header = styled.div`
+  background-color: #285776;
+  width: 100%;
+  height: 50px;
+`;
+
+export const Phones = styled.div`
+  float: right;
+  margin-top: 15px;
+  margin-right: 50px;
+`;
+
+export const Phone = styled.div`
+  float: left;
+  width: 130px;
+`;
+
+export const PhoneImg = styled.div`
+  float: left;
+  margin-top: 1px;
+`;
+
+export const PhoneNumber = styled.label`
+  float: left;
+  color: #FFF;
+  font-size: 12px;
+  font-family: sans-serif;
+`;
+
+export const Email = styled.div`
+  float: left;
+  width: 200px;
+`;
+
+export const EmailImg = styled.div`
+  float: left;
+`;
+
+export const EmailDesc = styled.label`
+  float: left;
+  color: #FFF;
+  font-size: 12px;
+  font-family: sans-serif;
+`;
+
+export const LogoTitle1 = styled.div`
+  width: 100%;
+  background-color: #f5f5f5;
+  height: 100px;
+`;
+
+export const LogoTitle2 = styled.div`
+  width: 100%;
+  background-color: #f5f5f5;
+  height: 100px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+`;
+
+export const BCompanyLogo = styled.div`
+  width: 55%;
+`;
+
+export const BCompanyTitle = styled.label`
+  color: #000;
+  font-size: 24px;
+  font-family: sans-serif;
+`;
+
+export const CenteredContainer = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+`;
+
+export const InnerContainer = styled.div`
+  width: 55%;
+`;
+
+export const DescriptionText = styled.p`
+  color: #929292;
+  font-size: 14px;
+  font-family: sans-serif;
+  line-height: 1.8;
+  text-align: justify;
+  max-height: 100px;
+`;
+
+export const InputLabel = styled.label`
+  color: #929292;
+  font-size: 14px;
+  font-family: sans-serif;
+`;
+
+export const InputField = styled.input`
+  width: 100%;
+  min-height: 40px;
+  font-size: 14px;
+  line-height: 1.8;
+  padding: 6px 12px;
+  vertical-align: middle;
+  color: #333;
+  border: solid 1px #ddd;
+  border-radius: 3px;
+`;
+
+export const SelectField = styled.select`
+  width: 100%;
+  min-height: 40px;
+  font-size: 14px;
+  line-height: 1.8;
+  padding: 6px 12px;
+  vertical-align: middle;
+  color: #333;
+  border: solid 1px #ddd;
+  border-radius: 3px;
+`;
+
+export const CheckboxLabel = styled.label`
+  color: #929292;
+  font-size: 14px;
+  font-family: sans-serif;
+`;
+
+export const Link = styled.a`
+  color: #285776;
+  font-size: 14px;
+  font-family: sans-serif;
+  text-decoration: none;
+`;
+
+export const ConfirmButton = styled.input`
+  font-size: 14px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-family: sans-serif;
+  color: #FFFFFF;
+  background: #C2D138;
+  border: 0px;
+  border-radius: 50px;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  width: 223px;
+`;
+
+export const Footer = styled.div`
+  width: 100%;
+  background-color: #285776;
+  height: 50px;
+`;
+
+export const ModalHeader = styled.div`
+  height: 30px;
+  font-weight: 600;
+`;
+
+export const ModalContent = styled.div`
+  margin-left: 20px;
+`;
+
+export const ModalButton = styled.button`
+  float: left;
+  margin-left: 240px;
+  width: 100px;
 `;

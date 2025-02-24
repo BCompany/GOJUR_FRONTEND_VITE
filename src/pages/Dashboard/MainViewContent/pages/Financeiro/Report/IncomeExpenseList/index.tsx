@@ -450,7 +450,7 @@ const LoadPeople = async (stateValue?: string) => {
     const response = await api.get<ISelectData[]>('/Pessoas/ListarPorEmpresa', {
       params:{
         filterClause: filter,
-        peopleTypeSelected: 'CLT',
+        peopleTypeSelected: 'CLTO',
         token
       }    
     });

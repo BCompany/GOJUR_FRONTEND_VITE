@@ -87,6 +87,7 @@ const SalesFunnel = () => {
   const sDate = localStorage.getItem('@GoJur:SalesFunnelStartDate');
   const eDate = localStorage.getItem('@GoJur:SalesFunnelEndDate');
   const [selectDate, setSelectDate] = useState('A');
+  const [showMenuCard, setShowMenuCard] = useState(false);
   // #endregion
 
 
@@ -497,11 +498,17 @@ const SalesFunnel = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
 
 
-  const handleClickMenuCard = (event, businessId: number, businessStatus:string) => {
-    setBusinessCardId(businessId)
-    setAnchorEl(event.currentTarget)
-  }
-
+  const handleClickMenuCard = (event, businessId: number, businessStatus: string) => {
+    
+    handleSettingBusinessCardId(businessId);
+  
+    setShowMenuCard(true);
+    setAnchorEl(event.currentTarget);
+  };
+  
+  const handleSettingBusinessCardId = async (businessId: number) => {
+    setBusinessCardId(businessId);
+  };
 
   const handleCloseMenuCard = () => {
     setAnchorEl(null)
@@ -1069,61 +1076,64 @@ const SalesFunnel = () => {
                     />
                   )}
 
-                  <Menu
-                    anchorEl={anchorEl}
-                    keepMounted
-                    className="headerCard"
-                    open={Boolean(anchorEl)}
-                    onClose={handleCloseMenuCard}
-                  >
-                    <MenuItem
-                      style={{fontSize:'0.75rem', color: 'var(--blue-twitter'}}
-                      onClick={() => handleEditCard()}
+                {showMenuCard && (   
+                    <Menu
+                      anchorEl={anchorEl}
+                      keepMounted
+                      className="headerCard"
+                      open={Boolean(anchorEl)}
+                      onClose={handleCloseMenuCard}
                     >
-                      <FcEditImage />
-                      &nbsp;&nbsp;Editar
-                    </MenuItem>
+                      <MenuItem
+                        style={{fontSize:'0.75rem', color: 'var(--blue-twitter'}}
+                        onClick={() => handleEditCard()}
+                      >
+                        <FcEditImage />
+                        &nbsp;&nbsp;Editar
+                      </MenuItem>
 
-                    <MenuItem
-                      style={{fontSize:'0.75rem', color: 'var(--blue-twitter'}}
-                      onClick={() => handleDeleteBusinessCard()}
-                    >
-                      {!isDeleting && (
-                        <>
-                          {' '}
-                          <FcDeleteDatabase />
-                          {'  '}
-                          &nbsp;&nbsp;Deletar
-                          {' '}
-                        </>
-                      )}
-                      {isDeleting && (
-                        <>
+                      <MenuItem
+                        style={{fontSize:'0.75rem', color: 'var(--blue-twitter'}}
+                        onClick={() => handleDeleteBusinessCard()}
+                      >
+                        {!isDeleting && (
+                          <>
                             {' '}
-                          <BiLoader />
+                            <FcDeleteDatabase />
                             {'  '}
-                            &nbsp;&nbsp;Deletando
+                            &nbsp;&nbsp;Deletar
                             {' '}
-                        </>
-                      )}
-                    </MenuItem>
+                          </>
+                        )}
+                        {isDeleting && (
+                          <>
+                              {' '}
+                            <BiLoader />
+                              {'  '}
+                              &nbsp;&nbsp;Deletando
+                              {' '}
+                          </>
+                        )}
+                      </MenuItem>
 
-                    <MenuItem
-                      style={{fontSize:'0.75rem', color: 'var(--blue-twitter'}}
-                      onClick={() => handleCreateAppointment()}
-                    >
-                      <MdEventAvailable />
-                      &nbsp;&nbsp;Criar Compromisso
-                    </MenuItem>
+                      <MenuItem
+                        style={{fontSize:'0.75rem', color: 'var(--blue-twitter'}}
+                        onClick={() => handleCreateAppointment()}
+                      >
+                        <MdEventAvailable />
+                        &nbsp;&nbsp;Criar Compromisso
+                      </MenuItem>
 
-                    <MenuItem
-                      style={{fontSize:'0.75rem', color: 'var(--blue-twitter'}}
-                      onClick={handleCloseMenuCard}
-                    >
-                      <FcCancel />
-                      &nbsp;&nbsp;Fechar
-                    </MenuItem>
-                  </Menu>
+                      <MenuItem
+                        style={{fontSize:'0.75rem', color: 'var(--blue-twitter'}}
+                        onClick={handleCloseMenuCard}
+                      >
+                        <FcCancel />
+                        &nbsp;&nbsp;Fechar
+                      </MenuItem>
+                    </Menu>
+                )}
+               
                   <br />
 
                   <div

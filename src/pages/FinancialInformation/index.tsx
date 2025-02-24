@@ -43,6 +43,7 @@ const FinancialInformation: React.FC = () => {
   const [customerName, setCustomerName] = useState<string>("")
   const [companyFromEmail, setCompanyFromEmail] = useState<string>("")
   const location = useLocation();
+  const [showFinancialMessage, setShowFinancialMessage] = useState<Boolean>(false)
 
   const columns = [
     { name: 'dta_Vencimento',       title: 'Vencimento da Fatura'},
@@ -65,6 +66,17 @@ const FinancialInformation: React.FC = () => {
       const id = location.search.substring(7).split("-")[4].substring(0,6)
       setCompanyFromEmail(String(Number(id)))
       setFromEmail(true)
+    }
+
+    if(location.search.includes('?showFinancialMessage=')){
+      const flagValue = location.search.substring(49).split("=")[1].substring(0,1)
+
+      if(flagValue == "1"){
+        setShowFinancialMessage(true)
+      }
+      else{
+        setShowFinancialMessage(false)
+      }
     }
   },[location])
 
@@ -281,7 +293,7 @@ const FinancialInformation: React.FC = () => {
 
           <br /><br />
 
-          {fiCaller == 'login' && (
+          {(fiCaller == 'login' && showFinancialMessage == true) && (
             <div className="flex-box container-box">
               <div className="content-box">
                 <p>

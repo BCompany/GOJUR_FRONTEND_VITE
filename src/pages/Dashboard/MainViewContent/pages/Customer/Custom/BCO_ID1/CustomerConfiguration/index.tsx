@@ -15,13 +15,14 @@ import { Overlay } from 'Shared/styles/GlobalStyle';
 import { AiOutlineArrowLeft } from 'react-icons/ai';
 import { useConfirmBox } from 'context/confirmBox';
 import { BiSearchAlt, BiTime, BiTrash } from 'react-icons/bi'
-import { FaFileAlt, FaKey, FaUserCheck, FaUserCog, FaUsers, FaUserSlash, FaRegTimesCircle, FaArrowAltCircleRight, FaPlus, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaFileAlt, FaKey, FaUserCheck, FaUserCog, FaUsers, FaUserSlash, FaRegTimesCircle, FaArrowAltCircleRight, FaPlus, FaChevronLeft, FaChevronRight, FaBusinessTime } from 'react-icons/fa';
 import { FcAbout } from 'react-icons/fc';
 import { RiDashboardFill } from "react-icons/ri";
 import { FiEdit, FiSearch, FiSave, FiArrowLeft } from 'react-icons/fi';
-import { IoReload } from "react-icons/io5";
+import { IoCompassOutline, IoReload } from "react-icons/io5";
 import { MdHelp } from 'react-icons/md';
 import { RiNewspaperFill, RiUserAddFill, RiAccountPinBoxLine } from 'react-icons/ri';
+import { SiMinutemailer } from "react-icons/si";
 import { months, financialYears } from 'Shared/utils/commonListValues';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
 import { AutoCompleteSelect } from 'Shared/styles/GlobalStyle';
@@ -38,7 +39,7 @@ import Search from 'components/Search';
 import { useLocation, useHistory } from 'react-router-dom'
 import api from 'services/api';
 import LogModal from 'components/LogModal';
-import { IUserData, ICustomerPendingData, ICustomerListData, ICustomerInformation, ICustomerPlanData, IPlanData, IResourcesData, ICustomerData, ISelectData, ISelectPlanData, ISelectResourcesData } from '../../../../Interfaces/ICustomerConfiguration';
+import { IUserData, ICustomerPendingData, ICustomerListData, ICustomerInformation, ICustomerPlanData, IPlanData, IResourcesData, ICustomerData, ISelectData, ISelectPlanData, ISelectResourcesData, IEmailData } from '../../../../Interfaces/ICustomerConfiguration';
 import CustomerRobotModalEdit from './RobotModal';
 import CustomerCancelPlanModalEdit from './CancelPlanModal';
 import PublicationDateModal from './PublicationDateModal';
@@ -112,6 +113,7 @@ const CustomerConfiguration: React.FC = () => {
   const [customerCaller, setCustomerCaller] = useState<string>("");
   const [companyDescription, setCompanyDescription] = useState<string>("")
   const [planDescription, setPlanDescription] = useState<string>("")
+  const [planReference, setPlanReference] = useState<string>("")
   const [customerStatus, setCustomerStatus] = useState<string>("")
   const [showRobotModal, setShowRobotModal] = useState<boolean>(false);
   const [showCancelPlanModal, setCancelPlanModal] = useState<boolean>(false);
@@ -123,6 +125,11 @@ const CustomerConfiguration: React.FC = () => {
   const [nom_Empresa, setNom_Empresa] = useState<string>("")
   const [fromUserListByEmailCompanyId, setFromUserListByEmailCompanyId] = useState<string>("")
   const [pageNumber, setPageNumber] = useState(1);
+
+  const [tpo_StatusAcesso, setTpo_StatusAcesso] = useState<string>("")
+  const [dta_Ativo, setDta_Ativo] = useState<string>("")
+  const [dta_Teste, setDta_Teste] = useState<string>("")
+  const [showTeste, setShowTeste] = useState<boolean>(false)
 
   // CustomerCompany Select Box
   const [customerCompanyValue, setCustomerCompanyValue] = useState('');
@@ -1090,6 +1097,10 @@ const CustomerConfiguration: React.FC = () => {
       setCustomerStatus(response.data.des_Status)
       setCompanyId(response.data.cod_Empresa)
       setCustomerCompanyValue(response.data.nom_Company)
+      setTpo_StatusAcesso(response.data.tpo_StatusAcesso)
+      setDta_Ativo(response.data.dta_Ativo)
+      setDta_Teste(response.data.dta_Teste)
+      setPlanReference(response.data.cod_PlanReference)
       setCustomerCompanyId(customerId)
       localStorage.setItem('@GoJur:customerId', customerId);
       setIsLoading(false)
@@ -1097,6 +1108,10 @@ const CustomerConfiguration: React.FC = () => {
 
       if (fromUserListByEmail == true) {
         setCustomerCaller("userList")
+      }
+
+      if(response.data.tpo_StatusAcesso == "TG" || planReference != "GOJURFR") {
+        setShowTeste(true)
       }
 
       setChangeCompanyByUser(false)
@@ -1344,6 +1359,8 @@ const CustomerConfiguration: React.FC = () => {
           token,
         }
       });
+
+      console.log(response.data)
 
       setAccountInformationList(response.data)
       setPlanId("")
@@ -2242,6 +2259,10 @@ const CustomerConfiguration: React.FC = () => {
     }
   }
 
+  const handleClickTeste = () => {
+    setCustomerCaller("testInformation")
+  }
+
 
   const addResource = useCallback(() => {
     if (resourcesId == "") {
@@ -2316,11 +2337,11 @@ const CustomerConfiguration: React.FC = () => {
     // If Resources not in List, add new Resource in List
     if (objIndex <= 0) {
       if (planQtd == "0") {
-        const resourceOjb = { cod_RecursoSistema: resourcesId, des_RecursoSistema: resourcesValue, tpo_ItemList: "RA", qtd_RecursoIncluso: "ILIMITADO", tpo_Recurso: resourceTpo, cod_ResourceReference: codReferenceResource, cod_PlanReference: codReferencePlan }
+        const resourceOjb = { cod_RecursoSistema: resourcesId, des_RecursoSistema: resourcesValue, tpo_ItemList: "RA", qtd_RecursoIncluso: "ILIMITADO", tpo_Recurso: resourceTpo, cod_ResourceReference: codReferenceResource, cod_PlanReference: codReferencePlan, flg_PermiteAdicional: null }
         setAccountInformationList(previousValues => [...previousValues, resourceOjb])
       }
       else {
-        const resourceOjb = { cod_RecursoSistema: resourcesId, des_RecursoSistema: resourcesValue, tpo_ItemList: "RA", qtd_RecursoIncluso: planQtd, tpo_Recurso: resourceTpo, cod_ResourceReference: codReferenceResource, cod_PlanReference: codReferencePlan }
+        const resourceOjb = { cod_RecursoSistema: resourcesId, des_RecursoSistema: resourcesValue, tpo_ItemList: "RA", qtd_RecursoIncluso: planQtd, tpo_Recurso: resourceTpo, cod_ResourceReference: codReferenceResource, cod_PlanReference: codReferencePlan, flg_PermiteAdicional: null }
         setAccountInformationList(previousValues => [...previousValues, resourceOjb])
       }
 
@@ -2370,6 +2391,49 @@ const CustomerConfiguration: React.FC = () => {
     setCustomerCaller("publicationClassification")
   }
 
+
+  const handleClickSendConfirmationEmail = useCallback(async () => {
+    setCustomerCaller("sendCustomSubscriptionConfirmationEmail")
+    const customerId = pathname.substr(24)
+
+    try {
+      const response = await api.post('/CustomBCO_ID1/CustomerEmail/EnviarEmail', {
+        referenceId: customerId,
+        token,
+      })
+
+      addToast({type: "success", title: "E-mail enviado com sucesso", description: "O e-mail de confirmação de assinatura foi enviado!"})
+    }
+    catch (err: any) {
+      setIsLoading(false)
+      addToast({type: "error", title: "Falha ao enviar o e-mail.", description: err.response.data.Message})
+    }
+  },[]);
+
+  const ExtendTest = useCallback(async () => {
+    try {
+      const response = await api.post('/CustomBCO_ID1/ConfiguracaoCliente/ProrrogarTeste', {
+        companyId,
+        token,
+      });
+
+      addToast({
+        type: "success",
+        title: "Teste Prorrogado",
+        description: "O período de teste foi prorrogado com sucesso.",
+      });
+
+      CustomerInformation();
+      
+    } catch (err: any) {
+      setIsLoading(false);
+      addToast({
+        type: "error",
+        title: "Falha ao prorrogar o teste.",
+        description: err.response.data.Message,
+      });
+    }
+  }, [companyId, token]);
 
   return (
     <Container>
@@ -2724,6 +2788,54 @@ const CustomerConfiguration: React.FC = () => {
 
                 </button>
               </div>
+
+              <div className='headerButtons'>
+                <button
+                  className="buttonLinkClick buttonInclude"
+                  type="submit"
+                  onClick={handleClickSendConfirmationEmail}
+                >
+                  {customerCaller == "sendCustomSubscriptionConfirmationEmail" && (
+                    <>
+                      <SiMinutemailer style={{ color: "orange" }} />
+                      <span style={{ color: "orange" }}>Enviar e-mail de confirmação de assinatura</span>
+                    </>
+                  )}
+
+                  {customerCaller != "sendCustomSubscriptionConfirmationEmail" && (
+                    <>
+                      <SiMinutemailer />
+                      <span>Enviar e-mail de confirmação de assinatura</span>
+                    </>
+                  )}
+
+                </button>
+              </div>
+
+              {showTeste == true && (
+                <div className='headerButtons'>
+                <button
+                  className="buttonLinkClick buttonInclude"
+                  type="submit"
+                  onClick={handleClickTeste}
+                >
+                  {customerCaller == "businessInformation" && (
+                    <>
+                      <FaBusinessTime style={{ color: "orange" }} />
+                      <span style={{ color: "orange" }}>Periodo de Teste</span>
+                    </>
+                  )}
+
+                  {customerCaller != "businessInformation" && (
+                    <>
+                      <FaBusinessTime />
+                      <span>Periodo de Teste</span>
+                    </>
+                  )}
+
+                </button>
+              </div>
+              )}
 
             </>
           )}
@@ -3500,6 +3612,47 @@ const CustomerConfiguration: React.FC = () => {
 
             {customerCaller == "publicationClassification" && (
               <PublicationClassification />
+            )}
+
+            {customerCaller == "testInformation" && (
+              <>
+                <div className='headerLabel' id='headerLabel'>
+                  <div>
+                    Período de Teste
+                  </div>
+                </div>
+
+                <br />
+
+                <div id='teste' style={{ width: '100%' }}>
+
+                  <div style={{ marginBottom: '10px', marginTop: '5%', display: 'flex', flexDirection: 'column' }}>
+
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                      <label style={{ width: '150px', fontSize: '16px', fontWeight: 'bold' }}>Data Criação:</label>
+                      <span style={{ fontSize: '16px' }}>{dta_Ativo}</span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <label style={{ width: '150px', fontSize: '16px', fontWeight: 'bold' }}>Teste Válido Até:</label>
+                      <span style={{ fontSize: '16px' }}>{dta_Teste}</span>
+                    </div>
+
+                  </div>
+
+                  <div style={{ alignItems: 'center', display: 'flex', marginTop: '15%', marginLeft: '20%' }}>
+                    <button
+                      style={{ padding: '10px 20px', backgroundColor: 'var(--blue-twitter)', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
+                      onClick={ExtendTest}
+                      className="buttonClick"
+                      type='button'
+                    >
+                      Prorrogar Teste
+                    </button>
+                  </div>
+                  
+                </div>
+              </>
             )}
 
           </section>

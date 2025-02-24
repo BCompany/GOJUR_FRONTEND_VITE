@@ -16,7 +16,7 @@ const Route: React.FC<RouteProps> = ({isPrivate = false, component: Component, .
   // This pages can be called directlly by URL without validation user
   const matchRoute = useRouteMatch('/newUser');
   const firstAccessRoute = useRouteMatch('/newFirstAccess');
-  const publicPage = useRouteMatch('/publication/coverages');
+  const publicPage = useRouteMatch('/coverages');
   const subscriberPage = useRouteMatch('/subscriber');
   const financialInformationPage = useRouteMatch('/financialInformation');
 
