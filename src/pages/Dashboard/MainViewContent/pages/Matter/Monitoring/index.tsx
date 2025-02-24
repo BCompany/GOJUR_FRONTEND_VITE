@@ -26,26 +26,23 @@ interface StatusOperationDTO {
 
 const Monitoring: React.FC = () => {
   const history = useHistory();
-  const [primaryInstanceListBase, setPrimaryInstanceListBase] = useState<
-    StatusOperationDTO[]
-  >([]);
-  const [primaryInstanceList, setPrimaryInstanceList] = useState<
-    StatusOperationDTO[]
-  >([]);
-  const [superiorInstanceList, setSuperiorInstanceList] = useState<
-    StatusOperationDTO[]
-  >([]);
+  const [primaryInstanceListBase, setPrimaryInstanceListBase] = useState<StatusOperationDTO[]>([]);
+  const [primaryInstanceList, setPrimaryInstanceList] = useState<StatusOperationDTO[]>([]);
+  const [superiorInstanceList, setSuperiorInstanceList] = useState<StatusOperationDTO[]>([]);
   const token = localStorage.getItem('@GoJur:token');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [desUF, setDesUF] = useState<string>('00');
   const [secretJustice, setSecretJustice] = useState<string>('00');
-  const [multiFilter, setMultiFilter] = useState<filterProps[]>([]); // MULTI FILTER VALUE
+  const [multiFilter, setMultiFilter] = useState<filterProps[]>([]);
+
 
   useEffect(() => {
     LoadStatusOperation();
   }, []);
 
+
   useEffect(() => {}, [multiFilter]);
+
 
   async function LoadStatusOperation() {
     const response = await api.get<StatusOperationDTO[]>(
@@ -54,8 +51,6 @@ const Monitoring: React.FC = () => {
         params: { token },
       },
     );
-
-    console.log(response.data);
 
     // Get all 1º and 2º instance dataSources - remove all court that not correspond from 1º and 2º instance besidesa TJTO tha we do not covery
     setPrimaryInstanceListBase(
@@ -89,10 +84,9 @@ const Monitoring: React.FC = () => {
     setIsLoading(false);
   }
 
+
   const Filter = useCallback(() => {
     const filterList1: StatusOperationDTO[] = [];
-
-    console.log(multiFilter);
 
     multiFilter.map(itemMult => {
       console.log(itemMult.value);
@@ -204,6 +198,7 @@ const Monitoring: React.FC = () => {
     setPrimaryInstanceList(uniqueFilterList1);
   }, [desUF, secretJustice, multiFilter]);
 
+
   if (isLoading) {
     return (
       <Container>
@@ -215,11 +210,13 @@ const Monitoring: React.FC = () => {
     );
   }
 
+
   const optionsMonitoringFilter = [
     //{ value: '00', label: 'todos' },
     { value: 'SJ', label: 'Segredo de Justiça' },
     { value: 'TM', label: 'Tribunais em Manutenção' },
   ];
+
 
   return (
     <>
@@ -254,26 +251,15 @@ const Monitoring: React.FC = () => {
                   onChange={(values: []) => {
                     setMultiFilter(values);
                   }}
-                  labelledBy="selecione"
                   className="select"
+                  labelledBy="Selecione"
+                  selectAllLabel="Selecione"
+                  overrideStrings={{
+                    selectSomeItems: 'Filtragem Rápida',
+                  }}
                 />
               </label>
             </div>
-
-            {/* <label htmlFor="type" style={{float:"left", width:'150px', marginLeft:'50px'}}>
-              Segredo de Justiça
-              <select
-                className='desUFSelect'
-                name="type"
-                value={secretJustice}
-                onChange={(e: ChangeEvent<HTMLSelectElement>) => setSecretJustice(e.target.value)}
-                style={{backgroundColor:"white", width: "99%"}}
-              >
-                <option value="00">AMBOS</option>
-                <option value="S">SIM</option>
-                <option value="N">NÃO</option>
-              </select>
-            </label> */}
 
             <label
               htmlFor="type"
