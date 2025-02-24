@@ -28,6 +28,8 @@ const Monitoring: React.FC = () => {
   const history = useHistory();
   const [primaryInstanceListBase, setPrimaryInstanceListBase] = useState<StatusOperationDTO[]>([]);
   const [primaryInstanceList, setPrimaryInstanceList] = useState<StatusOperationDTO[]>([]);
+  
+  const [superiorInstanceListbase, setSuperiorInstanceListBase] = useState<StatusOperationDTO[]>([]);
   const [superiorInstanceList, setSuperiorInstanceList] = useState<StatusOperationDTO[]>([]);
   const token = localStorage.getItem('@GoJur:token');
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -87,9 +89,9 @@ const Monitoring: React.FC = () => {
 
   const Filter = useCallback(() => {
     const filterList1: StatusOperationDTO[] = [];
+    const filterList2: StatusOperationDTO[] = [];
 
     multiFilter.map(itemMult => {
-      console.log(itemMult.value);
       if (desUF === '00' && itemMult.value === 'SJ') {
         primaryInstanceListBase.map(item => {
           if (item.secretJustice === 'S') {
@@ -106,6 +108,23 @@ const Monitoring: React.FC = () => {
             });
           }
         });
+
+        superiorInstanceListbase.map(item => {
+          if (item.secretJustice === 'S') {
+            return filterList2.push({
+              id: item.id,
+              description: item.description,
+              enabled: item.enabled,
+              state: item.state,
+              secretJustice: item.secretJustice,
+              statusOperation: item.statusOperation,
+              scrapperAlias: item.scrapperAlias,
+              isRelevant: item.isRelevant,
+              instance: item.instance,
+            });
+          }
+        });
+
       } else if (desUF !== '00' && itemMult.value === 'SJ') {
         primaryInstanceListBase.map(item => {
           if (item.state === desUF && item.secretJustice === 'S') {
@@ -138,6 +157,23 @@ const Monitoring: React.FC = () => {
             });
           }
         });
+
+        superiorInstanceListbase.map(item => {
+          if (item.statusOperation === 'I') {
+            return filterList2.push({
+              id: item.id,
+              description: item.description,
+              enabled: item.enabled,
+              state: item.state,
+              secretJustice: item.secretJustice,
+              statusOperation: item.statusOperation,
+              scrapperAlias: item.scrapperAlias,
+              isRelevant: item.isRelevant,
+              instance: item.instance,
+            });
+          }
+        });
+
       } else if (desUF !== '00' && itemMult.value === 'TM') {
         primaryInstanceListBase.map(item => {
           if (item.state === desUF && item.statusOperation === 'I') {
@@ -195,7 +231,14 @@ const Monitoring: React.FC = () => {
       (item, index, self) => index === self.findIndex(t => t.id === item.id)
     );
 
+    const uniqueFilterList2 = filterList2.filter(
+      (item, index, self) => index === self.findIndex(t => t.id === item.id)
+    );
+
     setPrimaryInstanceList(uniqueFilterList1);
+
+    setSuperiorInstanceList(uniqueFilterList1);
+
   }, [desUF, secretJustice, multiFilter]);
 
 
@@ -252,8 +295,8 @@ const Monitoring: React.FC = () => {
                     setMultiFilter(values);
                   }}
                   className="select"
-                  labelledBy="Selecione"
-                  selectAllLabel="Selecione"
+                  placeholder="Selecione"
+                  label="Selecione"
                   overrideStrings={{
                     selectSomeItems: 'Filtragem Rápida',
                   }}
