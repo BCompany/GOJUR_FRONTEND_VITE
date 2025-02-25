@@ -77,6 +77,12 @@ const Monitoring: React.FC = () => {
     );
 
     // Get all superior dataSources (STF, STJ, TST)
+    setSuperiorInstanceListBase(
+      response.data.filter(
+        x => x.scrapperAlias == 'STF' || x.scrapperAlias == 'TST',
+      ),
+    );
+
     setSuperiorInstanceList(
       response.data.filter(
         x => x.scrapperAlias == 'STF' || x.scrapperAlias == 'TST',
@@ -124,8 +130,8 @@ const Monitoring: React.FC = () => {
             });
           }
         });
-
-      } else if (desUF !== '00' && itemMult.value === 'SJ') {
+      } 
+      else if (desUF !== '00' && itemMult.value === 'SJ') {
         primaryInstanceListBase.map(item => {
           if (item.state === desUF && item.secretJustice === 'S') {
             return filterList1.push({
@@ -141,7 +147,24 @@ const Monitoring: React.FC = () => {
             });
           }
         });
-      } else if (desUF === '00' && itemMult.value === 'TM') {
+
+        superiorInstanceListbase.map(item => {
+          if (item.secretJustice === 'S') {
+            return filterList2.push({
+              id: item.id,
+              description: item.description,
+              enabled: item.enabled,
+              state: item.state,
+              secretJustice: item.secretJustice,
+              statusOperation: item.statusOperation,
+              scrapperAlias: item.scrapperAlias,
+              isRelevant: item.isRelevant,
+              instance: item.instance,
+            });
+          }
+        });
+      } 
+      else if (desUF === '00' && itemMult.value === 'TM') {
         primaryInstanceListBase.map(item => {
           if (item.statusOperation === 'I') {
             return filterList1.push({
@@ -173,11 +196,27 @@ const Monitoring: React.FC = () => {
             });
           }
         });
-
-      } else if (desUF !== '00' && itemMult.value === 'TM') {
+      } 
+      else if (desUF !== '00' && itemMult.value === 'TM') {
         primaryInstanceListBase.map(item => {
           if (item.state === desUF && item.statusOperation === 'I') {
             return filterList1.push({
+              id: item.id,
+              description: item.description,
+              enabled: item.enabled,
+              state: item.state,
+              secretJustice: item.secretJustice,
+              statusOperation: item.statusOperation,
+              scrapperAlias: item.scrapperAlias,
+              isRelevant: item.isRelevant,
+              instance: item.instance,
+            });
+          }
+        });
+
+        superiorInstanceListbase.map(item => {
+          if (item.statusOperation === 'I') {
+            return filterList2.push({
               id: item.id,
               description: item.description,
               enabled: item.enabled,
@@ -210,19 +249,48 @@ const Monitoring: React.FC = () => {
             });
           }
         });
-      } else if (desUF === '00') {
+
+        superiorInstanceListbase.map(item => {
+          return filterList2.push({
+            id: item.id,
+            description: item.description,
+            enabled: item.enabled,
+            state: item.state,
+            secretJustice: item.secretJustice,
+            statusOperation: item.statusOperation,
+            scrapperAlias: item.scrapperAlias,
+            isRelevant: item.isRelevant,
+            instance: item.instance,
+          });
+        });
+      } 
+      else if (desUF === '00') {
         primaryInstanceListBase.map(item => {
-            return filterList1.push({
-              id: item.id,
-              description: item.description,
-              enabled: item.enabled,
-              state: item.state,
-              secretJustice: item.secretJustice,
-              statusOperation: item.statusOperation,
-              scrapperAlias: item.scrapperAlias,
-              isRelevant: item.isRelevant,
-              instance: item.instance,
-            });
+          return filterList1.push({
+            id: item.id,
+            description: item.description,
+            enabled: item.enabled,
+            state: item.state,
+            secretJustice: item.secretJustice,
+            statusOperation: item.statusOperation,
+            scrapperAlias: item.scrapperAlias,
+            isRelevant: item.isRelevant,
+            instance: item.instance,
+          });
+        });
+
+        superiorInstanceListbase.map(item => {
+          return filterList2.push({
+            id: item.id,
+            description: item.description,
+            enabled: item.enabled,
+            state: item.state,
+            secretJustice: item.secretJustice,
+            statusOperation: item.statusOperation,
+            scrapperAlias: item.scrapperAlias,
+            isRelevant: item.isRelevant,
+            instance: item.instance,
+          });
         });
       }
     }
@@ -237,7 +305,7 @@ const Monitoring: React.FC = () => {
 
     setPrimaryInstanceList(uniqueFilterList1);
 
-    setSuperiorInstanceList(uniqueFilterList1);
+    setSuperiorInstanceList(uniqueFilterList2);
 
   }, [desUF, secretJustice, multiFilter]);
 
