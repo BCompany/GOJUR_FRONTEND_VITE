@@ -48,6 +48,7 @@ export const Container = styled.div`
     margin-top: 5px;
     display: inline-block;
     height: 35px;
+    widthg: 35px;
     padding: 8px 18px;
     cursor: pointer;
     background-color: #007bff;

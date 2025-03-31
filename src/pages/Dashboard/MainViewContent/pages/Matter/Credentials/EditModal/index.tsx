@@ -38,6 +38,7 @@ export interface ICredential {
   id_Court: string;
   qrCode: string;
   courtName: string;
+  nom_CertificateFile: string;
   certificatePassword: string;
 }
 
@@ -58,6 +59,7 @@ export default function CredentialsDataSourceModal(props) {
   const [twoFactorAuth, setTwoFactorAuth] = useState(false);
   const [qrCode, setQrCode] = useState('');
   const [flgQrCode, setFlgQrCode] = useState(false);
+  const [certificateFileName, setCertificateFileName] = useState<string>('');
   const [passwordCredential, setPasswordCredential] = useState<string>('');
   const [isSP, setIsSP] = useState(false);
   const [file, setFile] = useState(null);
@@ -191,6 +193,7 @@ export default function CredentialsDataSourceModal(props) {
       setCourtId(response.data.id_Court);
       setDes_Court(response.data.courtName);
       setPasswordCredential(response.data.certificatePassword)
+      setCertificateFileName(response.data.nom_CertificateFile)
 
       if (response.data.qrCode) {
         setTwoFactorAuth(true);
@@ -231,6 +234,7 @@ export default function CredentialsDataSourceModal(props) {
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
+    setCertificateFileName(event.target.files[0].name)
   };
 
 
@@ -337,11 +341,13 @@ export default function CredentialsDataSourceModal(props) {
                   <FaIdCard />
                   &nbsp;&nbsp; Escolher Arquivo
                 </label>
+                <br /><br />
+                <div>{certificateFileName}</div>
               </div>
 
-              <div id='SenhaCredencial' style={{float:'left', marginLeft:'60px'}}>
+              <div id='SenhaCredencial' style={{float:'right', marginRight:'250px', marginTop:'-55px'}}>
                 <label htmlFor="password" style={{ marginBottom: '8px', display: 'white' }}>
-                  Senha Credencial
+                  Senha Certificado
                   <input
                     maxLength={50}
                     type="password"
