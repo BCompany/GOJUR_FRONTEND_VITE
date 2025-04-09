@@ -77,7 +77,8 @@ export interface CustomerXRayData {
   filesQty: string;
   matterQty: string;
   users: string;
-  days: number;
+  dtaStart: string;
+  dtaEnd: string;
 }
 
 export interface PublicationData {
@@ -217,7 +218,6 @@ const CustomerConfiguration: React.FC = () => {
   const [showLog, setShowLog] = useState(false); // Controla a Abertura do modal de Log
 
   // RAIO-X
-  const [xRayDays, setXRayDays] = useState('30');
   const [companyName, setCompanyName] = useState('');
   const [navigationTransactions, setNavigationTransactions] = useState('');
   const [navigationTransactionsAverage, setNavigationTransactionsAverage] = useState('');
@@ -232,6 +232,8 @@ const CustomerConfiguration: React.FC = () => {
   const [matterQty, setMatterQty] = useState('');
   const [users, setUsers] = useState('');
   const [days, setDays] = useState(0);
+  const [dtaStart, setDtaStart] = useState<string>(format(new Date(new Date().setDate(new Date().getDate() - 30)), 'yyyy-MM-dd'))
+  const [dtaEnd, setDtaEnd] = useState<string>(format(new Date(), 'yyyy-MM-dd'))
 
   // BusinessInformation
 
@@ -386,7 +388,7 @@ const CustomerConfiguration: React.FC = () => {
   useEffect(() => {
     if (customerCaller == 'xray') {
       setIsLoading(true)
-      LoadCustomerXRay(xRayDays)
+      LoadCustomerXRay(dtaStart, dtaEnd)
     }
   }, [customerCaller])
 
@@ -740,12 +742,12 @@ const CustomerConfiguration: React.FC = () => {
   }
 
 
-  const LoadCustomerXRay = async (days) => {
+  const LoadCustomerXRay = async (dtaStart, dtaEnd) => {
     try {
       setIsLoading(true)
 
       const response = await api.get<CustomerXRayData>('/Empresa/RaioXCliente', {
-        params: { companyId, days, token }
+        params: { companyId, dtaStart, dtaEnd, token }
       });
 
       setCompanyName(response.data.companyName)
@@ -761,7 +763,8 @@ const CustomerConfiguration: React.FC = () => {
       setFilesQty(response.data.filesQty)
       setMatterQty(response.data.matterQty)
       setUsers(response.data.users)
-      setDays(response.data.days)
+      setDtaStart(response.data.dtaStart)
+      setDtaEnd(response.data.dtaEnd);
 
       setIsLoading(false)
     } catch (err) {
@@ -3307,35 +3310,49 @@ const CustomerConfiguration: React.FC = () => {
             {customerCaller == "xray" && (
               <>
                 <div id='RAIO-X' style={{ marginLeft: '15%', width: '100%' }}>
-                  <div style={{ display: "flex", marginLeft: '7%' }}>
-                    <span className='xRayLabel'>Período de </span>
-                    &nbsp;&nbsp;
-                    <label htmlFor="type">
-                      <input
-                        type="text"
-                        placeholder='Nº de dias'
-                        autoComplete="off"
-                        value={xRayDays}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) => setXRayDays(e.target.value.replace(/\D/g, ''))}
-                        maxLength={4}
-                        style={{ width: '80px', height: '30px', backgroundColor: '#EFEFEF' }}
-                      />
-                    </label>
-                    &nbsp;&nbsp;
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                    <br/>
+                    <span style={{ fontWeight: 600 }} className='xRayLabel'>Selecione o perído: </span>
+                    <br/>
+                    <div style={{ display: "flex", gap: "20px", justifyContent: "flex-start" }}>
+                      <div>
+                        <label htmlFor="data">
+                          Data Início
+                          <input
+                            style={{ backgroundColor: "white", display: "block", marginTop: "5px" }}
+                            type="date"
+                            value={dtaStart}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => setDtaStart(e.target.value)}
+                          />
+                        </label>
+                      </div>
+                      <div>
+                        <label htmlFor="dataFinal">
+                          Data Final
+                          <input
+                            style={{ backgroundColor: "white", display: "block", marginTop: "5px" }}
+                            type="date"
+                            value={dtaEnd}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => setDtaEnd(e.target.value)}
+                          />
+                        </label>
+                      </div>
+                    </div>
+                    
                     <button
                       className="buttonClick"
                       type='button'
-                      onClick={() => LoadCustomerXRay(xRayDays)}
-                      style={{ width: '50px', height: '30px' }}
+                      onClick={() => LoadCustomerXRay(dtaStart, dtaEnd)}
+                      style={{ marginTop: "15px", width: '100px', height: '30px' }}
                     >
                       Aplicar
                     </button>
                   </div>
-                  <br /><br />
+                  <br />
 
                   <div>
                     <div className='xRayDiv'><span className='xRayLabel'>Cliente: {companyName}</span></div>
-                    <div className='xRayDiv'><span className='xRayLabel'>Dias Avaliados: {days}</span></div>
+                    <div className='xRayDiv'><span className='xRayLabel'>Período avaliado: {format(new Date(dtaStart), 'dd/MM/yyyy')} até {format(new Date(dtaEnd), 'dd/MM/yyyy')}</span></div>
                     <br />
                     <div style={{ fontWeight: 600 }}><span className='xRayLabel'>OPERAÇÕES NO PERÍODO</span></div>
                     <br />
