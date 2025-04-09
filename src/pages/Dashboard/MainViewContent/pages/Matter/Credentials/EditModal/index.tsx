@@ -22,12 +22,14 @@ export interface ISelectData {
   id: string;
   label: string;
   flg_QrCode: string;
+  flg_Certificate: string
 }
 
 export interface IDataSource {
   id_Court: string;
   courtName: string;
   flg_QrCode: string;
+  flg_Certificate: string;
 }
 
 export interface ICredential {
@@ -58,23 +60,25 @@ export default function CredentialsDataSourceModal(props) {
   const [courtTerm, setCourtTerm] = useState<string>('');
   const [twoFactorAuth, setTwoFactorAuth] = useState(false);
   const [qrCode, setQrCode] = useState('');
+  const [flgCertificate, setFlgCertificate] = useState(false);
   const [flgQrCode, setFlgQrCode] = useState(false);
   const [certificateFileName, setCertificateFileName] = useState<string>('');
   const [passwordCredential, setPasswordCredential] = useState<string>('');
-  const [isSP, setIsSP] = useState(false);
-  const [file, setFile] = useState(null);
+    const [file, setFile] = useState(null);
 
   useEffect(() => {
     LoadAllCredentialList()
   }, [])
 
 
+  
+
   useEffect(() => {
-    if(id_Court == "1")
-      setIsSP(true)
-    else
-      setIsSP(false)
-  }, [id_Court])
+    if (!flgCertificate) {
+      setFlgCertificate(false);
+    }
+  }, [flgCertificate]);
+
 
 
   useEffect(() => {
@@ -102,6 +106,8 @@ export default function CredentialsDataSourceModal(props) {
           id: item.id_Court,
           label: item.courtName,
           flg_QrCode: item.flg_QrCode,
+          flg_Certificate : item.flg_Certificate
+
         });
       });
      
@@ -116,7 +122,7 @@ export default function CredentialsDataSourceModal(props) {
 
   const handleSaveCredentials = async () => {
     
-    if(isSP == false){
+    if(flgCertificate == false){
       if (des_user == '' || password == ''){
         addToast({type: "info", title: "Operação não realizada", description: "Usuário e senha são obrigatórios."})
         return;
@@ -124,7 +130,7 @@ export default function CredentialsDataSourceModal(props) {
     }
     else{
       if (passwordCredential == ''){
-        addToast({type: "info", title: "Operação não realizada", description: "Senha da credencial é obrigatória."})
+        addToast({type: "info", title: "Operação não realizada", description: "Senha do certificado é obrigatória."})
         return;
       }
     }
@@ -203,8 +209,16 @@ export default function CredentialsDataSourceModal(props) {
       else {
         setTwoFactorAuth(false);
         setQrCode('');
-        setFlgQrCode(true);
+        setFlgQrCode(false);
       }
+
+      if (response.data.nom_CertificateFile)
+      {
+        setFlgCertificate(true);
+      }
+
+
+
     }
     catch (err: any) {
       addToast({type: "info", title: "Operação não realizada", description: err.response.data.Message});
@@ -217,17 +231,17 @@ export default function CredentialsDataSourceModal(props) {
       setDes_Court(item.label)
       setCourtId(item.id)
       setFlgQrCode(item.flg_QrCode === 'S');
+      setFlgCertificate(item.flg_Certificate === 'S');
 
-      if(item.id == "1")
-        setIsSP(true)
-      else
-        setIsSP(false)
+      console.log(item.flg_Certificate);
+
     }
     else{
       setDes_Court('')
       setCourtId('')
       setCourtTerm("")
       setFlgQrCode(false)
+      setFlgCertificate(false)
     }
   }
 
@@ -327,7 +341,7 @@ export default function CredentialsDataSourceModal(props) {
 
           <br />
 
-          {isSP == true ? (
+          {flgCertificate == true ? (
             <>
               {/* <div id='1' style={{float:'left'}}>
                 <div id='2'>
