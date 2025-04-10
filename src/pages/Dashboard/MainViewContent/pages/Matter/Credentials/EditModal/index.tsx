@@ -64,7 +64,7 @@ export default function CredentialsDataSourceModal(props) {
   const [flgQrCode, setFlgQrCode] = useState(false);
   const [certificateFileName, setCertificateFileName] = useState<string>('');
   const [passwordCredential, setPasswordCredential] = useState<string>('');
-    const [file, setFile] = useState(null);
+  const [file, setFile] = useState(null);
 
   useEffect(() => {
     LoadAllCredentialList()
@@ -129,8 +129,8 @@ export default function CredentialsDataSourceModal(props) {
       }
     }
     else{
-      if (passwordCredential == ''){
-        addToast({type: "info", title: "Operação não realizada", description: "Senha do certificado é obrigatória."})
+      if (file==null || passwordCredential == ''){
+        addToast({type: "info", title: "Operação não realizada", description: "Certificado e a senha são obrigatórios."})
         return;
       }
     }
@@ -165,17 +165,7 @@ export default function CredentialsDataSourceModal(props) {
 
       const response = await api.post('/Credenciais/Salvar', credential)
 
-      // const response = await api.post<ICredential>('/Credenciais/Salvar',
-      //   {
-      //     IdCredential: credentialId,
-      //     UserName: des_user,
-      //     UserPassword: password,
-      //     Description: description,
-      //     id_Court: id_Court,
-      //     qrCode : qrCode,
-      //     token,
-      //   },
-      // );
+      
 
       addToast({type: "success", title: "Operação realizada", description: "Credencial criada com sucesso."})
       setIsChanging(false)
@@ -198,9 +188,7 @@ export default function CredentialsDataSourceModal(props) {
       setDescription(response.data.des_Credential);
       setCourtId(response.data.id_Court);
       setDes_Court(response.data.courtName);
-      setPasswordCredential(response.data.certificatePassword)
-      setCertificateFileName(response.data.nom_CertificateFile)
-
+      
       if (response.data.qrCode) {
         setTwoFactorAuth(true);
         setFlgQrCode(true);
