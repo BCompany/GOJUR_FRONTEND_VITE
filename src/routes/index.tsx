@@ -140,6 +140,7 @@ const Routes: React.FC = () => {
       <Route path="/companyfiles" exact component={DashboardPath} isPrivate />
       <Route path="/matter/monitoring" exact component={Matter} isPrivate />
       <Route path="/apidocumentation" exact component={APIDocumentation} isPrivate />
+
     </Switch>
   );
 };

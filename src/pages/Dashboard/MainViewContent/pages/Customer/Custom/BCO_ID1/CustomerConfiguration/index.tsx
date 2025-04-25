@@ -15,11 +15,11 @@ import { Overlay } from 'Shared/styles/GlobalStyle';
 import { AiOutlineArrowLeft } from 'react-icons/ai';
 import { useConfirmBox } from 'context/confirmBox';
 import { BiSearchAlt, BiTime, BiTrash } from 'react-icons/bi'
-import { FaFileAlt, FaKey, FaUserCheck, FaUserCog, FaUsers, FaUserSlash, FaRegTimesCircle, FaArrowAltCircleRight, FaPlus, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaFileAlt, FaKey, FaUserCheck, FaUserCog, FaUsers, FaUserSlash, FaRegTimesCircle, FaArrowAltCircleRight, FaPlus, FaChevronLeft, FaChevronRight, FaBusinessTime } from 'react-icons/fa';
 import { FcAbout } from 'react-icons/fc';
 import { RiDashboardFill } from "react-icons/ri";
 import { FiEdit, FiSearch, FiSave, FiArrowLeft } from 'react-icons/fi';
-import { IoReload } from "react-icons/io5";
+import { IoCompassOutline, IoReload } from "react-icons/io5";
 import { MdHelp } from 'react-icons/md';
 import { RiNewspaperFill, RiUserAddFill, RiAccountPinBoxLine } from 'react-icons/ri';
 import { SiMinutemailer } from "react-icons/si";
@@ -77,7 +77,8 @@ export interface CustomerXRayData {
   filesQty: string;
   matterQty: string;
   users: string;
-  days: number;
+  dtaStart: string;
+  dtaEnd: string;
 }
 
 export interface PublicationData {
@@ -113,6 +114,7 @@ const CustomerConfiguration: React.FC = () => {
   const [customerCaller, setCustomerCaller] = useState<string>("");
   const [companyDescription, setCompanyDescription] = useState<string>("")
   const [planDescription, setPlanDescription] = useState<string>("")
+  const [planReference, setPlanReference] = useState<string>("")
   const [customerStatus, setCustomerStatus] = useState<string>("")
   const [showRobotModal, setShowRobotModal] = useState<boolean>(false);
   const [showCancelPlanModal, setCancelPlanModal] = useState<boolean>(false);
@@ -124,6 +126,11 @@ const CustomerConfiguration: React.FC = () => {
   const [nom_Empresa, setNom_Empresa] = useState<string>("")
   const [fromUserListByEmailCompanyId, setFromUserListByEmailCompanyId] = useState<string>("")
   const [pageNumber, setPageNumber] = useState(1);
+
+  const [tpo_StatusAcesso, setTpo_StatusAcesso] = useState<string>("")
+  const [dta_Ativo, setDta_Ativo] = useState<string>("")
+  const [dta_Teste, setDta_Teste] = useState<string>("")
+  const [showTeste, setShowTeste] = useState<boolean>(false)
 
   // CustomerCompany Select Box
   const [customerCompanyValue, setCustomerCompanyValue] = useState('');
@@ -211,7 +218,6 @@ const CustomerConfiguration: React.FC = () => {
   const [showLog, setShowLog] = useState(false); // Controla a Abertura do modal de Log
 
   // RAIO-X
-  const [xRayDays, setXRayDays] = useState('30');
   const [companyName, setCompanyName] = useState('');
   const [navigationTransactions, setNavigationTransactions] = useState('');
   const [navigationTransactionsAverage, setNavigationTransactionsAverage] = useState('');
@@ -226,6 +232,8 @@ const CustomerConfiguration: React.FC = () => {
   const [matterQty, setMatterQty] = useState('');
   const [users, setUsers] = useState('');
   const [days, setDays] = useState(0);
+  const [dtaStart, setDtaStart] = useState<string>(format(new Date(new Date().setDate(new Date().getDate() - 30)), 'yyyy-MM-dd'))
+  const [dtaEnd, setDtaEnd] = useState<string>(format(new Date(), 'yyyy-MM-dd'))
 
   // BusinessInformation
 
@@ -380,7 +388,7 @@ const CustomerConfiguration: React.FC = () => {
   useEffect(() => {
     if (customerCaller == 'xray') {
       setIsLoading(true)
-      LoadCustomerXRay(xRayDays)
+      LoadCustomerXRay(dtaStart, dtaEnd)
     }
   }, [customerCaller])
 
@@ -734,12 +742,12 @@ const CustomerConfiguration: React.FC = () => {
   }
 
 
-  const LoadCustomerXRay = async (days) => {
+  const LoadCustomerXRay = async (dtaStart, dtaEnd) => {
     try {
       setIsLoading(true)
 
       const response = await api.get<CustomerXRayData>('/Empresa/RaioXCliente', {
-        params: { companyId, days, token }
+        params: { companyId, dtaStart, dtaEnd, token }
       });
 
       setCompanyName(response.data.companyName)
@@ -755,7 +763,8 @@ const CustomerConfiguration: React.FC = () => {
       setFilesQty(response.data.filesQty)
       setMatterQty(response.data.matterQty)
       setUsers(response.data.users)
-      setDays(response.data.days)
+      setDtaStart(response.data.dtaStart)
+      setDtaEnd(response.data.dtaEnd);
 
       setIsLoading(false)
     } catch (err) {
@@ -1091,6 +1100,10 @@ const CustomerConfiguration: React.FC = () => {
       setCustomerStatus(response.data.des_Status)
       setCompanyId(response.data.cod_Empresa)
       setCustomerCompanyValue(response.data.nom_Company)
+      setTpo_StatusAcesso(response.data.tpo_StatusAcesso)
+      setDta_Ativo(response.data.dta_Ativo)
+      setDta_Teste(response.data.dta_Teste)
+      setPlanReference(response.data.cod_PlanReference)
       setCustomerCompanyId(customerId)
       localStorage.setItem('@GoJur:customerId', customerId);
       setIsLoading(false)
@@ -1098,6 +1111,10 @@ const CustomerConfiguration: React.FC = () => {
 
       if (fromUserListByEmail == true) {
         setCustomerCaller("userList")
+      }
+
+      if(response.data.tpo_StatusAcesso == "TG" || planReference != "GOJURFR") {
+        setShowTeste(true)
       }
 
       setChangeCompanyByUser(false)
@@ -1345,6 +1362,8 @@ const CustomerConfiguration: React.FC = () => {
           token,
         }
       });
+
+      console.log(response.data)
 
       setAccountInformationList(response.data)
       setPlanId("")
@@ -2243,6 +2262,10 @@ const CustomerConfiguration: React.FC = () => {
     }
   }
 
+  const handleClickTeste = () => {
+    setCustomerCaller("testInformation")
+  }
+
 
   const addResource = useCallback(() => {
     if (resourcesId == "") {
@@ -2317,11 +2340,11 @@ const CustomerConfiguration: React.FC = () => {
     // If Resources not in List, add new Resource in List
     if (objIndex <= 0) {
       if (planQtd == "0") {
-        const resourceOjb = { cod_RecursoSistema: resourcesId, des_RecursoSistema: resourcesValue, tpo_ItemList: "RA", qtd_RecursoIncluso: "ILIMITADO", tpo_Recurso: resourceTpo, cod_ResourceReference: codReferenceResource, cod_PlanReference: codReferencePlan }
+        const resourceOjb = { cod_RecursoSistema: resourcesId, des_RecursoSistema: resourcesValue, tpo_ItemList: "RA", qtd_RecursoIncluso: "ILIMITADO", tpo_Recurso: resourceTpo, cod_ResourceReference: codReferenceResource, cod_PlanReference: codReferencePlan, flg_PermiteAdicional: null }
         setAccountInformationList(previousValues => [...previousValues, resourceOjb])
       }
       else {
-        const resourceOjb = { cod_RecursoSistema: resourcesId, des_RecursoSistema: resourcesValue, tpo_ItemList: "RA", qtd_RecursoIncluso: planQtd, tpo_Recurso: resourceTpo, cod_ResourceReference: codReferenceResource, cod_PlanReference: codReferencePlan }
+        const resourceOjb = { cod_RecursoSistema: resourcesId, des_RecursoSistema: resourcesValue, tpo_ItemList: "RA", qtd_RecursoIncluso: planQtd, tpo_Recurso: resourceTpo, cod_ResourceReference: codReferenceResource, cod_PlanReference: codReferencePlan, flg_PermiteAdicional: null }
         setAccountInformationList(previousValues => [...previousValues, resourceOjb])
       }
 
@@ -2390,6 +2413,30 @@ const CustomerConfiguration: React.FC = () => {
     }
   },[]);
 
+  const ExtendTest = useCallback(async () => {
+    try {
+      const response = await api.post('/CustomBCO_ID1/ConfiguracaoCliente/ProrrogarTeste', {
+        companyId,
+        token,
+      });
+
+      addToast({
+        type: "success",
+        title: "Teste Prorrogado",
+        description: "O período de teste foi prorrogado com sucesso.",
+      });
+
+      CustomerInformation();
+      
+    } catch (err: any) {
+      setIsLoading(false);
+      addToast({
+        type: "error",
+        title: "Falha ao prorrogar o teste.",
+        description: err.response.data.Message,
+      });
+    }
+  }, [companyId, token]);
 
   return (
     <Container>
@@ -2767,6 +2814,31 @@ const CustomerConfiguration: React.FC = () => {
 
                 </button>
               </div>
+
+              {showTeste == true && (
+                <div className='headerButtons'>
+                <button
+                  className="buttonLinkClick buttonInclude"
+                  type="submit"
+                  onClick={handleClickTeste}
+                >
+                  {customerCaller == "businessInformation" && (
+                    <>
+                      <FaBusinessTime style={{ color: "orange" }} />
+                      <span style={{ color: "orange" }}>Periodo de Teste</span>
+                    </>
+                  )}
+
+                  {customerCaller != "businessInformation" && (
+                    <>
+                      <FaBusinessTime />
+                      <span>Periodo de Teste</span>
+                    </>
+                  )}
+
+                </button>
+              </div>
+              )}
 
             </>
           )}
@@ -3238,35 +3310,49 @@ const CustomerConfiguration: React.FC = () => {
             {customerCaller == "xray" && (
               <>
                 <div id='RAIO-X' style={{ marginLeft: '15%', width: '100%' }}>
-                  <div style={{ display: "flex", marginLeft: '7%' }}>
-                    <span className='xRayLabel'>Período de </span>
-                    &nbsp;&nbsp;
-                    <label htmlFor="type">
-                      <input
-                        type="text"
-                        placeholder='Nº de dias'
-                        autoComplete="off"
-                        value={xRayDays}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) => setXRayDays(e.target.value.replace(/\D/g, ''))}
-                        maxLength={4}
-                        style={{ width: '80px', height: '30px', backgroundColor: '#EFEFEF' }}
-                      />
-                    </label>
-                    &nbsp;&nbsp;
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                    <br/>
+                    <span style={{ fontWeight: 600 }} className='xRayLabel'>Selecione o perído: </span>
+                    <br/>
+                    <div style={{ display: "flex", gap: "20px", justifyContent: "flex-start" }}>
+                      <div>
+                        <label htmlFor="data">
+                          Data Início
+                          <input
+                            style={{ backgroundColor: "white", display: "block", marginTop: "5px" }}
+                            type="date"
+                            value={dtaStart}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => setDtaStart(e.target.value)}
+                          />
+                        </label>
+                      </div>
+                      <div>
+                        <label htmlFor="dataFinal">
+                          Data Final
+                          <input
+                            style={{ backgroundColor: "white", display: "block", marginTop: "5px" }}
+                            type="date"
+                            value={dtaEnd}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => setDtaEnd(e.target.value)}
+                          />
+                        </label>
+                      </div>
+                    </div>
+                    
                     <button
                       className="buttonClick"
                       type='button'
-                      onClick={() => LoadCustomerXRay(xRayDays)}
-                      style={{ width: '50px', height: '30px' }}
+                      onClick={() => LoadCustomerXRay(dtaStart, dtaEnd)}
+                      style={{ marginTop: "15px", width: '100px', height: '30px' }}
                     >
                       Aplicar
                     </button>
                   </div>
-                  <br /><br />
+                  <br />
 
                   <div>
                     <div className='xRayDiv'><span className='xRayLabel'>Cliente: {companyName}</span></div>
-                    <div className='xRayDiv'><span className='xRayLabel'>Dias Avaliados: {days}</span></div>
+                    <div className='xRayDiv'><span className='xRayLabel'>Período avaliado: {format(new Date(dtaStart), 'dd/MM/yyyy')} até {format(new Date(dtaEnd), 'dd/MM/yyyy')}</span></div>
                     <br />
                     <div style={{ fontWeight: 600 }}><span className='xRayLabel'>OPERAÇÕES NO PERÍODO</span></div>
                     <br />
@@ -3543,6 +3629,47 @@ const CustomerConfiguration: React.FC = () => {
 
             {customerCaller == "publicationClassification" && (
               <PublicationClassification />
+            )}
+
+            {customerCaller == "testInformation" && (
+              <>
+                <div className='headerLabel' id='headerLabel'>
+                  <div>
+                    Período de Teste
+                  </div>
+                </div>
+
+                <br />
+
+                <div id='teste' style={{ width: '100%' }}>
+
+                  <div style={{ marginBottom: '10px', marginTop: '5%', display: 'flex', flexDirection: 'column' }}>
+
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                      <label style={{ width: '150px', fontSize: '16px', fontWeight: 'bold' }}>Data Criação:</label>
+                      <span style={{ fontSize: '16px' }}>{dta_Ativo}</span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <label style={{ width: '150px', fontSize: '16px', fontWeight: 'bold' }}>Teste Válido Até:</label>
+                      <span style={{ fontSize: '16px' }}>{dta_Teste}</span>
+                    </div>
+
+                  </div>
+
+                  <div style={{ alignItems: 'center', display: 'flex', marginTop: '15%', marginLeft: '20%' }}>
+                    <button
+                      style={{ padding: '10px 20px', backgroundColor: 'var(--blue-twitter)', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
+                      onClick={ExtendTest}
+                      className="buttonClick"
+                      type='button'
+                    >
+                      Prorrogar Teste
+                    </button>
+                  </div>
+                  
+                </div>
+              </>
             )}
 
           </section>
