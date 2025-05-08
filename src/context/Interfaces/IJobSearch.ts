@@ -1,7 +1,6 @@
 export interface JobSearchDTO {
   url: string;
   matterGojur: MatterDTO;
-  matterCourt: GPJProcessoCargaTribunal;
 }
 
 export interface MatterDTO {
@@ -189,35 +188,4 @@ export interface ValueDTO {
   id: string;
   value: string;
   count?: number;
-}
-
-export interface GPJProcessoCargaTribunal {
-  cod_ProcessoCargaTribunal: number;
-  tpo_Status: string;
-  tpo_StatusCriacao: string;
-  tpo_StatusParte: string;
-  flg_InclusaoPorCNJ: string;
-  num_Processo: string;
-  des_VaraInstancia1: string;
-  des_VaraInstancia2: string;
-  des_ForumInstancia1: string;
-  des_ForumInstancia2: string;
-  des_Tribunal: string;
-  des_Acao: string;
-  des_Status: string;
-  des_urlProcesso: string;
-  vlr_Causa: string;
-  des_OAB: string;
-  des_UF: string;
-  nom_UsuarioTribunal: string;
-  des_SenhaTribunal: string;
-  des_Erro: string;
-  id: string;
-  idGenerator: string;
-  GPJ_ProcessoCargaTribunalPartes: GPJProcessoCargaTribunalParte[];
-}
-
-export interface GPJProcessoCargaTribunalParte {
-  cod_ProcessoCargaTribunalParte: number;
-  cod_ProcessoCargaTribunal: number;
 }
