@@ -120,7 +120,7 @@ const AccountList = () => {
       const page = state == 'initialize'? 1: pageNumber;
 
       const response = await api.get<IAccountData[]>('/ContasBancarias/ListarPainel', { 
-          params:{page, rows:20, filterClause: captureText, token}
+          params:{page, rows:0, filterClause: captureText, token}
       })
 
       if(response.data.length > 0 && state == 'initialize')
