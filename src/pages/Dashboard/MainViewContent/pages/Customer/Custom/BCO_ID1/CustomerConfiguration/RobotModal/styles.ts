@@ -37,14 +37,14 @@ export const ModalCustomerRobotResult = styled.div<SearchProps>`
   border: 1px solid var(--blue-twitter);
   font-size: 0.665rem;
   box-shadow: 1px 1px 4px 0.5px rgba(0,0,0,0.15);
-  width: 40%;
+  width: 60%;
   height: auto;  
   max-height: 80vh; 
   background-color: var(--white);
   position: absolute;
   z-index: 99999;
   justify-content: center;
-  margin-left: 25%;
+  margin-left: 10%;
   display: ${props => (props.show ? 'block' : 'none')};
   overflow-y: auto;  
 
