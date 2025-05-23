@@ -4,7 +4,7 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable no-return-assign */
 /* eslint-disable no-alert */
-import React, { useCallback, useState, ChangeEvent } from 'react';
+import React, { useCallback, useState, ChangeEvent, useEffect } from 'react';
 import { FaRegTimesCircle } from 'react-icons/fa';
 import { useToast } from 'context/toast';
 import { Overlay } from 'Shared/styles/GlobalStyle';
@@ -13,6 +13,7 @@ import { AiOutlineFileSearch } from 'react-icons/ai';
 import api from 'services/api';
 import { ModalCustomerRobot, ModalCustomerRobotResult } from './styles';
 import { JobSearchDTO } from 'context/Interfaces/IJobSearch';
+import { IMatterFollowData } from 'pages/Dashboard/MainViewContent/pages/Interfaces/IMatter';
 
 const CustomerRobotModalEdit = (props) => {
   const { CloseRobotModal, companyId } = props.callbackFunction;
@@ -24,6 +25,37 @@ const CustomerRobotModalEdit = (props) => {
   const [matterNumber, setMatterNumber] = useState<string>("");
   const [robotTypeSearch, setRobotTypeSearch] = useState<string>("0")
   const [jobData, setJobData] = useState<JobSearchDTO | null>(null);
+  const [followsList, setFollowsList] = useState<IMatterFollowData[]>([]);
+  const [followsRows, setFollowsRows] = useState<number>(0);
+  const [isLoadingFollows, setIsLoadingFollows] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (showRobotResultModal && jobData?.matterGojur?.matterId) {
+      (async () => {
+        setIsLoadingFollows(true);
+        try {
+          const response = await api.get<IMatterFollowData[]>('/ProcessoAcompanhamento/ListarAcompanhamentos', {
+            params: {
+              matterId: jobData.matterGojur.matterId,
+              count: followsRows,
+              filter: 'eventType=W|T',
+              token,
+              companyID: companyId,
+            },
+          });
+
+          setFollowsList((prev) => {
+            const ids = new Set(prev.map(f => f.id));
+            const newFollows = response.data.filter(f => !ids.has(f.id));
+            return [...prev, ...newFollows];
+          });
+        } catch {
+          setFollowsList([]);
+        }
+        setIsLoadingFollows(false);
+      })();
+    }
+  }, [showRobotResultModal, jobData?.matterGojur?.matterId, followsRows]);
 
   // OPEN LINK BIP BOP
   const OpenDocument = useCallback(async () => {
@@ -90,9 +122,10 @@ const CustomerRobotModalEdit = (props) => {
 
 
   const handleOpenRobotResultModal = () => {
-    setShowRobotResultModal(true)
-    setisSaving(false)
-  }
+    setShowRobotResultModal(true);
+    setFollowsList([]); 
+    setisSaving(false);
+  };
 
   const CloseRobotResultModal = () => {
     setShowRobotResultModal(false)
@@ -101,6 +134,9 @@ const CustomerRobotModalEdit = (props) => {
     setisSaving(false)
   }
 
+  const handleShowMoreFollows = () => {
+    setFollowsRows(followsRows + 3); 
+  };
 
   return (
     <>
@@ -192,11 +228,38 @@ const CustomerRobotModalEdit = (props) => {
   
               <br />
   
-              <h4>Último andamento</h4>
-              <div>
-                <p><strong>Data do Andamento:</strong> {new Date(jobData.matterGojur.dateLastUpdate).toLocaleDateString('pt-BR')}</p>
-                <p><strong>Descrição:</strong> {jobData.matterGojur.desLastFollow}</p>
-              </div>
+             <h4>Andamentos</h4>
+             <div>
+               {followsList.map((follow, idx) => (
+                 <div
+                   key={follow.id || idx}
+                   style={{
+                     marginBottom: 10,
+                     background: idx % 2 === 0 ? '#e6f2f0' : '#f8f8f8', 
+                     padding: '10px',
+                     borderRadius: '6px',
+                   }}
+                 >
+                   <p>
+                     <strong>Data do Andamento:</strong> {new Date(follow.date).toLocaleDateString('pt-BR')} - {follow.typeFollowDescription}
+                   </p>
+                   <p>
+                     <strong>Descrição:</strong> {follow.description}
+                   </p>
+                 </div>
+               ))}
+               {isLoadingFollows && <div>Carregando...</div>}
+               {followsList.length > 0 && (
+                 <button
+                   className="buttonClick"
+                   type="button"
+                   onClick={handleShowMoreFollows}
+                   disabled={isLoadingFollows}
+                 >
+                   + Exibir Mais
+                 </button>
+               )}
+             </div>
   
               {jobData.matterGojur.messageButton && (
                 <div>
