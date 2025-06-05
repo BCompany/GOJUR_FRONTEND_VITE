@@ -1060,7 +1060,7 @@ const Matter = (props) => {
         cod_Processo:id,
         des_Marcador: matterMarkers == ''? null: matterMarkers,
         cod_Pasta: matterFolder,
-        num_Processo: matterNumber,
+        num_Processo: matterNumber.trim(),
         num_ProcessoCNJ: matterNumberCNJ,
         tpo_Seguranca: matterSecurity,
         des_Titulo: matterTitle,
