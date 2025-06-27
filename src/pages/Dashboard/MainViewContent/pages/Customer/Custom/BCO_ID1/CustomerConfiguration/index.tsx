@@ -1057,7 +1057,7 @@ const CustomerConfiguration: React.FC = () => {
         return
       }
 
-      let URL = response.data;
+      let URL = response.data.url;
 
       // Verify if link has token
       // When has token is considerer a link for LegalData, so we need to encode Token to validate on LegalData API
