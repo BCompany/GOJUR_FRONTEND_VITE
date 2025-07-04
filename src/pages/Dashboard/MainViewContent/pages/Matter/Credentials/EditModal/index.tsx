@@ -16,6 +16,7 @@ import { useToast } from 'context/toast';
 import { Box, Container, Content, OverlayPermission, ItemBox } from './styles';
 import { set } from 'date-fns';
 import { FaSave, FaIdCard, FaRegTimesCircle } from 'react-icons/fa';
+import { GiConsoleController } from 'react-icons/gi';
 /*teste commit*/
 
 export interface ISelectData {
@@ -23,6 +24,13 @@ export interface ISelectData {
   label: string;
   flg_QrCode: string;
   flg_Certificate: string
+  tpo_CredentialAllowed: string
+  id_CourtReference: string;
+}
+
+export interface ICredentialTypeData {
+  id: string;
+  label: string;
 }
 
 export interface IDataSource {
@@ -30,6 +38,8 @@ export interface IDataSource {
   courtName: string;
   flg_QrCode: string;
   flg_Certificate: string;
+  tpo_CredentialAllowed: string
+  id_CourtReference: string;
 }
 
 export interface ICredential {
@@ -44,6 +54,13 @@ export interface ICredential {
   certificatePassword: string;
 }
 
+
+interface SelectCertType {
+  id: string;
+  label: string;
+}
+
+
 export default function CredentialsDataSourceModal(props) {
   const token = localStorage.getItem('@GoJur:token')
   const { handleCloseEditModal, credentialId, handleIsNewCredential } = props.callbackFunction;
@@ -56,6 +73,7 @@ export default function CredentialsDataSourceModal(props) {
   const [listCourt, setListCourt] = useState<ISelectData[]>([]);
   const [readOnly , setReadOnly] = useState<boolean>(true);
   const [id_Court, setCourtId] = useState<string>('');
+  const [courtReference, setCourtReference] = useState<string>('');
   const [des_Court, setDes_Court] = useState<string>('');
   const [courtTerm, setCourtTerm] = useState<string>('');
   const [twoFactorAuth, setTwoFactorAuth] = useState(false);
@@ -66,11 +84,13 @@ export default function CredentialsDataSourceModal(props) {
   const [passwordCredential, setPasswordCredential] = useState<string>('');
   const [file, setFile] = useState(null);
 
+  const [credentialType, setCredentialType] = useState<string>('');
+  const [credentialTypeList, setCredentialTypeList] = useState<SelectCertType[]>([]);
+  const [digitalCertificate, setDigitalCertificate] = useState<boolean>(false)
+
   useEffect(() => {
     LoadAllCredentialList()
   }, [])
-
-
   
 
   useEffect(() => {
@@ -78,7 +98,6 @@ export default function CredentialsDataSourceModal(props) {
       setFlgCertificate(false);
     }
   }, [flgCertificate]);
-
 
 
   useEffect(() => {
@@ -99,6 +118,8 @@ export default function CredentialsDataSourceModal(props) {
     try {
       const response = await api.get<IDataSource[]>('/Credenciais/ListarTodasFontes', { params: {token} })
 
+      console.log(response.data)
+
       const listCourts: ISelectData[] = []
 
       response.data.map(item => {
@@ -106,11 +127,12 @@ export default function CredentialsDataSourceModal(props) {
           id: item.id_Court,
           label: item.courtName,
           flg_QrCode: item.flg_QrCode,
-          flg_Certificate : item.flg_Certificate
-
+          flg_Certificate : item.flg_Certificate,
+          tpo_CredentialAllowed: item.tpo_CredentialAllowed,
+          id_CourtReference: item.id_CourtReference
         });
       });
-     
+    
       setListCourt(listCourts)
       setIsLoadingComboData(false)
     }
@@ -120,7 +142,7 @@ export default function CredentialsDataSourceModal(props) {
   }
 
 
-  const handleSaveCredentials = async () => {
+  const SaveCredentials = async () => {
     
     if(flgCertificate == false){
       if (des_user == '' || password == ''){
@@ -211,18 +233,34 @@ export default function CredentialsDataSourceModal(props) {
     catch (err: any) {
       addToast({type: "info", title: "Operação não realizada", description: err.response.data.Message});
     }
-  };
+  }
 
 
-  const handleCourtSelected = (item) => { 
+  const HandleList = (item) => { 
+    const listSelectData: SelectCertType[] = []
+
+    const list = item.split(',')
+
+    setCredentialType(list[0])
+
+    list.map(item => {{
+      listSelectData.push({ id: item, label: item })
+    }})
+
+    setCredentialTypeList(listSelectData)
+  }
+
+
+  const CourtSelect = (item) => { 
     if (item){
       setDes_Court(item.label)
       setCourtId(item.id)
       setFlgQrCode(item.flg_QrCode === 'S');
       setFlgCertificate(item.flg_Certificate === 'S');
+      setCourtReference(item.id_CourtReference)
+      setCredentialType('')
 
-      console.log(item.flg_Certificate);
-
+      HandleList(item.tpo_CredentialAllowed)
     }
     else{
       setDes_Court('')
@@ -237,16 +275,34 @@ export default function CredentialsDataSourceModal(props) {
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
     setCertificateFileName(event.target.files[0].name)
-  };
+  }
+
+
+  const ChangeCreditialTypeList = (id: string) => {
+    setCredentialType(id)
+
+    if(id == "ESAJ"){
+      setFlgCertificate(false)
+    }
+
+    if(id == "EPROC"){
+      setFlgCertificate(false)
+    }
+
+    if(id == "PJE"){
+      
+    }
+  }
 
 
   return (
     <>
       <Modal
+        id="Modal"
         isOpen
         overlayClassName="react-modal-overlay"
         className="react-modal-content-medium"
-        style={{overlay:{zIndex: 99999}}}
+        style={{overlay:{zIndex:99999}, content:{backgroundColor:'#E6E6E6'}}}
       >
         <Container id='Container'>
           <header>
@@ -260,7 +316,7 @@ export default function CredentialsDataSourceModal(props) {
               <Select
                 isSearchable
                 value={{ id: id_Court, label: des_Court }}
-                onChange={handleCourtSelected}
+                onChange={CourtSelect}
                 onInputChange={(term) => setCourtTerm(term)}
                 isClearable
                 placeholder=""
@@ -274,6 +330,45 @@ export default function CredentialsDataSourceModal(props) {
               />
             </AutoCompleteSelect>
           </div>
+          <br />
+
+          <div id='CredentialType' style={{display: 'flex', marginLeft: '2%', width: '400px'}}>
+            <label htmlFor="parcela">
+              Tipos de Credenciais
+              <Select
+                autoComplete="off"
+                placeholder="Selecione"
+                styles={selectStyles}
+                value={credentialTypeList.filter(options => options.id === credentialType)}
+                onChange={(item) => ChangeCreditialTypeList(item? item.id: '')}
+                options={credentialTypeList}
+              />
+            </label>
+          </div>
+          <br />
+
+          {(credentialType == 'ESAJ' && courtReference == '826') && (
+            <div style={{display:'flex', marginLeft:'2%'}}>
+              <input
+                type="checkbox"
+                checked={!digitalCertificate}
+                onChange={(e) => setDigitalCertificate(!e.target.checked)}
+              />
+              &nbsp;&nbsp; Utilizar Certificado Digital
+            </div>
+          )}
+
+          {(credentialType == 'ESAJ' && courtReference != '826') && (
+            <div style={{display:'flex', marginLeft:'2%'}}>
+              <input
+                type="checkbox"
+                checked={digitalCertificate}
+                onChange={(e) => setDigitalCertificate(e.target.checked)}
+              />
+              &nbsp;&nbsp; Utilizar Certificado Digital
+            </div>
+          )}
+          <br />
 
           {flgQrCode && (
             <div style={{ marginLeft: '2.5%', marginTop: '10px' }}>
@@ -331,12 +426,6 @@ export default function CredentialsDataSourceModal(props) {
 
           {flgCertificate == true ? (
             <>
-              {/* <div id='1' style={{float:'left'}}>
-                <div id='2'>
-                  <input type="file" onChange={handleFileChange} />
-                </div>
-              </div> */}
-
               <div className="file-upload">
                 <label className="custom-file-upload">
                 <input type="file" onChange={handleFileChange} />
@@ -411,7 +500,7 @@ export default function CredentialsDataSourceModal(props) {
               <button
                 type='button'
                 className="buttonClick"
-                onClick={handleSaveCredentials}
+                onClick={SaveCredentials}
                 style={{ width: '100px' }}
               >
                 <FaSave />
