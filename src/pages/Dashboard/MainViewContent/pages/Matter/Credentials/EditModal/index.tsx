@@ -168,7 +168,6 @@ export default function CredentialsDataSourceModal(props) {
     }
     
     try {
-
       const payload = {
         IdCredential: credentialId,
         UserName: des_user,
@@ -177,7 +176,9 @@ export default function CredentialsDataSourceModal(props) {
         id_Court: id_Court,
         qrCode : qrCode,
         token: token,
-        certificatePassword: passwordCredential
+        certificatePassword: passwordCredential,
+        tpo_Credential: credentialType,
+        flg_DigitalCertificate: digitalCertificate
       }
 
       const credential = new FormData()
@@ -186,8 +187,6 @@ export default function CredentialsDataSourceModal(props) {
       credential.append('payload', JSON.stringify(payload))  
 
       const response = await api.post('/Credenciais/Salvar', credential)
-
-      
 
       addToast({type: "success", title: "Operação realizada", description: "Credencial criada com sucesso."})
       setIsChanging(false)
@@ -259,6 +258,7 @@ export default function CredentialsDataSourceModal(props) {
       setFlgCertificate(item.flg_Certificate === 'S');
       setCourtReference(item.id_CourtReference)
       setCredentialType('')
+      setDigitalCertificate(false)
 
       HandleList(item.tpo_CredentialAllowed)
     }
@@ -282,15 +282,15 @@ export default function CredentialsDataSourceModal(props) {
     setCredentialType(id)
 
     if(id == "ESAJ"){
-      setFlgCertificate(false)
+      setFlgCertificate(true)
     }
 
     if(id == "EPROC"){
-      setFlgCertificate(false)
+      setFlgCertificate(true)
     }
 
     if(id == "PJE"){
-      
+      setFlgCertificate(false)
     }
   }
 
@@ -302,7 +302,7 @@ export default function CredentialsDataSourceModal(props) {
         isOpen
         overlayClassName="react-modal-overlay"
         className="react-modal-content-medium"
-        style={{overlay:{zIndex:99999}, content:{backgroundColor:'#E6E6E6'}}}
+        style={{overlay:{zIndex: 99999}}}
       >
         <Container id='Container'>
           <header>
@@ -347,28 +347,19 @@ export default function CredentialsDataSourceModal(props) {
           </div>
           <br />
 
-          {(credentialType == 'ESAJ' && courtReference == '826') && (
-            <div style={{display:'flex', marginLeft:'2%'}}>
-              <input
-                type="checkbox"
-                checked={!digitalCertificate}
-                onChange={(e) => setDigitalCertificate(!e.target.checked)}
-              />
-              &nbsp;&nbsp; Utilizar Certificado Digital
-            </div>
+          {flgCertificate && (
+            <>
+              <div style={{display:'flex', marginLeft:'2%'}}>
+                <input
+                  type="checkbox"
+                  checked={digitalCertificate}
+                  onChange={(e) => setDigitalCertificate(e.target.checked)}
+                />
+                &nbsp;&nbsp; Utilizar Certificado Digital
+              </div>
+              <br />
+            </>
           )}
-
-          {(credentialType == 'ESAJ' && courtReference != '826') && (
-            <div style={{display:'flex', marginLeft:'2%'}}>
-              <input
-                type="checkbox"
-                checked={digitalCertificate}
-                onChange={(e) => setDigitalCertificate(e.target.checked)}
-              />
-              &nbsp;&nbsp; Utilizar Certificado Digital
-            </div>
-          )}
-          <br />
 
           {flgQrCode && (
             <div style={{ marginLeft: '2.5%', marginTop: '10px' }}>
@@ -402,7 +393,6 @@ export default function CredentialsDataSourceModal(props) {
               </label>
             </div>
           )}
-
           <br />
 
           <div id='Descricao' style={{ marginLeft: '2.5%' }}>
@@ -421,10 +411,9 @@ export default function CredentialsDataSourceModal(props) {
               />
             </label>
           </div>
-
           <br />
 
-          {flgCertificate == true ? (
+          {digitalCertificate == true ? (
             <>
               <div className="file-upload">
                 <label className="custom-file-upload">
