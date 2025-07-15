@@ -143,19 +143,18 @@ export default function CredentialsDataSourceModal(props) {
 
 
   const SaveCredentials = async () => {
-    
-    if(flgCertificate == false){
-      if (des_user == '' || password == ''){
-        addToast({type: "info", title: "Operação não realizada", description: "Usuário e senha são obrigatórios."})
-        return;
-      }
-    }
-    else{
-      if (file==null || passwordCredential == ''){
-        addToast({type: "info", title: "Operação não realizada", description: "Certificado e a senha são obrigatórios."})
-        return;
-      }
-    }
+    // if(flgCertificate == false){
+    //   if (des_user == '' || password == ''){
+    //     addToast({type: "info", title: "Operação não realizada", description: "Usuário e senha são obrigatórios."})
+    //     return;
+    //   }
+    // }
+    // else{
+    //   if (file==null || passwordCredential == ''){
+    //     addToast({type: "info", title: "Operação não realizada", description: "Certificado e a senha são obrigatórios."})
+    //     return;
+    //   }
+    // }
 
     if (description == ''){
       addToast({type: "info", title: "Operação não realizada", description: "A Descrição é obrigatória."})
@@ -226,7 +225,8 @@ export default function CredentialsDataSourceModal(props) {
 
       if (response.data.nom_CertificateFile)
       {
-        setFlgCertificate(true);
+        setFlgCertificate(true)
+        setDigitalCertificate(true)
       }
     }
     catch (err: any) {
