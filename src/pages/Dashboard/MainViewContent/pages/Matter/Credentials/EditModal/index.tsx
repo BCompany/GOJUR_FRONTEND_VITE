@@ -52,6 +52,8 @@ export interface ICredential {
   courtName: string;
   nom_CertificateFile: string;
   certificatePassword: string;
+  tpo_Credential: string;
+  id_CourtReference: string;
 }
 
 
@@ -118,8 +120,6 @@ export default function CredentialsDataSourceModal(props) {
     try {
       const response = await api.get<IDataSource[]>('/Credenciais/ListarTodasFontes', { params: {token} })
 
-      console.log(response.data)
-
       const listCourts: ISelectData[] = []
 
       response.data.map(item => {
@@ -178,7 +178,8 @@ export default function CredentialsDataSourceModal(props) {
         token: token,
         certificatePassword: passwordCredential,
         tpo_Credential: credentialType,
-        flg_DigitalCertificate: digitalCertificate
+        flg_DigitalCertificate: digitalCertificate,
+        id_CourtReference: courtReference
       }
 
       const credential = new FormData()
@@ -203,13 +204,15 @@ export default function CredentialsDataSourceModal(props) {
     try {
       const response = await api.get<ICredential>('/Credenciais/Editar', { params: {id_Credential: id, token} });
 
-      console.log(response.data)
-
       setDes_user(response.data.des_Username);
       setDescription(response.data.des_Credential);
       setCourtId(response.data.id_Court);
       setDes_Court(response.data.courtName);
-      
+      setCourtReference(response.data.id_CourtReference);
+      HandleList(response.data.tpo_Credential)
+
+      setCredentialType(response.data.tpo_Credential);
+
       if (response.data.qrCode) {
         setTwoFactorAuth(true);
         setFlgQrCode(true);
@@ -225,9 +228,6 @@ export default function CredentialsDataSourceModal(props) {
       {
         setFlgCertificate(true);
       }
-
-
-
     }
     catch (err: any) {
       addToast({type: "info", title: "Operação não realizada", description: err.response.data.Message});
@@ -252,6 +252,9 @@ export default function CredentialsDataSourceModal(props) {
 
   const CourtSelect = (item) => { 
     if (item){
+
+      console.log(item)
+
       setDes_Court(item.label)
       setCourtId(item.id)
       setFlgQrCode(item.flg_QrCode === 'S');
