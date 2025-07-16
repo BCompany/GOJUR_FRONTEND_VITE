@@ -54,6 +54,7 @@ export interface ICredential {
   certificatePassword: string;
   tpo_Credential: string;
   id_CourtReference: string;
+  flg_Certificate: boolean;
 }
 
 
@@ -203,13 +204,13 @@ export default function CredentialsDataSourceModal(props) {
     try {
       const response = await api.get<ICredential>('/Credenciais/Editar', { params: {id_Credential: id, token} });
 
+      setFlgCertificate(response.data.flg_Certificate)
       setDes_user(response.data.des_Username);
       setDescription(response.data.des_Credential);
       setCourtId(response.data.id_Court);
       setDes_Court(response.data.courtName);
       setCourtReference(response.data.id_CourtReference);
       HandleList(response.data.tpo_Credential)
-
       setCredentialType(response.data.tpo_Credential);
 
       if (response.data.qrCode) {
@@ -219,12 +220,11 @@ export default function CredentialsDataSourceModal(props) {
       }
       else {
         setTwoFactorAuth(false);
+        setFlgQrCode(true);
         setQrCode('');
-        setFlgQrCode(false);
       }
 
-      if (response.data.nom_CertificateFile)
-      {
+      if (response.data.nom_CertificateFile) {
         setFlgCertificate(true)
         setDigitalCertificate(true)
       }
@@ -252,9 +252,6 @@ export default function CredentialsDataSourceModal(props) {
 
   const CourtSelect = (item) => { 
     if (item){
-
-      console.log(item)
-
       setDes_Court(item.label)
       setCourtId(item.id)
       setFlgQrCode(item.flg_QrCode === 'S');
@@ -262,7 +259,6 @@ export default function CredentialsDataSourceModal(props) {
       setCourtReference(item.id_CourtReference)
       setCredentialType('')
       setDigitalCertificate(false)
-
       HandleList(item.tpo_CredentialAllowed)
     }
     else{
