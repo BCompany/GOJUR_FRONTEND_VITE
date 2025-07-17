@@ -16,6 +16,7 @@ import { useToast } from 'context/toast';
 import { Box, Container, Content, OverlayPermission, ItemBox } from './styles';
 import { set } from 'date-fns';
 import { FaSave, FaIdCard, FaRegTimesCircle } from 'react-icons/fa';
+import { GiConsoleController } from 'react-icons/gi';
 /*teste commit*/
 
 export interface ISelectData {
@@ -23,6 +24,13 @@ export interface ISelectData {
   label: string;
   flg_QrCode: string;
   flg_Certificate: string
+  tpo_CredentialAllowed: string
+  id_CourtReference: string;
+}
+
+export interface ICredentialTypeData {
+  id: string;
+  label: string;
 }
 
 export interface IDataSource {
@@ -30,6 +38,8 @@ export interface IDataSource {
   courtName: string;
   flg_QrCode: string;
   flg_Certificate: string;
+  tpo_CredentialAllowed: string
+  id_CourtReference: string;
 }
 
 export interface ICredential {
@@ -42,7 +52,17 @@ export interface ICredential {
   courtName: string;
   nom_CertificateFile: string;
   certificatePassword: string;
+  tpo_Credential: string;
+  id_CourtReference: string;
+  flg_Certificate: boolean;
 }
+
+
+interface SelectCertType {
+  id: string;
+  label: string;
+}
+
 
 export default function CredentialsDataSourceModal(props) {
   const token = localStorage.getItem('@GoJur:token')
@@ -56,6 +76,7 @@ export default function CredentialsDataSourceModal(props) {
   const [listCourt, setListCourt] = useState<ISelectData[]>([]);
   const [readOnly , setReadOnly] = useState<boolean>(true);
   const [id_Court, setCourtId] = useState<string>('');
+  const [courtReference, setCourtReference] = useState<string>('');
   const [des_Court, setDes_Court] = useState<string>('');
   const [courtTerm, setCourtTerm] = useState<string>('');
   const [twoFactorAuth, setTwoFactorAuth] = useState(false);
@@ -66,11 +87,13 @@ export default function CredentialsDataSourceModal(props) {
   const [passwordCredential, setPasswordCredential] = useState<string>('');
   const [file, setFile] = useState(null);
 
+  const [credentialType, setCredentialType] = useState<string>('');
+  const [credentialTypeList, setCredentialTypeList] = useState<SelectCertType[]>([]);
+  const [digitalCertificate, setDigitalCertificate] = useState<boolean>(false)
+
   useEffect(() => {
     LoadAllCredentialList()
   }, [])
-
-
   
 
   useEffect(() => {
@@ -78,7 +101,6 @@ export default function CredentialsDataSourceModal(props) {
       setFlgCertificate(false);
     }
   }, [flgCertificate]);
-
 
 
   useEffect(() => {
@@ -106,11 +128,12 @@ export default function CredentialsDataSourceModal(props) {
           id: item.id_Court,
           label: item.courtName,
           flg_QrCode: item.flg_QrCode,
-          flg_Certificate : item.flg_Certificate
-
+          flg_Certificate : item.flg_Certificate,
+          tpo_CredentialAllowed: item.tpo_CredentialAllowed,
+          id_CourtReference: item.id_CourtReference
         });
       });
-     
+    
       setListCourt(listCourts)
       setIsLoadingComboData(false)
     }
@@ -120,20 +143,19 @@ export default function CredentialsDataSourceModal(props) {
   }
 
 
-  const handleSaveCredentials = async () => {
-    
-    if(flgCertificate == false){
-      if (des_user == '' || password == ''){
-        addToast({type: "info", title: "Operação não realizada", description: "Usuário e senha são obrigatórios."})
-        return;
-      }
-    }
-    else{
-      if (file==null || passwordCredential == ''){
-        addToast({type: "info", title: "Operação não realizada", description: "Certificado e a senha são obrigatórios."})
-        return;
-      }
-    }
+  const SaveCredentials = async () => {
+    // if(flgCertificate == false){
+    //   if (des_user == '' || password == ''){
+    //     addToast({type: "info", title: "Operação não realizada", description: "Usuário e senha são obrigatórios."})
+    //     return;
+    //   }
+    // }
+    // else{
+    //   if (file==null || passwordCredential == ''){
+    //     addToast({type: "info", title: "Operação não realizada", description: "Certificado e a senha são obrigatórios."})
+    //     return;
+    //   }
+    // }
 
     if (description == ''){
       addToast({type: "info", title: "Operação não realizada", description: "A Descrição é obrigatória."})
@@ -146,7 +168,6 @@ export default function CredentialsDataSourceModal(props) {
     }
     
     try {
-
       const payload = {
         IdCredential: credentialId,
         UserName: des_user,
@@ -155,7 +176,10 @@ export default function CredentialsDataSourceModal(props) {
         id_Court: id_Court,
         qrCode : qrCode,
         token: token,
-        certificatePassword: passwordCredential
+        certificatePassword: passwordCredential,
+        tpo_Credential: credentialType,
+        flg_DigitalCertificate: digitalCertificate,
+        id_CourtReference: courtReference
       }
 
       const credential = new FormData()
@@ -164,8 +188,6 @@ export default function CredentialsDataSourceModal(props) {
       credential.append('payload', JSON.stringify(payload))  
 
       const response = await api.post('/Credenciais/Salvar', credential)
-
-      
 
       addToast({type: "success", title: "Operação realizada", description: "Credencial criada com sucesso."})
       setIsChanging(false)
@@ -182,13 +204,15 @@ export default function CredentialsDataSourceModal(props) {
     try {
       const response = await api.get<ICredential>('/Credenciais/Editar', { params: {id_Credential: id, token} });
 
-      console.log(response.data)
-
+      setFlgCertificate(response.data.flg_Certificate)
       setDes_user(response.data.des_Username);
       setDescription(response.data.des_Credential);
       setCourtId(response.data.id_Court);
       setDes_Court(response.data.courtName);
-      
+      setCourtReference(response.data.id_CourtReference);
+      HandleList(response.data.tpo_Credential)
+      setCredentialType(response.data.tpo_Credential);
+
       if (response.data.qrCode) {
         setTwoFactorAuth(true);
         setFlgQrCode(true);
@@ -196,33 +220,46 @@ export default function CredentialsDataSourceModal(props) {
       }
       else {
         setTwoFactorAuth(false);
+        setFlgQrCode(true);
         setQrCode('');
-        setFlgQrCode(false);
       }
 
-      if (response.data.nom_CertificateFile)
-      {
-        setFlgCertificate(true);
+      if (response.data.nom_CertificateFile) {
+        setFlgCertificate(true)
+        setDigitalCertificate(true)
       }
-
-
-
     }
     catch (err: any) {
       addToast({type: "info", title: "Operação não realizada", description: err.response.data.Message});
     }
-  };
+  }
 
 
-  const handleCourtSelected = (item) => { 
+  const HandleList = (item) => { 
+    const listSelectData: SelectCertType[] = []
+
+    const list = item.split(',')
+
+    setCredentialType(list[0])
+
+    list.map(item => {{
+      listSelectData.push({ id: item, label: item })
+    }})
+
+    setCredentialTypeList(listSelectData)
+  }
+
+
+  const CourtSelect = (item) => { 
     if (item){
       setDes_Court(item.label)
       setCourtId(item.id)
       setFlgQrCode(item.flg_QrCode === 'S');
       setFlgCertificate(item.flg_Certificate === 'S');
-
-      console.log(item.flg_Certificate);
-
+      setCourtReference(item.id_CourtReference)
+      setCredentialType('')
+      setDigitalCertificate(false)
+      HandleList(item.tpo_CredentialAllowed)
     }
     else{
       setDes_Court('')
@@ -237,12 +274,30 @@ export default function CredentialsDataSourceModal(props) {
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
     setCertificateFileName(event.target.files[0].name)
-  };
+  }
+
+
+  const ChangeCreditialTypeList = (id: string) => {
+    setCredentialType(id)
+
+    if(id == "ESAJ"){
+      setFlgCertificate(true)
+    }
+
+    if(id == "EPROC"){
+      setFlgCertificate(true)
+    }
+
+    if(id == "PJE"){
+      setFlgCertificate(false)
+    }
+  }
 
 
   return (
     <>
       <Modal
+        id="Modal"
         isOpen
         overlayClassName="react-modal-overlay"
         className="react-modal-content-medium"
@@ -260,7 +315,7 @@ export default function CredentialsDataSourceModal(props) {
               <Select
                 isSearchable
                 value={{ id: id_Court, label: des_Court }}
-                onChange={handleCourtSelected}
+                onChange={CourtSelect}
                 onInputChange={(term) => setCourtTerm(term)}
                 isClearable
                 placeholder=""
@@ -274,9 +329,39 @@ export default function CredentialsDataSourceModal(props) {
               />
             </AutoCompleteSelect>
           </div>
+          <br />
+
+          <div id='CredentialType' style={{display: 'flex', marginLeft: '2%', width: '400px'}}>
+            <label htmlFor="parcela">
+              Tipos de Credenciais
+              <Select
+                autoComplete="off"
+                placeholder="Selecione"
+                styles={selectStyles}
+                value={credentialTypeList.filter(options => options.id === credentialType)}
+                onChange={(item) => ChangeCreditialTypeList(item? item.id: '')}
+                options={credentialTypeList}
+              />
+            </label>
+          </div>
+          <br />
+
+          {flgCertificate && (
+            <>
+              <div style={{display:'flex', marginLeft:'2%'}}>
+                <input
+                  type="checkbox"
+                  checked={digitalCertificate}
+                  onChange={(e) => setDigitalCertificate(e.target.checked)}
+                />
+                &nbsp;&nbsp; Utilizar Certificado Digital
+              </div>
+              <br />
+            </>
+          )}
 
           {flgQrCode && (
-            <div style={{ marginLeft: '2.5%', marginTop: '10px' }}>
+            <div style={{ marginLeft: '2%', marginTop: '10px' }}>
               <label style={{ display: 'flex', alignItems: 'center' }}>
                 <input
                   type="checkbox"
@@ -292,7 +377,7 @@ export default function CredentialsDataSourceModal(props) {
           )}
 
           {flgQrCode && twoFactorAuth && (
-            <div style={{ marginLeft: '2.5%', marginTop: '10px' }}>
+            <div style={{ marginLeft: '2%', marginTop: '10px' }}>
               <label htmlFor="qrcode" style={{ marginBottom: '8px', display: 'block' }}>
                 Código QRCode
                 <input
@@ -307,10 +392,9 @@ export default function CredentialsDataSourceModal(props) {
               </label>
             </div>
           )}
-
           <br />
 
-          <div id='Descricao' style={{ marginLeft: '2.5%' }}>
+          <div id='Descricao' style={{ marginLeft: '2%' }}>
             <label htmlFor="text" style={{ marginBottom: '8px', display: 'white' }}>
               Descrição
               <input
@@ -326,17 +410,10 @@ export default function CredentialsDataSourceModal(props) {
               />
             </label>
           </div>
-
           <br />
 
-          {flgCertificate == true ? (
+          {digitalCertificate == true ? (
             <>
-              {/* <div id='1' style={{float:'left'}}>
-                <div id='2'>
-                  <input type="file" onChange={handleFileChange} />
-                </div>
-              </div> */}
-
               <div className="file-upload">
                 <label className="custom-file-upload">
                 <input type="file" onChange={handleFileChange} />
@@ -344,7 +421,9 @@ export default function CredentialsDataSourceModal(props) {
                   &nbsp;&nbsp; Escolher Arquivo
                 </label>
                 <br /><br />
-                <div>{certificateFileName}</div>
+                <div style={{ width: '300px'}}>
+                  {certificateFileName}
+                </div>
               </div>
 
               <div id='SenhaCredencial' style={{float:'right', marginRight:'250px', marginTop:'-55px'}}>
@@ -411,7 +490,7 @@ export default function CredentialsDataSourceModal(props) {
               <button
                 type='button'
                 className="buttonClick"
-                onClick={handleSaveCredentials}
+                onClick={SaveCredentials}
                 style={{ width: '100px' }}
               >
                 <FaSave />
