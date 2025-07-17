@@ -361,7 +361,7 @@ export default function CredentialsDataSourceModal(props) {
           )}
 
           {flgQrCode && (
-            <div style={{ marginLeft: '2.5%', marginTop: '10px' }}>
+            <div style={{ marginLeft: '2%', marginTop: '10px' }}>
               <label style={{ display: 'flex', alignItems: 'center' }}>
                 <input
                   type="checkbox"
@@ -377,7 +377,7 @@ export default function CredentialsDataSourceModal(props) {
           )}
 
           {flgQrCode && twoFactorAuth && (
-            <div style={{ marginLeft: '2.5%', marginTop: '10px' }}>
+            <div style={{ marginLeft: '2%', marginTop: '10px' }}>
               <label htmlFor="qrcode" style={{ marginBottom: '8px', display: 'block' }}>
                 Código QRCode
                 <input
@@ -394,7 +394,7 @@ export default function CredentialsDataSourceModal(props) {
           )}
           <br />
 
-          <div id='Descricao' style={{ marginLeft: '2.5%' }}>
+          <div id='Descricao' style={{ marginLeft: '2%' }}>
             <label htmlFor="text" style={{ marginBottom: '8px', display: 'white' }}>
               Descrição
               <input
@@ -421,7 +421,9 @@ export default function CredentialsDataSourceModal(props) {
                   &nbsp;&nbsp; Escolher Arquivo
                 </label>
                 <br /><br />
-                <div>{certificateFileName}</div>
+                <div style={{ width: '300px'}}>
+                  {certificateFileName}
+                </div>
               </div>
 
               <div id='SenhaCredencial' style={{float:'right', marginRight:'250px', marginTop:'-55px'}}>
