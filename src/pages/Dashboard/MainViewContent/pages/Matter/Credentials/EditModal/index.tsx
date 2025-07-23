@@ -17,6 +17,7 @@ import { Box, Container, Content, OverlayPermission, ItemBox } from './styles';
 import { set } from 'date-fns';
 import { FaSave, FaIdCard, FaRegTimesCircle } from 'react-icons/fa';
 import { GiConsoleController } from 'react-icons/gi';
+import { red } from '@material-ui/core/colors';
 /*teste commit*/
 
 export interface ISelectData {
@@ -483,7 +484,12 @@ export default function CredentialsDataSourceModal(props) {
             </div>  
           )}
 
-          <br />
+          {(courtReference == "826" && credentialType == "EPROC") &&(
+            <div style={{fontSize:'12px', color: '#FF0000'}}>
+              O monitoramento de processos em Segredo de Justiça no EPROC-SP está em fase de desenvolvimento, operando em caráter meramente experimental - durante este período os processos devem ser acompanhados no site do tribunal.
+            </div>
+          )}
+          
 
           <div id='Buttons' style={{ flex: '0 0 auto', padding: '5px', width: '100%', textAlign: 'center', marginTop: "2%" }}>
             <div style={{ display: 'inline-block', marginRight: '10px' }}>
