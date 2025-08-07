@@ -1709,7 +1709,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
       if(response.data)
       {
-        let cleanNumber = numWhatsApp.replace(/\D/g, ''); 
+        let cleanNumber = response.data.replace(/\D/g, ''); 
         let whatsAppText = 
           `Olá ${customerNameWhatsApp}\n\n` +
           `Você tem um compromisso agendado:\n` +
