@@ -15,6 +15,9 @@ import FinancialMovement from '../MainViewContent/pages/Financeiro/Movement';
 import FinancialDeal from '../MainViewContent/pages/Financeiro/Deal';
 import Matter from '../MainViewContent/pages/Matter/List';
 import Publication from '../MainViewContent/pages/Publication';
+import Workflow from '../MainViewContent/pages/Workflow/List';
+import CreateWorkflow from '../MainViewContent/pages/Workflow/Edit';
+
 import Coverages from '../../Coverages';
 import APIDocumentation from '../../APIDocumentation';
 import Subscriber from '../../Subscriber';
@@ -117,6 +120,10 @@ const Routes: React.FC = () => {
       <Route path="/userlist" exact component={UserList} isPrivate />
       <Route path="/user/:id" component={CreateUser} isPrivate />
       <Route path="/customer/list" exact component={Cliente} isPrivate />
+      
+      <Route path="/workflow/list" exact component={Workflow} isPrivate />
+      <Route path="/workflow/edit/:id" component={CreateWorkflow} isPrivate />
+
       <Route path="/documentModel/list" exact component={DocumentModel} isPrivate />
       <Route path="/documentModel/edit/:cod_DocumentoModelo" exact component={DocumentModelEdit} isPrivate />
       {/* <Route path="/documentModel/TestCkEditor" exact component={TestCkEditor} isPrivate /> */}

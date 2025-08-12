@@ -8,7 +8,7 @@ import FinanceOptionsMenu from './FinanceOptions';
 import BillingInvoiceOptionsMenu from './FinanceOptions/BillingInvoiceOptions';
 
 const MenuHamburguer = (props) => {
-
+  //alert(props.name);
   if (props.name === 'customerOptions'){
     return <CustomerListOptionsMenu />
   }

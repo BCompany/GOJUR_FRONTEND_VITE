@@ -1,3 +1,7 @@
+    export const workflowTriggerTypes = [
+      { label: 'Data', id: 'data'},
+      { label: 'Ação concluída', id: 'acaoconcluida'}
+    ]
 
     export const phoneTypes = [
       { label: 'Comercial',   id: 'C'},

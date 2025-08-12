@@ -91,6 +91,14 @@ const HeaderPageOptionsMenu = () => {
     handleRedirect(`/ReportParameters`)
   }, []);
 
+  const handleWorkflow = useCallback(() => {
+    handleIsOpenMenuConfig(true)
+    setShowConfig(false)
+    setShowConfigOthers(false)
+    handleIsMenuOpen(false)
+    handleRedirect(`/Workflow/List`)
+  }, []);
+
 
   const handleProfile = useCallback(() => {
     handleIsOpenMenuConfig(true)
@@ -177,6 +185,18 @@ const HeaderPageOptionsMenu = () => {
           </>
         )}
         
+        {checkReportParameters &&(
+          <>
+            <div style={{display:(showConfig?'grid':'none')}}>
+              <hr />
+              <button type="button" className="menuLink" onClick={() => {handleWorkflow();}}>
+                Workflow
+              </button>
+            </div>
+          </>
+        )}
+
+
         <hr />
         <div className="menuSection" onClick={() => setShowConfigPeople(!showConfigPeople)}>
           <FaUsersCog />

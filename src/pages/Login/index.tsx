@@ -80,7 +80,7 @@ const LoginScreen: React.FC = () => {
 
         localStorage.setItem("@GoJur:LoginType", "N");
         localStorage.setItem("@GoJur:firstPage", "S");
-
+       
         history.push("/clientRedirect");
       } catch (err: any) {
         if (err instanceof Yup.ValidationError) {
