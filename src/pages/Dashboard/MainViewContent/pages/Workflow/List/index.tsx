@@ -196,7 +196,7 @@ const WorkflowList = () => {
 
   // EDIT
   const handleEdit = async(id: number) => {
-    history.push(`/documentmodel/edit/${id}`)
+    history.push(`/workflow/edit/${id}`)
   };
 
   // OPEN MODAL

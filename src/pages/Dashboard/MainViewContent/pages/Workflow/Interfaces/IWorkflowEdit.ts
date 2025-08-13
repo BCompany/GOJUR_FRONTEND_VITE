@@ -6,8 +6,14 @@ export interface IWorkflowTriggers {
     triggerType: string;
     configuration: {
         label: string;
-    };
+    } | null;
 }
 
 
 
+export interface IWorkflowData {
+    workflowId: number | undefined;
+    name: string;
+    companyId: number | undefined;
+    triggers: IWorkflowTriggers[];
+}
