@@ -105,7 +105,7 @@ const WorkflowList = () => {
         window.open(`${envProvider.redirectUrl}ReactRequest/Redirect?token=${token}&route=workflow/list`)
       }
       else{
-        handleDeleteCustomer(currentWorkflowId)
+        handleDeleteWorkflow(currentWorkflowId)
       }
 
       setIsDeleting(false)
@@ -118,7 +118,7 @@ const WorkflowList = () => {
 
 
 
-    const handleDeleteCustomer = async (workflowId: number) => {
+    const handleDeleteWorkflow = async (workflowId: number) => {
       try {
         setIsDeletingCustomer(true)
         
@@ -223,7 +223,7 @@ const WorkflowList = () => {
   }, [pageNumber, captureText, isPagination, isEndPage])
 
   
-  const handleCheckBoxDeleteCustomer = (workflowId: number) => {
+  const handleCheckBoxDeleteWorkflow = (workflowId: number) => {
     setIsDeleting(true)
     setCurrentWorkflowId(workflowId);
   }
@@ -244,7 +244,7 @@ const WorkflowList = () => {
     if (column.name === 'remove') {
       return (
 
-        <Table.Cell onClick={() => handleCheckBoxDeleteCustomer(props.row.workflowId)}>
+        <Table.Cell onClick={() => handleCheckBoxDeleteWorkflow(props.row.workflowId)}>
 
           &nbsp;&nbsp;
           <FiTrash title="Clique para remover" />

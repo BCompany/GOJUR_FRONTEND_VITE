@@ -8,6 +8,7 @@ import React, {ChangeEvent, useCallback, useEffect , useRef, useState, UIEvent} 
 import {useHistory, useLocation  } from 'react-router-dom'
 import { useForm } from 'react-hook-form';
 import { FiLock, FiPlus, FiSave, FiTrash } from 'react-icons/fi';
+import { FiPlusCircle, FiXCircle } from "react-icons/fi";
 import { RiCloseLine, RiNewspaperFill } from 'react-icons/ri';
 import { MdBlock } from 'react-icons/md';
 import { formatField, selectStyles, useDelay, currencyConfig} from 'Shared/utils/commonFunctions';
@@ -118,6 +119,7 @@ export default function Workflow() {
   const {isConfirmMessage, isCancelMessage, caller, handleCancelMessage,handleConfirmMessage,handleCheckConfirm, handleCaller } = useConfirmBox();
   const [currentWorkflowId, setCurrentWorkflowId] = useState<number>(0);
   const [isDeletingTrigger, setIsDeletingTrigger] = useState(false);
+  const [painelAberto, setPainelAberto] = useState<number | null>(null);
 
   // Initialization
   useEffect (() => {
@@ -375,8 +377,6 @@ const handleChangeTrigger = useCallback((value: string, triggerId: number) => {
           token
         }})
   
-        handleDeleteTrigger(workflowtriggerId)
-
         addToast({
           type: 'success',
           title: 'Gatilho Deletado',
@@ -390,10 +390,12 @@ const handleChangeTrigger = useCallback((value: string, triggerId: number) => {
       } catch (err) {
         addToast({
           type: 'info',
-          title: 'Falha ao apagar workflow',
+          title: 'Falha ao apagar Gatilho',
           description: err.response.data.Message
         });
   
+        handleDeleteTrigger(workflowtriggerId)
+
         setIsDeletingTrigger(false)
         setIsDeleting(false)
         setCurrentWorkflowId(0)
@@ -414,6 +416,9 @@ const handleChangeTrigger = useCallback((value: string, triggerId: number) => {
     setCurrentWorkflowId(workflowId);
   }
 
+const abrirPainel = (id: number) => {
+  setPainelAberto(prev => (prev === id ? null : id)); // alterna abrir/fechar
+};
 
   return (
     <Container>
@@ -494,7 +499,62 @@ const handleChangeTrigger = useCallback((value: string, triggerId: number) => {
                         <FiTrash />
                         Apagar este gatilho
                       </button>
+
+                      <button
+                        type="button"
+                        className="buttonLinkClick"
+                        onClick={() => abrirPainel(trigger.workflowTriggerId as number)}
+                      >
+                        {painelAberto === trigger.workflowTriggerId ? (
+                          <>
+                            <FiXCircle />
+                            Fechar ações
+                          </>
+                        ) : (
+                          <>
+                            <FiPlusCircle />
+                            Incluir ação
+                          </>
+                        )}
+                      </button>
+          
                     </div>
+
+
+{/* Painel de ações */}
+      {painelAberto === trigger.workflowTriggerId && (
+          <div
+              style={{
+                marginTop: "8px",
+                padding: "16px",
+                borderRadius: "12px",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                transition: "all 0.3s ease",
+              }}
+            >
+          <label htmlFor="telefone" id="contact">
+            <Select
+              isSearchable
+              id="contactSelect"
+              styles={selectStyles}
+              value={workflowTriggerTypes.filter(options => options.id === trigger.triggerType)}
+              onChange={(item) => handleChangeTriggerType(item?.id, trigger.workflowTriggerId)}
+              options={workflowTriggerTypes}
+              isDisabled={true}
+              placeholder="Selecione"
+            />
+            <input
+              type="text"
+              autoComplete="off"
+              value={trigger.configuration?.label || ""}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                handleChangeTrigger(e.target.value, trigger.workflowTriggerId)
+              }
+              maxLength={30}
+            />
+          </label>
+        </div>
+      )}
 
                   </section>
 
