@@ -13,7 +13,6 @@ import { MdBlock } from 'react-icons/md';
 import { formatField, selectStyles, useDelay, currencyConfig} from 'Shared/utils/commonFunctions';
 import { useDefaultSettings } from 'context/defaultSettings';
 import { useToast } from 'context/toast';
-import { useConfirmBox } from 'context/confirmBox';
 import { Clear, Tab, Tabs } from 'Shared/styles/Tabs';
 import api from 'services/api';
 import { useMatter } from 'context/matter';
@@ -27,7 +26,9 @@ import { useCustomer } from 'context/customer';
 import { Card, Container, Content, Form, ListCards, CardMatter, MatterListCards} from './styles';
 import { IWorkflowTriggers, IWorkflowData} from '../Interfaces/IWorkflowEdit';
 import { workflowTriggerTypes } from 'Shared/utils/commonListValues';
-
+import ConfirmBoxModal from 'components/ConfirmBoxModal';
+import { useConfirmBox } from 'context/confirmBox';
+import { trigger } from 'swr';
 
 export default function Workflow() {
 
@@ -40,7 +41,6 @@ export default function Workflow() {
   const { pathname  } = useLocation();
   const { handleSubmit} = useForm<IWorkflowData>();
   const { handleReloadBusinesCard, reloadBusinessCard } = useCustomer();
-  const {isConfirmMessage, isCancelMessage, caller, handleCancelMessage,handleConfirmMessage } = useConfirmBox();
   const [showSalesFunnelMenu, setShowSalesFunnelMenu] = useState<boolean>(true)
   const { showSalesChannelModal } = useModal();
   const [isLoading , setIsLoading] = useState(true); // objecto todo de do cliente
@@ -115,11 +115,13 @@ export default function Workflow() {
   const apiKey = localStorage.getItem('@GoJur:apiKey');
   const checkpermissionDocument = permissionsSecurity.find(item => item.name === "CFGDCMEM");
   const [confirmDeleteModal, setConfirmDeleteModal] = useState<boolean>(false);
+  const {isConfirmMessage, isCancelMessage, caller, handleCancelMessage,handleConfirmMessage,handleCheckConfirm, handleCaller } = useConfirmBox();
+  const [currentWorkflowId, setCurrentWorkflowId] = useState<number>(0);
+  const [isDeletingTrigger, setIsDeletingTrigger] = useState(false);
 
   // Initialization
   useEffect (() => {
-    handleValidateSecurity(SecurityModule.configuration)
-  
+    //handleValidateSecurity(SecurityModule.configuration)
     LoadWorkflow()
   },[])
 
@@ -162,6 +164,7 @@ export default function Workflow() {
       setWorkflow(response.data)
 
       setWorkflowName(response.data.name);
+     
 
       if(response.data.triggers.length < 1) {
         const id = Math.random()
@@ -180,6 +183,10 @@ export default function Workflow() {
       else{
         setWorkflowTrigger(response.data.triggers)
       }
+
+      
+      setIsLoading(false)
+      setIsInitialize(false)
 
       
       } catch (err) {
@@ -255,7 +262,7 @@ const handleSubmitWorkflow = useCallback(async () => {
       localStorage.removeItem('@GoJur:businessCustomerId')
     }
 
-  },[workflowTrigger, workflow.cod_Pessoa, workflow.tpo_Telefone01, workflow.num_Telefone01, workflow.tpo_Telefone02, workflow.num_Telefone02, workflow.cod_PessoaFisica, workflow.cod_Cliente, workflow.cod_PessoaJuridica, workflow.cod_SistemaUsuarioEmpresa, workflow.doubleCheck, workflow.cod_Empresa, addToast, history]);
+  },[workflowTrigger, workflow.name, workflow.tpo_Telefone01, workflow.num_Telefone01, workflow.tpo_Telefone02, workflow.num_Telefone02, workflow.cod_PessoaFisica, workflow.cod_Cliente, workflow.cod_PessoaJuridica, workflow.cod_SistemaUsuarioEmpresa, workflow.doubleCheck, workflow.cod_Empresa, workflowName, addToast, history]);
 
 
 
@@ -338,6 +345,74 @@ const handleChangeTrigger = useCallback((value: string, triggerId: number) => {
     }
   }
 
+  
+    useEffect(() => {
+  
+      if (isConfirmMessage && caller=="WorkflowList"){
+  
+        if (!isDeleting){
+          window.open(`${envProvider.redirectUrl}ReactRequest/Redirect?token=${token}&route=workflow/list`)
+        }
+        else{
+          handleDeleteWorkflowGatilho(currentWorkflowId)
+        }
+  
+        setIsDeleting(false)
+        handleConfirmMessage(false)
+        handleCaller('')
+        handleCheckConfirm(false)
+      }
+  
+    }, [isConfirmMessage])
+
+
+     const handleDeleteWorkflowGatilho = async (workflowtriggerId: number) => {
+      try {
+        setIsDeletingTrigger(true)
+     
+        await api.delete('/Workflow/DeletarGatilho', { params:{
+          id: workflowtriggerId,
+          token
+        }})
+  
+        handleDeleteTrigger(workflowtriggerId)
+
+        addToast({
+          type: 'success',
+          title: 'Gatilho Deletado',
+          description: 'O gatilho selecionado foi deletado',
+        });
+  
+        setIsDeleting(false)
+        setIsDeletingTrigger(false)
+        setCurrentWorkflowId(0)
+  
+      } catch (err) {
+        addToast({
+          type: 'info',
+          title: 'Falha ao apagar workflow',
+          description: err.response.data.Message
+        });
+  
+        setIsDeletingTrigger(false)
+        setIsDeleting(false)
+        setCurrentWorkflowId(0)
+      }
+    }
+
+
+  useEffect(() => {
+    if (isCancelMessage){
+      setIsDeleting(false)
+      handleCancelMessage(false)
+    }
+  }, [isCancelMessage])
+
+
+  const handleCheckBoxDeleteCustomer = (workflowId: number) => {
+    setIsDeleting(true)
+    setCurrentWorkflowId(workflowId);
+  }
 
 
   return (
@@ -399,6 +474,7 @@ const handleChangeTrigger = useCallback((value: string, triggerId: number) => {
                         value={workflowTriggerTypes.filter(options => options.id === trigger.triggerType)}
                         onChange={(item) => handleChangeTriggerType(item?.id, trigger.workflowTriggerId)}
                         options={workflowTriggerTypes}
+                        isDisabled={true}
                         placeholder="Selecione"
                       />
                       <input
@@ -411,7 +487,10 @@ const handleChangeTrigger = useCallback((value: string, triggerId: number) => {
                     </label>
 
                     <div>
+                     {/* 
                       <button type="button" className='buttonLinkClick' onClick={() => handleDeleteTrigger(trigger.workflowTriggerId)}>
+                     */}    
+                      <button type="button" className='buttonLinkClick' onClick={() => handleCheckBoxDeleteCustomer(trigger.workflowTriggerId)}>
                         <FiTrash />
                         Apagar este gatilho
                       </button>
@@ -437,13 +516,7 @@ const handleChangeTrigger = useCallback((value: string, triggerId: number) => {
                     Salvar
                   </button>
 
-                  { pathname.substr(15) != '0' && (
-                    <button className="buttonClick" type="button" onClick={() => handleDeleteCustomer(workflow.cod_Cliente, false)}>
-                      <FiTrash />
-                      Excluir
-                    </button>
-                  )}
-
+          
                   <button className="buttonClick" type="button" onClick={() => history.push('/workflow/list')}>
                     <MdBlock />
                     Fechar
@@ -463,9 +536,21 @@ const handleChangeTrigger = useCallback((value: string, triggerId: number) => {
    
       </Content>
 
+      
+    {isDeleting && (
+        
+                <ConfirmBoxModal
+                  title="Excluir Registro"
+                  caller="WorkflowList"
+                  message="Confirma a exclusão deste workflow ?"
+                />
+        
+        )}
         
 
     </Container>
   );
+
+
 };
 

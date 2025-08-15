@@ -22,7 +22,8 @@ import { HeaderPage } from 'components/HeaderPage';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import { Overlay } from 'Shared/styles/GlobalStyle';
 import { Container, Content , ContainerMobile } from './styles';
- import UserWorkflowModal from './WorkflowModal';
+import ConfirmBoxModal from 'components/ConfirmBoxModal';
+import { useConfirmBox } from 'context/confirmBox';
 
 export interface IDefaultsProps {
   id: string;
@@ -45,7 +46,7 @@ const WorkflowList = () => {
   const { handleUserPermission } = useDefaultSettings();
   const [workflowList, setWorkflowList] = useState<IWorkflowData[]>([]);
   const token = localStorage.getItem('@GoJur:token');
-  const { isOpenModal, handleCaller, handleModalActive, handleModalActiveId, caller, modalActive } = useModal();
+  //const { isOpenModal, handleCaller, handleModalActive, handleModalActiveId, caller, modalActive } = useModal();
    const [totalPageCount, setTotalPageCount] = useState<number>(0);
   const [isLoadingSearch, setIsLoadingSearch]= useState<boolean>(false);
   const [isLoading, setIsLoading]= useState<boolean>(true);
@@ -54,6 +55,10 @@ const WorkflowList = () => {
   const [isPagination, setIsPagination] = useState(false);
   const { isMOBILE } = useDevice();
   const [hasAccess, setHasAccess] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [currentWorkflowId, setCurrentWorkflowId] = useState<number>(0);
+  const {isConfirmMessage, isCancelMessage, caller, handleCancelMessage,handleConfirmMessage,handleCheckConfirm, handleCaller } = useConfirmBox();
+  const [isDeletingCustomer, setIsDeletingCustomer] = useState(false);
 
   
   const columns = [
@@ -81,6 +86,78 @@ const WorkflowList = () => {
   useEffect(() => {
     LoadWorkflow();
   },[pageNumber])
+
+
+  useEffect(() => {
+
+    if (isCancelMessage){
+      setIsDeleting(false)
+      handleCancelMessage(false)
+    }
+  }, [isCancelMessage])
+
+
+  useEffect(() => {
+
+    if (isConfirmMessage && caller=="WorkflowList"){
+
+      if (!isDeleting){
+        window.open(`${envProvider.redirectUrl}ReactRequest/Redirect?token=${token}&route=workflow/list`)
+      }
+      else{
+        handleDeleteCustomer(currentWorkflowId)
+      }
+
+      setIsDeleting(false)
+      handleConfirmMessage(false)
+      handleCaller('')
+      handleCheckConfirm(false)
+    }
+
+  }, [isConfirmMessage])
+
+
+
+    const handleDeleteCustomer = async (workflowId: number) => {
+      try {
+        setIsDeletingCustomer(true)
+        
+        await api.delete('/Workflow/Deletar', { params:{
+          id: workflowId,
+          token
+        }})
+      
+  
+        const workflow = workflowList.find(wk => wk.workflowId === workflowId);
+        if (workflow){
+          const workflowListRefresh = workflowList.filter(wk => wk.workflowId !== workflowId);
+          // customerListRefresh = customerList.filter(cust => cust.nom_Pessoa.toLowerCase() !== customer.nom_Pessoa.toLowerCase());
+          setWorkflowList(workflowListRefresh);
+        }
+  
+        addToast({
+          type: 'success',
+          title: 'Workflow Deletado',
+          description: 'O workflow selecionado foi deletado',
+        });
+  
+        setIsDeleting(false)
+        setIsDeletingCustomer(false)
+        setCurrentWorkflowId(0)
+  
+      } catch (err) {
+        addToast({
+          type: 'info',
+          title: 'Falha ao apagar workflow',
+          description: err.response.data.Message
+        });
+  
+        setIsDeletingCustomer(false)
+        setIsDeleting(false)
+        setCurrentWorkflowId(0)
+      }
+    }
+  
 
 
   // METHODS
@@ -128,7 +205,6 @@ const WorkflowList = () => {
       setIsLoadingSearch(false)
       setIsLoading(false)
       handleCaller('')
-      handleModalActiveId(0)
 
     } catch (err: any) {
       setHasAccess(false)
@@ -147,19 +223,14 @@ const WorkflowList = () => {
   }, [pageNumber, captureText, isPagination, isEndPage])
 
   
+  const handleCheckBoxDeleteCustomer = (workflowId: number) => {
+    setIsDeleting(true)
+    setCurrentWorkflowId(workflowId);
+  }
+  
   const CustomCell = (props) => { 
 
     const { column } = props;
-
-    if (column.name === 'des_TituloWithType') {
-      return (
-        <Table.Cell onClick={(e) => console.log(e)} {...props}>
-          <div title={props.row.des_TituloWithType} style={{textOverflow:'ellipsis', overflow:'hidden'}}>
-            {props.row.des_TituloWithType}
-          </div>
-        </Table.Cell>
-      );
-    }
 
     if (column.name === 'edit') {
       return (
@@ -172,7 +243,9 @@ const WorkflowList = () => {
 
     if (column.name === 'remove') {
       return (
-        <Table.Cell onClick={(e) => handleClick(props)} {...props}>
+
+        <Table.Cell onClick={() => handleCheckBoxDeleteCustomer(props.row.workflowId)}>
+
           &nbsp;&nbsp;
           <FiTrash title="Clique para remover" />
         </Table.Cell>
@@ -198,15 +271,6 @@ const WorkflowList = () => {
   const handleEdit = async(id: number) => {
     history.push(`/workflow/edit/${id}`)
   };
-
-  // OPEN MODAL
-  const handleOpenModal = () => {
-    
-     isOpenModal('0')
-
-    //history.push(`/documentmodel/edit/0`)
-  }
-
 
   // DELETE
   const deleteWorkflow = async(id: number) => {
@@ -296,7 +360,7 @@ const WorkflowList = () => {
 
             <div style={{float:'right', marginRight:'185px'}}>
               <div style={{float:'left', marginRight:'10px'}}>
-                {hasAccess && (
+                
                   <button 
                     className="buttonLinkClick" 
                     title="Clique para incluir um Workflow"
@@ -306,9 +370,7 @@ const WorkflowList = () => {
                     <FaFileAlt />
                     Incluir novo Workflow
                   </button>
-                    
-
-                )}
+            
               </div>
             </div>  
           </div>
@@ -334,7 +396,23 @@ const WorkflowList = () => {
           </Content>
 
         </Container>
+
+
       )}
+
+
+
+      
+      {isDeleting && (
+      
+              <ConfirmBoxModal
+                title="Excluir Registro"
+                caller="WorkflowList"
+                message="Confirma a exclusão deste workflow ?"
+              />
+      
+      )}
+
 
       {isMOBILE &&(
         <ContainerMobile>
