@@ -377,6 +377,8 @@ const handleChangeTrigger = useCallback((value: string, triggerId: number) => {
           token
         }})
   
+        handleDeleteTrigger(workflowtriggerId)
+
         addToast({
           type: 'success',
           title: 'Gatilho Deletado',
