@@ -18,11 +18,15 @@ import CredentialsDataSourceModal from '../Credentials/EditModal';
 export interface ICredentials {
   id_Credential: string;
   des_Credential: string;
+  id_CourtReference: string;
+  hasPassword: string;
 }
 
 export interface ISelectData {
   id: string;
   label: string;
+  id_CourtReference: string;
+  hasPassword: string;
 }
 
 export default function FollowModal(props) {
@@ -43,25 +47,32 @@ export default function FollowModal(props) {
   const [credentialsList, setCredentialsList] = useState<ISelectData[]>([]);
   const [showNewCredentials, setShowNewCredentials] = useState<boolean>(false)
   const [isNewCredential, setIsNewCredential] = useState<boolean>(false);
-
+  const [courtReference, setCourtReference] = useState('');
+  const [hasPassword, setHasPassword] = useState('');
   const token = localStorage.getItem('@GoJur:token');
+
 
   useEffect(() => {
     LoadCredentials();
   }, []);
+
 
   const handleCredentialSelected = (item) => {
     if (item) {
       setCredentialValue(item.label);
       setCredentialId(item.id);
       handleSelectCredentialId(item.id);
-    } else {
+      setCourtReference(item.id_CourtReference);
+      setHasPassword(item.hasPassword)
+    } 
+    else {
       setCredentialValue('');
       LoadCredentials();
       setCredentialId('');
       setCredentialTerm('');
     }
-  };
+  }
+
 
   const handleIsNewCredential = (id, description) => {
     LoadCredentials();
@@ -69,6 +80,7 @@ export default function FollowModal(props) {
     setCredentialValue(description);
     handleSelectCredentialId(id);
   }
+
 
   const LoadCredentials = async () => {
     if (isLoadingComboData) {
@@ -88,6 +100,8 @@ export default function FollowModal(props) {
         return listCredentials.push({
           id: item.id_Credential,
           label: item.des_Credential,
+          id_CourtReference: item.id_CourtReference,
+          hasPassword : item.hasPassword
         });
       });
 
@@ -97,15 +111,26 @@ export default function FollowModal(props) {
     } catch (err) {
       console.log(err);
     }
-  };
+  }
+
 
   const handleCloseEditModal = async () => {
     setShowNewCredentials(false)
-  };
+  }
+
 
   const openNewCredentialModal = useCallback(() => {
     setShowNewCredentials(true)
-  }, [showNewCredentials]);
+  }, [showNewCredentials])
+
+
+  const Confirm = () => {
+
+    alert('Confirmar')
+
+    // handleFollowMatter
+  }
+
 
   return (
     <>
@@ -152,7 +177,6 @@ export default function FollowModal(props) {
         {isSecretJustice && (
           <>
             <br />
-  
             <div style={{ display: "flex", justifyContent: 'center', alignItems: 'center' }}>
               <AutoCompleteSelect className="selectCredentials" style={{ width: '50%' }}>
                 <p>Credenciais:</p>
@@ -186,33 +210,31 @@ export default function FollowModal(props) {
             </div>
           </>
         )}
+
+        {courtReference == "808" && (
+          <>
+          <br />
+          <div id='TJSE' style={{ display:"flex", justifyContent:'center', alignItems:'center', color:'#FF0000', fontSize:'14px' }}>
+            Para pesquisa no PJE/TJES é necessário que seja informado o usuário senha
+          </div>
+          </>
+        )}
   
         <div style={{ flex: '0 0 auto', padding: '10px', bottom: '10px', width: '100%', marginTop: "4%", marginBottom: "7%" }}>
           <div style={{ float: 'right', marginRight: '1%' }}>
-            <button
-              type='button'
-              className="buttonClick"
-              onClick={() => handleCloseFollowModal()}
-              style={{ width: '100px' }}
-            >
+            <button type='button' className="buttonClick" onClick={() => handleCloseFollowModal()} style={{ width: '100px' }}>
               <FaRegTimesCircle />
               Cancelar
             </button>
           </div>
   
           <div style={{ float: 'right', marginRight: '10px' }}>
-            <button 
-              className="buttonClick" 
-              title="Clique para monitorar o processo"
-              type="submit"
-              onClick={handleFollowMatter}
-            >
+            <button className="buttonClick" title="Clique para monitorar o processo" type="submit" onClick={Confirm}>
               <SiSonarsource />
               Confirmar
             </button>
           </div>
         </div>
-  
       </FModal>
     </>
   );
