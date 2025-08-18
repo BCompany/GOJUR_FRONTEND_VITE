@@ -17,3 +17,9 @@ export interface IWorkflowData {
     companyId: number | undefined;
     triggers: IWorkflowTriggers[];
 }
+
+
+export interface ISelectValues {
+  id: string;
+  label: string;
+}

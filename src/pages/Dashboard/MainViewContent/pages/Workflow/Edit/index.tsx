@@ -25,11 +25,16 @@ import { useDocument } from 'context/document';
 import DocumentModal from 'components/Modals/CustomerModal/DocumentModal';
 import { useCustomer } from 'context/customer';
 import { Card, Container, Content, Form, ListCards, CardMatter, MatterListCards} from './styles';
-import { IWorkflowTriggers, IWorkflowData} from '../Interfaces/IWorkflowEdit';
+import { IWorkflowTriggers, IWorkflowData, ISelectValues} from '../Interfaces/IWorkflowEdit';
 import { workflowTriggerTypes } from 'Shared/utils/commonListValues';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
 import { useConfirmBox } from 'context/confirmBox';
 import { trigger } from 'swr';
+import { FcAbout } from 'react-icons/fc';
+import { loadingMessage, noOptionsMessage } from 'Shared/utils/commonConfig';
+import { AppointmentPropsSave, AppointmentPropsDelete, SelectValues, Data, dataProps, LembretesData, MatterData, ModalProps, ResponsibleDTO, Settings, ShareListDTO, userListData } from 'pages/Dashboard/MainViewContent/pages/Interfaces/ICalendar';
+import { dayRecurrence, optionsLembrete, weekRecurrence } from 'pages/Dashboard/MainViewContent/pages/Dashboard/resorces/DashboardComponents/CreateAppointment/ListValues/List'
+import TimePicker from 'components/TimePicker';
 
 export default function Workflow() {
 
@@ -120,11 +125,24 @@ export default function Workflow() {
   const [currentWorkflowId, setCurrentWorkflowId] = useState<number>(0);
   const [isDeletingTrigger, setIsDeletingTrigger] = useState(false);
   const [painelAberto, setPainelAberto] = useState<number | null>(null);
+  const [appointmentSubject, setAppointmentSubject] = useState<string>(''); // Assuntos do Compromisso
+  const [optionsSubject, setOptionsSubject] = useState<ISelectValues[]>([]); // Lista de Assuntos
+  const [appointmentSubjectId, setAppointmentSubjectId] = useState<string>(''); // Assuntos do Compromisso
+  const [appointmentNotifyMatterCustomer, setAppointmentNotifyMatterCustomer,] = useState<string>('N'); // Controla o Input de notificação de cliente
+  const [appointmentRemindersList, setAppointmentRemindersList] = useState<LembretesData[]>([]); // Lista de Lembretes
+  const [openReminderModal, setOpenReminderModal] = useState<boolean>(false)
+  const [appointmentBlockUpdate, setAppointmentBlockUpdate] = useState(true);
+  const [appointmentHourBeggin, setAppointmentHourBeggin] = useState<string>('',); // Hora de Inicio do compromisso
+  const [appointmentHourEnd, setAppointmentHourEnd] = useState<string>(''); // Hora de termino do compromisso
+   
 
   // Initialization
   useEffect (() => {
     //handleValidateSecurity(SecurityModule.configuration)
     LoadWorkflow()
+     LoadSubject();
+    setAppointmentBlockUpdate(false)
+
   },[])
 
   // Insert new sales chanel and update combo
@@ -413,7 +431,7 @@ const handleChangeTrigger = useCallback((value: string, triggerId: number) => {
   }, [isCancelMessage])
 
 
-  const handleCheckBoxDeleteCustomer = (workflowId: number) => {
+  const handleCheckBoxDeleteTrigger = (workflowId: number) => {
     setIsDeleting(true)
     setCurrentWorkflowId(workflowId);
   }
@@ -421,6 +439,203 @@ const handleChangeTrigger = useCallback((value: string, triggerId: number) => {
 const abrirPainel = (id: number) => {
   setPainelAberto(prev => (prev === id ? null : id)); // alterna abrir/fechar
 };
+
+
+const LoadSubject = useCallback(async (reload = false, termSearch = '') => {
+    try {
+      if (termSearch  === ''){
+        termSearch = appointmentSubject;
+      }
+
+      if (reload){
+        termSearch = '';
+      }
+
+      const response = await api.post(`/Assunto/Listar`,{
+          description: termSearch,
+          token
+      });
+
+      const subjectList: ISelectValues[] = [];
+      response.data.map(item =>{
+        return subjectList.push({
+          id: item.id,
+          label: item.value
+        })
+      })
+
+      setOptionsSubject(subjectList);
+    }
+    catch (err) {
+      console.log(err);
+    }
+  }, [appointmentSubject])
+
+
+  const handleSubjectChange = (item) => {
+    if (item){
+      setAppointmentSubject(item.label)
+      setAppointmentSubjectId(item.id)
+    }
+    else{
+      setAppointmentSubject('')
+      setAppointmentSubjectId('')
+      LoadSubject(true)
+    }
+  }
+
+    const handleSelectLembretes = useCallback(
+      (event: ChangeEvent<HTMLSelectElement>) => {
+        const appendLembretes = event.target.value;
+        setAppointmentNotifyMatterCustomer('N');
+  
+        if (event.target.value === '00'){
+          return;
+        };
+  
+        if (event.target.value === 'PE'){
+          setOpenReminderModal(true)
+  
+          event.target.value = "00"
+  
+          return
+        };
+  
+        setAppointmentRemindersList([
+          ...appointmentRemindersList,
+          {
+            qtdReminder: appendLembretes,
+            notifyMatterCustomer: appointmentNotifyMatterCustomer,
+            emailNotification: 'N',
+            whatsAppNotification: 'N'
+          },
+        ]);
+  
+        if (
+          appointmentRemindersList.findIndex(
+            key => key.qtdReminder === appendLembretes,
+          ) != -1
+        ) {
+          const newdata = Array.from(appointmentRemindersList);
+          const key = newdata.findIndex(
+            item => item.qtdReminder === appendLembretes,
+          );
+          newdata.slice(key, 1);
+  
+          setAppointmentRemindersList(newdata);
+        }
+      },
+      [appointmentNotifyMatterCustomer, appointmentRemindersList],
+    ); // adiciona um lembrete a lista
+  
+
+
+  const CustomerEmailNotification = useCallback(key => {
+    const newList = Array.from(appointmentRemindersList);
+    const chave = newList.findIndex(i => i.qtdReminder === key);
+
+    if (newList[chave].emailNotification === 'N')
+      newList[chave].emailNotification = 'S'
+    else
+      newList[chave].emailNotification = 'N'
+
+      setAppointmentRemindersList(newList)
+  }, [appointmentRemindersList])
+    
+    
+  const CustomerWhatsNotification = useCallback(key => {
+    const newList = Array.from(appointmentRemindersList);
+    const chave = newList.findIndex(i => i.qtdReminder === key);
+
+    if (newList[chave].whatsAppNotification === 'N')
+      newList[chave].whatsAppNotification = 'S'
+    else
+      newList[chave].whatsAppNotification = 'N'
+
+      setAppointmentRemindersList(newList);
+  }, [appointmentRemindersList])
+
+
+      
+    const CustomerNotification =  useCallback(async key => {
+      try{
+        const response = await api.post<IParameterData[]>('/Parametro/Selecionar', { token: userToken, allowNull: true, parametersName: '#WPNOTIFICATION' })
+  
+        if (response.data.length > 0) {
+          if(response.data[0].parameterValue == 'EM') {
+            const newList = Array.from(appointmentRemindersList);
+            const chave = newList.findIndex(i => i.qtdReminder === key);
+            newList[chave].emailNotification = 'S'
+          }
+          if(response.data[0].parameterValue == 'WA') {
+            const newList = Array.from(appointmentRemindersList);
+            const chave = newList.findIndex(i => i.qtdReminder === key);
+            newList[chave].whatsAppNotification = 'S'
+          }
+          if(response.data[0].parameterValue == 'AM') {
+            const newList = Array.from(appointmentRemindersList);
+            const chave = newList.findIndex(i => i.qtdReminder === key);
+            newList[chave].emailNotification = 'S'
+            newList[chave].whatsAppNotification = 'S'
+          }
+        }
+        else{
+          const newList = Array.from(appointmentRemindersList);
+            const chave = newList.findIndex(i => i.qtdReminder === key);
+            newList[chave].emailNotification = 'N'
+            newList[chave].whatsAppNotification = 'N'
+        }
+        
+        const newList = Array.from(appointmentRemindersList);
+        const chave = newList.findIndex(i => i.qtdReminder === key);
+    
+        newList[chave].notifyMatterCustomer = 'S';
+        setAppointmentRemindersList(newList);
+      }
+      catch (err:any){
+        console.log(err.response.data.Message)
+      }
+    }, [appointmentRemindersList])
+  
+
+  const handleDisableNotification = useCallback(
+    key => {
+      const list = Array.from(appointmentRemindersList);
+      const item = list.findIndex(i => i.qtdReminder === key);
+
+      if (item !== -1) {
+        list.splice(item, 1);
+
+        setAppointmentRemindersList(list);
+      } else {
+        setAppointmentRemindersList(list);
+      }
+    },
+    [appointmentRemindersList],
+  ); // deleta o lembrete selecionado da lista
+
+
+  const handleNewHourBeggin = useCallback(
+      (event: ChangeEvent<HTMLInputElement>) => {
+        const time = event.target.value;
+        setAppointmentHourBeggin(time);
+  
+        if (time) {
+          const startTime = time.split(':');
+          const hour = parseInt(startTime[0].toString());
+          const minutes = parseInt(startTime[1].toString());
+  
+          const hourEnd = new Date();
+          hourEnd.setHours(hour);
+          hourEnd.setMinutes(minutes + 30);
+  
+          const nData = format(new Date(hourEnd), 'HH:mm');
+  
+          setAppointmentHourEnd(nData);
+        }
+      },
+      [],
+    ); // mudança da hora inicial
 
   return (
     <Container>
@@ -476,7 +691,7 @@ const abrirPainel = (id: number) => {
                      
                       <Select
                         isSearchable
-                        id="contactSelect"
+                        id="triggerType"
                         styles={selectStyles}
                         value={workflowTriggerTypes.filter(options => options.id === trigger.triggerType)}
                         onChange={(item) => handleChangeTriggerType(item?.id, trigger.workflowTriggerId)}
@@ -492,12 +707,9 @@ const abrirPainel = (id: number) => {
                         maxLength={30}
                       />
                     </label>
-
-                    <div>
-                     {/* 
-                      <button type="button" className='buttonLinkClick' onClick={() => handleDeleteTrigger(trigger.workflowTriggerId)}>
-                     */}    
-                      <button type="button" className='buttonLinkClick' onClick={() => handleCheckBoxDeleteCustomer(trigger.workflowTriggerId)}>
+  
+                    <label htmlFor="telefone2" id="contact">
+                      <button type="button" className='buttonLinkClick' onClick={() => handleCheckBoxDeleteTrigger(trigger.workflowTriggerId)}>
                         <FiTrash />
                         Apagar este gatilho
                       </button>
@@ -510,59 +722,189 @@ const abrirPainel = (id: number) => {
                         {painelAberto === trigger.workflowTriggerId ? (
                           <>
                             <FiXCircle />
-                            Fechar ações
+                            ver compromisso
                           </>
                         ) : (
                           <>
                             <FiPlusCircle />
-                            Incluir ação
+                            Configurar compromisso
                           </>
                         )}
                       </button>
-          
-                    </div>
+                    </label>
+
+                  
+                  { painelAberto === trigger.workflowTriggerId && (
+                  
+<label htmlFor="telefone" id="contact" style={{ display: "block" }}>
+  {/* radios + qtd dias */}
+  <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+  Informe os dias para criação do compromisso
+  <FcAbout
+    style={{ height: "15px", width: "15px", marginRight: "15px" }}
+    title="Você deve Informar a regra..."
+  />
+
+    <label style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+      <input type="radio" id="antes" name="quando" value="antes" />
+      Antes
+    </label>
+
+    <label style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+      <input type="radio" id="depois" name="quando" value="depois" />
+      Depois
+    </label>
+
+    <label style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+      <span>Qtd. de dias</span>
+      <input type="number" />
+    </label>
+  </div>
+
+  {/* Campos organizados com Grid */}
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "200px 140px 140px 140px 140px", // 5 colunas
+      gridTemplateRows: "auto auto auto", // 3 linhas agora
+      gap: "20px",
+      marginTop: "15px",
+    }}
+  >
+    {/* Linha 1 */}
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <label htmlFor="assunto">Assunto</label>
+      
+      <Select
+        isSearchable
+        isClearable
+        placeholder='Selecione o Assunto'
+        onChange={handleSubjectChange}
+        onInputChange={(term) => setAppointmentSubject(term)}
+        value={optionsSubject.filter(options => options.id == appointmentSubjectId)}
+        options={optionsSubject}
+        className='andamentoType'
+        loadingMessage={loadingMessage}
+        noOptionsMessage={noOptionsMessage}
+      />
+
+    </div>
+
+    <div style={{ display: "flex", flexDirection: "column" }}>
+     
+       <TimePicker
+          title="Hora Inicio"
+          name="timepicker"
+          list="times"
+          value={appointmentHourBeggin}
+          onChange={handleNewHourBeggin}
+          disabled={appointmentBlockUpdate}
+        />
+        
+    </div>
+
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <label htmlFor="lembretes">Lembretes</label>
+        <select
+        name="lembretes"
+        id="lembretes"
+        onChange={handleSelectLembretes}
+        disabled={appointmentBlockUpdate}
+      >
+        {optionsLembrete.map(ol => (
+          <option key={ol.key} value={ol.key}>
+            {ol.value}
+          </option>
+        ))}
+      </select>
 
 
-{/* Painel de ações */}
-      {painelAberto === trigger.workflowTriggerId && (
-          <div
-              style={{
-                marginTop: "8px",
-                padding: "16px",
-                borderRadius: "12px",
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                transition: "all 0.3s ease",
-              }}
-            >
-          <label htmlFor="telefone" id="contact">
-            <Select
-              isSearchable
-              id="contactSelect"
-              styles={selectStyles}
-              value={workflowTriggerTypes.filter(options => options.id === trigger.triggerType)}
-              onChange={(item) => handleChangeTriggerType(item?.id, trigger.workflowTriggerId)}
-              options={workflowTriggerTypes}
-              isDisabled={true}
-              placeholder="Selecione"
-            />
-            <input
-              type="text"
-              autoComplete="off"
-              value={trigger.configuration?.label || ""}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                handleChangeTrigger(e.target.value, trigger.workflowTriggerId)
-              }
-              maxLength={30}
-            />
-          </label>
-        </div>
-      )}
+                          <div id="divTable" style={{width:'100%'}}>
+                            <table id='Table' style={{float:'right', marginRight:'20px'}}>
+                              {appointmentRemindersList.map(item => (
+                                <tr id='Tr'>
+                                  <td id='tdLabel' style={{width:'80px', textAlign:'left', height:'20px', fontSize:'12px'}}>
+                                    {item.qtdReminder === '0M' && <p>No Horário</p>}
+                                    {item.qtdReminder === '12H' && <p>Meio Dia</p>}
+                                    {item.qtdReminder != '12H' && item.qtdReminder != '0M' && item.qtdReminder.includes("M") && <p>{item.qtdReminder.split('M')[0]} Minuto(s)</p>}
+                                    {item.qtdReminder != '12H' && item.qtdReminder != '0M' && item.qtdReminder.includes("H") && <p>{item.qtdReminder.split('H')[0]} Hora(s)</p>}
+                                    {item.qtdReminder != '12H' && item.qtdReminder != '0M' && item.qtdReminder.includes("D") && <p>{item.qtdReminder.split('D')[0]} Dia(s)</p>}
+                                    {item.qtdReminder != '12H' && item.qtdReminder != '0M' && item.qtdReminder.includes("S") && <p>{item.qtdReminder.split('S')[0]} Semana(s)</p>}
+                                    {item.qtdReminder != '12H' && item.qtdReminder != '0M' && item.qtdReminder.includes("E") && <p>{item.qtdReminder.split('E')[0]} Mês(es)</p>}
+                                  </td>
+                                  <td id='tdNotButtons' style={{width:'115px', textAlign:'right', height:'20px', fontSize:'12px'}}>
+                                    {item.notifyMatterCustomer === 'S' ? (
+                                      <>
+                                        {item.emailNotification === 'S' ? (
+                                          <button type="button" onClick={() => {CustomerEmailNotification(item.qtdReminder)}} title='Clique para desativar o envio de lembrete email ao cliente'>
+                                            <FiMail style={{color:'blue', height:'16px', width:'16px'}} />
+                                          </button>
+                                        ) : (
+                                          <button type="button" onClick={() => {CustomerEmailNotification(item.qtdReminder)}} title='Clique para ativar o envio de lembrete email ao cliente'>
+                                            <FiMail style={{color:'var(--grey)', height:'16px', width:'16px'}} />
+                                          </button>
+                                        )}
+                                        &nbsp;&nbsp;
+                                        {item.whatsAppNotification === 'S' ? (
+                                          <button type="button" onClick={() => {CustomerWhatsNotification(item.qtdReminder)}} title='Clique para desativar o envio de lembrete whatsapp ao cliente'>
+                                            <FaWhatsapp style={{color:'green', height:'16px', width:'16px'}} />
+                                          </button>
+                                        ) : (
+                                          <button type="button" onClick={() => {CustomerWhatsNotification(item.qtdReminder)}} title='Clique para ativar o envio de lembrete whatsapp ao cliente'>
+                                            <FaWhatsapp style={{color:'var(--grey)', height:'16px', width:'16px'}} />
+                                          </button>
+                                        )}
+                                      </>
+                                    ) : (
+                                      <>
+                                        <button type="button" id="NotificationCustomerButton" onClick={() => {CustomerNotification(item.qtdReminder)}} style={{color:'blue'}} title='Após clicar no botão selecione as opções de notificação por E-Mail ou WhatsApp'>
+                                          <p>Notifica Cliente</p>
+                                        </button>
+                                      </>
+                                    )}
+                                  </td>
+                                  <td id='Trash' style={{width:'20px', textAlign:'left', height:'20px', fontSize:'12px'}}>
+                                    <button type="button" onClick={() => {handleDisableNotification(item.qtdReminder)}}>
+                                      &nbsp;<FiTrash title="Excluir o lembrete" style={{color:'var(--grey)', height:'16px', width:'16px'}} />
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </table>
+                          </div>
+    </div>
 
-                  </section>
+    {/* Linha 2: Privacidade e Responsável */}
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <label htmlFor="privacidade">Privacidade</label>
+      <Select isSearchable id="privacidade" styles={selectStyles} placeholder="Selecione" />
+    </div>
+
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <label htmlFor="responsavel">Responsável</label>
+      <Select isSearchable id="responsavel" styles={selectStyles} placeholder="Selecione" />
+    </div>
+
+    {/* Linha 3: Descrição (ocupando todas as colunas) */}
+    <div style={{ display: "flex", flexDirection: "column", gridColumn: "1 / -1" }}>
+      <label htmlFor="descricao">Descrição</label>
+      <textarea id="descricao" rows={3} placeholder="Digite a descrição aqui..." />
+    </div>
+  </div>
+</label>
+
+           
+                    )}
+
+
+                  </section> 
+
 
                  ))}
 
               </label>
+
+
 
               <button type="button" className='buttonLinkClick' id="addEnd" onClick={handleNewTrigger}>
                 <FiPlus />

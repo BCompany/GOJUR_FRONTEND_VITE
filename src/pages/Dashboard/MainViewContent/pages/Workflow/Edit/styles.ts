@@ -595,4 +595,6 @@ export const CheckModal = styled.div`
         background-color: var(--red);
       }
   }
+ 
+
 `;
