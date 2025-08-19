@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState, useEffect, useCallback } from 'react';
+import React, { useRef , useState, useEffect, useCallback } from 'react';
 import Modal from 'react-modal';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import api from 'services/api';
@@ -6,7 +6,8 @@ import Select from 'react-select';
 import { AutoCompleteSelect } from 'Shared/styles/GlobalStyle';
 import { customStyles } from 'Shared/utils/commonFunctions';
 import { loadingMessage, noOptionsMessage } from 'Shared/utils/commonConfig';
-import { MdBlock } from 'react-icons/md';
+import ConfirmBoxModal from 'components/ConfirmBoxModal';
+import { useConfirmBox } from 'context/confirmBox';
 import { useToast } from 'context/toast';
 import { FModal, Overlay } from './styles';
 import { FaFileAlt, FaIdCard, FaRegTimesCircle } from 'react-icons/fa';
@@ -30,15 +31,9 @@ export interface ISelectData {
 }
 
 export default function FollowModal(props) {
-  const {
-    handleCloseFollowModal,
-    matterSelectedNumber,
-    handleSecretJusticeChange,
-    isSecretJustice,
-    handleFollowMatter,
-    handleSelectCredentialId,
-    isChanging
-  } = props.callbackFunction;
+  const {handleCloseFollowModal, matterSelectedNumber, handleSecretJusticeChange, isSecretJustice, handleFollowMatter, handleSelectCredentialId, isChanging} = props.callbackFunction;
+  const {isConfirmMessage,handleCaller, caller, isCancelMessage, handleCancelMessage,handleConfirmMessage } = useConfirmBox();
+  const token = localStorage.getItem('@GoJur:token');
   const [isLoadingComboData, setIsLoadingComboData] = useState<boolean>(false);
   const { addToast } = useToast();
   const [credentialTerm, setCredentialTerm] = useState('');
@@ -49,12 +44,32 @@ export default function FollowModal(props) {
   const [isNewCredential, setIsNewCredential] = useState<boolean>(false);
   const [courtReference, setCourtReference] = useState('');
   const [hasPassword, setHasPassword] = useState('');
-  const token = localStorage.getItem('@GoJur:token');
-
+  const [checkMessage, setCheckMessage] = useState(false);
+  const hiddenButtonRef = useRef(null);
+ 
 
   useEffect(() => {
     LoadCredentials();
   }, []);
+
+
+  useEffect(() => {
+    if (isCancelMessage && caller == 'followModal'){
+      setCheckMessage(false)
+      handleCancelMessage(false)
+    }
+  }, [isCancelMessage])   
+
+  
+  useEffect(() => {
+    if (isConfirmMessage && caller == 'followModal'){
+      setCheckMessage(false)
+      handleConfirmMessage(false)
+      handleCaller('')
+
+      hiddenButtonRef.current.click();
+    }
+  }, [isConfirmMessage])
 
 
   const handleCredentialSelected = (item) => {
@@ -124,11 +139,18 @@ export default function FollowModal(props) {
   }, [showNewCredentials])
 
 
-  const Confirm = () => {
+  const Confirm = async () => {
 
-    alert('Confirmar')
+    console.log('CourtReference: ', courtReference)
+    console.log('HasPassword: ', hasPassword)
 
-    // handleFollowMatter
+    if(courtReference == "808" && hasPassword == "N"){
+      setCheckMessage(true)
+    }
+    else {
+      // handleFollowMatter
+      hiddenButtonRef.current.click();
+    }
   }
 
 
@@ -143,6 +165,18 @@ export default function FollowModal(props) {
           </div>
         </>
       )}
+
+
+      {checkMessage && (
+        <ConfirmBoxModal
+          buttonCancelText="Cancelar"
+          buttonOkText="Confirmar"
+          caller="followModal"
+          useCheckBoxConfirm
+          message="Não foram informadas as credenciais para a pesquisa, neste caso a pesquisa não será efetuada no TJES/PJE (sistema PJE)"
+        />
+      )}
+
   
       {showNewCredentials && <CredentialsDataSourceModal callbackFunction={{ handleCloseEditModal, handleIsNewCredential }} />}
   
@@ -215,7 +249,7 @@ export default function FollowModal(props) {
           <>
           <br />
           <div id='TJSE' style={{ display:"flex", justifyContent:'center', alignItems:'center', color:'#FF0000', fontSize:'14px' }}>
-            Para pesquisa no PJE/TJES é necessário que seja informado o usuário senha
+            Para pesquisa no PJE/TJES é necessário que seja informado o usuário e senha
           </div>
           </>
         )}
@@ -229,11 +263,26 @@ export default function FollowModal(props) {
           </div>
   
           <div style={{ float: 'right', marginRight: '10px' }}>
-            <button className="buttonClick" title="Clique para monitorar o processo" type="submit" onClick={Confirm}>
+            <button className="buttonClick" title="Clique para monitorar o processo" type='button' onClick={()=> Confirm()}>
               <SiSonarsource />
               Confirmar
             </button>
           </div>
+
+          <div style={{ float: 'right', marginRight: '10px' }}>
+            <button
+              ref={hiddenButtonRef}
+              // className="buttonClick"
+              style={{ display: "none" }}
+              title="Clique para monitorar o processo"
+              type='submit'
+              onClick={handleFollowMatter}
+            >
+              <SiSonarsource />
+              Confirmar 2
+            </button>
+          </div>
+
         </div>
       </FModal>
     </>
