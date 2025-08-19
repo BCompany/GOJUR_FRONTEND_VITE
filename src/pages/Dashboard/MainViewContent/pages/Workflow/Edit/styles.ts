@@ -127,7 +127,7 @@ export const Form = styled.form`
         flex-direction: column;    
 
         &:focus-within {
-          color: var(--orange);
+          //color: var(--orange);
 
           &.required{
           color: var(--red);
@@ -233,18 +233,68 @@ export const Form = styled.form`
       font-size: 0.625rem;
       flex-direction: column;
     
-      #contact {
+       #triggerDados {
         display: flex;
-        flex-direction: row;
-        align-items: center;
+        flex-direction: column;
         color: var(--secondary);
 
-        #contactSelect {
+        #triggerSelect {
           width: 250px;
           margin-left: 5px;
           margin-right:15px;
           font-size: 0.625rem;
         }
+
+         #triggerSubject {
+          width: 250px;
+          margin-left: 5px;
+          margin-right:15px;
+          font-size: 0.625rem;
+        }
+
+        #triggerLembrete {
+          width: 250px;
+          margin-left: 5px;
+          margin-right:15px;
+          font-size: 0.625rem;
+        }
+
+      #timepicker {
+        color: var(--secondary);
+
+        }
+
+      }
+
+      #trigger {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        color: var(--secondary);
+
+        #triggerSelect {
+          width: 250px;
+          margin-left: 5px;
+          margin-right:15px;
+          font-size: 0.625rem;
+        }
+
+         #triggerSubject {
+          width: 250px;
+          margin-left: 5px;
+          margin-right:15px;
+          font-size: 0.625rem;
+        }
+
+        #triggerNumber {
+          width: 50px;
+        }
+
+        #triggerHour {
+          width: 50px;
+        
+        }
+
       }
     }
 

@@ -4,14 +4,14 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable radix */
-import React, {ChangeEvent, useCallback, useEffect , useRef, useState, UIEvent} from 'react'
-import {useHistory, useLocation  } from 'react-router-dom'
+import React, { ChangeEvent, useCallback, useEffect, useRef, useState, UIEvent } from 'react'
+import { useHistory, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form';
 import { FiLock, FiPlus, FiSave, FiTrash } from 'react-icons/fi';
 import { FiPlusCircle, FiXCircle } from "react-icons/fi";
 import { RiCloseLine, RiNewspaperFill } from 'react-icons/ri';
 import { MdBlock } from 'react-icons/md';
-import { formatField, selectStyles, useDelay, currencyConfig} from 'Shared/utils/commonFunctions';
+import { formatField, selectStyles, useDelay, currencyConfig } from 'Shared/utils/commonFunctions';
 import { useDefaultSettings } from 'context/defaultSettings';
 import { useToast } from 'context/toast';
 import { Clear, Tab, Tabs } from 'Shared/styles/Tabs';
@@ -24,8 +24,8 @@ import { useModal } from 'context/modal';
 import { useDocument } from 'context/document';
 import DocumentModal from 'components/Modals/CustomerModal/DocumentModal';
 import { useCustomer } from 'context/customer';
-import { Card, Container, Content, Form, ListCards, CardMatter, MatterListCards} from './styles';
-import { IWorkflowTriggers, IWorkflowData, ISelectValues} from '../Interfaces/IWorkflowEdit';
+import { Card, Container, Content, Form, ListCards, CardMatter, MatterListCards } from './styles';
+import { IWorkflowTriggers, IWorkflowData, ISelectValues } from '../Interfaces/IWorkflowEdit';
 import { workflowTriggerTypes } from 'Shared/utils/commonListValues';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
 import { useConfirmBox } from 'context/confirmBox';
@@ -41,64 +41,64 @@ export default function Workflow() {
   const history = useHistory();
   const formRef = useRef<HTMLFormElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { handleUserPermission, permission} = useDefaultSettings();
-  const {permissionsSecurity, handleValidateSecurity } = useSecurity();
+  const { handleUserPermission, permission } = useDefaultSettings();
+  const { permissionsSecurity, handleValidateSecurity } = useSecurity();
   const { addToast } = useToast();
-  const { pathname  } = useLocation();
-  const { handleSubmit} = useForm<IWorkflowData>();
+  const { pathname } = useLocation();
+  const { handleSubmit } = useForm<IWorkflowData>();
   const { handleReloadBusinesCard, reloadBusinessCard } = useCustomer();
   const [showSalesFunnelMenu, setShowSalesFunnelMenu] = useState<boolean>(true)
   const { showSalesChannelModal } = useModal();
-  const [isLoading , setIsLoading] = useState(true); // objecto todo de do cliente
-  const [isPagination , setIsPagination] = useState(false); // objecto todo de do cliente
-  const [workflow , setWorkflow] = useState({} as IWorkflowData); // objecto todo de do cliente
-  const [workflowTrigger , setWorkflowTrigger] = useState<IWorkflowTriggers[]>([]); // objeto de endereço que compoe o cliente
-  const [customerLegalPerson , setCustomerLegalPerson] = useState<ICustomerLegalPerson[]>([]); // objeto de representante que compoe o cliente
-  const [customerCitysDefault , setCustomerCitysDefault] = useState<ISelectData[]>([]); // count field for address block
-  const [customerCitys , setCustomerCitys] = useState<ISelectData[]>([]); // count field for address block
-  const [customerCitysLP , setCustomerCitysLP] = useState<ISelectData[]>([]); // count field for address block
-  const [customerGroup , setCustomerGroup] = useState<ISelectData[]>([]); // count field for address block
-  const [salesChannelList , setSalesChannelList] = useState<ISelectData[]>([]); // count field for address block
-  const [workflowName , setWorkflowName] = useState(''); // field nome
-  const [customerFantasia , setCustomerFantasia] = useState(''); // field nome fantasia
-  const [customerEmail , setCustomerEmail] = useState(''); // field e-mail
-  const [customerSenha , setCustomerSenha] = useState(''); // field senha
-  const [customerRef , setCustomerRef] = useState(''); // field Referencia
-  const [customerWhatsapp , setCustomerWhatsapp] = useState(''); // field whatsapp
-  const [customerGroupValue , setCustomerGroupValue] = useState(''); // group field value
-  const [customerGroupId , setCustomerGroupId] = useState(''); // group field id
-  const [customerSalesChannelId , setCustomerSalesChannelId] = useState(''); // group field id
-  const [customerType , setCustomerType] = useState('F'); //  field type
-  const [customerRepresent , setCustomerRepresent] = useState(''); //  field Representado
-  const [customerNumDoc , setCustomerNumDoc] = useState(''); //  field num doc
-  const [customerSex , setCustomerSex] = useState('F'); //  field Sexo
-  const [customerNacionalidade , setCustomerNacionalidade] = useState(''); //  field nacionalidade
-  const [customerNasc , setCustomerNasc] = useState(''); //  field Nascimento
-  const [customerAbertura , setCustomerAbertura] = useState(''); //  field Abertura
-  const [customerRg , setCustomerRg] = useState(''); //  field Rg
-  const [customerPis , setCustomerPis] = useState(''); //  field Pis
-  const [customerECivil , setCustomerECivil] = useState('I'); //  field estado civil
-  const [customerMae , setCustomerMae] = useState(''); //  field mae
-  const [customerProf , setCustomerProf] = useState(''); //  field profissao
-  const [customerPai , setCustomerPai] = useState(''); //  field pai
-  const [customerInss , setCustomerInss] = useState(''); //  field Inss
-  const [customerCtps , setCustomerCtps] = useState(''); //  field Ctps
-  const [customerSCtps , setCustomerSCtps] = useState(''); //  field Serie Ctps
-  const [customerSalary , setCustomerSalary] = useState<number>(); //  field Salário
-  const [customerIE , setCustomerIE] = useState(''); //  field numero insc estadual
-  const [groupSearchTerm , setGroupSearchTerm] = useState('');
-  const [salesChannelSearchTerm , setSalesChannelSearchTerm] = useState('');
-  const [customerObs , setCustomerObs] = useState(''); //  field observação
-  const [customerStatus , setCustomerStatus] = useState('A'); //  field customerStatus
-  const [customerEmailFinanAdd , setCustomerEmailFinanAdd] = useState<string>(''); //  field email de faturamento add
-  const [customerCityValue , setCustomerCityValue] = useState(''); //  field city
-  const [isSaving , setisSaving] = useState<boolean>(); // set trigger for show loader
-  const [isDeleting , setIsDeleting] = useState<boolean>(); // set trigger for show loader
-  const [customerActivePassword , setCustomerActivePassword] = useState(false); //  field email de faturamento
-  const [customerActiveModalDoubleCheck , setCustomerActiveModalDoubleCheck] = useState(false); //  modal double check
-  const [matterList , setMatterList] = useState<IMatterData[]>([]);
-  const [businessList , setBusinessList] = useState<IBusinessData[]>([]);
-  const {isOpenCardBox, matterReferenceId } = useMatter();
+  const [isLoading, setIsLoading] = useState(true); // objecto todo de do cliente
+  const [isPagination, setIsPagination] = useState(false); // objecto todo de do cliente
+  const [workflow, setWorkflow] = useState({} as IWorkflowData); // objecto todo de do cliente
+  const [workflowTrigger, setWorkflowTrigger] = useState<IWorkflowTriggers[]>([]); // objeto de endereço que compoe o cliente
+  const [customerLegalPerson, setCustomerLegalPerson] = useState<ICustomerLegalPerson[]>([]); // objeto de representante que compoe o cliente
+  const [customerCitysDefault, setCustomerCitysDefault] = useState<ISelectData[]>([]); // count field for address block
+  const [customerCitys, setCustomerCitys] = useState<ISelectData[]>([]); // count field for address block
+  const [customerCitysLP, setCustomerCitysLP] = useState<ISelectData[]>([]); // count field for address block
+  const [customerGroup, setCustomerGroup] = useState<ISelectData[]>([]); // count field for address block
+  const [salesChannelList, setSalesChannelList] = useState<ISelectData[]>([]); // count field for address block
+  const [workflowName, setWorkflowName] = useState(''); // field nome
+  const [customerFantasia, setCustomerFantasia] = useState(''); // field nome fantasia
+  const [customerEmail, setCustomerEmail] = useState(''); // field e-mail
+  const [customerSenha, setCustomerSenha] = useState(''); // field senha
+  const [customerRef, setCustomerRef] = useState(''); // field Referencia
+  const [customerWhatsapp, setCustomerWhatsapp] = useState(''); // field whatsapp
+  const [customerGroupValue, setCustomerGroupValue] = useState(''); // group field value
+  const [customerGroupId, setCustomerGroupId] = useState(''); // group field id
+  const [customerSalesChannelId, setCustomerSalesChannelId] = useState(''); // group field id
+  const [customerType, setCustomerType] = useState('F'); //  field type
+  const [customerRepresent, setCustomerRepresent] = useState(''); //  field Representado
+  const [customerNumDoc, setCustomerNumDoc] = useState(''); //  field num doc
+  const [customerSex, setCustomerSex] = useState('F'); //  field Sexo
+  const [customerNacionalidade, setCustomerNacionalidade] = useState(''); //  field nacionalidade
+  const [customerNasc, setCustomerNasc] = useState(''); //  field Nascimento
+  const [customerAbertura, setCustomerAbertura] = useState(''); //  field Abertura
+  const [customerRg, setCustomerRg] = useState(''); //  field Rg
+  const [customerPis, setCustomerPis] = useState(''); //  field Pis
+  const [customerECivil, setCustomerECivil] = useState('I'); //  field estado civil
+  const [customerMae, setCustomerMae] = useState(''); //  field mae
+  const [customerProf, setCustomerProf] = useState(''); //  field profissao
+  const [customerPai, setCustomerPai] = useState(''); //  field pai
+  const [customerInss, setCustomerInss] = useState(''); //  field Inss
+  const [customerCtps, setCustomerCtps] = useState(''); //  field Ctps
+  const [customerSCtps, setCustomerSCtps] = useState(''); //  field Serie Ctps
+  const [customerSalary, setCustomerSalary] = useState<number>(); //  field Salário
+  const [customerIE, setCustomerIE] = useState(''); //  field numero insc estadual
+  const [groupSearchTerm, setGroupSearchTerm] = useState('');
+  const [salesChannelSearchTerm, setSalesChannelSearchTerm] = useState('');
+  const [customerObs, setCustomerObs] = useState(''); //  field observação
+  const [customerStatus, setCustomerStatus] = useState('A'); //  field customerStatus
+  const [customerEmailFinanAdd, setCustomerEmailFinanAdd] = useState<string>(''); //  field email de faturamento add
+  const [customerCityValue, setCustomerCityValue] = useState(''); //  field city
+  const [isSaving, setisSaving] = useState<boolean>(); // set trigger for show loader
+  const [isDeleting, setIsDeleting] = useState<boolean>(); // set trigger for show loader
+  const [customerActivePassword, setCustomerActivePassword] = useState(false); //  field email de faturamento
+  const [customerActiveModalDoubleCheck, setCustomerActiveModalDoubleCheck] = useState(false); //  modal double check
+  const [matterList, setMatterList] = useState<IMatterData[]>([]);
+  const [businessList, setBusinessList] = useState<IBusinessData[]>([]);
+  const { isOpenCardBox, matterReferenceId } = useMatter();
   const [hasMatter, setHasMatter] = useState<boolean>(false);
   const [isLoadingComboData, setIsLoadingComboData] = useState<boolean>(false);
   const [isInitialize, setIsInitialize] = useState<boolean>(true);
@@ -109,19 +109,19 @@ export default function Workflow() {
   const [currentCustomerId, setCurrentCustomerId] = useState<number>(0);
   const [permissionCRM, setPermissionCRM] = useState<boolean>(false)
   const [businessTotal, setBusinessTotal] = useState<number>(0)
-  const [tabsControl, setTabsControl] = useState<ITabsControl>({tab1: true, tab2: false, tab3: false, tab4: false, activeTab: 'customer'});
+  const [tabsControl, setTabsControl] = useState<ITabsControl>({ tab1: true, tab2: false, tab3: false, tab4: false, activeTab: 'customer' });
   const [changeCEPCustomer, setChangeCEPCustomer] = useState<boolean>(false)
   const [changeCEPLP, setChangeCEPLP] = useState<boolean>(false)
   const [isGeneratingReport, setIsGeneratingReport] = useState<boolean>(false)
   const [idReportGenerate, setIdReportGenerate] = useState<number>(0)
-  const {handleLoadInitialPropsFromDocument } = useDocument();
-  const {handleOpenCustomerDocumentModal, handleOpenReportModal, handleCloseReportModal, isReportModalOpen} = useCustomer();
+  const { handleLoadInitialPropsFromDocument } = useDocument();
+  const { handleOpenCustomerDocumentModal, handleOpenReportModal, handleCloseReportModal, isReportModalOpen } = useCustomer();
   const token = localStorage.getItem('@GoJur:token');
   const companyId = localStorage.getItem('@GoJur:companyId');
   const apiKey = localStorage.getItem('@GoJur:apiKey');
   const checkpermissionDocument = permissionsSecurity.find(item => item.name === "CFGDCMEM");
   const [confirmDeleteModal, setConfirmDeleteModal] = useState<boolean>(false);
-  const {isConfirmMessage, isCancelMessage, caller, handleCancelMessage,handleConfirmMessage,handleCheckConfirm, handleCaller } = useConfirmBox();
+  const { isConfirmMessage, isCancelMessage, caller, handleCancelMessage, handleConfirmMessage, handleCheckConfirm, handleCaller } = useConfirmBox();
   const [currentWorkflowId, setCurrentWorkflowId] = useState<number>(0);
   const [isDeletingTrigger, setIsDeletingTrigger] = useState(false);
   const [painelAberto, setPainelAberto] = useState<number | null>(null);
@@ -134,16 +134,16 @@ export default function Workflow() {
   const [appointmentBlockUpdate, setAppointmentBlockUpdate] = useState(true);
   const [appointmentHourBeggin, setAppointmentHourBeggin] = useState<string>('',); // Hora de Inicio do compromisso
   const [appointmentHourEnd, setAppointmentHourEnd] = useState<string>(''); // Hora de termino do compromisso
-   
+
 
   // Initialization
-  useEffect (() => {
+  useEffect(() => {
     //handleValidateSecurity(SecurityModule.configuration)
     LoadWorkflow()
-     LoadSubject();
+    LoadSubject();
     setAppointmentBlockUpdate(false)
 
-  },[])
+  }, [])
 
   // Insert new sales chanel and update combo
 
@@ -155,7 +155,7 @@ export default function Workflow() {
     const filterStorage = localStorage.getItem('@GoJur:CustomerFilter')
 
     // verify if exists filter saved
-    if (Number.isNaN(Number(workflowId))){
+    if (Number.isNaN(Number(workflowId))) {
       if (filterStorage == null) {
         return false;
       }
@@ -166,27 +166,27 @@ export default function Workflow() {
     }
 
     // when is id
-    if (Number(workflowId) === 0){
+    if (Number(workflowId) === 0) {
       handleNewTrigger();
       return;
     }
 
- 
+
     try {
 
       const response = await api.get<IWorkflowData[]>('/Workflow/Selecionar', {
-        params:{
+        params: {
           id: Number(workflowId),
           token
         }
       })
-    
+
       setWorkflow(response.data)
 
       setWorkflowName(response.data.name);
-     
 
-      if(response.data.triggers.length < 1) {
+
+      if (response.data.triggers.length < 1) {
         const id = Math.random()
 
         const newTrigger: IWorkflowTriggers = {
@@ -200,54 +200,54 @@ export default function Workflow() {
         setWorkflowTrigger(oldState => [...oldState, newTrigger])
 
       }
-      else{
+      else {
         setWorkflowTrigger(response.data.triggers)
       }
 
-      
+
       setIsLoading(false)
       setIsInitialize(false)
 
-      
-      } catch (err) {
-        setIsLoading(false)
-        history.push('/workflow/list')
-        console.log(err)
-      }
-  }
 
-
-
-const handleSubmitWorkflow = useCallback(async () => {
-  // Valida apenas gatilhos do tipo "data"
-  const isValid = workflowTrigger.every(t => {
-    if (t.triggerType === "data") {
-      return Boolean(t.configuration?.label?.trim());
+    } catch (err) {
+      setIsLoading(false)
+      history.push('/workflow/list')
+      console.log(err)
     }
-    return true; // outros tipos não precisam de label
-  });
-
-  if (!isValid) {
-    addToast({
-      type: "error",
-      title: "Erro de validação",
-      description: "Gatilhos do tipo 'data' precisam ter um label preenchido."
-    });
-    return;
   }
 
-  // Se passou na validação, prossegue
-  const triggerList = workflowTrigger.map(i => ({
-    ...i,
-    // cod_Endereco: 0
-  }));
 
-  
+
+  const handleSubmitWorkflow = useCallback(async () => {
+    // Valida apenas gatilhos do tipo "data"
+    const isValid = workflowTrigger.every(t => {
+      if (t.triggerType === "data") {
+        return Boolean(t.configuration?.label?.trim());
+      }
+      return true; // outros tipos não precisam de label
+    });
+
+    if (!isValid) {
+      addToast({
+        type: "error",
+        title: "Erro de validação",
+        description: "Gatilhos do tipo 'data' precisam ter um label preenchido."
+      });
+      return;
+    }
+
+    // Se passou na validação, prossegue
+    const triggerList = workflowTrigger.map(i => ({
+      ...i,
+      // cod_Endereco: 0
+    }));
+
+
     try {
       const response = await api.put('/Workflow/Salvar', {
         token,
         apiKey,
-        workflowId: workflow.workflowId  ? workflow.workflowId : 0, // cod Workflow
+        workflowId: workflow.workflowId ? workflow.workflowId : 0, // cod Workflow
         name: workflowName, // nome do Workflow
         companyId, // Cod Empresa   
         triggers: triggerList // Listagem de gatilhos
@@ -265,30 +265,30 @@ const handleSubmitWorkflow = useCallback(async () => {
     } catch (err: any) {
 
       // eslint-disable-next-line no-alert
-      if(err.response.data.statusCode !== 500) {
+      if (err.response.data.statusCode !== 500) {
 
         addToast({
           type: "error",
           title: "Falha ao cadastrar workflow",
-          description:  err.response.data.Message
+          description: err.response.data.Message
         })
       }
 
-      if(err.response.data.statusCode === 1011) {
-       setCustomerActiveModalDoubleCheck(true)
+      if (err.response.data.statusCode === 1011) {
+        setCustomerActiveModalDoubleCheck(true)
       }
 
       setisSaving(false)
       localStorage.removeItem('@GoJur:businessCustomerId')
     }
 
-  },[workflowTrigger, workflow.name, workflow.tpo_Telefone01, workflow.num_Telefone01, workflow.tpo_Telefone02, workflow.num_Telefone02, workflow.cod_PessoaFisica, workflow.cod_Cliente, workflow.cod_PessoaJuridica, workflow.cod_SistemaUsuarioEmpresa, workflow.doubleCheck, workflow.cod_Empresa, workflowName, addToast, history]);
+  }, [workflowTrigger, workflow.name, workflow.tpo_Telefone01, workflow.num_Telefone01, workflow.tpo_Telefone02, workflow.num_Telefone02, workflow.cod_PessoaFisica, workflow.cod_Cliente, workflow.cod_PessoaJuridica, workflow.cod_SistemaUsuarioEmpresa, workflow.doubleCheck, workflow.cod_Empresa, workflowName, addToast, history]);
 
 
 
 
   const handleNewTrigger = useCallback(() => {
- 
+
     const id = Math.random()
     const newAddress: IWorkflowTriggers = {
       workflowTriggerId: id,
@@ -299,132 +299,134 @@ const handleSubmitWorkflow = useCallback(async () => {
     }
 
     setWorkflowTrigger(oldAddress => [...oldAddress, newAddress])
-  },[]); // adiciona um novo endereço na interface
+  }, []); // adiciona um novo endereço na interface
 
 
 
   const handleDeleteTrigger = useCallback((triggerId) => {
-      const address = workflowTrigger.filter(item => item.workflowTriggerId !== triggerId);
-      if(address.length >=1) {
-        setWorkflowTrigger(address)
-      }else{
-        addToast({
-          type:"info",
-          title: "Operação invalida",
-          description: "Só é possivel excluir quando há mais de um gatilho cadastrado"
-        })
-      }
-  },[addToast, workflowTrigger]); // remove um endereço da interface
+    const address = workflowTrigger.filter(item => item.workflowTriggerId !== triggerId);
+    if (address.length >= 1) {
+      setWorkflowTrigger(address)
+    } else {
+      addToast({
+        type: "info",
+        title: "Operação invalida",
+        description: "Só é possivel excluir quando há mais de um gatilho cadastrado"
+      })
+    }
+  }, [addToast, workflowTrigger]); // remove um endereço da interface
 
 
 
   const handleChangeTriggerType = useCallback((value, triggerId) => {
 
-    const newTypePhone = workflowTrigger.map(trigger => trigger.workflowTriggerId=== triggerId ? {
+    const newTypePhone = workflowTrigger.map(trigger => trigger.workflowTriggerId === triggerId ? {
       ...trigger,
       triggerType: value,
       configuration: {
-            ...trigger.configuration,
-            label: ""
-          }
-    }: trigger)
+        ...trigger.configuration,
+        label: ""
+      }
+    } : trigger)
 
     setWorkflowTrigger(newTypePhone)
 
-  },[workflowTrigger]); // atualiza o tipo de telefone 1
+  }, [workflowTrigger]); // atualiza o tipo de telefone 1
 
 
 
-const handleChangeTrigger = useCallback((value: string, triggerId: number) => {
-  const newPhone = workflowTrigger.map(trigger =>
-    trigger.workflowTriggerId === triggerId
-      ? {
+  const handleChangeTrigger = useCallback((value: string, triggerId: number) => {
+    const newPhone = workflowTrigger.map(trigger =>
+      trigger.workflowTriggerId === triggerId
+        ? {
           ...trigger,
           configuration: {
             ...trigger.configuration,
             label: trigger.triggerType === "acaoconcluida" ? "" : value
           }
         }
-      : trigger
-  );
+        : trigger
+    );
 
-  setWorkflowTrigger(newPhone);
-}, [workflowTrigger]);
+    setWorkflowTrigger(newPhone);
+  }, [workflowTrigger]);
 
 
- 
- 
+
+
   // pagination for load more customer
   const handleScroolSeeMore = (e: UIEvent<HTMLDivElement>) => {
     const element = e.target as HTMLTextAreaElement;
 
-    const isEndScrool = ((element.scrollHeight - element.scrollTop)-50) <= element.clientHeight
+    const isEndScrool = ((element.scrollHeight - element.scrollTop) - 50) <= element.clientHeight
 
     if (isEndScrool && !isLoading) {
       setIsPagination(true)
     }
   }
 
-  
-    useEffect(() => {
-  
-      if (isConfirmMessage && caller=="WorkflowList"){
-  
-        if (!isDeleting){
-          window.open(`${envProvider.redirectUrl}ReactRequest/Redirect?token=${token}&route=workflow/list`)
-        }
-        else{
-          handleDeleteWorkflowGatilho(currentWorkflowId)
-        }
-  
-        setIsDeleting(false)
-        handleConfirmMessage(false)
-        handleCaller('')
-        handleCheckConfirm(false)
+
+  useEffect(() => {
+
+    if (isConfirmMessage && caller == "WorkflowList") {
+
+      if (!isDeleting) {
+        window.open(`${envProvider.redirectUrl}ReactRequest/Redirect?token=${token}&route=workflow/list`)
       }
-  
-    }, [isConfirmMessage])
+      else {
+        handleDeleteWorkflowGatilho(currentWorkflowId)
+      }
+
+      setIsDeleting(false)
+      handleConfirmMessage(false)
+      handleCaller('')
+      handleCheckConfirm(false)
+    }
+
+  }, [isConfirmMessage])
 
 
-     const handleDeleteWorkflowGatilho = async (workflowtriggerId: number) => {
-      try {
-        setIsDeletingTrigger(true)
-     
-        await api.delete('/Workflow/DeletarGatilho', { params:{
+  const handleDeleteWorkflowGatilho = async (workflowtriggerId: number) => {
+    try {
+      setIsDeletingTrigger(true)
+
+      await api.delete('/Workflow/DeletarGatilho', {
+        params: {
           id: workflowtriggerId,
           token
-        }})
-  
-        handleDeleteTrigger(workflowtriggerId)
+        }
+      })
 
-        addToast({
-          type: 'success',
-          title: 'Gatilho Deletado',
-          description: 'O gatilho selecionado foi deletado',
-        });
-  
-        setIsDeleting(false)
-        setIsDeletingTrigger(false)
-        setCurrentWorkflowId(0)
-  
-      } catch (err) {
-        addToast({
-          type: 'info',
-          title: 'Falha ao apagar Gatilho',
-          description: err.response.data.Message
-        });
-  
-        handleDeleteTrigger(workflowtriggerId)
+      handleDeleteTrigger(workflowtriggerId)
 
-        setIsDeletingTrigger(false)
-        setIsDeleting(false)
-        setCurrentWorkflowId(0)
-      }
+      addToast({
+        type: 'success',
+        title: 'Gatilho Deletado',
+        description: 'O gatilho selecionado foi deletado',
+      });
+
+      setIsDeleting(false)
+      setIsDeletingTrigger(false)
+      setCurrentWorkflowId(0)
+
+    } catch (err) {
+      addToast({
+        type: 'info',
+        title: 'Falha ao apagar Gatilho',
+        description: err.response.data.Message
+      });
+
+      handleDeleteTrigger(workflowtriggerId)
+
+      setIsDeletingTrigger(false)
+      setIsDeleting(false)
+      setCurrentWorkflowId(0)
     }
+  }
 
 
   useEffect(() => {
-    if (isCancelMessage){
+    if (isCancelMessage) {
       setIsDeleting(false)
       handleCancelMessage(false)
     }
@@ -436,28 +438,28 @@ const handleChangeTrigger = useCallback((value: string, triggerId: number) => {
     setCurrentWorkflowId(workflowId);
   }
 
-const abrirPainel = (id: number) => {
-  setPainelAberto(prev => (prev === id ? null : id)); // alterna abrir/fechar
-};
+  const abrirPainel = (id: number) => {
+    setPainelAberto(prev => (prev === id ? null : id)); // alterna abrir/fechar
+  };
 
 
-const LoadSubject = useCallback(async (reload = false, termSearch = '') => {
+  const LoadSubject = useCallback(async (reload = false, termSearch = '') => {
     try {
-      if (termSearch  === ''){
+      if (termSearch === '') {
         termSearch = appointmentSubject;
       }
 
-      if (reload){
+      if (reload) {
         termSearch = '';
       }
 
-      const response = await api.post(`/Assunto/Listar`,{
-          description: termSearch,
-          token
+      const response = await api.post(`/Assunto/Listar`, {
+        description: termSearch,
+        token
       });
 
       const subjectList: ISelectValues[] = [];
-      response.data.map(item =>{
+      response.data.map(item => {
         return subjectList.push({
           id: item.id,
           label: item.value
@@ -473,61 +475,61 @@ const LoadSubject = useCallback(async (reload = false, termSearch = '') => {
 
 
   const handleSubjectChange = (item) => {
-    if (item){
+    if (item) {
       setAppointmentSubject(item.label)
       setAppointmentSubjectId(item.id)
     }
-    else{
+    else {
       setAppointmentSubject('')
       setAppointmentSubjectId('')
       LoadSubject(true)
     }
   }
 
-    const handleSelectLembretes = useCallback(
-      (event: ChangeEvent<HTMLSelectElement>) => {
-        const appendLembretes = event.target.value;
-        setAppointmentNotifyMatterCustomer('N');
-  
-        if (event.target.value === '00'){
-          return;
-        };
-  
-        if (event.target.value === 'PE'){
-          setOpenReminderModal(true)
-  
-          event.target.value = "00"
-  
-          return
-        };
-  
-        setAppointmentRemindersList([
-          ...appointmentRemindersList,
-          {
-            qtdReminder: appendLembretes,
-            notifyMatterCustomer: appointmentNotifyMatterCustomer,
-            emailNotification: 'N',
-            whatsAppNotification: 'N'
-          },
-        ]);
-  
-        if (
-          appointmentRemindersList.findIndex(
-            key => key.qtdReminder === appendLembretes,
-          ) != -1
-        ) {
-          const newdata = Array.from(appointmentRemindersList);
-          const key = newdata.findIndex(
-            item => item.qtdReminder === appendLembretes,
-          );
-          newdata.slice(key, 1);
-  
-          setAppointmentRemindersList(newdata);
-        }
-      },
-      [appointmentNotifyMatterCustomer, appointmentRemindersList],
-    ); // adiciona um lembrete a lista
-  
+  const handleSelectLembretes = useCallback(
+    (event: ChangeEvent<HTMLSelectElement>) => {
+      const appendLembretes = event.target.value;
+      setAppointmentNotifyMatterCustomer('N');
+
+      if (event.target.value === '00') {
+        return;
+      };
+
+      if (event.target.value === 'PE') {
+        setOpenReminderModal(true)
+
+        event.target.value = "00"
+
+        return
+      };
+
+      setAppointmentRemindersList([
+        ...appointmentRemindersList,
+        {
+          qtdReminder: appendLembretes,
+          notifyMatterCustomer: appointmentNotifyMatterCustomer,
+          emailNotification: 'N',
+          whatsAppNotification: 'N'
+        },
+      ]);
+
+      if (
+        appointmentRemindersList.findIndex(
+          key => key.qtdReminder === appendLembretes,
+        ) != -1
+      ) {
+        const newdata = Array.from(appointmentRemindersList);
+        const key = newdata.findIndex(
+          item => item.qtdReminder === appendLembretes,
+        );
+        newdata.slice(key, 1);
+
+        setAppointmentRemindersList(newdata);
+      }
+    },
+    [appointmentNotifyMatterCustomer, appointmentRemindersList],
+  ); // adiciona um lembrete a lista
+
 
 
   const CustomerEmailNotification = useCallback(key => {
@@ -539,10 +541,10 @@ const LoadSubject = useCallback(async (reload = false, termSearch = '') => {
     else
       newList[chave].emailNotification = 'N'
 
-      setAppointmentRemindersList(newList)
+    setAppointmentRemindersList(newList)
   }, [appointmentRemindersList])
-    
-    
+
+
   const CustomerWhatsNotification = useCallback(key => {
     const newList = Array.from(appointmentRemindersList);
     const chave = newList.findIndex(i => i.qtdReminder === key);
@@ -552,51 +554,51 @@ const LoadSubject = useCallback(async (reload = false, termSearch = '') => {
     else
       newList[chave].whatsAppNotification = 'N'
 
-      setAppointmentRemindersList(newList);
+    setAppointmentRemindersList(newList);
   }, [appointmentRemindersList])
 
 
-      
-    const CustomerNotification =  useCallback(async key => {
-      try{
-        const response = await api.post<IParameterData[]>('/Parametro/Selecionar', { token: userToken, allowNull: true, parametersName: '#WPNOTIFICATION' })
-  
-        if (response.data.length > 0) {
-          if(response.data[0].parameterValue == 'EM') {
-            const newList = Array.from(appointmentRemindersList);
-            const chave = newList.findIndex(i => i.qtdReminder === key);
-            newList[chave].emailNotification = 'S'
-          }
-          if(response.data[0].parameterValue == 'WA') {
-            const newList = Array.from(appointmentRemindersList);
-            const chave = newList.findIndex(i => i.qtdReminder === key);
-            newList[chave].whatsAppNotification = 'S'
-          }
-          if(response.data[0].parameterValue == 'AM') {
-            const newList = Array.from(appointmentRemindersList);
-            const chave = newList.findIndex(i => i.qtdReminder === key);
-            newList[chave].emailNotification = 'S'
-            newList[chave].whatsAppNotification = 'S'
-          }
-        }
-        else{
+
+  const CustomerNotification = useCallback(async key => {
+    try {
+      const response = await api.post<IParameterData[]>('/Parametro/Selecionar', { token: userToken, allowNull: true, parametersName: '#WPNOTIFICATION' })
+
+      if (response.data.length > 0) {
+        if (response.data[0].parameterValue == 'EM') {
           const newList = Array.from(appointmentRemindersList);
-            const chave = newList.findIndex(i => i.qtdReminder === key);
-            newList[chave].emailNotification = 'N'
-            newList[chave].whatsAppNotification = 'N'
+          const chave = newList.findIndex(i => i.qtdReminder === key);
+          newList[chave].emailNotification = 'S'
         }
-        
+        if (response.data[0].parameterValue == 'WA') {
+          const newList = Array.from(appointmentRemindersList);
+          const chave = newList.findIndex(i => i.qtdReminder === key);
+          newList[chave].whatsAppNotification = 'S'
+        }
+        if (response.data[0].parameterValue == 'AM') {
+          const newList = Array.from(appointmentRemindersList);
+          const chave = newList.findIndex(i => i.qtdReminder === key);
+          newList[chave].emailNotification = 'S'
+          newList[chave].whatsAppNotification = 'S'
+        }
+      }
+      else {
         const newList = Array.from(appointmentRemindersList);
         const chave = newList.findIndex(i => i.qtdReminder === key);
-    
-        newList[chave].notifyMatterCustomer = 'S';
-        setAppointmentRemindersList(newList);
+        newList[chave].emailNotification = 'N'
+        newList[chave].whatsAppNotification = 'N'
       }
-      catch (err:any){
-        console.log(err.response.data.Message)
-      }
-    }, [appointmentRemindersList])
-  
+
+      const newList = Array.from(appointmentRemindersList);
+      const chave = newList.findIndex(i => i.qtdReminder === key);
+
+      newList[chave].notifyMatterCustomer = 'S';
+      setAppointmentRemindersList(newList);
+    }
+    catch (err: any) {
+      console.log(err.response.data.Message)
+    }
+  }, [appointmentRemindersList])
+
 
   const handleDisableNotification = useCallback(
     key => {
@@ -616,26 +618,27 @@ const LoadSubject = useCallback(async (reload = false, termSearch = '') => {
 
 
   const handleNewHourBeggin = useCallback(
-      (event: ChangeEvent<HTMLInputElement>) => {
-        const time = event.target.value;
-        setAppointmentHourBeggin(time);
-  
-        if (time) {
-          const startTime = time.split(':');
-          const hour = parseInt(startTime[0].toString());
-          const minutes = parseInt(startTime[1].toString());
-  
-          const hourEnd = new Date();
-          hourEnd.setHours(hour);
-          hourEnd.setMinutes(minutes + 30);
-  
-          const nData = format(new Date(hourEnd), 'HH:mm');
-  
-          setAppointmentHourEnd(nData);
-        }
-      },
-      [],
-    ); // mudança da hora inicial
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const time = event.target.value;
+      setAppointmentHourBeggin(time);
+
+      if (time) {
+        const startTime = time.split(':');
+        const hour = parseInt(startTime[0].toString());
+        const minutes = parseInt(startTime[1].toString());
+
+        const hourEnd = new Date();
+        hourEnd.setHours(hour);
+        hourEnd.setMinutes(minutes + 30);
+
+        const nData = format(new Date(hourEnd), 'HH:mm');
+
+        setAppointmentHourEnd(nData);
+      }
+    },
+    [],
+  ); // mudança da hora inicial
+
 
   return (
     <Container>
@@ -645,7 +648,7 @@ const LoadSubject = useCallback(async (reload = false, termSearch = '') => {
         <Tabs>
 
           <div>
-            
+
             <button
               type='button'
               onClick={() => history.push('/workflow/list')}
@@ -680,18 +683,16 @@ const LoadSubject = useCallback(async (reload = false, termSearch = '') => {
 
               <br /><br /><br /> <br />
 
-              <label htmlFor="endereco" style={{marginTop:'-55px'}}>
+              <label htmlFor="endereco" style={{ marginTop: '-55px' }}>
                 <p>Gatilho(s)</p>
                 {workflowTrigger.map(trigger => (
 
                   <section id="endereco" key={trigger.workflowTriggerId}>
 
-                   
-                    <label htmlFor="telefone" id="contact">
-                     
+                    <label htmlFor="telefone" id="trigger">
                       <Select
                         isSearchable
-                        id="triggerType"
+                        id="triggerSelect"
                         styles={selectStyles}
                         value={workflowTriggerTypes.filter(options => options.id === trigger.triggerType)}
                         onChange={(item) => handleChangeTriggerType(item?.id, trigger.workflowTriggerId)}
@@ -700,6 +701,7 @@ const LoadSubject = useCallback(async (reload = false, termSearch = '') => {
                         placeholder="Selecione"
                       />
                       <input
+                        id="triggerDescription"
                         type="text"
                         autoComplete="off"
                         value={trigger.configuration?.label || ""}
@@ -707,8 +709,9 @@ const LoadSubject = useCallback(async (reload = false, termSearch = '') => {
                         maxLength={30}
                       />
                     </label>
-  
-                    <label htmlFor="telefone2" id="contact">
+
+                    <label htmlFor="telefone" id="trigger">
+
                       <button type="button" className='buttonLinkClick' onClick={() => handleCheckBoxDeleteTrigger(trigger.workflowTriggerId)}>
                         <FiTrash />
                         Apagar este gatilho
@@ -731,176 +734,157 @@ const LoadSubject = useCallback(async (reload = false, termSearch = '') => {
                           </>
                         )}
                       </button>
+
                     </label>
 
-                  
-                  { painelAberto === trigger.workflowTriggerId && (
-                  
-<label htmlFor="telefone" id="contact" style={{ display: "block" }}>
-  {/* radios + qtd dias */}
-  <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-  Informe os dias para criação do compromisso
-  <FcAbout
-    style={{ height: "15px", width: "15px", marginRight: "15px" }}
-    title="Você deve Informar a regra..."
-  />
-
-    <label style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-      <input type="radio" id="antes" name="quando" value="antes" />
-      Antes
-    </label>
-
-    <label style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-      <input type="radio" id="depois" name="quando" value="depois" />
-      Depois
-    </label>
-
-    <label style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-      <span>Qtd. de dias</span>
-      <input type="number" />
-    </label>
-  </div>
-
-  {/* Campos organizados com Grid */}
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "200px 140px 140px 140px 140px", // 5 colunas
-      gridTemplateRows: "auto auto auto", // 3 linhas agora
-      gap: "20px",
-      marginTop: "15px",
-    }}
-  >
-    {/* Linha 1 */}
-    <div style={{ display: "flex", flexDirection: "column" }}>
-      <label htmlFor="assunto">Assunto</label>
-      
-      <Select
-        isSearchable
-        isClearable
-        placeholder='Selecione o Assunto'
-        onChange={handleSubjectChange}
-        onInputChange={(term) => setAppointmentSubject(term)}
-        value={optionsSubject.filter(options => options.id == appointmentSubjectId)}
-        options={optionsSubject}
-        className='andamentoType'
-        loadingMessage={loadingMessage}
-        noOptionsMessage={noOptionsMessage}
-      />
-
-    </div>
-
-    <div style={{ display: "flex", flexDirection: "column" }}>
-     
-       <TimePicker
-          title="Hora Inicio"
-          name="timepicker"
-          list="times"
-          value={appointmentHourBeggin}
-          onChange={handleNewHourBeggin}
-          disabled={appointmentBlockUpdate}
-        />
-        
-    </div>
-
-    <div style={{ display: "flex", flexDirection: "column" }}>
-      <label htmlFor="lembretes">Lembretes</label>
-        <select
-        name="lembretes"
-        id="lembretes"
-        onChange={handleSelectLembretes}
-        disabled={appointmentBlockUpdate}
-      >
-        {optionsLembrete.map(ol => (
-          <option key={ol.key} value={ol.key}>
-            {ol.value}
-          </option>
-        ))}
-      </select>
 
 
-                          <div id="divTable" style={{width:'100%'}}>
-                            <table id='Table' style={{float:'right', marginRight:'20px'}}>
-                              {appointmentRemindersList.map(item => (
-                                <tr id='Tr'>
-                                  <td id='tdLabel' style={{width:'80px', textAlign:'left', height:'20px', fontSize:'12px'}}>
-                                    {item.qtdReminder === '0M' && <p>No Horário</p>}
-                                    {item.qtdReminder === '12H' && <p>Meio Dia</p>}
-                                    {item.qtdReminder != '12H' && item.qtdReminder != '0M' && item.qtdReminder.includes("M") && <p>{item.qtdReminder.split('M')[0]} Minuto(s)</p>}
-                                    {item.qtdReminder != '12H' && item.qtdReminder != '0M' && item.qtdReminder.includes("H") && <p>{item.qtdReminder.split('H')[0]} Hora(s)</p>}
-                                    {item.qtdReminder != '12H' && item.qtdReminder != '0M' && item.qtdReminder.includes("D") && <p>{item.qtdReminder.split('D')[0]} Dia(s)</p>}
-                                    {item.qtdReminder != '12H' && item.qtdReminder != '0M' && item.qtdReminder.includes("S") && <p>{item.qtdReminder.split('S')[0]} Semana(s)</p>}
-                                    {item.qtdReminder != '12H' && item.qtdReminder != '0M' && item.qtdReminder.includes("E") && <p>{item.qtdReminder.split('E')[0]} Mês(es)</p>}
-                                  </td>
-                                  <td id='tdNotButtons' style={{width:'115px', textAlign:'right', height:'20px', fontSize:'12px'}}>
-                                    {item.notifyMatterCustomer === 'S' ? (
-                                      <>
-                                        {item.emailNotification === 'S' ? (
-                                          <button type="button" onClick={() => {CustomerEmailNotification(item.qtdReminder)}} title='Clique para desativar o envio de lembrete email ao cliente'>
-                                            <FiMail style={{color:'blue', height:'16px', width:'16px'}} />
-                                          </button>
-                                        ) : (
-                                          <button type="button" onClick={() => {CustomerEmailNotification(item.qtdReminder)}} title='Clique para ativar o envio de lembrete email ao cliente'>
-                                            <FiMail style={{color:'var(--grey)', height:'16px', width:'16px'}} />
-                                          </button>
-                                        )}
-                                        &nbsp;&nbsp;
-                                        {item.whatsAppNotification === 'S' ? (
-                                          <button type="button" onClick={() => {CustomerWhatsNotification(item.qtdReminder)}} title='Clique para desativar o envio de lembrete whatsapp ao cliente'>
-                                            <FaWhatsapp style={{color:'green', height:'16px', width:'16px'}} />
-                                          </button>
-                                        ) : (
-                                          <button type="button" onClick={() => {CustomerWhatsNotification(item.qtdReminder)}} title='Clique para ativar o envio de lembrete whatsapp ao cliente'>
-                                            <FaWhatsapp style={{color:'var(--grey)', height:'16px', width:'16px'}} />
-                                          </button>
-                                        )}
-                                      </>
-                                    ) : (
-                                      <>
-                                        <button type="button" id="NotificationCustomerButton" onClick={() => {CustomerNotification(item.qtdReminder)}} style={{color:'blue'}} title='Após clicar no botão selecione as opções de notificação por E-Mail ou WhatsApp'>
-                                          <p>Notifica Cliente</p>
-                                        </button>
-                                      </>
-                                    )}
-                                  </td>
-                                  <td id='Trash' style={{width:'20px', textAlign:'left', height:'20px', fontSize:'12px'}}>
-                                    <button type="button" onClick={() => {handleDisableNotification(item.qtdReminder)}}>
-                                      &nbsp;<FiTrash title="Excluir o lembrete" style={{color:'var(--grey)', height:'16px', width:'16px'}} />
-                                    </button>
-                                  </td>
-                                </tr>
-                              ))}
-                            </table>
-                          </div>
-    </div>
+                    <label htmlFor="telefone2" id="trigger" >
+                      Informe os dias para criação do compromisso
+                      <FcAbout
+                        style={{ height: "15px", width: "15px", marginRight: "85px" }}
+                        title="Você deve Informar a regra para criação do compromisso a partir a da data do gatilho, informar se deve ser criado antes ou depois e quantos dias considerar."
+                      />
 
-    {/* Linha 2: Privacidade e Responsável */}
-    <div style={{ display: "flex", flexDirection: "column" }}>
-      <label htmlFor="privacidade">Privacidade</label>
-      <Select isSearchable id="privacidade" styles={selectStyles} placeholder="Selecione" />
-    </div>
+                      <label style={{ display: "flex", alignItems: "center", gap: "5px", marginRight: "15px" }}>
+                        <input type="radio" id="antes" name="quando" value="antes" />
+                        Antes
+                      </label>
 
-    <div style={{ display: "flex", flexDirection: "column" }}>
-      <label htmlFor="responsavel">Responsável</label>
-      <Select isSearchable id="responsavel" styles={selectStyles} placeholder="Selecione" />
-    </div>
+                      <label style={{ display: "flex", alignItems: "center", gap: "5px", marginRight: "15px" }}>
+                        <input type="radio" id="depois" name="quando" value="depois" />
+                        Depois
+                      </label>
 
-    {/* Linha 3: Descrição (ocupando todas as colunas) */}
-    <div style={{ display: "flex", flexDirection: "column", gridColumn: "1 / -1" }}>
-      <label htmlFor="descricao">Descrição</label>
-      <textarea id="descricao" rows={3} placeholder="Digite a descrição aqui..." />
-    </div>
-  </div>
-</label>
+                      Qtd. de dias
+                      <input id="triggerNumber" type="number" min="1" step="any" />
 
-           
-                    )}
+                    </label>
+
+                    <label></label>
+                    <label htmlFor="telefone2" id="trigger" >
+
+                      <div id="triggerDados">
+                        Assunto
+                        <Select
+                          isSearchable
+                          isClearable
+                          id="triggerSubject"
+                          placeholder='Selecione o Assunto'
+                          onChange={handleSubjectChange}
+                          onInputChange={(term) => setAppointmentSubject(term)}
+                          value={optionsSubject.filter(options => options.id == appointmentSubjectId)}
+                          options={optionsSubject}
+                          styles={selectStyles}
+                          loadingMessage={loadingMessage}
+                          noOptionsMessage={noOptionsMessage}
+                        />
+
+                      </div>
+
+                      <div id="triggerDados">
+                        Hora Inicio
+                      <TimePicker
+                        name="timepicker"
+                        id="timepicker"
+                        list="times"
+                        value={appointmentHourBeggin}
+                        onChange={handleNewHourBeggin}
+                        disabled={appointmentBlockUpdate}
+                        style={{ width: "100px" }}
+                      />
+                    </div>
+
+                      <div id="triggerDados">
+                        Lembretes
+                        <select
+                          name="lembretes"
+                          id="lembretes"
+                          onChange={handleSelectLembretes}
+                          disabled={appointmentBlockUpdate}
+                          style={{ width: "160px" }}
+                        >
+                          {optionsLembrete.map(ol => (
+                            <option key={ol.key} value={ol.key}>
+                              {ol.value}
+                            </option>
+                          ))}
+                        </select>
+
+                      </div>
+
+                      <div id="triggerDados">
+                        Privacidade
+                        <select
+                          name="privacidade"
+                          id="privacidade"
+                          disabled={appointmentBlockUpdate}
+                          style={{ width: "160px" }}
+                        >
+                          <option value="N">Público</option>
+                          <option value="S">Privado</option>
+                        </select>
+
+                      </div>
+
+                    </label>
 
 
-                  </section> 
+                    <label htmlFor="telefone2" id="trigger" >
+                      <div id="triggerDados">
+                        Responsável
+                        <select
+                          name="responsavel"
+                          id="responsavel"
+                          disabled={appointmentBlockUpdate}
+                          style={{ width: "160px" }}
+                        >
+                          <option value="U">Usuário</option>
+                          <option value="R">Resp.Processo</option>
+                          <option value="A">Atribuir</option>
+                        </select>
+
+                      </div>
+
+                    </label>
 
 
-                 ))}
+                    <label
+                      htmlFor="obs"
+                      style={{
+                        gridColumn: "1 / -1", // ocupa todas as colunas
+                        display: "flex",
+                        flexDirection: "column",
+                      }}
+                    >
+                      <div id="triggerDados">
+                      <span>Descrição</span>
+
+                      <textarea
+                        value={customerObs}
+                        onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+                          setCustomerObs(e.target.value)
+                        }
+                        style={{
+                          width: "900px",
+                          minHeight: "150px",
+                          resize: "vertical",
+                          background: "white",   
+                          color: "black",        
+                          border: "1px solid #ccc", 
+                          borderRadius: "6px",   
+                          padding: "8px",       
+                          fontSize: "14px",
+                        }}
+                      />
+                      </div>
+                    </label>
+
+
+                  </section>
+
+
+                ))}
 
               </label>
 
@@ -920,7 +904,7 @@ const LoadSubject = useCallback(async (reload = false, termSearch = '') => {
                     Salvar
                   </button>
 
-          
+
                   <button className="buttonClick" type="button" onClick={() => history.push('/workflow/list')}>
                     <MdBlock />
                     Fechar
@@ -937,20 +921,20 @@ const LoadSubject = useCallback(async (reload = false, termSearch = '') => {
 
         </Tabs>
 
-   
+
       </Content>
 
-      
-    {isDeleting && (
-        
-                <ConfirmBoxModal
-                  title="Excluir Registro"
-                  caller="WorkflowList"
-                  message="Confirma a exclusão deste workflow ?"
-                />
-        
-        )}
-        
+
+      {isDeleting && (
+
+        <ConfirmBoxModal
+          title="Excluir Registro"
+          caller="WorkflowList"
+          message="Confirma a exclusão deste workflow ?"
+        />
+
+      )}
+
 
     </Container>
   );
