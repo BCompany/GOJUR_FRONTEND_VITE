@@ -25,7 +25,7 @@ import { useDocument } from 'context/document';
 import DocumentModal from 'components/Modals/CustomerModal/DocumentModal';
 import { useCustomer } from 'context/customer';
 import { Card, Container, Content, Form, ListCards, CardMatter, MatterListCards } from './styles';
-import { IWorkflowTriggers, IWorkflowData, ISelectValues } from '../Interfaces/IWorkflowEdit';
+import { IWorkflowTriggers, IWorkflowActions, IWorkflowData, ISelectValues } from '../Interfaces/IWorkflowEdit';
 import { workflowTriggerTypes } from 'Shared/utils/commonListValues';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
 import { useConfirmBox } from 'context/confirmBox';
@@ -53,6 +53,7 @@ export default function Workflow() {
   const [isPagination, setIsPagination] = useState(false); // objecto todo de do cliente
   const [workflow, setWorkflow] = useState({} as IWorkflowData); // objecto todo de do cliente
   const [workflowTrigger, setWorkflowTrigger] = useState<IWorkflowTriggers[]>([]); // objeto de endereço que compoe o cliente
+  const [workflowAction, setWorkflowAction] = useState<IWorkflowActions[]>([]); // objeto de endereço que compoe o cliente
   const [customerLegalPerson, setCustomerLegalPerson] = useState<ICustomerLegalPerson[]>([]); // objeto de representante que compoe o cliente
   const [customerCitysDefault, setCustomerCitysDefault] = useState<ISelectData[]>([]); // count field for address block
   const [customerCitys, setCustomerCitys] = useState<ISelectData[]>([]); // count field for address block
@@ -189,13 +190,22 @@ export default function Workflow() {
       if (response.data.triggers.length < 1) {
         const id = Math.random()
 
+        const firstAction: IWorkflowActions = {
+          workflowActionId: Math.random(),
+          companyId,
+          workflowTriggerId: id,
+          actionType: 'criarcompromisso',
+          daysbeforeandafter: 0
+        };
+
         const newTrigger: IWorkflowTriggers = {
           workflowTriggerId: id,
           companyId,
           workflowId: 0,
           triggerType: 'data',
-          configuration: { label: "" }
-        }
+          configuration: { label: "" },
+          actions: [firstAction]
+        };
 
         setWorkflowTrigger(oldState => [...oldState, newTrigger])
 
@@ -286,21 +296,65 @@ export default function Workflow() {
 
 
 
+  /*
+    const handleNewTrigger = useCallback(() => {
+  
+      const id = Math.random()
+      const newTrigger: IWorkflowTriggers = {
+        workflowTriggerId: id,
+        companyId,
+        workflowId: 0,
+        triggerType: 'data',
+        configuration: { label: "" },
+        actions: []
+      }
+  
+      setWorkflowTrigger(oldTrigger => [...oldTrigger, newTrigger])
+    }, []); // adiciona um novo endereço na interface
+  */
 
   const handleNewTrigger = useCallback(() => {
+    const id = Math.random();
 
-    const id = Math.random()
-    const newAddress: IWorkflowTriggers = {
+    const firstAction: IWorkflowActions = {
+      workflowActionId: Math.random(),
+      companyId,
+      workflowTriggerId: id,
+      actionType: 'criarcompromisso',
+      daysbeforeandafter: 0
+    };
+
+    const newTrigger: IWorkflowTriggers = {
       workflowTriggerId: id,
       companyId,
       workflowId: 0,
       triggerType: 'data',
-      configuration: { label: "" }
-    }
+      configuration: { label: "" },
+      actions: [firstAction] // 👈 já começa com uma ação
+    };
 
-    setWorkflowTrigger(oldAddress => [...oldAddress, newAddress])
-  }, []); // adiciona um novo endereço na interface
+    setWorkflowTrigger(oldTrigger => [...oldTrigger, newTrigger]);
+  }, [companyId]);
 
+
+  const handleNewAction = useCallback((triggerId: number) => {
+    const id = Math.random();
+    const newAction: IWorkflowActions = {
+      workflowActionId: id,
+      companyId,
+      workflowTriggerId: triggerId, // associa a ação ao trigger correto
+      actionType: 'criarcompromisso',
+      daysbeforeandafter: 0
+    };
+
+    setWorkflowTrigger((oldTriggers) =>
+      oldTriggers.map((trigger) =>
+        trigger.workflowTriggerId === triggerId
+          ? { ...trigger, actions: [...(trigger.actions ?? []), newAction] }
+          : trigger
+      )
+    );
+  }, [companyId]);
 
 
   const handleDeleteTrigger = useCallback((triggerId) => {
@@ -473,7 +527,7 @@ export default function Workflow() {
     }
   }, [appointmentSubject])
 
-
+/*
   const handleSubjectChange = (item) => {
     if (item) {
       setAppointmentSubject(item.label)
@@ -485,6 +539,7 @@ export default function Workflow() {
       LoadSubject(true)
     }
   }
+*/
 
   const handleSelectLembretes = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
@@ -640,6 +695,64 @@ export default function Workflow() {
   ); // mudança da hora inicial
 
 
+  const handleDeleteAction = useCallback((triggerId: number, actionId: number) => {
+    setWorkflowTrigger((oldTriggers) =>
+      oldTriggers.map((trigger) =>
+        trigger.workflowTriggerId === triggerId
+          ? { ...trigger, actions: trigger.actions.filter(a => a.workflowActionId !== actionId) }
+          : trigger
+      )
+    );
+  }, []);
+
+
+  
+const handleChangeDays = (newValue: string, workflowTriggerId: string, workflowActionId: string) => {
+  setWorkflowTrigger(prevTriggers =>
+    prevTriggers.map(trigger => {
+      if (trigger.workflowTriggerId === workflowTriggerId) {
+        return {
+          ...trigger,
+          actions: trigger.actions?.map(action =>
+            action.workflowActionId === workflowActionId
+              ? { ...action, daysbeforeandafter: Number(newValue) }
+              : action
+          )
+        };
+      }
+      return trigger;
+    })
+  );
+};
+
+  
+const handleSubjectChange = (
+  selected: { id: string | number; label: string } | null,
+  workflowTriggerId: number | undefined,
+  workflowActionId: number | undefined
+) => {
+  setWorkflowTrigger(prev =>
+    prev.map(trigger =>
+      trigger.workflowTriggerId === workflowTriggerId
+        ? {
+            ...trigger,
+            actions: trigger.actions?.map(action =>
+              action.workflowActionId === workflowActionId
+                ? {
+                    ...action,
+                    configuration: {
+                      ...action.configuration,
+                      subject: selected ? String(selected.id) : "",
+                    },
+                  }
+                : action
+            ),
+          }
+        : trigger
+    )
+  );
+};
+
   return (
     <Container>
 
@@ -737,148 +850,181 @@ export default function Workflow() {
 
                     </label>
 
+                    {painelAberto === trigger.workflowTriggerId && (
+                      <>
+                        {trigger.actions?.map(action => (
+                          <>
+                            <label htmlFor="telefone2" id="trigger" >
+                              Informe os dias para criação do compromisso
+                              <FcAbout
+                                style={{ height: "15px", width: "15px", marginRight: "85px" }}
+                                title="Você deve Informar a regra para criação do compromisso a partir a da data do gatilho, informar se deve ser criado antes ou depois e quantos dias considerar."
+                              />
+
+                              <label style={{ display: "flex", alignItems: "center", gap: "5px", marginRight: "15px" }}>
+                                <input type="radio" id="antes" name="quando" value="antes" />
+                                Antes
+                              </label>
+
+                              <label style={{ display: "flex", alignItems: "center", gap: "5px", marginRight: "15px" }}>
+                                <input type="radio" id="depois" name="quando" value="depois" />
+                                Depois
+                              </label>
+
+                              Qtd. de dias
+                              <input 
+                                id="triggerNumber" 
+                                type="number" 
+                                min="1" 
+                                step="any"  
+                                value={action.daysbeforeandafter}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => handleChangeDays(e.target.value, trigger.workflowTriggerId, action.workflowActionId)}
+                                />
+
+                            </label>
+
+                            <label htmlFor="telefone2" id="trigger">
+
+                              <button type="button" className='buttonLinkClick' onClick={() => handleDeleteAction(trigger.workflowTriggerId!, action.workflowActionId!)}>
+                                <FiTrash />
+                                Apagar essa ação
+                              </button>
+
+                            </label>
+                            <label htmlFor="telefone2" id="trigger" >
+
+                              <div id="triggerDados">
+                                Assunto
+                                <Select
+                                  isSearchable
+                                  isClearable
+                                  id="triggerSubject"
+                                  placeholder='Selecione o Assunto'
+                                  onChange={(item) => handleSubjectChange(item, trigger.workflowTriggerId, action.workflowActionId)}
+                                  onInputChange={(term) => setAppointmentSubject(term)}
+                                  value={optionsSubject.filter( (opt) => opt.id === action.configuration?.subject )}
+                                  options={optionsSubject}
+                                  styles={selectStyles}
+                                  loadingMessage={loadingMessage}
+                                  noOptionsMessage={noOptionsMessage}
+                                />
+ 
+                              </div>
+
+                              <div id="triggerDados">
+                                Hora Inicio
+                                <TimePicker
+                                  name="timepicker"
+                                  id="timepicker"
+                                  list="times"
+                                  value={appointmentHourBeggin}
+                                  onChange={handleNewHourBeggin}
+                                  disabled={appointmentBlockUpdate}
+                                  style={{ width: "100px" }}
+                                />
+                              </div>
+
+                              <div id="triggerDados">
+                                Lembretes
+                                <select
+                                  name="lembretes"
+                                  id="lembretes"
+                                  onChange={handleSelectLembretes}
+                                  disabled={appointmentBlockUpdate}
+                                  style={{ width: "160px" }}
+                                >
+                                  {optionsLembrete.map(ol => (
+                                    <option key={ol.key} value={ol.key}>
+                                      {ol.value}
+                                    </option>
+                                  ))}
+                                </select>
+
+                              </div>
+
+                              <div id="triggerDados">
+                                Privacidade
+                                <select
+                                  name="privacidade"
+                                  id="privacidade"
+                                  disabled={appointmentBlockUpdate}
+                                  style={{ width: "160px" }}
+                                >
+                                  <option value="N">Público</option>
+                                  <option value="S">Privado</option>
+                                </select>
+
+                              </div>
+
+                            </label>
 
 
-                    <label htmlFor="telefone2" id="trigger" >
-                      Informe os dias para criação do compromisso
-                      <FcAbout
-                        style={{ height: "15px", width: "15px", marginRight: "85px" }}
-                        title="Você deve Informar a regra para criação do compromisso a partir a da data do gatilho, informar se deve ser criado antes ou depois e quantos dias considerar."
-                      />
+                            <label htmlFor="telefone2" id="trigger" >
+                              <div id="triggerDados">
+                                Responsável
+                                <select
+                                  name="responsavel"
+                                  id="responsavel"
+                                  disabled={appointmentBlockUpdate}
+                                  style={{ width: "160px" }}
+                                >
+                                  <option value="U">Usuário</option>
+                                  <option value="R">Resp.Processo</option>
+                                  <option value="A">Atribuir</option>
+                                </select>
 
-                      <label style={{ display: "flex", alignItems: "center", gap: "5px", marginRight: "15px" }}>
-                        <input type="radio" id="antes" name="quando" value="antes" />
-                        Antes
-                      </label>
+                              </div>
 
-                      <label style={{ display: "flex", alignItems: "center", gap: "5px", marginRight: "15px" }}>
-                        <input type="radio" id="depois" name="quando" value="depois" />
-                        Depois
-                      </label>
-
-                      Qtd. de dias
-                      <input id="triggerNumber" type="number" min="1" step="any" />
-
-                    </label>
-
-                    <label></label>
-                    <label htmlFor="telefone2" id="trigger" >
-
-                      <div id="triggerDados">
-                        Assunto
-                        <Select
-                          isSearchable
-                          isClearable
-                          id="triggerSubject"
-                          placeholder='Selecione o Assunto'
-                          onChange={handleSubjectChange}
-                          onInputChange={(term) => setAppointmentSubject(term)}
-                          value={optionsSubject.filter(options => options.id == appointmentSubjectId)}
-                          options={optionsSubject}
-                          styles={selectStyles}
-                          loadingMessage={loadingMessage}
-                          noOptionsMessage={noOptionsMessage}
-                        />
-
-                      </div>
-
-                      <div id="triggerDados">
-                        Hora Inicio
-                      <TimePicker
-                        name="timepicker"
-                        id="timepicker"
-                        list="times"
-                        value={appointmentHourBeggin}
-                        onChange={handleNewHourBeggin}
-                        disabled={appointmentBlockUpdate}
-                        style={{ width: "100px" }}
-                      />
-                    </div>
-
-                      <div id="triggerDados">
-                        Lembretes
-                        <select
-                          name="lembretes"
-                          id="lembretes"
-                          onChange={handleSelectLembretes}
-                          disabled={appointmentBlockUpdate}
-                          style={{ width: "160px" }}
-                        >
-                          {optionsLembrete.map(ol => (
-                            <option key={ol.key} value={ol.key}>
-                              {ol.value}
-                            </option>
-                          ))}
-                        </select>
-
-                      </div>
-
-                      <div id="triggerDados">
-                        Privacidade
-                        <select
-                          name="privacidade"
-                          id="privacidade"
-                          disabled={appointmentBlockUpdate}
-                          style={{ width: "160px" }}
-                        >
-                          <option value="N">Público</option>
-                          <option value="S">Privado</option>
-                        </select>
-
-                      </div>
-
-                    </label>
+                            </label>
 
 
-                    <label htmlFor="telefone2" id="trigger" >
-                      <div id="triggerDados">
-                        Responsável
-                        <select
-                          name="responsavel"
-                          id="responsavel"
-                          disabled={appointmentBlockUpdate}
-                          style={{ width: "160px" }}
-                        >
-                          <option value="U">Usuário</option>
-                          <option value="R">Resp.Processo</option>
-                          <option value="A">Atribuir</option>
-                        </select>
+                            <label
+                              htmlFor="obs"
+                              style={{
+                                gridColumn: "1 / -1", // ocupa todas as colunas
+                                display: "flex",
+                                flexDirection: "column",
+                              }}
+                            >
+                              <div id="triggerDados">
+                                <span>Descrição</span>
 
-                      </div>
+                                <textarea
+                                  value={customerObs}
+                                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+                                    setCustomerObs(e.target.value)
+                                  }
+                                  style={{
+                                    width: "900px",
+                                    minHeight: "150px",
+                                    resize: "vertical",
+                                    background: "white",
+                                    color: "black",
+                                    border: "1px solid #ccc",
+                                    borderRadius: "6px",
+                                    padding: "8px",
+                                    fontSize: "14px",
+                                  }}
+                                />
+                              </div>
+                            </label>
 
-                    </label>
+                          </>
+
+                        ))}
 
 
-                    <label
-                      htmlFor="obs"
-                      style={{
-                        gridColumn: "1 / -1", // ocupa todas as colunas
-                        display: "flex",
-                        flexDirection: "column",
-                      }}
-                    >
-                      <div id="triggerDados">
-                      <span>Descrição</span>
 
-                      <textarea
-                        value={customerObs}
-                        onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-                          setCustomerObs(e.target.value)
-                        }
-                        style={{
-                          width: "900px",
-                          minHeight: "150px",
-                          resize: "vertical",
-                          background: "white",   
-                          color: "black",        
-                          border: "1px solid #ccc", 
-                          borderRadius: "6px",   
-                          padding: "8px",       
-                          fontSize: "14px",
-                        }}
-                      />
-                      </div>
-                    </label>
+                        <div>
+                          <button type="button" className="buttonClick" id="addAction" onClick={() => handleNewAction(trigger.workflowTriggerId!)}>
+                            <FiPlus />
+                            Incluir nova ação
+                          </button>
+                        </div>
+
+                      </>
+
+                    )}
 
 
                   </section>

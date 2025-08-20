@@ -7,9 +7,24 @@ export interface IWorkflowTriggers {
     configuration: {
         label: string;
     } | null;
+    actions:IWorkflowActions[]; 
 }
 
-
+export interface IWorkflowActions {
+    workflowActionId: number | undefined;
+    companyId: number | undefined;
+    workflowTriggerId: number | undefined;
+    actionType: string;
+    daysbeforeandafter: number | undefined;
+    configuration:{
+        subject: string;
+        starttime: string;
+        description: string;
+        reminders: string[];
+        privacy:string;
+        responsible:string;
+    } | null;
+}
 
 export interface IWorkflowData {
     workflowId: number | undefined;
