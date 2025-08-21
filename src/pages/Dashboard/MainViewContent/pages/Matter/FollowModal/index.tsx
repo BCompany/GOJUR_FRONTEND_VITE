@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Modal from 'react-modal';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import api from 'services/api';
@@ -6,7 +6,8 @@ import Select from 'react-select';
 import { AutoCompleteSelect } from 'Shared/styles/GlobalStyle';
 import { customStyles } from 'Shared/utils/commonFunctions';
 import { loadingMessage, noOptionsMessage } from 'Shared/utils/commonConfig';
-import { MdBlock } from 'react-icons/md';
+import ConfirmBoxModal from 'components/ConfirmBoxModal';
+import { useConfirmBox } from 'context/confirmBox';
 import { useToast } from 'context/toast';
 import { FModal, Overlay } from './styles';
 import { FaFileAlt, FaIdCard, FaRegTimesCircle } from 'react-icons/fa';
@@ -26,42 +27,65 @@ export interface ISelectData {
 }
 
 export default function FollowModal(props) {
-  const {
-    handleCloseFollowModal,
-    matterSelectedNumber,
-    handleSecretJusticeChange,
-    isSecretJustice,
-    handleFollowMatter,
-    handleSelectCredentialId,
-    isChanging
-  } = props.callbackFunction;
-  const [isLoadingComboData, setIsLoadingComboData] = useState<boolean>(false);
-  const { addToast } = useToast();
-  const [credentialTerm, setCredentialTerm] = useState('');
-  const [credentialId, setCredentialId] = useState<string>('');
-  const [credentialValue, setCredentialValue] = useState<string>('');
-  const [credentialsList, setCredentialsList] = useState<ISelectData[]>([]);
+  const token = localStorage.getItem('@GoJur:token')
+  const {handleCloseFollowModal, matterSelectedNumber, handleSecretJusticeChange, isSecretJustice, handleFollowMatter, handleSelectCredentialId, isChanging} = props.callbackFunction;
+  const {isConfirmMessage,handleCaller, caller, isCancelMessage, handleCancelMessage,handleConfirmMessage } = useConfirmBox();
+  const [isLoadingComboData, setIsLoadingComboData] = useState<boolean>(false)
+  const { addToast } = useToast()
+  const [credentialTerm, setCredentialTerm] = useState('')
+  const [credentialId, setCredentialId] = useState<string>('')
+  const [credentialValue, setCredentialValue] = useState<string>('')
+  const [credentialsList, setCredentialsList] = useState<ISelectData[]>([])
   const [showNewCredentials, setShowNewCredentials] = useState<boolean>(false)
-  const [isNewCredential, setIsNewCredential] = useState<boolean>(false);
-
-  const token = localStorage.getItem('@GoJur:token');
+  const [isTJES, setIsTJES] = useState<boolean>(false)
+  const hiddenButtonRef = useRef(null);
+  const [checkMessage, setCheckMessage] = useState(false);
 
   useEffect(() => {
+    let clearMatterNumber = matterSelectedNumber.replace(/[\/\.\-]/g, "");
+    let courtNumber = clearMatterNumber.substring(13, 16)
+
+    if(courtNumber == "808"){
+      setIsTJES(true)
+    }
+
     LoadCredentials();
-  }, []);
+  }, [])
+
+
+  useEffect(() => {
+    if (isCancelMessage && caller == 'validateCourt'){
+      setCheckMessage(false)
+      handleCancelMessage(false)
+    }
+  }, [isCancelMessage])   
+
+  
+  useEffect(() => {
+    if (isConfirmMessage && caller == 'validateCourt'){
+      setCheckMessage(false)
+      handleConfirmMessage(false)
+      handleCaller('')
+
+      hiddenButtonRef.current.click();
+    }
+  }, [isConfirmMessage])
+
 
   const handleCredentialSelected = (item) => {
     if (item) {
       setCredentialValue(item.label);
       setCredentialId(item.id);
       handleSelectCredentialId(item.id);
-    } else {
+    }
+    else {
       setCredentialValue('');
       LoadCredentials();
       setCredentialId('');
       setCredentialTerm('');
     }
-  };
+  }
+
 
   const handleIsNewCredential = (id, description) => {
     LoadCredentials();
@@ -69,6 +93,7 @@ export default function FollowModal(props) {
     setCredentialValue(description);
     handleSelectCredentialId(id);
   }
+
 
   const LoadCredentials = async () => {
     if (isLoadingComboData) {
@@ -92,20 +117,55 @@ export default function FollowModal(props) {
       });
 
       setCredentialsList(listCredentials);
-
       setIsLoadingComboData(false);
-    } catch (err) {
+    }
+    catch (err) {
       console.log(err);
     }
-  };
+  }
+
 
   const handleCloseEditModal = async () => {
     setShowNewCredentials(false)
-  };
+  }
+
 
   const openNewCredentialModal = useCallback(() => {
     setShowNewCredentials(true)
-  }, [showNewCredentials]);
+  }, [showNewCredentials])
+
+
+  const Confirm = async () => {
+    try {
+      
+      if(isTJES){
+        const response = await api.get('/Credenciais/ValidarTribunal', {
+          params: {
+            token,
+            id_Credential : Number(credentialId),
+            matterNumber: matterSelectedNumber,
+            doubleCheck: false
+          },
+        });
+
+        if(response.data == true){
+          hiddenButtonRef.current.click();
+        }
+      }
+      else {
+        hiddenButtonRef.current.click();
+      }
+    }
+    catch (err:any) {
+      if (err.response.data.typeError.warning == "awareness"){
+        setCheckMessage(true)
+      }
+      else{
+        addToast({type: 'error', title: 'Falha ao validar tribunal', description: err.response.data.Message});
+      }
+    }
+  }
+
 
   return (
     <>
@@ -118,6 +178,16 @@ export default function FollowModal(props) {
           </div>
         </>
       )}
+
+      {checkMessage && (
+        <ConfirmBoxModal
+          buttonCancelText="Cancelar"
+          buttonOkText="Confirmar"
+          caller="validateCourt"
+          useCheckBoxConfirm
+          message="Não foram informadas as credenciais para a pesquisa, neste caso a pesquisa não será efetuada no TJES/PJE (sistema PJE)"
+        />
+      )}
   
       {showNewCredentials && <CredentialsDataSourceModal callbackFunction={{ handleCloseEditModal, handleIsNewCredential }} />}
   
@@ -126,7 +196,7 @@ export default function FollowModal(props) {
           <p className="headerLabel">Seguir Processo</p>
         </div>
   
-        <h5>Caso o processo seja segredo de justiça, marque e informe a credencial.</h5>
+        <h5>Caso o processo necessite de credencial em virtude de segredo de justiça ou consulta logada, informe a credencial.</h5>
   
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: "20px" }}>
           <label style={{ marginRight: '20px' }}>
@@ -145,9 +215,18 @@ export default function FollowModal(props) {
               checked={isSecretJustice}
               onChange={handleSecretJusticeChange}
             />
-            Segredo de Justiça
+            Usar Credencial
           </label>
         </div>
+
+        {isTJES && (
+          <>
+          <br />
+          <div id='TJSE' style={{ display:"flex", justifyContent:'center', alignItems:'center', color:'#FF0000', fontSize:'13px' }}>
+            Para pesquisa no PJE/TJES é necessário que seja informado usuário e senha
+          </div>
+          </>
+        )}
   
         {isSecretJustice && (
           <>
@@ -201,16 +280,18 @@ export default function FollowModal(props) {
           </div>
   
           <div style={{ float: 'right', marginRight: '10px' }}>
-            <button 
-              className="buttonClick" 
-              title="Clique para monitorar o processo"
-              type="submit"
-              onClick={handleFollowMatter}
-            >
+            <button className="buttonClick" title="Clique para monitorar o processo" type='button' onClick={()=> Confirm()}>
               <SiSonarsource />
               Confirmar
             </button>
           </div>
+
+          <div style={{ float: 'right', marginRight: '10px' }}>
+            <button ref={hiddenButtonRef} style={{ display: "none" }} title="Clique para monitorar o processo" type='submit' onClick={handleFollowMatter}>
+              <SiSonarsource />
+            </button>
+          </div>
+
         </div>
   
       </FModal>
