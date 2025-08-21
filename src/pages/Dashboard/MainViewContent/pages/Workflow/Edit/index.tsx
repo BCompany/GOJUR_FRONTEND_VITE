@@ -263,6 +263,28 @@ export default function Workflow() {
         triggers: triggerList // Listagem de gatilhos
       })
 
+           
+      const actionList = workflowTrigger.flatMap(trigger =>
+        (trigger.actions ?? []).map(action => ({
+          workflowactionId: action.workflowactionId ?? 0,
+          companyId,
+          workflowtriggerId: trigger.workflowTriggerId,
+          actiontype: 'criarcompromisso',
+          daysbeforeandafter: action.daysbeforeandafter,
+          configDescription: action.configuration
+            ? JSON.stringify(action.configuration)
+            : "{}",
+          token,
+          apiKey,
+        }))
+      );
+    
+     
+      for (const action of actionList) {
+        console.log("Sending action:", action);
+        await api.put('/workflow/salvaracao', action);
+      }
+        
       addToast({
         type: "success",
         title: "Workflow salvo",
@@ -273,18 +295,20 @@ export default function Workflow() {
       history.push('/workflow/list')
 
     } catch (err: any) {
+      const status = err.response?.data?.statusCode;  // protegemos com ?.
+      const message = err.response?.data?.Message || err.message || "Erro desconhecido";
 
       // eslint-disable-next-line no-alert
-      if (err.response.data.statusCode !== 500) {
+      if (status  !== 500) {
 
         addToast({
           type: "error",
           title: "Falha ao cadastrar workflow",
-          description: err.response.data.Message
+          description: message
         })
       }
 
-      if (err.response.data.statusCode === 1011) {
+      if (status === 1011) {
         setCustomerActiveModalDoubleCheck(true)
       }
 
@@ -493,7 +517,8 @@ export default function Workflow() {
   }
 
   const abrirPainel = (id: number) => {
-    setPainelAberto(prev => (prev === id ? null : id)); // alterna abrir/fechar
+    setPainelAberto(prev => (prev === id ? null : id));
+
   };
 
 
@@ -527,63 +552,64 @@ export default function Workflow() {
     }
   }, [appointmentSubject])
 
-/*
-  const handleSubjectChange = (item) => {
-    if (item) {
-      setAppointmentSubject(item.label)
-      setAppointmentSubjectId(item.id)
-    }
-    else {
-      setAppointmentSubject('')
-      setAppointmentSubjectId('')
-      LoadSubject(true)
-    }
-  }
-*/
-
-  const handleSelectLembretes = useCallback(
-    (event: ChangeEvent<HTMLSelectElement>) => {
-      const appendLembretes = event.target.value;
-      setAppointmentNotifyMatterCustomer('N');
-
-      if (event.target.value === '00') {
-        return;
-      };
-
-      if (event.target.value === 'PE') {
-        setOpenReminderModal(true)
-
-        event.target.value = "00"
-
-        return
-      };
-
-      setAppointmentRemindersList([
-        ...appointmentRemindersList,
-        {
-          qtdReminder: appendLembretes,
-          notifyMatterCustomer: appointmentNotifyMatterCustomer,
-          emailNotification: 'N',
-          whatsAppNotification: 'N'
-        },
-      ]);
-
-      if (
-        appointmentRemindersList.findIndex(
-          key => key.qtdReminder === appendLembretes,
-        ) != -1
-      ) {
-        const newdata = Array.from(appointmentRemindersList);
-        const key = newdata.findIndex(
-          item => item.qtdReminder === appendLembretes,
-        );
-        newdata.slice(key, 1);
-
-        setAppointmentRemindersList(newdata);
+  /*
+    const handleSubjectChange = (item) => {
+      if (item) {
+        setAppointmentSubject(item.label)
+        setAppointmentSubjectId(item.id)
       }
-    },
-    [appointmentNotifyMatterCustomer, appointmentRemindersList],
-  ); // adiciona um lembrete a lista
+      else {
+        setAppointmentSubject('')
+        setAppointmentSubjectId('')
+        LoadSubject(true)
+      }
+    }
+  
+    const handleSelectLembretes = useCallback(
+      (event: ChangeEvent<HTMLSelectElement>) => {
+        const appendLembretes = event.target.value;
+        setAppointmentNotifyMatterCustomer('N');
+  
+        if (event.target.value === '00') {
+          return;
+        };
+  
+        if (event.target.value === 'PE') {
+          setOpenReminderModal(true)
+  
+          event.target.value = "00"
+  
+          return
+        };
+  
+        setAppointmentRemindersList([
+          ...appointmentRemindersList,
+          {
+            qtdReminder: appendLembretes,
+            notifyMatterCustomer: appointmentNotifyMatterCustomer,
+            emailNotification: 'N',
+            whatsAppNotification: 'N'
+          },
+        ]);
+  
+        if (
+          appointmentRemindersList.findIndex(
+            key => key.qtdReminder === appendLembretes,
+          ) != -1
+        ) {
+          const newdata = Array.from(appointmentRemindersList);
+          const key = newdata.findIndex(
+            item => item.qtdReminder === appendLembretes,
+          );
+          newdata.slice(key, 1);
+  
+          setAppointmentRemindersList(newdata);
+        }
+      },
+      [appointmentNotifyMatterCustomer, appointmentRemindersList],
+    ); 
+  
+    */
 
 
 
@@ -669,30 +695,7 @@ export default function Workflow() {
       }
     },
     [appointmentRemindersList],
-  ); // deleta o lembrete selecionado da lista
-
-
-  const handleNewHourBeggin = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const time = event.target.value;
-      setAppointmentHourBeggin(time);
-
-      if (time) {
-        const startTime = time.split(':');
-        const hour = parseInt(startTime[0].toString());
-        const minutes = parseInt(startTime[1].toString());
-
-        const hourEnd = new Date();
-        hourEnd.setHours(hour);
-        hourEnd.setMinutes(minutes + 30);
-
-        const nData = format(new Date(hourEnd), 'HH:mm');
-
-        setAppointmentHourEnd(nData);
-      }
-    },
-    [],
-  ); // mudança da hora inicial
+  );
 
 
   const handleDeleteAction = useCallback((triggerId: number, actionId: number) => {
@@ -706,43 +709,77 @@ export default function Workflow() {
   }, []);
 
 
-  
-const handleChangeDays = (newValue: string, workflowTriggerId: string, workflowActionId: string) => {
-  setWorkflowTrigger(prevTriggers =>
-    prevTriggers.map(trigger => {
-      if (trigger.workflowTriggerId === workflowTriggerId) {
-        return {
-          ...trigger,
-          actions: trigger.actions?.map(action =>
-            action.workflowActionId === workflowActionId
-              ? { ...action, daysbeforeandafter: Number(newValue) }
-              : action
-          )
-        };
-      }
-      return trigger;
-    })
-  );
-};
+  const handleChangeDays = (
+    value: string,
+    workflowTriggerId?: number,
+    workflowActionId?: number
+  ) => {
+    const numericValue = Number(value) || 0;
 
-  
-const handleSubjectChange = (
-  selected: { id: string | number; label: string } | null,
-  workflowTriggerId: number | undefined,
-  workflowActionId: number | undefined
+    setWorkflowTrigger(prev =>
+      prev.map(trigger =>
+        trigger.workflowTriggerId === workflowTriggerId
+          ? {
+            ...trigger,
+            actions: trigger.actions?.map(action =>
+              action.workflowactionId === workflowActionId
+                ? {
+                  ...action,
+                  daysbeforeandafter:
+                    action.configuration?.when === "antes"
+                      ? -Math.abs(numericValue)
+                      : Math.abs(numericValue),
+                }
+                : action
+            ),
+          }
+          : trigger
+      )
+    );
+  };
+
+
+  type Cfg = NonNullable<IWorkflowActions["configuration"]>;
+
+  const withConfig = (cfg: IWorkflowActions["configuration"]): Cfg => ({
+    subject: "",
+    starttime: "",
+    description: "",
+    reminders: [],
+    privacy: "N",
+    responsible: "U",
+    ...(cfg ?? {}),
+  });
+
+
+const handleNewHourBeggin = (
+  time: Date | string,
+  workflowTriggerId: number,
+  workflowActionId: number
 ) => {
+  let formattedTime = "";
+
+  console.log(time);
+  if (time instanceof Date) {
+    const hh = time.getHours().toString().padStart(2, "0");
+    const mm = time.getMinutes().toString().padStart(2, "0");
+    formattedTime = `${hh}:${mm}`;
+  } else if (typeof time === "string") {
+    formattedTime = time;
+  }
+
   setWorkflowTrigger(prev =>
     prev.map(trigger =>
       trigger.workflowTriggerId === workflowTriggerId
         ? {
             ...trigger,
-            actions: trigger.actions?.map(action =>
-              action.workflowActionId === workflowActionId
+            actions: trigger.actions.map(action =>
+              action.workflowactionId === workflowActionId
                 ? {
                     ...action,
                     configuration: {
                       ...action.configuration,
-                      subject: selected ? String(selected.id) : "",
+                      starttime: formattedTime,
                     },
                   }
                 : action
@@ -752,6 +789,304 @@ const handleSubjectChange = (
     )
   );
 };
+
+  const toHHmm = (time: string | undefined | null) => {
+    if (!time || typeof time !== "string") return "";
+    const [h = "00", m = "00"] = time.split(":");
+    return `${h.padStart(2, "0")}:${m.padStart(2, "0")}`;
+  };
+
+
+  const handleSubjectChange = (
+    selected: { id: string | number; label: string } | null,
+    workflowTriggerId: number | undefined,
+    workflowActionId: number | undefined
+  ) => {
+    setWorkflowTrigger(prev =>
+      prev.map(trigger =>
+        trigger.workflowTriggerId === workflowTriggerId
+          ? {
+            ...trigger,
+            actions: trigger.actions?.map(action =>
+              action.workflowactionId === workflowActionId
+                ? {
+                  ...action,
+                  configuration: {
+                    ...action.configuration,
+                    subject: selected ? String(selected.id) : "",
+                  },
+                }
+                : action
+            ),
+          }
+          : trigger
+      )
+    );
+  };
+
+/*
+const handleSelectLembretes = (
+  newValue: string,
+  workflowTriggerId: number,
+  workflowActionId: number
+) => {
+
+     setAppointmentRemindersList([
+          ...appointmentRemindersList,
+          {
+            qtdReminder: newValue,
+            notifyMatterCustomer: appointmentNotifyMatterCustomer,
+            emailNotification: 'N',
+            whatsAppNotification: 'N'
+          },
+        ]);
+
+         if (
+          appointmentRemindersList.findIndex(
+            key => key.qtdReminder === newValue,
+          ) != -1
+        ) {
+          const newdata = Array.from(appointmentRemindersList);
+          const key = newdata.findIndex(
+            item => item.qtdReminder === newValue,
+          );
+          newdata.slice(key, 1);
+  
+          setAppointmentRemindersList(newdata);
+        }
+
+        
+  setWorkflowTrigger(prev =>
+    prev.map(trigger => {
+      if (trigger.workflowTriggerId !== workflowTriggerId) return trigger;
+
+      return {
+        ...trigger,
+        actions: trigger.actions.map(action => {
+          if (action.workflowactionId !== workflowActionId) return action;
+
+          return {
+            ...action,
+            configuration: {
+              ...action.configuration,
+              reminders: [newValue], // atualiza o array com o novo valor
+            },
+          };
+        }),
+      };
+    })
+  );
+};
+*/
+
+const handleSelectLembretes = (
+  newValues: string[],
+  workflowTriggerId: number,
+  workflowActionId: number
+) => {
+  setWorkflowTrigger(prev =>
+    prev.map(trigger => {
+      if (trigger.workflowTriggerId !== workflowTriggerId) return trigger;
+
+      return {
+        ...trigger,
+        actions: trigger.actions.map(action => {
+          if (action.workflowactionId !== workflowActionId) return action;
+
+          return {
+            ...action,
+            configuration: {
+              ...action.configuration,
+              reminders: newValues, // já salva array direto
+            },
+          };
+        }),
+      };
+    })
+  );
+};
+
+
+  const handlePrivacyChange = (
+  newValue: string,
+  workflowTriggerId: number,
+  workflowActionId: number
+) => {
+  setWorkflowTrigger(prev =>
+    prev.map(trigger => {
+      if (trigger.workflowTriggerId !== workflowTriggerId) return trigger;
+
+      return {
+        ...trigger,
+        actions: trigger.actions.map(action => {
+          if (action.workflowactionId !== workflowActionId) return action;
+
+          return {
+            ...action,
+            configuration: {
+              ...action.configuration,
+              privacy: newValue, // aqui atualiza o valor selecionado
+            },
+          };
+        }),
+      };
+    })
+  );
+};
+
+  const handleResponsibleChange = (
+    newValue: string,
+    workflowTriggerId?: number,
+    workflowActionId?: number
+  ) => {
+    setWorkflowTrigger((prev) =>
+      prev.map((tr) =>
+        tr.workflowTriggerId === workflowTriggerId
+          ? {
+            ...tr,
+            actions: tr.actions?.map((ac) =>
+              ac.workflowactionId === workflowActionId
+                ? {
+                  ...ac,
+                  configuration: {
+                    ...ac.configuration!,
+                    responsible: newValue,
+                  },
+                }
+                : ac
+            ),
+          }
+          : tr
+      )
+    );
+  };
+
+  const handleDescriptionChange = (
+    newValue: string,
+    workflowTriggerId?: number,
+    workflowActionId?: number
+  ) => {
+    setWorkflowTrigger((prev) =>
+      prev.map((tr) =>
+        tr.workflowTriggerId === workflowTriggerId
+          ? {
+            ...tr,
+            actions: tr.actions?.map((ac) =>
+              ac.workflowactionId === workflowActionId
+                ? {
+                  ...ac,
+                  configuration: {
+                    ...ac.configuration!,
+                    description: newValue,
+                  },
+                }
+                : ac
+            ),
+          }
+          : tr
+      )
+    );
+  };
+
+  const handleWhenChange = (
+    newValue: "antes" | "depois",
+    workflowTriggerId?: number,
+    workflowActionId?: number
+  ) => {
+    setWorkflowTrigger(prev =>
+      prev.map(trigger =>
+        trigger.workflowTriggerId === workflowTriggerId
+          ? {
+            ...trigger,
+            actions: trigger.actions?.map(action =>
+              action.workflowactionId === workflowActionId
+                ? {
+                  ...action,
+                  configuration: {
+                    ...action.configuration!,
+                    when: newValue,
+                    daysbeforeandafter: newValue === "antes"
+                      ? -Math.abs(action.daysbeforeandafter ?? 1)
+                      : Math.abs(action.daysbeforeandafter ?? 1),
+                  },
+                }
+                : action
+            ),
+          }
+          : trigger
+      )
+    );
+  };
+
+
+
+  const handleConfigurarCompromisso = (triggerId: number) => {
+    // se quiser abrir painel + buscar dados
+    setPainelAberto(triggerId);
+    fetchTriggerActions(triggerId);
+  };
+
+
+  const fetchTriggerActions = async (triggerId: number) => {
+    try {
+
+
+      const response = await api.get<IWorkflowActions[]>('/Workflow/ListarAcoes', {
+        params: {
+          filterTerm: triggerId,
+          token
+        }
+      })
+
+      alert(response.data.length); 
+
+      /*
+      let data = response.data;
+      
+
+      data = data.map(action => ({
+        ...action,
+        configuration: {
+          ...action.configuration,
+          when: (action.daysbeforeandafter ?? 0) < 0 ? "antes" : "depois"
+        },
+      }));
+      */
+
+      const data = response.data.map((action: any) => {
+        let configuration = null;
+        if (action.configDescription) {
+          try {
+            configuration = JSON.parse(action.configDescription);
+            configuration.when = (action.daysbeforeandafter ?? 0) < 0 ? "antes" : "depois";
+            configuration.starttime = configuration.starttime ?? "";
+
+          } catch (err) {
+            console.error("Erro ao desserializar configDescription:", err);
+          }
+        }
+
+        return {
+          workflowactionId: action.workflowactionId,
+          companyId: action.companyId,
+          workflowTriggerId: action.workflowTriggerId,
+          actionType: action.actionType,
+          daysbeforeandafter: action.daysbeforeandafter,
+          configuration
+        };
+      });
+
+      setWorkflowTrigger(prev =>
+        prev.map(tr => tr.workflowTriggerId === triggerId ? { ...tr, actions: data } : tr));
+
+
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao carregar ações do compromisso.");
+    }
+
+  };
+
 
   return (
     <Container>
@@ -832,8 +1167,8 @@ const handleSubjectChange = (
 
                       <button
                         type="button"
-                        className="buttonLinkClick"
-                        onClick={() => abrirPainel(trigger.workflowTriggerId as number)}
+                        className='buttonLinkClick'
+                        onClick={() => handleConfigurarCompromisso(trigger.workflowTriggerId!)}
                       >
                         {painelAberto === trigger.workflowTriggerId ? (
                           <>
@@ -862,30 +1197,49 @@ const handleSubjectChange = (
                               />
 
                               <label style={{ display: "flex", alignItems: "center", gap: "5px", marginRight: "15px" }}>
-                                <input type="radio" id="antes" name="quando" value="antes" />
+                                <input
+                                  type="radio"
+                                  name={`quando-${trigger.workflowTriggerId}-${action.workflowactionId}`} // único por trigger+ação
+                                  value="antes"
+                                  checked={action.configuration?.when === "antes"}
+                                  onChange={() =>
+                                    handleWhenChange("antes", trigger.workflowTriggerId, action.workflowactionId)
+                                  }
+                                />
                                 Antes
                               </label>
 
                               <label style={{ display: "flex", alignItems: "center", gap: "5px", marginRight: "15px" }}>
-                                <input type="radio" id="depois" name="quando" value="depois" />
+                                <input
+                                  type="radio"
+                                  name={`quando-${trigger.workflowTriggerId}-${action.workflowactionId}`} // mesmo name do par
+                                  value="depois"
+                                  checked={action.configuration?.when === "depois"}
+                                  onChange={() =>
+                                    handleWhenChange("depois", trigger.workflowTriggerId, action.workflowactionId)
+                                  }
+                                />
                                 Depois
                               </label>
 
                               Qtd. de dias
-                              <input 
-                                id="triggerNumber" 
-                                type="number" 
-                                min="1" 
-                                step="any"  
-                                value={action.daysbeforeandafter}
-                                onChange={(e: ChangeEvent<HTMLInputElement>) => handleChangeDays(e.target.value, trigger.workflowTriggerId, action.workflowActionId)}
-                                />
-
+                              <input
+                                type="number"
+                                min={1}
+                                value={Math.abs(action.daysbeforeandafter ?? 1)}
+                                onChange={(e) =>
+                                  handleChangeDays(
+                                    e.target.value,
+                                    trigger.workflowTriggerId,
+                                    action.workflowactionId
+                                  )
+                                }
+                              />
                             </label>
 
                             <label htmlFor="telefone2" id="trigger">
 
-                              <button type="button" className='buttonLinkClick' onClick={() => handleDeleteAction(trigger.workflowTriggerId!, action.workflowActionId!)}>
+                              <button type="button" className='buttonLinkClick' onClick={() => handleDeleteAction(trigger.workflowTriggerId!, action.workflowactionId!)}>
                                 <FiTrash />
                                 Apagar essa ação
                               </button>
@@ -900,53 +1254,78 @@ const handleSubjectChange = (
                                   isClearable
                                   id="triggerSubject"
                                   placeholder='Selecione o Assunto'
-                                  onChange={(item) => handleSubjectChange(item, trigger.workflowTriggerId, action.workflowActionId)}
+                                  onChange={(item) => handleSubjectChange(item, trigger.workflowTriggerId, action.workflowactionId)}
                                   onInputChange={(term) => setAppointmentSubject(term)}
-                                  value={optionsSubject.filter( (opt) => opt.id === action.configuration?.subject )}
+                                  value={optionsSubject.filter((opt) => opt.id === action.configuration?.subject)}
                                   options={optionsSubject}
                                   styles={selectStyles}
                                   loadingMessage={loadingMessage}
                                   noOptionsMessage={noOptionsMessage}
                                 />
- 
+
                               </div>
 
                               <div id="triggerDados">
                                 Hora Inicio
-                                <TimePicker
-                                  name="timepicker"
-                                  id="timepicker"
-                                  list="times"
-                                  value={appointmentHourBeggin}
-                                  onChange={handleNewHourBeggin}
-                                  disabled={appointmentBlockUpdate}
-                                  style={{ width: "100px" }}
-                                />
+
+                      
+                              <TimePicker
+                                name={`timepicker-${action.workflowactionId}`}
+                                id={`timepicker-${action.workflowactionId}`}
+                                value={toHHmm(action.configuration?.starttime)}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                  const time = e.target.value; // <-- pega a hora do input
+                                  handleNewHourBeggin(time, trigger.workflowTriggerId, action.workflowactionId);
+                                }}
+                                disabled={appointmentBlockUpdate}
+                                style={{ width: "100px" }}
+                              />
+
                               </div>
 
                               <div id="triggerDados">
                                 Lembretes
-                                <select
+                                <Select
+                                  isMulti
                                   name="lembretes"
-                                  id="lembretes"
-                                  onChange={handleSelectLembretes}
-                                  disabled={appointmentBlockUpdate}
-                                  style={{ width: "160px" }}
-                                >
-                                  {optionsLembrete.map(ol => (
-                                    <option key={ol.key} value={ol.key}>
-                                      {ol.value}
-                                    </option>
-                                  ))}
-                                </select>
+                                  id={`lembretes-${action.workflowactionId}`}
+                                  placeholder="Selecione."
+                                  value={
+                                    (action.configuration?.reminders ?? []).map(reminder =>
+                                      optionsLembrete
+                                        .map(opt => ({ value: opt.key, label: opt.value }))
+                                        .find(opt => opt.value === reminder)
+                                    ).filter(Boolean)
+                                  }
+                                  onChange={(selected) => {
+                                    const values = selected.map(opt => opt.value);
+                                    handleSelectLembretes(values, trigger.workflowTriggerId, action.workflowactionId);
+                                  }}
+                                  options={optionsLembrete.map(opt => ({
+                                    value: opt.key,
+                                    label: opt.value
+                                  }))}
+                                  isDisabled={appointmentBlockUpdate}
+                                  styles={{
+                                    control: (base) => ({
+                                      ...base,
+                                      minWidth: "160px",
+                                    })
+                                  }}
+                                />
 
-                              </div>
+                          </div>
+                              
 
                               <div id="triggerDados">
                                 Privacidade
                                 <select
                                   name="privacidade"
-                                  id="privacidade"
+                                  id={`privacidade-${action.workflowactionId}`}
+                                  value={action.configuration?.privacy ?? "N"}
+                                  onChange={(e) =>
+                                    handlePrivacyChange(e.target.value, trigger.workflowTriggerId, action.workflowactionId)
+                                  }
                                   disabled={appointmentBlockUpdate}
                                   style={{ width: "160px" }}
                                 >
@@ -962,9 +1341,14 @@ const handleSubjectChange = (
                             <label htmlFor="telefone2" id="trigger" >
                               <div id="triggerDados">
                                 Responsável
+
                                 <select
                                   name="responsavel"
-                                  id="responsavel"
+                                  id={`responsavel-${action.workflowactionId}`}
+                                  value={action.configuration?.responsible ?? "U"}
+                                  onChange={(e) =>
+                                    handleResponsibleChange(e.target.value, trigger.workflowTriggerId, action.workflowactionId)
+                                  }
                                   disabled={appointmentBlockUpdate}
                                   style={{ width: "160px" }}
                                 >
@@ -990,9 +1374,13 @@ const handleSubjectChange = (
                                 <span>Descrição</span>
 
                                 <textarea
-                                  value={customerObs}
-                                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-                                    setCustomerObs(e.target.value)
+                                  value={action.configuration?.description ?? ""}
+                                  onChange={(e) =>
+                                    handleDescriptionChange(
+                                      e.target.value,
+                                      trigger.workflowTriggerId,
+                                      action.workflowactionId
+                                    )
                                   }
                                   style={{
                                     width: "900px",
@@ -1006,6 +1394,7 @@ const handleSubjectChange = (
                                     fontSize: "14px",
                                   }}
                                 />
+
                               </div>
                             </label>
 

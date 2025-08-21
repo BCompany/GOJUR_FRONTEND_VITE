@@ -11,11 +11,12 @@ export interface IWorkflowTriggers {
 }
 
 export interface IWorkflowActions {
-    workflowActionId: number | undefined;
+    workflowactionId: number | undefined;
     companyId: number | undefined;
-    workflowTriggerId: number | undefined;
+    workflowtriggerId: number | undefined;
     actionType: string;
     daysbeforeandafter: number | undefined;
+    configDescription: string;
     configuration:{
         subject: string;
         starttime: string;
@@ -23,6 +24,7 @@ export interface IWorkflowActions {
         reminders: string[];
         privacy:string;
         responsible:string;
+        when: string;
     } | null;
 }
 
