@@ -129,13 +129,16 @@ export default createGlobalStyle<AppProps>`
   --rmsc-h: 38px; /* Height */
 }
 
-//Button pattern to be used in all GOJUR App
-//Example buttons: Save, Delete, Cancel, Include
-//Sidney 08/2021
-.buttonClick {
+  //Button pattern to be used in all GOJUR App
+  //Example buttons: Save, Delete, Cancel, Include
+  //Sidney 08/2021
+  .buttonClick {
+
+    background: linear-gradient(135deg, #1da1f2, #0d8ddb); /* gradiente Twitter-style */
+
     margin-right: 0.85rem;
     padding: 0.5rem;
-    background-color: var(--blue-twitter);
+    // background-color: var(--blue-twitter);
     font-size: 0.625rem;
     color: var(--white);
     cursor:pointer;
@@ -144,14 +147,29 @@ export default createGlobalStyle<AppProps>`
     justify-content: center;
     min-width:5.5rem;
 
+    display: flex;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+    height: 38px;
+    align-items: center;
+    font-weight: 500;
+    float: left;
+
     > svg {
       width: 0.8rem;
       height: 0.8rem;
       margin-right: 0.3rem;
     }
 
+    > font {
+      width: 0.8rem;
+      height: 0.8rem;
+    }
+
     &:hover {
-      filter: brightness(80%);
+      // filter: brightness(80%);
+      /* Elevação no hover */
+      box-shadow: 0 8px 15px rgba(0,0,0,0.15), 0 4px 6px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
     }
   }
 
