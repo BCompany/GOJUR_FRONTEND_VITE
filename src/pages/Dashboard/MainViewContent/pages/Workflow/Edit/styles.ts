@@ -71,7 +71,7 @@ export const Form = styled.form`
       display: grid;
      
       @media (min-width: 480px) {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
       }
 
       grid-gap: 1rem;

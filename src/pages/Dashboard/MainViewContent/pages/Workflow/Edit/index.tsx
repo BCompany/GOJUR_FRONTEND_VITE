@@ -263,7 +263,7 @@ export default function Workflow() {
         triggers: triggerList // Listagem de gatilhos
       })
 
-           
+
       const actionList = workflowTrigger.flatMap(trigger =>
         (trigger.actions ?? []).map(action => ({
           workflowactionId: action.workflowactionId ?? 0,
@@ -278,13 +278,13 @@ export default function Workflow() {
           apiKey,
         }))
       );
-    
-     
+
+
       for (const action of actionList) {
         console.log("Sending action:", action);
         await api.put('/workflow/salvaracao', action);
       }
-        
+
       addToast({
         type: "success",
         title: "Workflow salvo",
@@ -299,7 +299,7 @@ export default function Workflow() {
       const message = err.response?.data?.Message || err.message || "Erro desconhecido";
 
       // eslint-disable-next-line no-alert
-      if (status  !== 500) {
+      if (status !== 500) {
 
         addToast({
           type: "error",
@@ -366,10 +366,11 @@ export default function Workflow() {
     const newAction: IWorkflowActions = {
       workflowActionId: id,
       companyId,
-      workflowTriggerId: triggerId, // associa a ação ao trigger correto
+      workflowTriggerId: triggerId,
       actionType: 'criarcompromisso',
       daysbeforeandafter: 0
     };
+
 
     setWorkflowTrigger((oldTriggers) =>
       oldTriggers.map((trigger) =>
@@ -378,6 +379,8 @@ export default function Workflow() {
           : trigger
       )
     );
+
+
   }, [companyId]);
 
 
@@ -752,43 +755,43 @@ export default function Workflow() {
   });
 
 
-const handleNewHourBeggin = (
-  time: Date | string,
-  workflowTriggerId: number,
-  workflowActionId: number
-) => {
-  let formattedTime = "";
+  const handleNewHourBeggin = (
+    time: Date | string,
+    workflowTriggerId: number,
+    workflowActionId: number
+  ) => {
+    let formattedTime = "";
 
-  console.log(time);
-  if (time instanceof Date) {
-    const hh = time.getHours().toString().padStart(2, "0");
-    const mm = time.getMinutes().toString().padStart(2, "0");
-    formattedTime = `${hh}:${mm}`;
-  } else if (typeof time === "string") {
-    formattedTime = time;
-  }
+    console.log(time);
+    if (time instanceof Date) {
+      const hh = time.getHours().toString().padStart(2, "0");
+      const mm = time.getMinutes().toString().padStart(2, "0");
+      formattedTime = `${hh}:${mm}`;
+    } else if (typeof time === "string") {
+      formattedTime = time;
+    }
 
-  setWorkflowTrigger(prev =>
-    prev.map(trigger =>
-      trigger.workflowTriggerId === workflowTriggerId
-        ? {
+    setWorkflowTrigger(prev =>
+      prev.map(trigger =>
+        trigger.workflowTriggerId === workflowTriggerId
+          ? {
             ...trigger,
             actions: trigger.actions.map(action =>
               action.workflowactionId === workflowActionId
                 ? {
-                    ...action,
-                    configuration: {
-                      ...action.configuration,
-                      starttime: formattedTime,
-                    },
-                  }
+                  ...action,
+                  configuration: {
+                    ...action.configuration,
+                    starttime: formattedTime,
+                  },
+                }
                 : action
             ),
           }
-        : trigger
-    )
-  );
-};
+          : trigger
+      )
+    );
+  };
 
   const toHHmm = (time: string | undefined | null) => {
     if (!time || typeof time !== "string") return "";
@@ -824,115 +827,115 @@ const handleNewHourBeggin = (
     );
   };
 
-/*
-const handleSelectLembretes = (
-  newValue: string,
-  workflowTriggerId: number,
-  workflowActionId: number
-) => {
-
-     setAppointmentRemindersList([
-          ...appointmentRemindersList,
-          {
-            qtdReminder: newValue,
-            notifyMatterCustomer: appointmentNotifyMatterCustomer,
-            emailNotification: 'N',
-            whatsAppNotification: 'N'
-          },
-        ]);
-
-         if (
-          appointmentRemindersList.findIndex(
-            key => key.qtdReminder === newValue,
-          ) != -1
-        ) {
-          const newdata = Array.from(appointmentRemindersList);
-          const key = newdata.findIndex(
-            item => item.qtdReminder === newValue,
-          );
-          newdata.slice(key, 1);
+  /*
+  const handleSelectLembretes = (
+    newValue: string,
+    workflowTriggerId: number,
+    workflowActionId: number
+  ) => {
   
-          setAppointmentRemindersList(newdata);
-        }
-
-        
-  setWorkflowTrigger(prev =>
-    prev.map(trigger => {
-      if (trigger.workflowTriggerId !== workflowTriggerId) return trigger;
-
-      return {
-        ...trigger,
-        actions: trigger.actions.map(action => {
-          if (action.workflowactionId !== workflowActionId) return action;
-
-          return {
-            ...action,
-            configuration: {
-              ...action.configuration,
-              reminders: [newValue], // atualiza o array com o novo valor
+       setAppointmentRemindersList([
+            ...appointmentRemindersList,
+            {
+              qtdReminder: newValue,
+              notifyMatterCustomer: appointmentNotifyMatterCustomer,
+              emailNotification: 'N',
+              whatsAppNotification: 'N'
             },
-          };
-        }),
-      };
-    })
-  );
-};
-*/
+          ]);
+  
+           if (
+            appointmentRemindersList.findIndex(
+              key => key.qtdReminder === newValue,
+            ) != -1
+          ) {
+            const newdata = Array.from(appointmentRemindersList);
+            const key = newdata.findIndex(
+              item => item.qtdReminder === newValue,
+            );
+            newdata.slice(key, 1);
+    
+            setAppointmentRemindersList(newdata);
+          }
+  
+          
+    setWorkflowTrigger(prev =>
+      prev.map(trigger => {
+        if (trigger.workflowTriggerId !== workflowTriggerId) return trigger;
+  
+        return {
+          ...trigger,
+          actions: trigger.actions.map(action => {
+            if (action.workflowactionId !== workflowActionId) return action;
+  
+            return {
+              ...action,
+              configuration: {
+                ...action.configuration,
+                reminders: [newValue], // atualiza o array com o novo valor
+              },
+            };
+          }),
+        };
+      })
+    );
+  };
+  */
 
-const handleSelectLembretes = (
-  newValues: string[],
-  workflowTriggerId: number,
-  workflowActionId: number
-) => {
-  setWorkflowTrigger(prev =>
-    prev.map(trigger => {
-      if (trigger.workflowTriggerId !== workflowTriggerId) return trigger;
+  const handleSelectLembretes = (
+    newValues: string[],
+    workflowTriggerId: number,
+    workflowActionId: number
+  ) => {
+    setWorkflowTrigger(prev =>
+      prev.map(trigger => {
+        if (trigger.workflowTriggerId !== workflowTriggerId) return trigger;
 
-      return {
-        ...trigger,
-        actions: trigger.actions.map(action => {
-          if (action.workflowactionId !== workflowActionId) return action;
+        return {
+          ...trigger,
+          actions: trigger.actions.map(action => {
+            if (action.workflowactionId !== workflowActionId) return action;
 
-          return {
-            ...action,
-            configuration: {
-              ...action.configuration,
-              reminders: newValues, // já salva array direto
-            },
-          };
-        }),
-      };
-    })
-  );
-};
+            return {
+              ...action,
+              configuration: {
+                ...action.configuration,
+                reminders: newValues, // já salva array direto
+              },
+            };
+          }),
+        };
+      })
+    );
+  };
 
 
   const handlePrivacyChange = (
-  newValue: string,
-  workflowTriggerId: number,
-  workflowActionId: number
-) => {
-  setWorkflowTrigger(prev =>
-    prev.map(trigger => {
-      if (trigger.workflowTriggerId !== workflowTriggerId) return trigger;
+    newValue: string,
+    workflowTriggerId: number,
+    workflowActionId: number
+  ) => {
+    setWorkflowTrigger(prev =>
+      prev.map(trigger => {
+        if (trigger.workflowTriggerId !== workflowTriggerId) return trigger;
 
-      return {
-        ...trigger,
-        actions: trigger.actions.map(action => {
-          if (action.workflowactionId !== workflowActionId) return action;
+        return {
+          ...trigger,
+          actions: trigger.actions.map(action => {
+            if (action.workflowactionId !== workflowActionId) return action;
 
-          return {
-            ...action,
-            configuration: {
-              ...action.configuration,
-              privacy: newValue, // aqui atualiza o valor selecionado
-            },
-          };
-        }),
-      };
-    })
-  );
-};
+            return {
+              ...action,
+              configuration: {
+                ...action.configuration,
+                privacy: newValue, // aqui atualiza o valor selecionado
+              },
+            };
+          }),
+        };
+      })
+    );
+  };
 
   const handleResponsibleChange = (
     newValue: string,
@@ -988,6 +991,8 @@ const handleSelectLembretes = (
     );
   };
 
+
+
   const handleWhenChange = (
     newValue: "antes" | "depois",
     workflowTriggerId?: number,
@@ -1004,11 +1009,12 @@ const handleSelectLembretes = (
                   ...action,
                   configuration: {
                     ...action.configuration!,
-                    when: newValue,
+                    when: newValue ?? action.configuration?.when ?? "depois",
                     daysbeforeandafter: newValue === "antes"
                       ? -Math.abs(action.daysbeforeandafter ?? 1)
                       : Math.abs(action.daysbeforeandafter ?? 1),
                   },
+
                 }
                 : action
             ),
@@ -1038,20 +1044,8 @@ const handleSelectLembretes = (
         }
       })
 
-      alert(response.data.length); 
+      alert(response.data.length);
 
-      /*
-      let data = response.data;
-      
-
-      data = data.map(action => ({
-        ...action,
-        configuration: {
-          ...action.configuration,
-          when: (action.daysbeforeandafter ?? 0) < 0 ? "antes" : "depois"
-        },
-      }));
-      */
 
       const data = response.data.map((action: any) => {
         let configuration = null;
@@ -1148,6 +1142,9 @@ const handleSelectLembretes = (
                         isDisabled={true}
                         placeholder="Selecione"
                       />
+                    </label>
+
+                    <label htmlFor="telefone" id="trigger">
                       <input
                         id="triggerDescription"
                         type="text"
@@ -1155,12 +1152,14 @@ const handleSelectLembretes = (
                         value={trigger.configuration?.label || ""}
                         onChange={(e: ChangeEvent<HTMLInputElement>) => handleChangeTrigger(e.target.value, trigger.workflowTriggerId)}
                         maxLength={30}
+                        style={{ width: "400px" }}
                       />
                     </label>
 
                     <label htmlFor="telefone" id="trigger">
 
-                      <button type="button" className='buttonLinkClick' onClick={() => handleCheckBoxDeleteTrigger(trigger.workflowTriggerId)}>
+                      <button type="button" className='buttonLinkClick' onClick={() =>
+                        handleCheckBoxDeleteTrigger(trigger.workflowTriggerId)} style={{ width: "200px" }}>
                         <FiTrash />
                         Apagar este gatilho
                       </button>
@@ -1169,6 +1168,7 @@ const handleSelectLembretes = (
                         type="button"
                         className='buttonLinkClick'
                         onClick={() => handleConfigurarCompromisso(trigger.workflowTriggerId!)}
+                        style={{ width: "200px" }}
                       >
                         {painelAberto === trigger.workflowTriggerId ? (
                           <>
@@ -1184,19 +1184,36 @@ const handleSelectLembretes = (
                       </button>
 
                     </label>
+                    <label htmlFor="telefone" id="trigger">
+
+
+                    </label>
+
+
+
 
                     {painelAberto === trigger.workflowTriggerId && (
                       <>
                         {trigger.actions?.map(action => (
                           <>
-                            <label htmlFor="telefone2" id="trigger" >
+
+                            <label
+                              htmlFor="telefone2"
+                              id="trigger"
+                              style={{
+                                gridColumn: "2 / span 3", // começa na 2ª coluna e ocupa 2 colunas
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px",
+                              }}
+                            >
                               Informe os dias para criação do compromisso
                               <FcAbout
-                                style={{ height: "15px", width: "15px", marginRight: "85px" }}
+                                style={{ height: "15px", width: "15px", marginRight: "70px" }}
                                 title="Você deve Informar a regra para criação do compromisso a partir a da data do gatilho, informar se deve ser criado antes ou depois e quantos dias considerar."
                               />
 
-                              <label style={{ display: "flex", alignItems: "center", gap: "5px", marginRight: "15px" }}>
+                              <label style={{ display: "flex", alignItems: "center", gap: "5px", marginRight: "20px" }}>
                                 <input
                                   type="radio"
                                   name={`quando-${trigger.workflowTriggerId}-${action.workflowactionId}`} // único por trigger+ação
@@ -1209,7 +1226,7 @@ const handleSelectLembretes = (
                                 Antes
                               </label>
 
-                              <label style={{ display: "flex", alignItems: "center", gap: "5px", marginRight: "15px" }}>
+                              <label style={{ display: "flex", alignItems: "center", gap: "5px", marginRight: "20px" }}>
                                 <input
                                   type="radio"
                                   name={`quando-${trigger.workflowTriggerId}-${action.workflowactionId}`} // mesmo name do par
@@ -1222,30 +1239,33 @@ const handleSelectLembretes = (
                                 Depois
                               </label>
 
-                              Qtd. de dias
-                              <input
-                                type="number"
-                                min={1}
-                                value={Math.abs(action.daysbeforeandafter ?? 1)}
-                                onChange={(e) =>
-                                  handleChangeDays(
-                                    e.target.value,
-                                    trigger.workflowTriggerId,
-                                    action.workflowactionId
-                                  )
-                                }
-                              />
+                              <label style={{ display: "flex", alignItems: "center", gap: "5px", marginRight: "15px" }}>
+
+                                Qtd. de dias
+                                <input
+                                  type="number"
+                                  min={1}
+                                  value={Math.abs(action.daysbeforeandafter ?? 1)}
+                                  onChange={(e) =>
+                                    handleChangeDays(
+                                      e.target.value,
+                                      trigger.workflowTriggerId,
+                                      action.workflowactionId
+                                    )
+                                  }
+                                  style={{ width: "75px" }}
+                                />
+
+                              </label>
                             </label>
 
-                            <label htmlFor="telefone2" id="trigger">
 
-                              <button type="button" className='buttonLinkClick' onClick={() => handleDeleteAction(trigger.workflowTriggerId!, action.workflowactionId!)}>
-                                <FiTrash />
-                                Apagar essa ação
-                              </button>
 
-                            </label>
-                            <label htmlFor="telefone2" id="trigger" >
+                            <label htmlFor="telefone" id="trigger" style={{
+                              gridColumn: "2 / span 1", // ocupa 2 colunas a partir da coluna 1
+                              display: "flex",
+                              //flexDirection: "column",
+                            }}>
 
                               <div id="triggerDados">
                                 Assunto
@@ -1266,23 +1286,83 @@ const handleSelectLembretes = (
                               </div>
 
                               <div id="triggerDados">
+
                                 Hora Inicio
 
-                      
-                              <TimePicker
-                                name={`timepicker-${action.workflowactionId}`}
-                                id={`timepicker-${action.workflowactionId}`}
-                                value={toHHmm(action.configuration?.starttime)}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                  const time = e.target.value; // <-- pega a hora do input
-                                  handleNewHourBeggin(time, trigger.workflowTriggerId, action.workflowactionId);
-                                }}
-                                disabled={appointmentBlockUpdate}
-                                style={{ width: "100px" }}
-                              />
+
+                                <TimePicker
+                                  name={`timepicker-${action.workflowactionId}`}
+                                  id={`timepicker-${action.workflowactionId}`}
+                                  value={toHHmm(action.configuration?.starttime)}
+                                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                    const time = e.target.value; // <-- pega a hora do input
+                                    handleNewHourBeggin(time, trigger.workflowTriggerId, action.workflowactionId);
+                                  }}
+                                  disabled={appointmentBlockUpdate}
+                                  style={{
+                                    width: "100px",
+                                    maxWidth: "100px",
+                                    display: "inline-block",
+                                  }}
+                                />
 
                               </div>
 
+                            </label>
+
+
+                            <label htmlFor="telefone2" id="trigger" >
+
+
+                              <div id="triggerDados">
+                                Privacidade
+                                <select
+                                  name="privacidade"
+                                  id={`privacidade-${action.workflowactionId}`}
+                                  value={action.configuration?.privacy ?? "N"}
+                                  onChange={(e) =>
+                                    handlePrivacyChange(e.target.value, trigger.workflowTriggerId, action.workflowactionId)
+                                  }
+                                  disabled={appointmentBlockUpdate}
+                                  style={{ width: "160px" }}
+                                >
+                                  <option value="N">Público</option>
+                                  <option value="S">Privado</option>
+                                </select>
+
+                              </div>
+
+                              <div id="triggerDados">
+                                Responsável
+
+                                <select
+                                  name="responsavel"
+                                  id={`responsavel-${action.workflowactionId}`}
+                                  value={action.configuration?.responsible ?? "U"}
+                                  onChange={(e) =>
+                                    handleResponsibleChange(e.target.value, trigger.workflowTriggerId, action.workflowactionId)
+                                  }
+                                  disabled={appointmentBlockUpdate}
+                                  style={{ width: "160px" }}
+                                >
+                                  <option value="U">Usuário</option>
+                                  <option value="R">Resp.Processo</option>
+                                  <option value="A">Atribuir</option>
+                                </select>
+
+                              </div>
+
+                            </label>
+
+
+                            <label
+                              htmlFor="obs"
+                              style={{
+                                gridColumn: "2 / span 1", // ocupa 2 colunas a partir da coluna 1
+                                display: "flex",
+                                flexDirection: "column",
+                              }}
+                            >
                               <div id="triggerDados">
                                 Lembretes
                                 <Select
@@ -1314,50 +1394,18 @@ const handleSelectLembretes = (
                                   }}
                                 />
 
-                          </div>
-                              
-
-                              <div id="triggerDados">
-                                Privacidade
-                                <select
-                                  name="privacidade"
-                                  id={`privacidade-${action.workflowactionId}`}
-                                  value={action.configuration?.privacy ?? "N"}
-                                  onChange={(e) =>
-                                    handlePrivacyChange(e.target.value, trigger.workflowTriggerId, action.workflowactionId)
-                                  }
-                                  disabled={appointmentBlockUpdate}
-                                  style={{ width: "160px" }}
-                                >
-                                  <option value="N">Público</option>
-                                  <option value="S">Privado</option>
-                                </select>
-
                               </div>
 
                             </label>
 
 
-                            <label htmlFor="telefone2" id="trigger" >
-                              <div id="triggerDados">
-                                Responsável
+                            <label htmlFor="telefone2" id="trigger">
 
-                                <select
-                                  name="responsavel"
-                                  id={`responsavel-${action.workflowactionId}`}
-                                  value={action.configuration?.responsible ?? "U"}
-                                  onChange={(e) =>
-                                    handleResponsibleChange(e.target.value, trigger.workflowTriggerId, action.workflowactionId)
-                                  }
-                                  disabled={appointmentBlockUpdate}
-                                  style={{ width: "160px" }}
-                                >
-                                  <option value="U">Usuário</option>
-                                  <option value="R">Resp.Processo</option>
-                                  <option value="A">Atribuir</option>
-                                </select>
 
-                              </div>
+                              <button type="button" className='buttonLinkClick' onClick={() => handleDeleteAction(trigger.workflowTriggerId!, action.workflowactionId!)}>
+                                <FiTrash />
+                                Apagar essa ação
+                              </button>
 
                             </label>
 
@@ -1365,7 +1413,7 @@ const handleSelectLembretes = (
                             <label
                               htmlFor="obs"
                               style={{
-                                gridColumn: "1 / -1", // ocupa todas as colunas
+                                gridColumn: "2 / span 2", // ocupa 2 colunas a partir da coluna 1
                                 display: "flex",
                                 flexDirection: "column",
                               }}
@@ -1383,7 +1431,7 @@ const handleSelectLembretes = (
                                     )
                                   }
                                   style={{
-                                    width: "900px",
+                                    width: "750px",
                                     minHeight: "150px",
                                     resize: "vertical",
                                     background: "white",
@@ -1398,18 +1446,27 @@ const handleSelectLembretes = (
                               </div>
                             </label>
 
+
                           </>
 
                         ))}
 
 
-
+ <label
+                              htmlFor="obs"
+                              style={{
+                                gridColumn: "2 / span 2", // ocupa 2 colunas a partir da coluna 1
+                                display: "flex",
+                                flexDirection: "column",
+                              }}
+                            >
                         <div>
                           <button type="button" className="buttonClick" id="addAction" onClick={() => handleNewAction(trigger.workflowTriggerId!)}>
                             <FiPlus />
                             Incluir nova ação
                           </button>
                         </div>
+</label>
 
                       </>
 
