@@ -166,6 +166,7 @@ export default function Workflow() {
       hasFilterSaved = true;
     }
 
+
     // when is id
     if (Number(workflowId) === 0) {
       handleNewTrigger();
@@ -263,26 +264,29 @@ export default function Workflow() {
         triggers: triggerList // Listagem de gatilhos
       })
 
+      const actionList = workflowTrigger
+        .filter(trigger => trigger.actions && trigger.actions.length > 0)
+        .flatMap(trigger =>
+          (trigger.actions ?? []).map(action => ({
+            workflowactionId: action.workflowactionId ?? 0,
+            companyId,
+            workflowtriggerId: trigger.workflowTriggerId,
+            actiontype: 'criarcompromisso',
+            daysbeforeandafter: action.daysbeforeandafter,
+            configDescription: action.configuration
+              ? JSON.stringify(action.configuration)
+              : "{}",
+            token,
+            apiKey,
+          }))
+        );
 
-      const actionList = workflowTrigger.flatMap(trigger =>
-        (trigger.actions ?? []).map(action => ({
-          workflowactionId: action.workflowactionId ?? 0,
-          companyId,
-          workflowtriggerId: trigger.workflowTriggerId,
-          actiontype: 'criarcompromisso',
-          daysbeforeandafter: action.daysbeforeandafter,
-          configDescription: action.configuration
-            ? JSON.stringify(action.configuration)
-            : "{}",
-          token,
-          apiKey,
-        }))
-      );
 
-
-      for (const action of actionList) {
-        console.log("Sending action:", action);
-        await api.put('/workflow/salvaracao', action);
+      if (actionList.length > 0) {
+        for (const action of actionList) {
+          console.log("Sending action:", action);
+          await api.put('/workflow/salvaracao', action);
+        }
       }
 
       addToast({
@@ -340,6 +344,7 @@ export default function Workflow() {
   const handleNewTrigger = useCallback(() => {
     const id = Math.random();
 
+    /*
     const firstAction: IWorkflowActions = {
       workflowActionId: Math.random(),
       companyId,
@@ -347,14 +352,15 @@ export default function Workflow() {
       actionType: 'criarcompromisso',
       daysbeforeandafter: 0
     };
+    */
 
     const newTrigger: IWorkflowTriggers = {
       workflowTriggerId: id,
       companyId,
       workflowId: 0,
       triggerType: 'data',
-      configuration: { label: "" },
-      actions: [firstAction] // 👈 já começa com uma ação
+      configuration: { label: "" }
+      //actions: [firstAction] // 👈 já começa com uma ação
     };
 
     setWorkflowTrigger(oldTrigger => [...oldTrigger, newTrigger]);
@@ -1044,7 +1050,7 @@ export default function Workflow() {
         }
       })
 
-      alert(response.data.length);
+      //alert(response.data.length);
 
 
       const data = response.data.map((action: any) => {
@@ -1105,7 +1111,7 @@ export default function Workflow() {
           <Tab active={tabsControl.tab1}>
 
             <Form ref={formRef} onSubmit={handleSubmit(handleSubmitWorkflow)}>
-
+              <h2>Workflow</h2>
               <section id="dados">
 
                 <label htmlFor="name" className="required">
@@ -1170,17 +1176,19 @@ export default function Workflow() {
                         onClick={() => handleConfigurarCompromisso(trigger.workflowTriggerId!)}
                         style={{ width: "200px" }}
                       >
-                        {painelAberto === trigger.workflowTriggerId ? (
+
+                        {painelAberto === trigger.workflowTriggerId || (trigger.actions && trigger.actions.length > 0) ? (
                           <>
                             <FiXCircle />
-                            ver compromisso
+                            Configurar compromisso
                           </>
                         ) : (
                           <>
                             <FiPlusCircle />
-                            Configurar compromisso
+                            Ver compromisso
                           </>
                         )}
+
                       </button>
 
                     </label>
@@ -1278,12 +1286,23 @@ export default function Workflow() {
                                   onInputChange={(term) => setAppointmentSubject(term)}
                                   value={optionsSubject.filter((opt) => opt.id === action.configuration?.subject)}
                                   options={optionsSubject}
-                                  styles={selectStyles}
                                   loadingMessage={loadingMessage}
                                   noOptionsMessage={noOptionsMessage}
+                                    styles={{
+                                    control: (base) => ({
+                                      ...base,
+                                      minWidth: "400px",
+                                    })
+                                  }}
                                 />
 
                               </div>
+
+                            </label>
+
+
+                            <label htmlFor="telefone2" id="trigger" >
+
 
                               <div id="triggerDados">
 
@@ -1307,30 +1326,32 @@ export default function Workflow() {
                                 />
 
                               </div>
-
                             </label>
+               <label htmlFor="telefone" id="trigger" style={{
+                              gridColumn: "2 / span 1", // ocupa 2 colunas a partir da coluna 1
+                              display: "flex",
+                              //flexDirection: "column",
+                            }}>
+ <div id="triggerDados">
 
+                              Privacidade
+                              <select
+                                name="privacidade"
+                                id={`privacidade-${action.workflowactionId}`}
+                                value={action.configuration?.privacy ?? "N"}
+                                onChange={(e) =>
+                                  handlePrivacyChange(e.target.value, trigger.workflowTriggerId, action.workflowactionId)
+                                }
+                                disabled={appointmentBlockUpdate}
+                                style={{ width: "400px" }}
+                              >
+                                <option value="N">Público</option>
+                                <option value="S">Privado</option>
+                              </select>
+</div>
 
-                            <label htmlFor="telefone2" id="trigger" >
-
-
-                              <div id="triggerDados">
-                                Privacidade
-                                <select
-                                  name="privacidade"
-                                  id={`privacidade-${action.workflowactionId}`}
-                                  value={action.configuration?.privacy ?? "N"}
-                                  onChange={(e) =>
-                                    handlePrivacyChange(e.target.value, trigger.workflowTriggerId, action.workflowactionId)
-                                  }
-                                  disabled={appointmentBlockUpdate}
-                                  style={{ width: "160px" }}
-                                >
-                                  <option value="N">Público</option>
-                                  <option value="S">Privado</option>
-                                </select>
-
-                              </div>
+                              </label>
+ <label htmlFor="telefone2" id="trigger" >
 
                               <div id="triggerDados">
                                 Responsável
@@ -1343,7 +1364,7 @@ export default function Workflow() {
                                     handleResponsibleChange(e.target.value, trigger.workflowTriggerId, action.workflowactionId)
                                   }
                                   disabled={appointmentBlockUpdate}
-                                  style={{ width: "160px" }}
+                                  style={{ width: "300px" }}
                                 >
                                   <option value="U">Usuário</option>
                                   <option value="R">Resp.Processo</option>
@@ -1358,7 +1379,7 @@ export default function Workflow() {
                             <label
                               htmlFor="obs"
                               style={{
-                                gridColumn: "2 / span 1", // ocupa 2 colunas a partir da coluna 1
+                                gridColumn: "2 / span 2", // ocupa 2 colunas a partir da coluna 1
                                 display: "flex",
                                 flexDirection: "column",
                               }}
@@ -1389,23 +1410,13 @@ export default function Workflow() {
                                   styles={{
                                     control: (base) => ({
                                       ...base,
+                                      width:"730px",
                                       minWidth: "160px",
                                     })
                                   }}
                                 />
 
                               </div>
-
-                            </label>
-
-
-                            <label htmlFor="telefone2" id="trigger">
-
-
-                              <button type="button" className='buttonLinkClick' onClick={() => handleDeleteAction(trigger.workflowTriggerId!, action.workflowactionId!)}>
-                                <FiTrash />
-                                Apagar essa ação
-                              </button>
 
                             </label>
 
@@ -1452,21 +1463,30 @@ export default function Workflow() {
                         ))}
 
 
- <label
-                              htmlFor="obs"
-                              style={{
-                                gridColumn: "2 / span 2", // ocupa 2 colunas a partir da coluna 1
-                                display: "flex",
-                                flexDirection: "column",
-                              }}
-                            >
-                        <div>
-                          <button type="button" className="buttonClick" id="addAction" onClick={() => handleNewAction(trigger.workflowTriggerId!)}>
-                            <FiPlus />
-                            Incluir nova ação
-                          </button>
-                        </div>
-</label>
+                        <label
+                          htmlFor="obs"
+                          style={{
+                            gridColumn: "2 / span 2", // ocupa 2 colunas a partir da coluna 1
+                            display: "flex",
+                            flexDirection: "column",
+                          }}
+                        >
+                          <div>
+                            <button type="button" className="buttonClick" id="addAction" onClick={() => handleNewAction(trigger.workflowTriggerId!)}>
+                              <FiPlus />
+                              Incluir novo compromisso
+                            </button>
+                          </div>
+
+                            
+
+                              <button type="button" className='buttonLinkClick' onClick={() => handleDeleteAction(trigger.workflowTriggerId!, action.workflowactionId!)}>
+                                <FiTrash />
+                                Apagar essa ação
+                              </button>
+
+                            
+                        </label>
 
                       </>
 
@@ -1481,7 +1501,7 @@ export default function Workflow() {
               </label>
 
 
-
+              <br />
               <button type="button" className='buttonLinkClick' id="addEnd" onClick={handleNewTrigger}>
                 <FiPlus />
                 Incluir outro gatilho

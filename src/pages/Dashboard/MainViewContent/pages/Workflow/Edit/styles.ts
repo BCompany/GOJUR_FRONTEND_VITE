@@ -314,7 +314,7 @@ export const Form = styled.form`
       background-color: var(--gray);
       padding: 0.5rem;
       margin-top: 1rem;
-      height:20vh;
+      //height:20vh;
       border-radius: 0.25rem;
       box-shadow: 1px 1px 0px 1px rgba(0,0,0,0.15); 
       
