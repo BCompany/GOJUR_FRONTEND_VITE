@@ -7,7 +7,7 @@
 import React, { ChangeEvent, useCallback, useEffect, useRef, useState, UIEvent } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form';
-import { FiLock, FiPlus, FiSave, FiTrash } from 'react-icons/fi';
+import { FiDelete, FiLock, FiPlus, FiSave, FiTrash, FiX } from 'react-icons/fi';
 import { FiPlusCircle, FiXCircle } from "react-icons/fi";
 import { RiCloseLine, RiNewspaperFill } from 'react-icons/ri';
 import { MdBlock } from 'react-icons/md';
@@ -247,25 +247,10 @@ export default function Workflow() {
       return;
     }
 
-    // Se passou na validação, prossegue
-    //const triggerList = workflowTrigger.map(i => ({
-   //   ...i,
-      // cod_Endereco: 0
-   // }));
-
-
-const triggerList = workflowTrigger.map(trigger => ({
-  ...trigger,
-  actions: (trigger.actions ?? []).map(action => ({
-    ...action,
-    workflowTriggerId: trigger.workflowTriggerId,  // associa à trigger
-    actionType: "criarcompromisso",               // força o tipo correto
-    configDescription: action.configuration
-      ? JSON.stringify(action.configuration)
-      : "{}"
-  }))
-}));
-
+    const triggerList = workflowTrigger.map(i => ({
+     ...i,
+       cod_Endereco: 0
+    }));
 
     try {
       const response = await api.put('/Workflow/Salvar', {
@@ -277,31 +262,7 @@ const triggerList = workflowTrigger.map(trigger => ({
         triggers: triggerList // Listagem de gatilhos
       })
 
-      const actionList = workflowTrigger
-        .filter(trigger => trigger.actions && trigger.actions.length > 0)
-        .flatMap(trigger =>
-          (trigger.actions ?? []).map(action => ({
-            workflowactionId: action.workflowactionId ?? 0,
-            companyId,
-            workflowtriggerId: trigger.workflowTriggerId,
-            actiontype: 'criarcompromisso',
-            daysbeforeandafter: action.daysbeforeandafter,
-            configDescription: action.configuration 
-              ? JSON.stringify(action.configuration)
-              : "{}",
-            token,
-            apiKey,
-          }))
-        );
-
-
-      if (actionList.length > 0) {
-        for (const action of actionList) {
-          console.log("Sending action:", action);
-          await api.put('/workflow/salvaracao', action);
-        }
-      }
-
+   
       addToast({
         type: "success",
         title: "Workflow salvo",
@@ -336,23 +297,6 @@ const triggerList = workflowTrigger.map(trigger => ({
   }, [workflowTrigger, workflow.name, workflow.tpo_Telefone01, workflow.num_Telefone01, workflow.tpo_Telefone02, workflow.num_Telefone02, workflow.cod_PessoaFisica, workflow.cod_Cliente, workflow.cod_PessoaJuridica, workflow.cod_SistemaUsuarioEmpresa, workflow.doubleCheck, workflow.cod_Empresa, workflowName, addToast, history]);
 
 
-
-  /*
-    const handleNewTrigger = useCallback(() => {
-  
-      const id = Math.random()
-      const newTrigger: IWorkflowTriggers = {
-        workflowTriggerId: id,
-        companyId,
-        workflowId: 0,
-        triggerType: 'data',
-        configuration: { label: "" },
-        actions: []
-      }
-  
-      setWorkflowTrigger(oldTrigger => [...oldTrigger, newTrigger])
-    }, []); // adiciona um novo endereço na interface
-  */
 
   const handleNewTrigger = useCallback(() => {
     const id = Math.random();
@@ -578,65 +522,6 @@ const triggerList = workflowTrigger.map(trigger => ({
       console.log(err);
     }
   }, [appointmentSubject])
-
-  /*
-    const handleSubjectChange = (item) => {
-      if (item) {
-        setAppointmentSubject(item.label)
-        setAppointmentSubjectId(item.id)
-      }
-      else {
-        setAppointmentSubject('')
-        setAppointmentSubjectId('')
-        LoadSubject(true)
-      }
-    }
-  
-    const handleSelectLembretes = useCallback(
-      (event: ChangeEvent<HTMLSelectElement>) => {
-        const appendLembretes = event.target.value;
-        setAppointmentNotifyMatterCustomer('N');
-  
-        if (event.target.value === '00') {
-          return;
-        };
-  
-        if (event.target.value === 'PE') {
-          setOpenReminderModal(true)
-  
-          event.target.value = "00"
-  
-          return
-        };
-  
-        setAppointmentRemindersList([
-          ...appointmentRemindersList,
-          {
-            qtdReminder: appendLembretes,
-            notifyMatterCustomer: appointmentNotifyMatterCustomer,
-            emailNotification: 'N',
-            whatsAppNotification: 'N'
-          },
-        ]);
-  
-        if (
-          appointmentRemindersList.findIndex(
-            key => key.qtdReminder === appendLembretes,
-          ) != -1
-        ) {
-          const newdata = Array.from(appointmentRemindersList);
-          const key = newdata.findIndex(
-            item => item.qtdReminder === appendLembretes,
-          );
-          newdata.slice(key, 1);
-  
-          setAppointmentRemindersList(newdata);
-        }
-      },
-      [appointmentNotifyMatterCustomer, appointmentRemindersList],
-    ); 
-  
-    */
 
 
 
@@ -1175,6 +1060,63 @@ const fetchTriggerActions = async (triggerId: number) => {
   };
 */
 
+
+const handleSalvarCompromisso = async (triggerId: number, actionId: number) => {
+  try {
+    // encontra o trigger específico
+    const trigger = workflowTrigger.find(t => t.workflowTriggerId === triggerId);
+    if (!trigger) {
+      alert("Trigger não encontrada");
+      return;
+    }
+
+    // encontra a action específica
+    const action = trigger.actions?.find(a => a.workflowactionId === actionId);
+    if (!action) {
+      alert("Action não encontrada");
+      return;
+    }
+
+    // monta o payload da action
+    const actionPayload = {
+      workflowactionId: action.workflowactionId ?? 0,
+      companyId,
+      workflowtriggerId: trigger.workflowTriggerId,
+      actiontype: 'criarcompromisso',
+      daysbeforeandafter: action.daysbeforeandafter,
+      configDescription: action.configuration ? JSON.stringify(action.configuration) : "{}",
+      token,
+      apiKey,
+    };
+
+    console.log("Sending action:", actionPayload);
+
+    await api.put('/workflow/salvaracao', actionPayload);
+
+    addToast({
+      type: "success",
+      title: "Compromisso salvo", 
+      description: workflow.workflowId ? "As alterações feitas no compromisso foram salvas" : "compromisso adicionado"
+    })
+    
+  } catch (err: any) {
+    const status = err.response?.data?.statusCode;  // protegemos com ?.
+      const message = err.response?.data?.Message || err.message || "Erro desconhecido";
+
+      // eslint-disable-next-line no-alert
+      if (status !== 500) {
+
+        addToast({
+          type: "error",
+          title: "Falha ao cadastrar compromisso",
+          description: message
+        })
+      }
+
+  }
+};
+
+
   return (
     <Container>
 
@@ -1202,7 +1144,7 @@ const fetchTriggerActions = async (triggerId: number) => {
               <section id="dados">
 
                 <label htmlFor="name" className="required">
-                  Nome Workflow*
+                  Nome
                   <input
                     type="text"
                     value={workflowName}
@@ -1219,12 +1161,13 @@ const fetchTriggerActions = async (triggerId: number) => {
               <br /><br /><br /> <br />
 
               <label htmlFor="endereco" style={{ marginTop: '-55px' }}>
-                <p>Gatilho(s)</p>
+                <p>Informe abaixo as datas que serão gatilhos para iniciar o workflow</p>
                 {workflowTrigger.map(trigger => (
 
                   <section id="endereco" key={trigger.workflowTriggerId}>
 
-                    <label htmlFor="telefone" id="trigger">
+                    <label>
+                      Tipo gatilho
                       <Select
                         isSearchable
                         id="triggerSelect"
@@ -1237,7 +1180,8 @@ const fetchTriggerActions = async (triggerId: number) => {
                       />
                     </label>
 
-                    <label htmlFor="telefone" id="trigger">
+                    <label>
+                      Informe o "label" para data
                       <input
                         id="triggerDescription"
                         type="text"
@@ -1304,7 +1248,7 @@ const fetchTriggerActions = async (triggerId: number) => {
                             >
                               Informe os dias para criação do compromisso
                               <FcAbout
-                                style={{ height: "15px", width: "15px", marginRight: "70px" }}
+                                style={{ height: "15px", width: "15px", marginRight: "85px" }}
                                 title="Você deve Informar a regra para criação do compromisso a partir a da data do gatilho, informar se deve ser criado antes ou depois e quantos dias considerar."
                               />
 
@@ -1348,7 +1292,7 @@ const fetchTriggerActions = async (triggerId: number) => {
                                       action.workflowactionId
                                     )
                                   }
-                                  style={{ width: "75px" }}
+                                  style={{ width: "50px" }}
                                 />
 
                               </label>
@@ -1378,7 +1322,7 @@ const fetchTriggerActions = async (triggerId: number) => {
                                     styles={{
                                     control: (base) => ({
                                       ...base,
-                                      minWidth: "400px",
+                                      minWidth: "400px", left:"-7px"
                                     })
                                   }}
                                 />
@@ -1544,36 +1488,41 @@ const fetchTriggerActions = async (triggerId: number) => {
                               </div>
                             </label>
 
+                            <label
+                              htmlFor="obs"
+                              style={{
+                                gridColumn: "2 / span 2", // ocupa 2 colunas a partir da coluna 1
+                                display: "flex",
+                                flexDirection: "column",
+                              }}
+                            >
+                              <div>
+                                <button type="button" className='buttonLinkClick' onClick={() => handleNewAction(trigger.workflowTriggerId!)}>
+                                  <FiPlus />
+                                  Incluir novo compromisso
+                                </button>
 
+                                <button type="button" className='buttonLinkClick' onClick={() => handleSalvarCompromisso(trigger.workflowTriggerId, action.workflowactionId)}>
+                                  <FiSave />
+                                  Salvar
+                                </button>
+
+                                <button type="button" className='buttonLinkClick'>
+                                  <FiDelete />
+                                  Excluir
+                                </button>
+
+                                <button type="button" className='buttonLinkClick'>
+                                  <FiX />
+                                  Fechar
+                                </button>
+
+                              </div>
+                            </label>
                           </>
 
+
                         ))}
-
-
-                        <label
-                          htmlFor="obs"
-                          style={{
-                            gridColumn: "2 / span 2", // ocupa 2 colunas a partir da coluna 1
-                            display: "flex",
-                            flexDirection: "column",
-                          }}
-                        >
-                          <div>
-                            <button type="button" className="buttonClick" id="addAction" onClick={() => handleNewAction(trigger.workflowTriggerId!)}>
-                              <FiPlus />
-                              Incluir novo compromisso
-                            </button>
-                          </div>
-
-                            
-
-                              <button type="button" className='buttonLinkClick' onClick={() => handleDeleteAction(trigger.workflowTriggerId!, action.workflowactionId!)}>
-                                <FiTrash />
-                                Apagar essa ação
-                              </button>
-
-                            
-                        </label>
 
                       </>
 
