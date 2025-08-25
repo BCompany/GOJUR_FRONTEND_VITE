@@ -470,6 +470,8 @@ const EconomicIndexessEdit: React.FC = () => {
           </button>
         </div>
       )}
+
+      <br /><br />
       
       <Content style={{marginTop:"1%"}}>
 
