@@ -248,10 +248,23 @@ export default function Workflow() {
     }
 
     // Se passou na validação, prossegue
-    const triggerList = workflowTrigger.map(i => ({
-      ...i,
+    //const triggerList = workflowTrigger.map(i => ({
+   //   ...i,
       // cod_Endereco: 0
-    }));
+   // }));
+
+
+const triggerList = workflowTrigger.map(trigger => ({
+  ...trigger,
+  actions: (trigger.actions ?? []).map(action => ({
+    ...action,
+    workflowTriggerId: trigger.workflowTriggerId,  // associa à trigger
+    actionType: "criarcompromisso",               // força o tipo correto
+    configDescription: action.configuration
+      ? JSON.stringify(action.configuration)
+      : "{}"
+  }))
+}));
 
 
     try {
@@ -273,7 +286,7 @@ export default function Workflow() {
             workflowtriggerId: trigger.workflowTriggerId,
             actiontype: 'criarcompromisso',
             daysbeforeandafter: action.daysbeforeandafter,
-            configDescription: action.configuration
+            configDescription: action.configuration 
               ? JSON.stringify(action.configuration)
               : "{}",
             token,
@@ -296,7 +309,7 @@ export default function Workflow() {
       })
 
 
-      history.push('/workflow/list')
+      //history.push('/workflow/list')
 
     } catch (err: any) {
       const status = err.response?.data?.statusCode;  // protegemos com ?.
@@ -359,7 +372,8 @@ export default function Workflow() {
       companyId,
       workflowId: 0,
       triggerType: 'data',
-      configuration: { label: "" }
+      configuration: { label: "" },
+      actions: [] 
       //actions: [firstAction] // 👈 já começa com uma ação
     };
 
@@ -370,12 +384,16 @@ export default function Workflow() {
   const handleNewAction = useCallback((triggerId: number) => {
     const id = Math.random();
     const newAction: IWorkflowActions = {
-      workflowActionId: id,
-      companyId,
-      workflowTriggerId: triggerId,
-      actionType: 'criarcompromisso',
-      daysbeforeandafter: 0
-    };
+    workflowactionId: id,
+    companyId,
+    workflowTriggerId: triggerId,
+    actionType: 'criarcompromisso',
+    daysbeforeandafter: 0,
+    configuration: {
+      when: "depois", // 👈 já vem preenchido com "depois"
+      privacy: "N"   
+    }
+  };
 
 
     setWorkflowTrigger((oldTriggers) =>
@@ -1036,9 +1054,79 @@ export default function Workflow() {
     // se quiser abrir painel + buscar dados
     setPainelAberto(triggerId);
     fetchTriggerActions(triggerId);
+
+    /*
+          setWorkflowTrigger(prev => {
+          const trigger = prev.find(t => t.workflowTriggerId === triggerId);
+
+          if (trigger && (!trigger.actions || trigger.actions.length === 0)) {
+            // Só cria se a lista de actions do trigger também for zero
+            //handleNewAction(triggerId);
+            alert(trigger.actions);
+          }
+
+          return prev;
+        });
+        return;
+    */
+
   };
 
 
+const fetchTriggerActions = async (triggerId: number) => {
+  try {
+    const response = await api.get<IWorkflowActions[]>('/Workflow/ListarAcoes', {
+      params: { filterTerm: triggerId, token }
+    });
+
+    let data: IWorkflowActions[] = response.data.map((action: any) => {
+      let configuration = null;
+      if (action.configDescription) {
+        try {
+          configuration = JSON.parse(action.configDescription);
+          configuration.when = (action.daysbeforeandafter ?? 0) < 0 ? "antes" : "depois";
+          configuration.starttime = configuration.starttime ?? "";
+        } catch (err) {
+          console.error("Erro ao desserializar configDescription:", err);
+        }
+      }
+
+      return {
+        workflowactionId: action.workflowactionId,
+        companyId: action.companyId,
+        workflowTriggerId: action.workflowTriggerId,
+        actionType: action.actionType,
+        daysbeforeandafter: action.daysbeforeandafter,
+        configuration
+      };
+    });
+
+    // 👇 se a API não trouxe nada, cria uma nova action padrão
+    if (data.length === 0) {
+      data = [
+        {
+          workflowactionId: Math.random(),
+          companyId,
+          workflowTriggerId: triggerId,
+          actionType: "criarcompromisso",
+          daysbeforeandafter: 0,
+          configuration: { when: "depois" }
+        }
+      ];
+    }
+
+    setWorkflowTrigger(prev =>
+      prev.map(tr =>
+        tr.workflowTriggerId === triggerId ? { ...tr, actions: data } : tr
+      )
+    );
+  } catch (error) {
+    console.error(error);
+    alert("Erro ao carregar ações do compromisso.");
+  }
+};
+
+/*
   const fetchTriggerActions = async (triggerId: number) => {
     try {
 
@@ -1052,8 +1140,7 @@ export default function Workflow() {
 
       //alert(response.data.length);
 
-
-      const data = response.data.map((action: any) => {
+      const data = response.data.map((action: any) => { 
         let configuration = null;
         if (action.configDescription) {
           try {
@@ -1071,7 +1158,7 @@ export default function Workflow() {
           companyId: action.companyId,
           workflowTriggerId: action.workflowTriggerId,
           actionType: action.actionType,
-          daysbeforeandafter: action.daysbeforeandafter,
+          daysbeforeandafter: action.daysbeforeandafter, 
           configuration
         };
       });
@@ -1086,7 +1173,7 @@ export default function Workflow() {
     }
 
   };
-
+*/
 
   return (
     <Container>
@@ -1177,7 +1264,7 @@ export default function Workflow() {
                         style={{ width: "200px" }}
                       >
 
-                        {painelAberto === trigger.workflowTriggerId || (trigger.actions && trigger.actions.length > 0) ? (
+                        {painelAberto === trigger.workflowTriggerId || trigger.workflowId === 0 ? (
                           <>
                             <FiXCircle />
                             Configurar compromisso
