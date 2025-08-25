@@ -1441,7 +1441,7 @@ const FinancialMovement: React.FC = () => {
                 {movementType == "R" && <span style={{fontSize:'0.625rem', fontWeight:500, fontFamily:'montserrat'}}>Receber</span>}
                 {movementType == "D" && <span style={{fontSize:'0.625rem', fontWeight:500, fontFamily:'montserrat'}}>Pagar</span>}
               </button>
-              <br />
+              <br /><br />
 
               {showPayments && (
                 <>
