@@ -269,7 +269,7 @@ export default function Workflow() {
         description: workflow.workflowId ? "As alterações feitas no workflow foram salvas" : "Workflow adicionado"
       })
 
-
+      return true;
       //history.push('/workflow/list')
 
     } catch (err: any) {
@@ -936,25 +936,40 @@ export default function Workflow() {
 
 
   const handleConfigurarCompromisso = (triggerId: number) => {
-    // se quiser abrir painel + buscar dados
+    
+    if (!workflowName || workflowName.trim() === "") {
+     addToast({
+          type: "error",
+          title: "Campo obrigatório",
+          description: "O nome do workflow precisa ser preenchido."
+        })
+
+    return;
+  }
+
+  // encontra o trigger específico
+  const trigger = workflowTrigger.find(t => t.workflowTriggerId === triggerId);
+
+  if (!trigger.configuration?.label || trigger.configuration.label.trim() === "") {
+    addToast({
+      type: "error",
+      title: "Campo obrigatório",
+      description: "O label do gatilho precisa ser preenchido."
+    })
+
+    return;
+  }
+
+  if (!trigger) {
+    alert("Trigger não encontrada.");
+    return;
+  }
+
+
+    handleSubmitWorkflow();
     setPainelAberto(triggerId);
     fetchTriggerActions(triggerId);
-
-    /*
-          setWorkflowTrigger(prev => {
-          const trigger = prev.find(t => t.workflowTriggerId === triggerId);
-
-          if (trigger && (!trigger.actions || trigger.actions.length === 0)) {
-            // Só cria se a lista de actions do trigger também for zero
-            //handleNewAction(triggerId);
-            alert(trigger.actions);
-          }
-
-          return prev;
-        });
-        return;
-    */
-
+    
   };
 
 
