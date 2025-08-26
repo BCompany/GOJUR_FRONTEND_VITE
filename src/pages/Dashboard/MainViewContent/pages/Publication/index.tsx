@@ -1496,14 +1496,14 @@ const Publication: React.FC = () => {
           </select>
 
           {!hasItemCheckBoxSelected ? (
-            <button className="buttonCheckBox" type="button" onClick={handleSelectAllPublication}>
-              <FiCheckSquare />
+            <button className="buttonClick" type="button" onClick={handleSelectAllPublication}>
+              <FiCheckSquare style={{width:'1rem', height: '2rem', color: 'var(--white)'}}/>
               Selecionar Todas
             </button>
           ) :
-            <button className="buttonCheckBox" type="button" onClick={handleUnSelectAllPublication}>
-                <FiCheckSquare />
-                Desmarcar Todas
+            <button className="buttonClick" type="button" onClick={handleUnSelectAllPublication}>
+              <FiCheckSquare style={{width:'1rem', height: '2rem', color: 'var(--white)'}}/>
+              Desmarcar Todas
             </button>
           }
 

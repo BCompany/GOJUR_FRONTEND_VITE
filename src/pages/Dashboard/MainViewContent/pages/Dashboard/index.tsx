@@ -332,7 +332,7 @@ const Dashboard: React.FC = () => {
                   {showButton && (
                     <div id='divButtonChangeVisibility' style={{ alignItems: "center", justifyContent:"center", display:'flex'}}>
                       <br/><br/><br/>
-                      <button type="button" className='selectedButton' onClick={() => { openModalChangeVisibility() }} style={{display:'inline', zIndex: 9999}}>
+                      <button type="button" className='buttonClick' onClick={() => { openModalChangeVisibility() }} style={{zIndex: 9999}}>
                         <FaEye title='Personalizar DashBoard'/>
                         <span>Personalizar DashBoard</span>
                       </button>

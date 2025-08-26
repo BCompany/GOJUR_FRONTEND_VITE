@@ -205,7 +205,7 @@ const SearchCNJBatch: React.FC = () => {
                   className="buttonClick"
                   title="Clique para selecionar arquivos em seu computador"
                 >
-                  <SiMicrosoftexcel style={{ color: "white" }} />
+                  <SiMicrosoftexcel style={{marginTop:'-2px', width:'1rem', height: '2rem', color: 'var(--white)'}} />
                   <span style={{ color: "white" }}>Enviar Arquivo</span>
                   <input
                     id='document'

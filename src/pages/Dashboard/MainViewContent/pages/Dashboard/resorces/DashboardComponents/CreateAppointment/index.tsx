@@ -1692,14 +1692,15 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     
     if (numWhatsApp != '')
     {
-      let whatsAppText = `Olá ${customerNameWhatsApp} %0D%0A%0D%0A`;
-      whatsAppText += `Você tem um compromisso agendado:%0D%0A`;
-      whatsAppText += `%2AData:%2A ${(format(new Date(`${appointmentDateBeggin}T00:00:00`), 'dd-MM-yyyy'))} às ${appointmentHourBeggin} %0D%0A`;
-      whatsAppText += `%2AAssunto:%2A ${appointmentSubject} %0D%0A`;
-      whatsAppText += `%2ADescrição:%2A ${appointmentDescription} %0D%0A`;
-  
-      const whatsAppLink = `https://web.whatsapp.com/send?phone=+55" ${numWhatsApp} &text= ${whatsAppText}`
-  
+      let cleanNumber = numWhatsApp.replace(/\D/g, ''); 
+      let whatsAppText = 
+        `Olá ${customerNameWhatsApp}\n\n` +
+        `Você tem um compromisso agendado:\n` +
+        `*Data:* ${format(new Date(`${appointmentDateBeggin}T00:00:00`), 'dd-MM-yyyy')} às ${appointmentHourBeggin}\n` +
+        `*Assunto:* ${appointmentSubject}\n` +
+        `*Descrição:* ${appointmentDescription}\n`;
+
+      const whatsAppLink = `https://web.whatsapp.com/send?phone=55${cleanNumber}&text=${encodeURIComponent(whatsAppText)}`;
       window.open(whatsAppLink);
     }
     else 
@@ -1708,13 +1709,15 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
       if(response.data)
       {
-        let whatsAppText = `Olá ${customerNameWhatsApp} %0D%0A%0D%0A`;
-        whatsAppText += `Você tem um compromisso agendado:%0D%0A`;
-        whatsAppText += `%2AData:%2A ${(format(new Date(`${appointmentDateBeggin}T00:00:00`), 'dd-MM-yyyy'))} às ${appointmentHourBeggin} %0D%0A`;
-        whatsAppText += `%2AAssunto:%2A ${appointmentSubject} %0D%0A`;
-        whatsAppText += `%2ADescrição:%2A ${appointmentDescription} %0D%0A`;
-    
-        const whatsAppLink = `https://web.whatsapp.com/send?phone=+55" ${response.data} &text= ${whatsAppText}`
+        let cleanNumber = response.data.replace(/\D/g, ''); 
+        let whatsAppText = 
+          `Olá ${customerNameWhatsApp}\n\n` +
+          `Você tem um compromisso agendado:\n` +
+          `*Data:* ${format(new Date(`${appointmentDateBeggin}T00:00:00`), 'dd-MM-yyyy')} às ${appointmentHourBeggin}\n` +
+          `*Assunto:* ${appointmentSubject}\n` +
+          `*Descrição:* ${appointmentDescription}\n`;
+
+        const whatsAppLink = `https://web.whatsapp.com/send?phone=55${cleanNumber}&text=${encodeURIComponent(whatsAppText)}`;
         window.open(whatsAppLink);
       }
       else

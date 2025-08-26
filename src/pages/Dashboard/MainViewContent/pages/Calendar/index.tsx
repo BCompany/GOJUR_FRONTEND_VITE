@@ -1549,16 +1549,14 @@ const Calendar: React.FC = () => {
                         type="button"
                         onClick={() => saveFastEvent()}
                       >
-                        <FiSave />
-                        {!isSaving && <span>Salvar </span>}
-                        {/* {isGeneratingMerge && <Loader size={5} color="var(--orange)" />} */}
+                        <FiSave style={{marginTop:'-3px'}} />
+                        {!isSaving && <span>Salvar</span>}
                       </button>
                     )}
                     {isSaving && (
                       <button className="buttonClick" type="button">
                         <BiLoader />
                         {isSaving && <span>Aguarde...</span>}
-                        {/* {isGeneratingMerge && <Loader size={5} color="var(--orange)" />} */}
                       </button>
                     )}
                   </div>

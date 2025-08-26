@@ -130,6 +130,7 @@ const PublicationConfiguration = () => {
                 Salvar
               </button>
             </div>
+            <br /><br />
           </div>
 
           <PublicationNames />
