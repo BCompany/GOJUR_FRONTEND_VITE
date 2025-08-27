@@ -48,6 +48,10 @@ export default function Workflow() {
   const { handleSubmit } = useForm<IWorkflowData>();
   const { handleReloadBusinesCard, reloadBusinessCard } = useCustomer();
   const [showSalesFunnelMenu, setShowSalesFunnelMenu] = useState<boolean>(true)
+  const [configureEvent, setConfigureEvent] = useState<boolean>(false)
+  const [saveTrigger, setSaveTrigger] = useState<boolean>(false)
+
+  
   const { showSalesChannelModal } = useModal();
   const [isLoading, setIsLoading] = useState(true); // objecto todo de do cliente
   const [isPagination, setIsPagination] = useState(false); // objecto todo de do cliente
@@ -61,13 +65,14 @@ export default function Workflow() {
   const [customerGroup, setCustomerGroup] = useState<ISelectData[]>([]); // count field for address block
   const [salesChannelList, setSalesChannelList] = useState<ISelectData[]>([]); // count field for address block
   const [workflowName, setWorkflowName] = useState(''); // field nome
+  const [nameTrigger, setNameTrigger] = useState(''); // field nome
   const [customerFantasia, setCustomerFantasia] = useState(''); // field nome fantasia
   const [customerEmail, setCustomerEmail] = useState(''); // field e-mail
   const [customerSenha, setCustomerSenha] = useState(''); // field senha
   const [customerRef, setCustomerRef] = useState(''); // field Referencia
   const [customerWhatsapp, setCustomerWhatsapp] = useState(''); // field whatsapp
   const [customerGroupValue, setCustomerGroupValue] = useState(''); // group field value
-  const [customerGroupId, setCustomerGroupId] = useState(''); // group field id
+  const [workflowId, setWorkflowId] = useState<number>(0);
   const [customerSalesChannelId, setCustomerSalesChannelId] = useState(''); // group field id
   const [customerType, setCustomerType] = useState('F'); //  field type
   const [customerRepresent, setCustomerRepresent] = useState(''); //  field Representado
@@ -125,7 +130,7 @@ export default function Workflow() {
   const { isConfirmMessage, isCancelMessage, caller, handleCancelMessage, handleConfirmMessage, handleCheckConfirm, handleCaller } = useConfirmBox();
   const [currentWorkflowId, setCurrentWorkflowId] = useState<number>(0);
   const [isDeletingTrigger, setIsDeletingTrigger] = useState(false);
-  const [painelAberto, setPainelAberto] = useState<number | null>(null);
+  const [painelAberto, setPainelAberto] = useState<string | null>(null);
   const [appointmentSubject, setAppointmentSubject] = useState<string>(''); // Assuntos do Compromisso
   const [optionsSubject, setOptionsSubject] = useState<ISelectValues[]>([]); // Lista de Assuntos
   const [appointmentSubjectId, setAppointmentSubjectId] = useState<string>(''); // Assuntos do Compromisso
@@ -148,10 +153,13 @@ export default function Workflow() {
 
   // Insert new sales chanel and update combo
 
+  const LoadWorkflow = useCallback(async () => {
+    let workflowId;
+    workflowId = pathname.substr(15);
 
-  const LoadWorkflow = async () => {
+    //setWorkflowId(pathname.substr(15))
 
-    let workflowId = pathname.substr(15)
+
     let hasFilterSaved = false;
     const filterStorage = localStorage.getItem('@GoJur:CustomerFilter')
 
@@ -225,8 +233,81 @@ export default function Workflow() {
       history.push('/workflow/list')
       console.log(err)
     }
-  }
+  }, [workflowId]);
 
+
+
+async function handleSalvarWorkflow()
+{
+
+const isValid = workflowTrigger.every(t => {
+      if (t.triggerType === "data") {
+        return Boolean(t.configuration?.label?.trim());
+      }
+      return true; // outros tipos não precisam de label
+    });
+
+    if (!isValid) {
+      addToast({
+        type: "error",
+        title: "Erro de validação",
+        description: "Gatilhos do tipo 'data' precisam ter um label preenchido."
+      });
+      return false;
+    }
+
+    const triggerList = workflowTrigger.map(i => ({
+      ...i,
+      cod_Endereco: 0
+    }));
+
+    try {
+      const response = await api.put('/Workflow/Salvar', {
+        token,
+        apiKey,
+        workflowId: workflow.workflowId ? workflow.workflowId : 0, // cod Workflow
+        name: workflowName, // nome do Workflow
+        companyId, // Cod Empresa   
+        triggers: triggerList // Listagem de gatilhos
+      })
+
+        
+      const id = Number(response.data);
+      setWorkflowId(id);
+
+      addToast({
+        type: "success",
+        title: "Workflow salvo",
+        description: workflow.workflowId ? "As alterações feitas no workflow foram salvas" : "Workflow adicionado"
+      })
+
+      return true;
+
+    } catch (err: any) {
+      const status = err.response?.data?.statusCode;  // protegemos com ?.
+      const message = err.response?.data?.Message || err.message || "Erro desconhecido";
+
+      // eslint-disable-next-line no-alert
+      if (status !== 500) {
+
+        addToast({
+          type: "error",
+          title: "Falha ao cadastrar workflow",
+          description: message
+        })
+      }
+
+      if (status === 1011) {
+        setCustomerActiveModalDoubleCheck(true)
+      }
+
+      setisSaving(false)
+      localStorage.removeItem('@GoJur:businessCustomerId')
+
+      return false;
+    }
+
+}
 
 
   const handleSubmitWorkflow = useCallback(async () => {
@@ -248,8 +329,8 @@ export default function Workflow() {
     }
 
     const triggerList = workflowTrigger.map(i => ({
-     ...i,
-       cod_Endereco: 0
+      ...i,
+      cod_Endereco: 0
     }));
 
     try {
@@ -262,7 +343,10 @@ export default function Workflow() {
         triggers: triggerList // Listagem de gatilhos
       })
 
-   
+        
+      const id = Number(response.data);
+      setWorkflowId(id);
+
       addToast({
         type: "success",
         title: "Workflow salvo",
@@ -270,7 +354,6 @@ export default function Workflow() {
       })
 
       return true;
-      //history.push('/workflow/list')
 
     } catch (err: any) {
       const status = err.response?.data?.statusCode;  // protegemos com ?.
@@ -294,22 +377,140 @@ export default function Workflow() {
       localStorage.removeItem('@GoJur:businessCustomerId')
     }
 
-  }, [workflowTrigger, workflow.name, workflow.tpo_Telefone01, workflow.num_Telefone01, workflow.tpo_Telefone02, workflow.num_Telefone02, workflow.cod_PessoaFisica, workflow.cod_Cliente, workflow.cod_PessoaJuridica, workflow.cod_SistemaUsuarioEmpresa, workflow.doubleCheck, workflow.cod_Empresa, workflowName, addToast, history]);
+  }, [workflowTrigger, workflow.name, workflow.tpo_Telefone01, workflow.num_Telefone01, workflow.tpo_Telefone02, workflow.num_Telefone02, workflow.cod_PessoaFisica, workflow.cod_Cliente, workflow.cod_PessoaJuridica, workflow.cod_SistemaUsuarioEmpresa, workflow.doubleCheck, workflow.cod_Empresa, workflowName, workflowId, addToast, history]);
+
+
+
+useEffect(() => {
+ 
+  if (!workflowId) return;
+
+  if( configureEvent == true )
+  {
+    reloadWorkflow(workflowId);
+
+   }
+
+}, [workflowId, configureEvent]);
+
+ 
+const workflowTriggerRef = useRef(workflowTrigger);
+
+useEffect(() => {
+  workflowTriggerRef.current = workflowTrigger; 
+  
+}, [workflowTrigger]);
+
+
+useEffect(() => {
+  if (!workflowTrigger || workflowTrigger.length === 0) return;
+
+  //console.log('nametrigger: ' + nameTrigger );
+  const labelProcurada = nameTrigger;
+  const triggerEncontrada = workflowTrigger.find(
+    (trigger) => trigger.configuration?.label?.trim() === labelProcurada
+  );
+
+  if (!triggerEncontrada) return;
+
+  const triggerId = triggerEncontrada.workflowTriggerId;
+
+  //console.log('painelaberto : ' + painelAberto + ' triggerId: ' + triggerId)
+
+  if (painelAberto !== triggerId && configureEvent == true ) {
+    console.log('setPainelAberto(triggerId);')
+    setTimeout(() => setPainelAberto(triggerId), 99);
+    fetchTriggerActions(triggerId);
+    handleNewAction(triggerId);
+  
+  }
+
+}, [workflowTrigger, configureEvent, nameTrigger]);
+
+
+
+
+
+  const reloadWorkflow = useCallback(async (workflowIdParam: Number) => {
+    let workflowId = workflowIdParam;
+    let hasFilterSaved = false;
+
+    const filterStorage = localStorage.getItem('@GoJur:CustomerFilter');
+
+    // verify if exists filter saved
+    if (Number.isNaN(Number(workflowId))) {
+      if (filterStorage == null) {
+        return false;
+      }
+
+      // if exists filter exists associate to specific variables and rebuild page
+      const filterJSON = JSON.parse(filterStorage);
+      workflowId = filterJSON.workflowId;
+      hasFilterSaved = true;
+    }
+
+    // when is id
+    if (Number(workflowId) === 0) {
+      handleNewTrigger();
+      return;
+    }
+
+    try {
+      const response = await api.get<IWorkflowData>('/Workflow/Selecionar', {
+        params: {
+          id: Number(workflowId),
+          token,
+        },
+      });
+
+      setWorkflow(response.data);
+      setWorkflowName(response.data.name);
+
+      if (response.data.triggers.length < 1) {
+        const id = Math.random();
+
+        const firstAction: IWorkflowActions = {
+          workflowActionId: Math.random(),
+          companyId,
+          workflowTriggerId: id,
+          actionType: 'criarcompromisso',
+          daysbeforeandafter: 0,
+          configuration: {
+          when: "depois", // 👈 já vem preenchido com "depois"
+          privacy: "N"
+          }
+        };
+
+        const newTrigger: IWorkflowTriggers = {
+          workflowTriggerId: id,
+          companyId,
+          workflowId: 0,
+          triggerType: 'data',
+          configuration: { label: '' },
+          actions: [firstAction],
+        };
+
+        setWorkflowTrigger((oldState) => [...oldState, newTrigger]);
+      } else {
+        setWorkflowTrigger(response.data.triggers);
+        //alert('qtde de triggers ' +  response.data.triggers.length);
+      }
+
+      
+      //setIsLoading(false);
+      //setIsInitialize(false);
+    } catch (err) {
+      setIsLoading(false);
+      history.push('/workflow/list');
+      console.log(err);
+    }
+  }, []);
+
 
 
 
   const handleNewTrigger = useCallback(() => {
     const id = Math.random();
-
-    /*
-    const firstAction: IWorkflowActions = {
-      workflowActionId: Math.random(),
-      companyId,
-      workflowTriggerId: id,
-      actionType: 'criarcompromisso',
-      daysbeforeandafter: 0
-    };
-    */
 
     const newTrigger: IWorkflowTriggers = {
       workflowTriggerId: id,
@@ -317,27 +518,32 @@ export default function Workflow() {
       workflowId: 0,
       triggerType: 'data',
       configuration: { label: "" },
-      actions: [] 
+      actions: []
       //actions: [firstAction] // 👈 já começa com uma ação
     };
 
     setWorkflowTrigger(oldTrigger => [...oldTrigger, newTrigger]);
+
+    setConfigureEvent(false);
+    
   }, [companyId]);
 
 
-  const handleNewAction = useCallback((triggerId: number) => {
+
+
+  const handleNewAction = useCallback((triggerId: string) => {
     const id = Math.random();
     const newAction: IWorkflowActions = {
-    workflowactionId: id,
-    companyId,
-    workflowTriggerId: triggerId,
-    actionType: 'criarcompromisso',
-    daysbeforeandafter: 0,
-    configuration: {
-      when: "depois", // 👈 já vem preenchido com "depois"
-      privacy: "N"   
-    }
-  };
+      workflowactionId: id,
+      companyId,
+      workflowTriggerId: triggerId,
+      actionType: 'criarcompromisso',
+      daysbeforeandafter: 0,
+      configuration: {
+        when: "depois", // 👈 já vem preenchido com "depois"
+        privacy: "N"
+      }
+    };
 
 
     setWorkflowTrigger((oldTriggers) =>
@@ -398,6 +604,11 @@ export default function Workflow() {
     );
 
     setWorkflowTrigger(newPhone);
+
+    setConfigureEvent(false);
+
+    setNameTrigger(value);
+
   }, [workflowTrigger]);
 
 
@@ -487,10 +698,12 @@ export default function Workflow() {
     setCurrentWorkflowId(workflowId);
   }
 
+
   const abrirPainel = (id: number) => {
     setPainelAberto(prev => (prev === id ? null : id));
 
   };
+
 
 
   const LoadSubject = useCallback(async (reload = false, termSearch = '') => {
@@ -934,120 +1147,76 @@ export default function Workflow() {
   };
 
 
-
-  const handleConfigurarCompromisso = (triggerId: number) => {
-    
-    if (!workflowName || workflowName.trim() === "") {
-     addToast({
-          type: "error",
-          title: "Campo obrigatório",
-          description: "O nome do workflow precisa ser preenchido."
-        })
-
-    return;
-  }
-
-  // encontra o trigger específico
-  const trigger = workflowTrigger.find(t => t.workflowTriggerId === triggerId);
-
-  if (!trigger.configuration?.label || trigger.configuration.label.trim() === "") {
-    addToast({
-      type: "error",
-      title: "Campo obrigatório",
-      description: "O label do gatilho precisa ser preenchido."
-    })
-
-    return;
-  }
-
-  if (!trigger) {
-    alert("Trigger não encontrada.");
-    return;
-  }
-
-
-    handleSubmitWorkflow();
-    setPainelAberto(triggerId);
-    fetchTriggerActions(triggerId);
-    
-  };
-
-
-const fetchTriggerActions = async (triggerId: number) => {
-  try {
-    const response = await api.get<IWorkflowActions[]>('/Workflow/ListarAcoes', {
-      params: { filterTerm: triggerId, token }
-    });
-
-    let data: IWorkflowActions[] = response.data.map((action: any) => {
-      let configuration = null;
-      if (action.configDescription) {
-        try {
-          configuration = JSON.parse(action.configDescription);
-          configuration.when = (action.daysbeforeandafter ?? 0) < 0 ? "antes" : "depois";
-          configuration.starttime = configuration.starttime ?? "";
-        } catch (err) {
-          console.error("Erro ao desserializar configDescription:", err);
-        }
-      }
-
-      return {
-        workflowactionId: action.workflowactionId,
-        companyId: action.companyId,
-        workflowTriggerId: action.workflowTriggerId,
-        actionType: action.actionType,
-        daysbeforeandafter: action.daysbeforeandafter,
-        configuration
-      };
-    });
-
-    // 👇 se a API não trouxe nada, cria uma nova action padrão
-    if (data.length === 0) {
-      data = [
-        {
-          workflowactionId: Math.random(),
-          companyId,
-          workflowTriggerId: triggerId,
-          actionType: "criarcompromisso",
-          daysbeforeandafter: 0,
-          configuration: { when: "depois" }
-        }
-      ];
-    }
-
-    setWorkflowTrigger(prev =>
-      prev.map(tr =>
-        tr.workflowTriggerId === triggerId ? { ...tr, actions: data } : tr
-      )
-    );
-  } catch (error) {
-    console.error(error);
-    alert("Erro ao carregar ações do compromisso.");
-  }
-};
-
 /*
-  const fetchTriggerActions = async (triggerId: number) => {
-    try {
+useEffect(() => {
+ 
+  if (saveTrigger == true)
+  {
+    handleSubmitWorkflow();
+    reloadWorkflow(workflowId);
+  }
+  setSaveTrigger(false);
+}, [saveTrigger]);
+*/
 
 
-      const response = await api.get<IWorkflowActions[]>('/Workflow/ListarAcoes', {
-        params: {
-          filterTerm: triggerId,
-          token
-        }
+  async function handleConfigurarCompromisso(triggerId: number){
+    if (!workflowName || workflowName.trim() === "") {
+      addToast({
+        type: "error",
+        title: "Campo obrigatório",
+        description: "O nome do workflow precisa ser preenchido."
       })
 
-      //alert(response.data.length);
+      return;
+    }
 
-      const data = response.data.map((action: any) => { 
+    // encontra o trigger específico
+    const trigger = workflowTrigger.find(t => t.workflowTriggerId === triggerId);
+
+    if (!trigger.configuration?.label || trigger.configuration.label.trim() === "") {
+      addToast({
+        type: "error",
+        title: "Campo obrigatório",
+        description: "O label do gatilho precisa ser preenchido."
+      })
+
+      return;
+    }
+
+    if (!trigger) {
+      alert("Trigger não encontrada.");
+      return;
+    }
+    
+
+    const ok = await handleSalvarWorkflow();
+    
+    if(ok)
+    {
+      setConfigureEvent(true);
+      setNameTrigger(trigger.configuration?.label);
+    
+    }
+   
+
+   };
+
+
+  const fetchTriggerActions = async (triggerId: string) => {
+    try {
+      
+      const response = await api.get<IWorkflowActions[]>('/Workflow/ListarAcoes', {
+        params: { filterTerm: triggerId, token }
+      });
+
+      let data: IWorkflowActions[] = response.data.map((action: any) => {
         let configuration = null;
         if (action.configDescription) {
           try {
             configuration = JSON.parse(action.configDescription);
             configuration.when = (action.daysbeforeandafter ?? 0) < 0 ? "antes" : "depois";
             configuration.starttime = configuration.starttime ?? "";
-
           } catch (err) {
             console.error("Erro ao desserializar configDescription:", err);
           }
@@ -1058,64 +1227,135 @@ const fetchTriggerActions = async (triggerId: number) => {
           companyId: action.companyId,
           workflowTriggerId: action.workflowTriggerId,
           actionType: action.actionType,
-          daysbeforeandafter: action.daysbeforeandafter, 
+          daysbeforeandafter: action.daysbeforeandafter,
           configuration
         };
       });
 
+      // 👇 se a API não trouxe nada, cria uma nova action padrão
+      if (data.length === 0) {
+        data = [
+          {
+            workflowactionId: Math.random(),
+            companyId,
+            workflowTriggerId: triggerId,
+            actionType: "criarcompromisso",
+            daysbeforeandafter: 0,
+            configuration: { when: "depois" }
+          }
+        ];
+      }
+
       setWorkflowTrigger(prev =>
-        prev.map(tr => tr.workflowTriggerId === triggerId ? { ...tr, actions: data } : tr));
-
-
+        prev.map(tr =>
+          tr.workflowTriggerId === triggerId ? { ...tr, actions: data } : tr
+        )
+      );
     } catch (error) {
       console.error(error);
       alert("Erro ao carregar ações do compromisso.");
     }
-
   };
-*/
 
-
-const handleSalvarCompromisso = async (triggerId: number, actionId: number) => {
-  try {
-    // encontra o trigger específico
-    const trigger = workflowTrigger.find(t => t.workflowTriggerId === triggerId);
-    if (!trigger) {
-      alert("Trigger não encontrada");
-      return;
-    }
-
-    // encontra a action específica
-    const action = trigger.actions?.find(a => a.workflowactionId === actionId);
-    if (!action) {
-      alert("Action não encontrada");
-      return;
-    }
-
-    // monta o payload da action
-    const actionPayload = {
-      workflowactionId: action.workflowactionId ?? 0,
-      companyId,
-      workflowtriggerId: trigger.workflowTriggerId,
-      actiontype: 'criarcompromisso',
-      daysbeforeandafter: action.daysbeforeandafter,
-      configDescription: action.configuration ? JSON.stringify(action.configuration) : "{}",
-      token,
-      apiKey,
+  /*
+    const fetchTriggerActions = async (triggerId: number) => {
+      try {
+  
+  
+        const response = await api.get<IWorkflowActions[]>('/Workflow/ListarAcoes', {
+          params: {
+            filterTerm: triggerId,
+            token
+          }
+        })
+  
+        //alert(response.data.length);
+  
+        const data = response.data.map((action: any) => { 
+          let configuration = null;
+          if (action.configDescription) {
+            try {
+              configuration = JSON.parse(action.configDescription);
+              configuration.when = (action.daysbeforeandafter ?? 0) < 0 ? "antes" : "depois";
+              configuration.starttime = configuration.starttime ?? "";
+  
+            } catch (err) {
+              console.error("Erro ao desserializar configDescription:", err);
+            }
+          }
+  
+          return {
+            workflowactionId: action.workflowactionId,
+            companyId: action.companyId,
+            workflowTriggerId: action.workflowTriggerId,
+            actionType: action.actionType,
+            daysbeforeandafter: action.daysbeforeandafter, 
+            configuration
+          };
+        });
+  
+        setWorkflowTrigger(prev =>
+          prev.map(tr => tr.workflowTriggerId === triggerId ? { ...tr, actions: data } : tr));
+  
+  
+      } catch (error) {
+        console.error(error);
+        alert("Erro ao carregar ações do compromisso.");
+      }
+  
     };
+  */
 
-    console.log("Sending action:", actionPayload);
 
-    await api.put('/workflow/salvaracao', actionPayload);
+  const handleSalvarCompromisso = async (triggerId: number, actionId: number) => {
+    try {
+  
+      const trigger = workflowTrigger.find(
+          (trigger) => trigger.configuration?.label?.trim() === nameTrigger
+        );
+      if (!trigger) {
+        alert("Trigger não encontrada");
+        return;
+      }
 
-    addToast({
-      type: "success",
-      title: "Compromisso salvo", 
-      description: workflow.workflowId ? "As alterações feitas no compromisso foram salvas" : "compromisso adicionado"
-    })
-    
-  } catch (err: any) {
-    const status = err.response?.data?.statusCode;  // protegemos com ?.
+      console.log(trigger);
+      // encontra a action específica
+      const action = trigger.actions?.find(a => a.workflowactionId === actionId);
+      if (!action) {
+        alert("Action não encontrada");
+        return;
+      }
+
+      const config = {
+        ...action.configuration,  // pega todas as configs existentes
+        privacy: action.configuration?.privacy ?? "N",
+        responsible: action.configuration?.responsible ?? "U",  // garante que privacy esteja definido
+      };
+
+      // monta o payload da action
+      const actionPayload = {
+        workflowactionId: action.workflowactionId ?? 0,
+        companyId,
+        workflowtriggerId: trigger.workflowTriggerId,
+        actiontype: 'criarcompromisso',
+        daysbeforeandafter: action.daysbeforeandafter,
+        configDescription: action.configuration ? JSON.stringify(config) : "{}",
+        token,
+        apiKey,
+      };
+
+      console.log("Sending action:", actionPayload);
+
+      await api.put('/workflow/salvaracao', actionPayload);
+
+      addToast({
+        type: "success",
+        title: "Compromisso salvo",
+        description: workflow.workflowId ? "As alterações feitas no compromisso foram salvas" : "compromisso adicionado"
+      })
+
+    } catch (err: any) {
+      const status = err.response?.data?.statusCode;  // protegemos com ?.
       const message = err.response?.data?.Message || err.message || "Erro desconhecido";
 
       // eslint-disable-next-line no-alert
@@ -1128,8 +1368,8 @@ const handleSalvarCompromisso = async (triggerId: number, actionId: number) => {
         })
       }
 
-  }
-};
+    }
+  };
 
 
   return (
@@ -1334,10 +1574,10 @@ const handleSalvarCompromisso = async (triggerId: number, actionId: number) => {
                                   options={optionsSubject}
                                   loadingMessage={loadingMessage}
                                   noOptionsMessage={noOptionsMessage}
-                                    styles={{
+                                  styles={{
                                     control: (base) => ({
                                       ...base,
-                                      minWidth: "400px", left:"-7px"
+                                      minWidth: "400px", left: "-7px"
                                     })
                                   }}
                                 />
@@ -1373,31 +1613,31 @@ const handleSalvarCompromisso = async (triggerId: number, actionId: number) => {
 
                               </div>
                             </label>
-               <label htmlFor="telefone" id="trigger" style={{
+                            <label htmlFor="telefone" id="trigger" style={{
                               gridColumn: "2 / span 1", // ocupa 2 colunas a partir da coluna 1
                               display: "flex",
                               //flexDirection: "column",
                             }}>
- <div id="triggerDados">
+                              <div id="triggerDados">
 
-                              Privacidade
-                              <select
-                                name="privacidade"
-                                id={`privacidade-${action.workflowactionId}`}
-                                value={action.configuration?.privacy ?? "N"}
-                                onChange={(e) =>
-                                  handlePrivacyChange(e.target.value, trigger.workflowTriggerId, action.workflowactionId)
-                                }
-                                disabled={appointmentBlockUpdate}
-                                style={{ width: "400px" }}
-                              >
-                                <option value="N">Público</option>
-                                <option value="S">Privado</option>
-                              </select>
-</div>
+                                Privacidade
+                                <select
+                                  name="privacidade"
+                                  id={`privacidade-${action.workflowactionId}`}
+                                  value={action.configuration?.privacy ?? "N"}
+                                  onChange={(e) =>
+                                    handlePrivacyChange(e.target.value, trigger.workflowTriggerId, action.workflowactionId)
+                                  }
+                                  disabled={appointmentBlockUpdate}
+                                  style={{ width: "400px" }}
+                                >
+                                  <option value="N">Público</option>
+                                  <option value="S">Privado</option>
+                                </select>
+                              </div>
 
-                              </label>
- <label htmlFor="telefone2" id="trigger" >
+                            </label>
+                            <label htmlFor="telefone2" id="trigger" >
 
                               <div id="triggerDados">
                                 Responsável
@@ -1456,7 +1696,7 @@ const handleSalvarCompromisso = async (triggerId: number, actionId: number) => {
                                   styles={{
                                     control: (base) => ({
                                       ...base,
-                                      width:"730px",
+                                      width: "730px",
                                       minWidth: "160px",
                                     })
                                   }}
