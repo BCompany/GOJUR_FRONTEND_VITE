@@ -221,7 +221,7 @@ export default function CredentialsDataSourceModal(props) {
       }
       else {
         setTwoFactorAuth(false);
-        setFlgQrCode(true);
+        setFlgQrCode(false);
         setQrCode('');
       }
 
@@ -282,14 +282,9 @@ export default function CredentialsDataSourceModal(props) {
     setCredentialType(id)
 
     if(id == "ESAJ"){
-      setFlgCertificate(true)
+       setFlgCertificate(true)
     }
-
-    if(id == "EPROC"){
-      setFlgCertificate(true)
-    }
-
-    if(id == "PJE"){
+    else {
       setFlgCertificate(false)
     }
   }
