@@ -50,7 +50,8 @@ export default function Workflow() {
   const [showSalesFunnelMenu, setShowSalesFunnelMenu] = useState<boolean>(true)
   const [configureEvent, setConfigureEvent] = useState<boolean>(false)
   const [saveTrigger, setSaveTrigger] = useState<boolean>(false)
-
+  const [whenChange, setWhenChange] = useState('');
+  
   
   const { showSalesChannelModal } = useModal();
   const [isLoading, setIsLoading] = useState(true); // objecto todo de do cliente
@@ -130,6 +131,8 @@ export default function Workflow() {
   const { isConfirmMessage, isCancelMessage, caller, handleCancelMessage, handleConfirmMessage, handleCheckConfirm, handleCaller } = useConfirmBox();
   const [currentWorkflowId, setCurrentWorkflowId] = useState<number>(0);
   const [isDeletingTrigger, setIsDeletingTrigger] = useState(false);
+  const [currentWorkflowActionId, setCurrentWorkflowActionId] = useState<number>(0);
+  const [currentWorkflowTriggerId, setCurrentWorkflowTriggerId] = useState<number>(0);
   const [painelAberto, setPainelAberto] = useState<string | null>(null);
   const [appointmentSubject, setAppointmentSubject] = useState<string>(''); // Assuntos do Compromisso
   const [optionsSubject, setOptionsSubject] = useState<ISelectValues[]>([]); // Lista de Assuntos
@@ -204,7 +207,7 @@ export default function Workflow() {
           companyId,
           workflowTriggerId: id,
           actionType: 'criarcompromisso',
-          daysbeforeandafter: 0
+          daysbeforeandafter: 1
         };
 
         const newTrigger: IWorkflowTriggers = {
@@ -388,8 +391,7 @@ useEffect(() => {
   if( configureEvent == true )
   {
     reloadWorkflow(workflowId);
-
-   }
+  }
 
 }, [workflowId, configureEvent]);
 
@@ -397,37 +399,46 @@ useEffect(() => {
 const workflowTriggerRef = useRef(workflowTrigger);
 
 useEffect(() => {
+
   workflowTriggerRef.current = workflowTrigger; 
   
 }, [workflowTrigger]);
 
 
 useEffect(() => {
+
   if (!workflowTrigger || workflowTrigger.length === 0) return;
 
-  //console.log('nametrigger: ' + nameTrigger );
-  const labelProcurada = nameTrigger;
-  const triggerEncontrada = workflowTrigger.find(
-    (trigger) => trigger.configuration?.label?.trim() === labelProcurada
+  const wantedLabel = nameTrigger;
+  
+  const triggerFound = workflowTrigger.find(
+    (trigger) => trigger.configuration?.label?.trim() === wantedLabel
   );
 
-  if (!triggerEncontrada) return;
+  if (!triggerFound) {return};
+ 
+  /*
+  if (triggerFound) {
+    triggerFound.actions?.forEach(action => {
+      console.log(
+        "Action ID:", action.workflowactionId,
+        "When:", action.configuration?.when
+      );
+    });
+  }
+  */
 
-  const triggerId = triggerEncontrada.workflowTriggerId;
-
-  //console.log('painelaberto : ' + painelAberto + ' triggerId: ' + triggerId)
+  const triggerId = triggerFound.workflowTriggerId;
 
   if (painelAberto !== triggerId && configureEvent == true ) {
-    console.log('setPainelAberto(triggerId);')
+    console.log("Painel Aberto");
     setTimeout(() => setPainelAberto(triggerId), 99);
     fetchTriggerActions(triggerId);
     handleNewAction(triggerId);
   
   }
 
-}, [workflowTrigger, configureEvent, nameTrigger]);
-
-
+}, [workflowTrigger,configureEvent, nameTrigger]);
 
 
 
@@ -474,7 +485,7 @@ useEffect(() => {
           companyId,
           workflowTriggerId: id,
           actionType: 'criarcompromisso',
-          daysbeforeandafter: 0,
+          daysbeforeandafter: 1,
           configuration: {
           when: "depois", // 👈 já vem preenchido com "depois"
           privacy: "N"
@@ -493,7 +504,8 @@ useEffect(() => {
         setWorkflowTrigger((oldState) => [...oldState, newTrigger]);
       } else {
         setWorkflowTrigger(response.data.triggers);
-        //alert('qtde de triggers ' +  response.data.triggers.length);
+
+        console.log(response.data.triggers.configuration);
       }
 
       
@@ -538,7 +550,7 @@ useEffect(() => {
       companyId,
       workflowTriggerId: triggerId,
       actionType: 'criarcompromisso',
-      daysbeforeandafter: 0,
+      daysbeforeandafter: 1,
       configuration: {
         when: "depois", // 👈 já vem preenchido com "depois"
         privacy: "N"
@@ -583,7 +595,7 @@ useEffect(() => {
         label: ""
       }
     } : trigger)
-
+   
     setWorkflowTrigger(newTypePhone)
 
   }, [workflowTrigger]); // atualiza o tipo de telefone 1
@@ -591,6 +603,7 @@ useEffect(() => {
 
 
   const handleChangeTrigger = useCallback((value: string, triggerId: number) => {
+    
     const newPhone = workflowTrigger.map(trigger =>
       trigger.workflowTriggerId === triggerId
         ? {
@@ -603,12 +616,14 @@ useEffect(() => {
         : trigger
     );
 
+    
     setWorkflowTrigger(newPhone);
 
     setConfigureEvent(false);
 
     setNameTrigger(value);
 
+    
   }, [workflowTrigger]);
 
 
@@ -685,6 +700,55 @@ useEffect(() => {
   }
 
 
+
+  const handleDeleteWorkflowAcao = async (workflowtriggerId: number, workflowactionId: number) => {
+    try {
+      setIsDeletingTrigger(true)
+
+      await api.delete('/Workflow/DeletarAcao', {
+        params: {
+          id: workflowactionId,
+          token
+        }
+      })
+
+      handleDeleteAction(workflowtriggerId,workflowactionId)
+
+      addToast({
+        type: 'success',
+        title: 'Ação Deletada',
+        description: 'A ação selecionada foi deletada',
+      });
+
+      setIsDeleting(false)
+      setIsDeletingTrigger(false)
+      //setCurrentWorkflowId(0)
+
+      await reloadWorkflow(workflowId);
+
+      
+      setPainelAberto(workflowtriggerId);
+      fetchTriggerActions(workflowtriggerId);
+      handleNewAction(workflowtriggerId);
+      
+
+    } catch (err) {
+      addToast({
+        type: 'info',
+        title: 'Falha ao apagar Ação',
+        description: err.response.data.Message
+      });
+
+      handleDeleteAction(workflowtriggerId,workflowactionId)
+
+      setIsDeletingTrigger(false)
+      setIsDeleting(false)
+      //setCurrentWorkflowId(0)
+    }
+  }
+
+
+
   useEffect(() => {
     if (isCancelMessage) {
       setIsDeleting(false)
@@ -696,6 +760,12 @@ useEffect(() => {
   const handleCheckBoxDeleteTrigger = (workflowId: number) => {
     setIsDeleting(true)
     setCurrentWorkflowId(workflowId);
+  }
+
+
+  const handleCheckBoxDeleteAction = (workflowactionId: number) => {
+    setIsDeleting(true)
+    setCurrentWorkflowActionId(workflowactionId);
   }
 
 
@@ -839,6 +909,7 @@ useEffect(() => {
     workflowTriggerId?: number,
     workflowActionId?: number
   ) => {
+    
     const numericValue = Number(value) || 0;
 
     setWorkflowTrigger(prev =>
@@ -850,6 +921,7 @@ useEffect(() => {
               action.workflowactionId === workflowActionId
                 ? {
                   ...action,
+     
                   daysbeforeandafter:
                     action.configuration?.when === "antes"
                       ? -Math.abs(numericValue)
@@ -861,6 +933,7 @@ useEffect(() => {
           : trigger
       )
     );
+
   };
 
 
@@ -949,60 +1022,6 @@ useEffect(() => {
     );
   };
 
-  /*
-  const handleSelectLembretes = (
-    newValue: string,
-    workflowTriggerId: number,
-    workflowActionId: number
-  ) => {
-  
-       setAppointmentRemindersList([
-            ...appointmentRemindersList,
-            {
-              qtdReminder: newValue,
-              notifyMatterCustomer: appointmentNotifyMatterCustomer,
-              emailNotification: 'N',
-              whatsAppNotification: 'N'
-            },
-          ]);
-  
-           if (
-            appointmentRemindersList.findIndex(
-              key => key.qtdReminder === newValue,
-            ) != -1
-          ) {
-            const newdata = Array.from(appointmentRemindersList);
-            const key = newdata.findIndex(
-              item => item.qtdReminder === newValue,
-            );
-            newdata.slice(key, 1);
-    
-            setAppointmentRemindersList(newdata);
-          }
-  
-          
-    setWorkflowTrigger(prev =>
-      prev.map(trigger => {
-        if (trigger.workflowTriggerId !== workflowTriggerId) return trigger;
-  
-        return {
-          ...trigger,
-          actions: trigger.actions.map(action => {
-            if (action.workflowactionId !== workflowActionId) return action;
-  
-            return {
-              ...action,
-              configuration: {
-                ...action.configuration,
-                reminders: [newValue], // atualiza o array com o novo valor
-              },
-            };
-          }),
-        };
-      })
-    );
-  };
-  */
 
   const handleSelectLembretes = (
     newValues: string[],
@@ -1114,7 +1133,7 @@ useEffect(() => {
   };
 
 
-
+/*
   const handleWhenChange = (
     newValue: "antes" | "depois",
     workflowTriggerId?: number,
@@ -1144,20 +1163,71 @@ useEffect(() => {
           : trigger
       )
     );
+
   };
-
-
-/*
-useEffect(() => {
- 
-  if (saveTrigger == true)
-  {
-    handleSubmitWorkflow();
-    reloadWorkflow(workflowId);
-  }
-  setSaveTrigger(false);
-}, [saveTrigger]);
 */
+
+
+const handleWhenChange = (
+  newValue: "antes" | "depois",
+  workflowTriggerId?: number,
+  workflowActionId?: number
+) => {
+  console.log("handleWhenChange disparado:", { newValue, workflowTriggerId, workflowActionId });
+
+  setWorkflowTrigger(prev => {
+    const editTrigger = prev.map(trigger =>
+      trigger.workflowTriggerId === workflowTriggerId
+        ? {
+            ...trigger,
+            actions: trigger.actions?.map(action =>
+              action.workflowactionId === workflowActionId
+                ? {
+                    ...action,
+                    configuration: {
+                      ...action.configuration!,
+                      when: newValue,
+                    },
+                  }
+                : action
+            ),
+          }
+        : trigger
+    );
+    console.log("Novo workflowTrigger:", editTrigger);
+
+    setWhenChange(newValue);
+    setCurrentWorkflowActionId(workflowActionId);
+    setCurrentWorkflowTriggerId(workflowTriggerId);
+
+    return editTrigger;
+  });
+};
+
+
+useEffect(() => {
+  if (!currentWorkflowTriggerId || !currentWorkflowActionId) return;
+  setWorkflowTrigger(prev =>
+    prev.map(trigger =>
+      trigger.workflowTriggerId === currentWorkflowTriggerId
+        ? {
+            ...trigger,
+            actions: trigger.actions?.map(action =>
+              action.workflowactionId === currentWorkflowActionId
+                ? {
+                    ...action,
+                    configuration: {
+                      ...action.configuration!,
+                      when: whenChange,
+                    },
+                  }
+                : action
+            ),
+          }
+        : trigger
+    )
+  );
+}, [workflowTrigger,whenChange, currentWorkflowTriggerId, currentWorkflowActionId]);
 
 
   async function handleConfigurarCompromisso(triggerId: number){
@@ -1240,71 +1310,27 @@ useEffect(() => {
             companyId,
             workflowTriggerId: triggerId,
             actionType: "criarcompromisso",
-            daysbeforeandafter: 0,
+            daysbeforeandafter: 1,
             configuration: { when: "depois" }
           }
         ];
       }
 
+      //console.log('teste fetchTriggerActions');
+      
       setWorkflowTrigger(prev =>
         prev.map(tr =>
           tr.workflowTriggerId === triggerId ? { ...tr, actions: data } : tr
         )
       );
+      
+
     } catch (error) {
       console.error(error);
       alert("Erro ao carregar ações do compromisso.");
     }
   };
 
-  /*
-    const fetchTriggerActions = async (triggerId: number) => {
-      try {
-  
-  
-        const response = await api.get<IWorkflowActions[]>('/Workflow/ListarAcoes', {
-          params: {
-            filterTerm: triggerId,
-            token
-          }
-        })
-  
-        //alert(response.data.length);
-  
-        const data = response.data.map((action: any) => { 
-          let configuration = null;
-          if (action.configDescription) {
-            try {
-              configuration = JSON.parse(action.configDescription);
-              configuration.when = (action.daysbeforeandafter ?? 0) < 0 ? "antes" : "depois";
-              configuration.starttime = configuration.starttime ?? "";
-  
-            } catch (err) {
-              console.error("Erro ao desserializar configDescription:", err);
-            }
-          }
-  
-          return {
-            workflowactionId: action.workflowactionId,
-            companyId: action.companyId,
-            workflowTriggerId: action.workflowTriggerId,
-            actionType: action.actionType,
-            daysbeforeandafter: action.daysbeforeandafter, 
-            configuration
-          };
-        });
-  
-        setWorkflowTrigger(prev =>
-          prev.map(tr => tr.workflowTriggerId === triggerId ? { ...tr, actions: data } : tr));
-  
-  
-      } catch (error) {
-        console.error(error);
-        alert("Erro ao carregar ações do compromisso.");
-      }
-  
-    };
-  */
 
 
   const handleSalvarCompromisso = async (triggerId: number, actionId: number) => {
@@ -1332,7 +1358,11 @@ useEffect(() => {
         responsible: action.configuration?.responsible ?? "U",  // garante que privacy esteja definido
       };
 
+      console.log('Config action ' + JSON.stringify(config));
+      console.log('Dias antes e depois ' + action.daysbeforeandafter);
+      
       // monta o payload da action
+      /*
       const actionPayload = {
         workflowactionId: action.workflowactionId ?? 0,
         companyId,
@@ -1343,9 +1373,22 @@ useEffect(() => {
         token,
         apiKey,
       };
+*/
+      const actionPayload = {
+        workflowactionId: action.workflowactionId ?? 0,
+        companyId,
+        workflowtriggerId: trigger.workflowTriggerId,
+        actiontype: "criarcompromisso",
+        daysbeforeandafter:
+          action.configuration?.when === "antes"
+            ? -Math.abs(action.daysbeforeandafter ?? 1)
+            : Math.abs(action.daysbeforeandafter ?? 1),
+        configDescription: action.configuration ? JSON.stringify(config) : "{}",
+        token,
+        apiKey,
+      };
 
-      console.log("Sending action:", actionPayload);
-
+      
       await api.put('/workflow/salvaracao', actionPayload);
 
       addToast({
@@ -1354,6 +1397,12 @@ useEffect(() => {
         description: workflow.workflowId ? "As alterações feitas no compromisso foram salvas" : "compromisso adicionado"
       })
 
+      
+      await reloadWorkflow(workflowId);
+      setPainelAberto(triggerId);
+      fetchTriggerActions(triggerId);
+      handleNewAction(triggerId);
+      
     } catch (err: any) {
       const status = err.response?.data?.statusCode;  // protegemos com ?.
       const message = err.response?.data?.Message || err.message || "Erro desconhecido";
@@ -1371,6 +1420,12 @@ useEffect(() => {
     }
   };
 
+const handleGoToPage = () => {
+    //history.push('/workflow/edit/' + workflowId);
+    setPainelAberto(null);
+    setConfigureEvent(false);
+
+  };
 
   return (
     <Container>
@@ -1696,7 +1751,7 @@ useEffect(() => {
                                   styles={{
                                     control: (base) => ({
                                       ...base,
-                                      width: "730px",
+                                      width: "725px",
                                       minWidth: "160px",
                                     })
                                   }}
@@ -1728,7 +1783,7 @@ useEffect(() => {
                                     )
                                   }
                                   style={{
-                                    width: "750px",
+                                    width: "725px",
                                     minHeight: "150px",
                                     resize: "vertical",
                                     background: "white",
@@ -1751,7 +1806,7 @@ useEffect(() => {
                                 flexDirection: "column",
                               }}
                             >
-                              <div>
+                             <div style={{width: "725px", display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "8px", }}>
                                 <button type="button" className='buttonLinkClick' onClick={() => handleNewAction(trigger.workflowTriggerId!)}>
                                   <FiPlus />
                                   Incluir novo compromisso
@@ -1762,12 +1817,15 @@ useEffect(() => {
                                   Salvar
                                 </button>
 
-                                <button type="button" className='buttonLinkClick'>
-                                  <FiDelete />
-                                  Excluir
+                                
+                                 <button type="button" className='buttonLinkClick' onClick={() =>
+                                  handleDeleteWorkflowAcao(trigger.workflowTriggerId,action.workflowactionId)} >
+                                  <FiTrash />
+                                    Excluir
                                 </button>
 
-                                <button type="button" className='buttonLinkClick'>
+
+                                <button type="button" className='buttonLinkClick' onClick={() => handleGoToPage()}>
                                   <FiX />
                                   Fechar
                                 </button>
@@ -1835,6 +1893,8 @@ useEffect(() => {
           caller="WorkflowList"
           message="Confirma a exclusão deste workflow ?"
         />
+
+
 
       )}
 
