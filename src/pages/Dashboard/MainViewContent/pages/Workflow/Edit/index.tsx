@@ -350,7 +350,9 @@ const isValid = workflowTrigger.every(t => {
       const id = Number(response.data);
       setWorkflowId(id);
 
-      addToast({
+      reloadWorkflow(id)
+
+       addToast({
         type: "success",
         title: "Workflow salvo",
         description: workflow.workflowId ? "As alterações feitas no workflow foram salvas" : "Workflow adicionado"
@@ -406,7 +408,7 @@ useEffect(() => {
 
 
 useEffect(() => {
-
+ 
   if (!workflowTrigger || workflowTrigger.length === 0) return;
 
   const wantedLabel = nameTrigger;
@@ -431,7 +433,6 @@ useEffect(() => {
   const triggerId = triggerFound.workflowTriggerId;
 
   if (painelAberto !== triggerId && configureEvent == true ) {
-    console.log("Painel Aberto");
     setTimeout(() => setPainelAberto(triggerId), 99);
     fetchTriggerActions(triggerId);
     handleNewAction(triggerId);
@@ -552,7 +553,7 @@ useEffect(() => {
       actionType: 'criarcompromisso',
       daysbeforeandafter: 1,
       configuration: {
-        when: "depois", // 👈 já vem preenchido com "depois"
+        when: "depois", 
         privacy: "N"
       }
     };
@@ -565,7 +566,6 @@ useEffect(() => {
           : trigger
       )
     );
-
 
   }, [companyId]);
 
@@ -677,7 +677,7 @@ useEffect(() => {
       addToast({
         type: 'success',
         title: 'Gatilho Deletado',
-        description: 'O gatilho selecionado foi deletado',
+        description: 'O gatilho selecionado foi deletado',  
       });
 
       setIsDeleting(false)
@@ -1543,6 +1543,7 @@ const handleGoToPage = () => {
 
                     {painelAberto === trigger.workflowTriggerId && (
                       <>
+                        
                         {trigger.actions?.map(action => (
                           <>
 
@@ -1824,7 +1825,6 @@ const handleGoToPage = () => {
                                     Excluir
                                 </button>
 
-
                                 <button type="button" className='buttonLinkClick' onClick={() => handleGoToPage()}>
                                   <FiX />
                                   Fechar
@@ -1860,7 +1860,8 @@ const handleGoToPage = () => {
               <footer>
 
                 <div>
-                  <button className="buttonClick" type="submit">
+                  
+                  <button className="buttonClick" type="submit"> 
                     <FiSave />
                     Salvar
                   </button>
