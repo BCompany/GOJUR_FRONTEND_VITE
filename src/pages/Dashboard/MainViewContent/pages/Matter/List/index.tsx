@@ -17,7 +17,7 @@ import { RiCalendarCheckFill } from 'react-icons/ri';
 import { useAlert } from 'context/alert';
 import Loader from 'react-spinners/PulseLoader';
 import LoaderWaiting from 'react-spinners/ClipLoader';
-import { FaRegEdit, FaExchangeAlt, FaPlus, FaFileAlt } from 'react-icons/fa';
+import { FaRegEdit, FaExchangeAlt, FaPlus, FaFileAlt, FaChartBar } from 'react-icons/fa';
 import { FiDatabase, FiKey, FiPaperclip, FiPlus } from 'react-icons/fi';
 import { AiOutlinePrinter, AiFillFolderOpen, AiOutlineFile } from 'react-icons/ai'
 import { useAuth } from 'context/AuthContext';
@@ -69,6 +69,11 @@ import MatterFileModal from '../MatterFileModal/index';
 import CredentialModal from '../Credentials/index';
 import FollowModal from '../FollowModal';
 import AwarenessModal from 'components/AwarenessModal';
+
+
+export interface CRMData{
+  id: string;
+}
 
 
 const Matter: React.FC = () => {
@@ -151,7 +156,6 @@ const Matter: React.FC = () => {
   const [awarenessModalTitle, setAwarenessModalTitle] = useState<string>("Tribunal - Abrangência")
   const [awarenessButtonOkText, setAwarenessButtonOkText] = useState<string>("Ver Abrangências")
 
-
   const [isChanging, setIsChanging] = useState<boolean>(false);
 
 
@@ -160,6 +164,7 @@ const Matter: React.FC = () => {
     handleCaptureText('')
     VerifyCurrentSearch()
   }, [])
+
 
   useEffect(() => {
 
@@ -795,7 +800,7 @@ const Matter: React.FC = () => {
     }
   }
 
-//
+
   const handleFollowButton = async (matterId: number) => {
 
     const matterFind = matterList.find(item => item.matterId === matterId);
@@ -2078,11 +2083,13 @@ const Matter: React.FC = () => {
     setMatterFilePlace("")
   }
 
+
   const handleOpenFollowModal = async (matter) => {
     setMatterSelectedId(matter.matterId)
     setMatterSelectedNumber(matter.matterNumber)
     setShowFollowModal(true)
   };
+
 
   const handleCloseFollowModal = async () => {
     setShowFollowModal(false)
@@ -2092,29 +2099,64 @@ const Matter: React.FC = () => {
     setSelectedCredentialid(0)
   };
 
+
   const handleSecretJusticeChange = (event: ChangeEvent<HTMLInputElement>) => {
     setIsSecretJustice(event.target.checked);
   }
+
 
   const handleFollowMatter = async () => {
     setIsChanging(true)
     handleFollowButton(matterSelectedId)
   }
 
+  
   const handleSelectCredentialId = (id) => {
     setSelectedCredentialid(id)
   }
+
 
   const handleCloseAwarenessModal = async () => {
     setShowAwarenessModal(false)
     setAwarenessModalMessage('')
   };
 
+
   const handleConfirmAwarenessButton = async () => {
     setShowAwarenessModal(false)
     setAwarenessModalMessage('')
     history.push('/Matter/monitoring')
   };
+
+
+  const MatterCRM = async (matterId, matteFilePlace) => {
+    setMatterFileId(matterId)
+    setMatterFilePlace(matteFilePlace)
+
+    const response = await api.get<CRMData[]>('/NegocioCliente/ListarPorProcesso', {
+      params: { matterId, token }
+    });
+
+    console.log (response.data)
+
+    if(response.data.length == 0){
+      addToast({ type: 'info', title: 'Não há registros', description: `Não foram encontrados registro CRM para este processo`})
+      return
+    }
+
+    if(response.data.length == 1){
+      localStorage.setItem('@Gojur:matterRedirect', 'S')
+      history.push(`/customer/business/edit/${response.data[0].id}`)
+    }
+
+    if(response.data.length > 1){
+      addToast({ type: 'info', title: 'Há mais de 1 registro', description: `Encontrados mais de 1 registro CRM para este processo`})
+      return
+    }
+
+    console.log (response.data.length)
+  }
+
 
   return (
 
@@ -2365,9 +2407,7 @@ const Matter: React.FC = () => {
                       <br />
 
                       <div>
-
                         <div className='matterDetails'>
-
                           <div>
                             Processo:
                             {' '}
@@ -2391,7 +2431,6 @@ const Matter: React.FC = () => {
                           <div>
                             Pesquisa automática de processo
                           </div>
-
                         </div>
 
                         <div className="matterEvents">
@@ -2402,33 +2441,22 @@ const Matter: React.FC = () => {
                         </div>
 
                         <div className="matterMenu">
-
                           <div className="menu">
-
                             <div>
-
                               <section>
-
                                 <p>
                                   <RiDeleteBinLine />
                                   <span onClick={() => handleDeleteMatter(item.matterId, true)}>Excluir</span>
                                 </p>
-
                               </section>
-
                             </div>
-
                           </div>
-
                         </div>
-
                       </div>
 
                       <br />
                       <br />
-
                     </MatterItem>
-
                   )
                 }
 
@@ -2436,10 +2464,6 @@ const Matter: React.FC = () => {
 
                   <MatterItem>
                     <header>
-                      {/* <input
-                        type="checkbox"
-                        name="select"
-                      /> */}
                       &nbsp;
                       {' '}
                       <AiFillFolderOpen title='Número de identificação da pasta do processo' />
@@ -2465,7 +2489,6 @@ const Matter: React.FC = () => {
                     />
 
                     <div>
-
                       <div className='matterDetails'>
                         <div>
                           Processo:
@@ -2485,7 +2508,6 @@ const Matter: React.FC = () => {
                             title={item.matterCustomerDesc}
                           >
                             {item.matterCustomerDesc}
-                            {/* {(item.matterCustomerDesc??"").length > 30? `${item.matterCustomerDesc.substring(0,30)  }...`: item.matterCustomerDesc} */}
                           </span>
                           <span>&nbsp; X &nbsp;</span>
                           <span>{item.matterOppossingDesc}</span>
@@ -2545,9 +2567,7 @@ const Matter: React.FC = () => {
                           </>
                         )}
 
-
                         <div className='andamentosList'>
-
                           {item.followList.map((follow, index) => {
                             return (
                               <>
@@ -2627,12 +2647,9 @@ const Matter: React.FC = () => {
                                               Cancelar
                                             </button>
                                           )}
-
                                         </div>
-
                                       </div>
                                     )
-
                                   )}
 
                                   <button className="buttonLinkClick" type="submit">
@@ -2643,7 +2660,6 @@ const Matter: React.FC = () => {
                                   {!follow.editEvent && (
 
                                     <div className="userPhotos">
-
                                       {(follow.imageUserInclude ?? "").length > 0 && (
                                         <img
                                           className='avatar'
@@ -2750,9 +2766,7 @@ const Matter: React.FC = () => {
                           )}
 
                           <br />
-
                         </div>
-
                       </div>
 
                       {/* Show events by matter - Web View */}
@@ -2785,14 +2799,10 @@ const Matter: React.FC = () => {
                       )}
 
                       <div className="matterMenu">
-
                         <div className="menu">
-
                           <div>
-
                             {/* When is mobile visualization hide text and shows only icons */}
                             <section>
-
                               <p
                                 onClick={() => handleRedirectToProcess(item.matterId)}
                                 title="Clique para abrir a pasta do processo"
@@ -2860,6 +2870,11 @@ const Matter: React.FC = () => {
                                 {!isMOBILE && <span>Anexar Documentos</span>}
                               </p>
 
+                              <p onClick={() => MatterCRM(item.matterId, "legal")}>
+                                <FaChartBar />
+                                {!isMOBILE && <span>CRM</span>}
+                              </p>
+
                               {hasButtonDeleteMatterLegal && (
                                 <p
                                   onClick={() => handleDeleteMatter(item.matterId)}
@@ -2925,16 +2940,10 @@ const Matter: React.FC = () => {
 
                                 </>
                               )}
-
-
                             </section>
-
                           </div>
-
                         </div>
-
                       </div>
-
                     </div>
 
                     {/* ROBOT COURT ROBS LOG */}
@@ -2960,11 +2969,8 @@ const Matter: React.FC = () => {
 
         {/* MATTER ADVISORY MATTER */}
         {hasmatterAdvisory && (
-
           <Tab active={tabsControl.tab2}>
-
             <MatterList>
-
               {matterList.map((item) => {
 
                 // if is a OAB search show interface for temp matter
@@ -2972,10 +2978,6 @@ const Matter: React.FC = () => {
                   return (
                     <MatterItem>
                       <header>
-                        {/* <input
-                            type="checkbox"
-                            name="select"
-                          /> */}
                         &nbsp;
                         {' '}
                         <AiFillFolderOpen title='Número de identificação da pasta do processo' />
@@ -2988,9 +2990,7 @@ const Matter: React.FC = () => {
                       <br />
 
                       <div>
-
                         <div className='matterDetails'>
-
                           <div>
                             Processo:
                             {' '}
@@ -3005,49 +3005,35 @@ const Matter: React.FC = () => {
                           <div>
                             <b>Pesquisa automática de processo</b>
                           </div>
-
                         </div>
 
                         <div className="matterEvents">
                           <header>
                             {RenderPendingLoadMessage(item.status, item.statusCreation, item.error)}
                           </header>
-
                         </div>
 
                         <div className="matterMenu">
-
                           <div className="menu">
-
                             <div>
-
                               <section>
-
                                 <p>
                                   <RiDeleteBinLine />
                                   <span onClick={() => handleRedirectToProcess(item.matterId)}>Excluir</span>
                                 </p>
-
                               </section>
-
                             </div>
-
                           </div>
-
                         </div>
-
                       </div>
 
                       <br />
                       <br />
-
                     </MatterItem>
-
                   )
                 }
 
                 return (
-
                   <MatterItem>
                     <header>
                       &nbsp;
@@ -3077,7 +3063,6 @@ const Matter: React.FC = () => {
                     />
 
                     <div>
-
                       <div className='matterDetails'>
                         <div>
                           Controle:
@@ -3143,9 +3128,7 @@ const Matter: React.FC = () => {
                           </>
                         )}
 
-
                         <div className='andamentosList'>
-
                           {item.followList.map((follow, index) => {
                             return (
                               <>
@@ -3340,17 +3323,12 @@ const Matter: React.FC = () => {
 
                               <br />
                             </>
-
                           )}
-
                         </div>
-
-
                       </div>
 
                       {/* Show events by matter - Web View */}
                       {!isMOBILE && (
-
                         <div className="matterEvents">
                           <header>
                             <RiCalendarCheckFill />
@@ -3371,22 +3349,16 @@ const Matter: React.FC = () => {
                                   {`${FormatDate(new Date(appointment.startDate), "dd/MM/yyyy HH:mm")} ${(appointment.subject.length > 25 ? `${appointment.subject.substring(0, 25)}...` : appointment.subject)}`}
                                 </div>
                               )
-
                             })}
                           </div>
-
                         </div>
                       )}
 
                       <div className="matterMenu">
-
                         <div className="menu">
-
                           <div>
-
                             {/* When is mobile visualization hide text and shows only icons */}
                             <section>
-
                               <p onClick={() => handleRedirectToProcess(item.matterId)}>
                                 <FaRegEdit />
                                 {!isMOBILE && <span> Ver Detalhes</span>}
@@ -3426,26 +3398,24 @@ const Matter: React.FC = () => {
                                 {!isMOBILE && <span>Anexar Documentos</span>}
                               </p>
 
+                              <p onClick={() => MatterCRM(item.matterId, "advisory")}>
+                                <FaChartBar />
+                                {!isMOBILE && <span>CRM</span>}
+                              </p>
+
                               {hasButtonDeletematterAdvisory && (
                                 <p onClick={() => handleDeleteMatter(item.matterId)}>
                                   <RiDeleteBinLine />
                                   {!isMOBILE && <span>Excluir</span>}
                                 </p>
                               )}
-
                             </section>
-
                           </div>
-
                         </div>
-
                       </div>
-
                     </div>
-
                   </MatterItem>
                 )
-
               })}
 
               {isLoadingPage && (
@@ -3455,11 +3425,8 @@ const Matter: React.FC = () => {
               )}
 
             </MatterList>
-
           </Tab>
-
         )}
-
       </Tabs>
 
       {(matterLines + tempLines == 0 && !isLoading) && (
@@ -3514,7 +3481,6 @@ const Matter: React.FC = () => {
         />
       )}
 
-
       {showOverlayDeleteEvent && (
         <>
           <Overlay />
@@ -3525,7 +3491,6 @@ const Matter: React.FC = () => {
           </div>
         </>
       )}
-
 
       {showOverlayDelete && (
         <>

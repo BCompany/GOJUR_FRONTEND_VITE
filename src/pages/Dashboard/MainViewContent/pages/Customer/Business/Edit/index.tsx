@@ -90,6 +90,8 @@ export default function BusinessCardEdit( ) {
   const [matterAttachedModal, setMatterAttachedModal] = useState(false)
   const {handleSelectProcess, selectProcess, matterSelected, openSelectProcess } = useModal();
 
+  const [matterRedirect, setMatterRedirect] = useState<boolean>(false)
+
   // first initialization
   useEffect(() => {    
     Initialize();
@@ -141,6 +143,13 @@ export default function BusinessCardEdit( ) {
     const redirectBySearchFunnel = localStorage.getItem('@Gojur:funnelRedirectSearch')
     if (redirectBySearchFunnel){
       setFunnelRedirect(true)      
+    }    
+
+    // When is edit by sales funnel redirect
+    const redirectByMatter = localStorage.getItem('@Gojur:matterRedirect')
+    if (redirectByMatter == "S"){
+      setMatterRedirect(true)      
+      localStorage.removeItem('@Gojur:matterRedirect')
     }    
   }
 
@@ -271,6 +280,14 @@ export default function BusinessCardEdit( ) {
     if (response.data.finishDate != null){
       setBusinessEndDate(format(new Date(response.data.finishDate), 'yyyy-MM-dd'))
     }
+
+    console.log(response.data)
+
+    if(response.data.matterId != '0')
+      {
+        setMatterId(response.data.matterId)
+        setProcessTitle(`${response.data.num_Processo} - ${response.data.matterCustomerDesc} x ${response.data.matterOpposingDesc}`)
+      }
 
     setBusinessObservation(response.data.observation)
 
@@ -427,6 +444,7 @@ export default function BusinessCardEdit( ) {
       "finishDate": businessEndDate,
       "numOrder":businessOrder,
       "status": status,
+      "matterId": matterId,
       "token": token
     }
 
@@ -477,7 +495,13 @@ export default function BusinessCardEdit( ) {
 
 
   const handleCancel = () => {
-    if (!funnelRedirect){
+    
+    console.log('MatterRedirect: ', matterRedirect)
+    
+    if (matterRedirect){
+      history.push('../../../matter/list')
+    }
+    else if (!funnelRedirect){
       const businessCustomerId = localStorage.getItem('@GoJur:businessCustomerId')
       if (businessCustomerId != null){
         history.push(`/customer/edit/${ businessCustomerId}` )
