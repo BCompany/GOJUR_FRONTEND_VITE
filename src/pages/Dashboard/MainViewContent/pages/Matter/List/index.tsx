@@ -17,7 +17,7 @@ import { RiCalendarCheckFill } from 'react-icons/ri';
 import { useAlert } from 'context/alert';
 import Loader from 'react-spinners/PulseLoader';
 import LoaderWaiting from 'react-spinners/ClipLoader';
-import { FaRegEdit, FaExchangeAlt, FaPlus, FaFileAlt, FaChartBar } from 'react-icons/fa';
+import { FaRegEdit, FaExchangeAlt, FaPlus, FaFileAlt } from 'react-icons/fa';
 import { FiDatabase, FiKey, FiPaperclip, FiPlus } from 'react-icons/fi';
 import { AiOutlinePrinter, AiFillFolderOpen, AiOutlineFile } from 'react-icons/ai'
 import { useAuth } from 'context/AuthContext';
@@ -28,7 +28,7 @@ import { RiDeleteBinLine } from 'react-icons/ri';
 import { SiSonarsource } from 'react-icons/si';
 import { ImMenu3, ImMenu4 } from 'react-icons/im';
 import { BiUpArrowAlt, BiDownArrowAlt, BiEditAlt, BiSave, BiLoader } from 'react-icons/bi';
-import { GiNewspaper } from 'react-icons/gi';
+import { GiNewspaper, GiReceiveMoney } from 'react-icons/gi';
 import { MdBlock } from 'react-icons/md';
 import { format } from 'date-fns';
 import Select from 'react-select'
@@ -69,6 +69,7 @@ import MatterFileModal from '../MatterFileModal/index';
 import CredentialModal from '../Credentials/index';
 import FollowModal from '../FollowModal';
 import AwarenessModal from 'components/AwarenessModal';
+import MatterCRMModal from '../../Customer/CRM/Modal';
 
 
 export interface CRMData{
@@ -157,6 +158,8 @@ const Matter: React.FC = () => {
   const [awarenessButtonOkText, setAwarenessButtonOkText] = useState<string>("Ver Abrangências")
 
   const [isChanging, setIsChanging] = useState<boolean>(false);
+
+  const [showMatterCRMModal, setShowMatterCRMModal] = useState<boolean>(false)
 
 
   useEffect(() => {
@@ -2137,10 +2140,8 @@ const Matter: React.FC = () => {
       params: { matterId, token }
     });
 
-    console.log (response.data)
-
     if(response.data.length == 0){
-      addToast({ type: 'info', title: 'Não há registros', description: `Não foram encontrados registro CRM para este processo`})
+      OpenMatterCRMModal(0)
       return
     }
 
@@ -2150,19 +2151,30 @@ const Matter: React.FC = () => {
     }
 
     if(response.data.length > 1){
-      addToast({ type: 'info', title: 'Há mais de 1 registro', description: `Encontrados mais de 1 registro CRM para este processo`})
+      OpenMatterCRMModal(matterId)
       return
     }
+  }
 
-    console.log (response.data.length)
+
+  const OpenMatterCRMModal = async (matterId) => {
+    setShowMatterCRMModal(true)
+    setMatterSelectedId(matterId)
+  }
+
+
+  const CloseMatterCRMModal = async () => {
+    setShowMatterCRMModal(false)
+    setMatterSelectedId(0)
   }
 
 
   return (
-
     <Container onScroll={handleScrool} ref={scrollRef}>
-
       <HeaderPage />
+
+      {(showMatterCRMModal) && <Overlay />}
+      {showMatterCRMModal && <MatterCRMModal callbackFunction={{ CloseMatterCRMModal, matterSelectedId }} />}
 
       {(showFollowModal) && <Overlay />}
       {showFollowModal && <FollowModal callbackFunction={{ handleCloseFollowModal, matterSelectedNumber, handleSecretJusticeChange, isSecretJustice, handleFollowMatter, handleSelectCredentialId, isChanging }} />}
@@ -2871,7 +2883,7 @@ const Matter: React.FC = () => {
                               </p>
 
                               <p onClick={() => MatterCRM(item.matterId, "legal")}>
-                                <FaChartBar />
+                                <GiReceiveMoney />
                                 {!isMOBILE && <span>CRM</span>}
                               </p>
 
@@ -3399,7 +3411,7 @@ const Matter: React.FC = () => {
                               </p>
 
                               <p onClick={() => MatterCRM(item.matterId, "advisory")}>
-                                <FaChartBar />
+                                <GiReceiveMoney />
                                 {!isMOBILE && <span>CRM</span>}
                               </p>
 
