@@ -101,6 +101,8 @@ export default function Workflow() {
   const [customerCityValue, setCustomerCityValue] = useState(''); //  field city
   const [isSaving, setisSaving] = useState<boolean>(); // set trigger for show loader
   const [isDeleting, setIsDeleting] = useState<boolean>(); // set trigger for show loader
+  const [isFetchTriggerActions, setIsFetchTriggerActions] = useState<boolean>(false); // set trigger for show loader
+  
   const [customerActivePassword, setCustomerActivePassword] = useState(false); //  field email de faturamento
   const [customerActiveModalDoubleCheck, setCustomerActiveModalDoubleCheck] = useState(false); //  modal double check
   const [matterList, setMatterList] = useState<IMatterData[]>([]);
@@ -247,7 +249,7 @@ const isValid = workflowTrigger.every(t => {
       if (t.triggerType === "data") {
         return Boolean(t.configuration?.label?.trim());
       }
-      return true; // outros tipos não precisam de label
+      return 0; // outros tipos não precisam de label
     });
 
     if (!isValid) {
@@ -256,7 +258,7 @@ const isValid = workflowTrigger.every(t => {
         title: "Erro de validação",
         description: "Gatilhos do tipo 'data' precisam ter um label preenchido."
       });
-      return false;
+      return 0;
     }
 
     const triggerList = workflowTrigger.map(i => ({
@@ -278,13 +280,15 @@ const isValid = workflowTrigger.every(t => {
       const id = Number(response.data);
       setWorkflowId(id);
 
+      await reloadWorkflow(id);
+
       addToast({
         type: "success",
         title: "Workflow salvo",
         description: workflow.workflowId ? "As alterações feitas no workflow foram salvas" : "Workflow adicionado"
       })
 
-      return true;
+      return id;
 
     } catch (err: any) {
       const status = err.response?.data?.statusCode;  // protegemos com ?.
@@ -307,7 +311,7 @@ const isValid = workflowTrigger.every(t => {
       setisSaving(false)
       localStorage.removeItem('@GoJur:businessCustomerId')
 
-      return false;
+      return 0;
     }
 
 }
@@ -386,6 +390,7 @@ const isValid = workflowTrigger.every(t => {
 
 
 
+/*
 useEffect(() => {
  
   if (!workflowId) return;
@@ -395,7 +400,7 @@ useEffect(() => {
     reloadWorkflow(workflowId);
   }
 
-}, [workflowId, configureEvent]);
+}, [workflowId]);
 
  
 const workflowTriggerRef = useRef(workflowTrigger);
@@ -403,9 +408,10 @@ const workflowTriggerRef = useRef(workflowTrigger);
 useEffect(() => {
 
   workflowTriggerRef.current = workflowTrigger; 
-  
+ 
 }, [workflowTrigger]);
 
+*/
 
 useEffect(() => {
  
@@ -418,28 +424,22 @@ useEffect(() => {
   );
 
   if (!triggerFound) {return};
- 
-  /*
-  if (triggerFound) {
-    triggerFound.actions?.forEach(action => {
-      console.log(
-        "Action ID:", action.workflowactionId,
-        "When:", action.configuration?.when
-      );
-    });
-  }
-  */
 
   const triggerId = triggerFound.workflowTriggerId;
 
-  if (painelAberto !== triggerId && configureEvent == true ) {
-    setTimeout(() => setPainelAberto(triggerId), 99);
-    fetchTriggerActions(triggerId);
-    handleNewAction(triggerId);
-  
-  }
+  //alert(triggerId);
+  setPainelAberto(triggerId)
 
-}, [workflowTrigger,configureEvent, nameTrigger]);
+
+  
+  if (painelAberto !== triggerId && configureEvent == true) {
+    //setTimeout(() => setPainelAberto(triggerId), 100);
+    fetchTriggerActions(triggerId);
+    //handleNewAction(triggerId);
+
+  }
+  
+}, [workflowTrigger, painelAberto]);
 
 
 
@@ -572,6 +572,7 @@ useEffect(() => {
 
   const handleDeleteTrigger = useCallback((triggerId) => {
     const address = workflowTrigger.filter(item => item.workflowTriggerId !== triggerId);
+    alert(address.length);     
     if (address.length >= 1) {
       setWorkflowTrigger(address)
     } else {
@@ -582,7 +583,6 @@ useEffect(() => {
       })
     }
   }, [addToast, workflowTrigger]); // remove um endereço da interface
-
 
 
   const handleChangeTriggerType = useCallback((value, triggerId) => {
@@ -1260,13 +1260,19 @@ useEffect(() => {
     }
     
 
-    const ok = await handleSalvarWorkflow();
+    const id = await handleSalvarWorkflow();
     
-    if(ok)
+    if( id > 0 )
     {
+      
+      //await reloadWorkflow(id);
       setConfigureEvent(true);
       setNameTrigger(trigger.configuration?.label);
-    
+ 
+      //setPainelAberto(trigger.workflowTriggerId);
+      //await fetchTriggerActions(trigger.workflowTriggerId);
+     
+
     }
    
 
@@ -1279,7 +1285,7 @@ useEffect(() => {
       const response = await api.get<IWorkflowActions[]>('/Workflow/ListarAcoes', {
         params: { filterTerm: triggerId, token }
       });
-
+   
       let data: IWorkflowActions[] = response.data.map((action: any) => {
         let configuration = null;
         if (action.configDescription) {
@@ -1315,15 +1321,13 @@ useEffect(() => {
           }
         ];
       }
-
-      //console.log('teste fetchTriggerActions');
       
       setWorkflowTrigger(prev =>
         prev.map(tr =>
           tr.workflowTriggerId === triggerId ? { ...tr, actions: data } : tr
         )
       );
-      
+    
 
     } catch (error) {
       console.error(error);
@@ -1361,19 +1365,7 @@ useEffect(() => {
       console.log('Config action ' + JSON.stringify(config));
       console.log('Dias antes e depois ' + action.daysbeforeandafter);
       
-      // monta o payload da action
-      /*
-      const actionPayload = {
-        workflowactionId: action.workflowactionId ?? 0,
-        companyId,
-        workflowtriggerId: trigger.workflowTriggerId,
-        actiontype: 'criarcompromisso',
-        daysbeforeandafter: action.daysbeforeandafter,
-        configDescription: action.configuration ? JSON.stringify(config) : "{}",
-        token,
-        apiKey,
-      };
-*/
+  
       const actionPayload = {
         workflowactionId: action.workflowactionId ?? 0,
         companyId,
@@ -1420,10 +1412,11 @@ useEffect(() => {
     }
   };
 
-const handleGoToPage = () => {
-    //history.push('/workflow/edit/' + workflowId);
-    setPainelAberto(null);
-    setConfigureEvent(false);
+const handleRemoveAction =  (TriggerId: number, ActionId: number) => {
+    //alert('triggerid: ' + TriggerId + ' actionid: ' + ActionId);
+    handleDeleteAction(TriggerId, ActionId);
+    //setPainelAberto(TriggerId);
+    setConfigureEvent(false); 
 
   };
 
@@ -1825,7 +1818,7 @@ const handleGoToPage = () => {
                                     Excluir
                                 </button>
 
-                                <button type="button" className='buttonLinkClick' onClick={() => handleGoToPage()}>
+                                <button type="button" className='buttonLinkClick' onClick={() => handleRemoveAction(trigger.workflowTriggerId,action.workflowactionId)}>
                                   <FiX />
                                   Fechar
                                 </button>
