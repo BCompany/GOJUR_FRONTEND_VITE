@@ -66,12 +66,13 @@ export const MatterCRMModalStyle = styled.div<SearchProps>`
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.2);
-    border-radius: 0.25rem;
+    border: solid 1px;
+    border-Radius: 10px;
+    color: #2c8ed6;
     padding: 15px; 
     font-size: 14px;
     background-color: #FFF;
-    color: blue;
+    text-align: center;
   }
 
 `;

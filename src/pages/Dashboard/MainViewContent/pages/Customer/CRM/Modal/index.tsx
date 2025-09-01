@@ -64,7 +64,7 @@ const MatterCRMModal = (props) => {
       </div>
 
       {matterSelectedId != 0 && (
-        <>
+        <div id='ListCardsDiv' style={{overflow:'auto', maxHeight:'480px'}}>
           <ListCards id='ListCards'>
             {businessList.map(business => (
               <Card id='Card'>
@@ -72,7 +72,7 @@ const MatterCRMModal = (props) => {
               </Card>
             ))}
           </ListCards>
-        </>  
+        </div>
       )}
 
       {matterSelectedId == 0 && (
