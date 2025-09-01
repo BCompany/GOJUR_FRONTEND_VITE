@@ -1936,6 +1936,7 @@ export default function Workflow() {
                                   value={
                                     (action.configuration?.reminders ?? []).map(reminder =>
                                       optionsLembrete
+                                        .filter(opt => opt.key !== "00") 
                                         .map(opt => ({ value: opt.key, label: opt.value }))
                                         .find(opt => opt.value === reminder)
                                     ).filter(Boolean)
@@ -1944,7 +1945,9 @@ export default function Workflow() {
                                     const values = selected.map(opt => opt.value);
                                     handleSelectLembretes(values, trigger.workflowTriggerId, action.workflowactionId);
                                   }}
-                                  options={optionsLembrete.map(opt => ({
+                                  options={optionsLembrete
+                                     .filter(opt => opt.key !== "00") 
+                                    .map(opt => ({
                                     value: opt.key,
                                     label: opt.value
                                   }))}
