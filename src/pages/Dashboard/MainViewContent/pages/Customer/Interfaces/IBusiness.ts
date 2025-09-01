@@ -65,6 +65,10 @@ export interface IBusinessData{
   totalDocuments:number;
   totalAppointments:number;
   openCustomerDetails:boolean;
+  matterId: string|null;
+  num_Processo: string|null;
+  matterCustomerDesc: string|null;
+  matterOpposingDesc: string|null;
 }
 
 export interface IBusinessActivityData {

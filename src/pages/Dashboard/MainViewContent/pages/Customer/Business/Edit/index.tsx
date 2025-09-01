@@ -7,6 +7,9 @@ import { currencyConfig, selectStyles, useDelay, FormatDate } from 'Shared/utils
 import { FiSave, FiTrash } from 'react-icons/fi';
 import { MdBlock } from 'react-icons/md';
 import { FaWhatsapp } from 'react-icons/fa';
+import { RiFolder2Fill, RiEraserLine } from 'react-icons/ri';
+import { useModal } from 'context/modal';
+
 import api from 'services/api';
 import DatePicker from 'components/DatePicker';
 import { useToast } from 'context/toast';
@@ -19,13 +22,29 @@ import { loadingMessage, noOptionsMessage } from 'Shared/utils/commonConfig';
 import IntlCurrencyInput from "react-intl-currency-input"
 import { useConfirmBox } from 'context/confirmBox';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
-import { Container, Content, Form } from './styles';
+import GridSelectProcess from '../../../Dashboard/resorces/DashboardComponents/CreateAppointment/GridSelectProcess';
+import { Container, Content, Form, Process } from './styles';
 import { IBusinessData, ICustomerListData, IDefaultsProps, ISalesFunnelData, IUserResponsibleData } from '../../Interfaces/IBusiness';
 import BusinessActivity from '../Activity';
 import BusinessDocument from '../Documents';
 import BusinessEvents from '../Events';
 
+
+export interface MatterData {
+  matterId: number;
+  matterCustomerDesc: string;
+  matterOppossingDesc: string;
+  matterFolder: string;
+  matterNumber: string;
+  matterForumName:string;
+  matterVaraName: string;
+  matterVaraNum: string;
+  num_WhatsApp: string;
+  typeAdvisorId?: number;
+}
+
 export default function BusinessCardEdit( ) {
+  const token = localStorage.getItem('@GoJur:token');
   const history = useHistory();
   const formRef = useRef<HTMLFormElement>(null);
   const { pathname } = useLocation();
@@ -64,13 +83,39 @@ export default function BusinessCardEdit( ) {
   const [isDeleting , setIsDeleting] = useState<boolean>(); // set trigger for show loader
   const [funnelRedirect, setFunnelRedirect] = useState<boolean>(false)
   const [showCustomerSelect, setShowCustomerSelect] = useState<boolean>(false)
-  const token = localStorage.getItem('@GoJur:token');
-  
+
+  const [appointmentMatter, setAppointmentMatter] = useState<MatterData | undefined>({} as MatterData);
+  const [processTitle, setProcessTitle] = useState('Associar Processo')
+  const [matterId, setMatterId] = useState('')
+  const [matterAttachedModal, setMatterAttachedModal] = useState(false)
+  const {handleSelectProcess, selectProcess, matterSelected, openSelectProcess } = useModal();
+
+  const [matterRedirect, setMatterRedirect] = useState<boolean>(false)
 
   // first initialization
   useEffect(() => {    
     Initialize();
   }, [])
+
+
+  useEffect(() => {
+    if(matterSelected)
+    {
+      setMatterId(matterSelected.matterId.toString())
+      setProcessTitle(`${matterSelected.matterNumber} - ${matterSelected.matterCustomerDesc} x ${matterSelected.matterOppossingDesc}`)
+      selectProcess(null)
+    }
+
+    setMatterAttachedModal(false)
+  }, [matterSelected])
+
+
+  useEffect(() => {
+    if(openSelectProcess == "Close")
+    {
+      setMatterAttachedModal(false)
+    }
+  }, [openSelectProcess])
 
 
   const Initialize = () => {
@@ -98,6 +143,13 @@ export default function BusinessCardEdit( ) {
     const redirectBySearchFunnel = localStorage.getItem('@Gojur:funnelRedirectSearch')
     if (redirectBySearchFunnel){
       setFunnelRedirect(true)      
+    }    
+
+    // When is edit by sales funnel redirect
+    const redirectByMatter = localStorage.getItem('@Gojur:matterRedirect')
+    if (redirectByMatter == "S"){
+      setMatterRedirect(true)      
+      localStorage.removeItem('@Gojur:matterRedirect')
     }    
   }
 
@@ -228,6 +280,14 @@ export default function BusinessCardEdit( ) {
     if (response.data.finishDate != null){
       setBusinessEndDate(format(new Date(response.data.finishDate), 'yyyy-MM-dd'))
     }
+
+    console.log(response.data)
+
+    if(response.data.matterId != '0')
+      {
+        setMatterId(response.data.matterId)
+        setProcessTitle(`${response.data.num_Processo} - ${response.data.matterCustomerDesc} x ${response.data.matterOpposingDesc}`)
+      }
 
     setBusinessObservation(response.data.observation)
 
@@ -384,6 +444,7 @@ export default function BusinessCardEdit( ) {
       "finishDate": businessEndDate,
       "numOrder":businessOrder,
       "status": status,
+      "matterId": matterId,
       "token": token
     }
 
@@ -434,7 +495,13 @@ export default function BusinessCardEdit( ) {
 
 
   const handleCancel = () => {
-    if (!funnelRedirect){
+    
+    console.log('MatterRedirect: ', matterRedirect)
+    
+    if (matterRedirect){
+      history.push('../../../matter/list')
+    }
+    else if (!funnelRedirect){
       const businessCustomerId = localStorage.getItem('@GoJur:businessCustomerId')
       if (businessCustomerId != null){
         history.push(`/customer/edit/${ businessCustomerId}` )
@@ -591,6 +658,14 @@ export default function BusinessCardEdit( ) {
   }, []);
 
 
+  const handleGridSelectProcess = useCallback(() => {
+    if (processTitle === 'Associar Processo') {
+      setMatterAttachedModal(true)
+      handleSelectProcess("Open")
+    }
+  }, [handleSelectProcess, processTitle])
+
+
   return (
     <Container>
             
@@ -602,6 +677,8 @@ export default function BusinessCardEdit( ) {
           message="Confirma a exclusão desta oportunidade de negócio ?"
         />
       )}
+
+      {matterAttachedModal &&(<GridSelectProcess />)}
 
       <Content>
         <Form ref={formRef} onSubmit={handleSubmit(handleSave)}> 
@@ -712,7 +789,7 @@ export default function BusinessCardEdit( ) {
             </label>
           </section>
 
-          <section className="threeColumns">
+          <section className="fourColumns">
             <label htmlFor="value" className="required">             
               Valor
               <IntlCurrencyInput
@@ -723,7 +800,7 @@ export default function BusinessCardEdit( ) {
               />          
             </label>
 
-            <label>
+            <label style={{width:'105%'}}>
               <DatePicker
                 title="Início"
                 onChange={handleStartDate}
@@ -731,16 +808,14 @@ export default function BusinessCardEdit( ) {
               />
             </label>          
 
-            <label>
+            <label style={{width:'105%'}}>
               <DatePicker
                 title="Encerramento"
                 onChange={handleEndDate}
                 value={businessEndDate}
               />
             </label>  
-          </section>
 
-          <section>
             <label>
               Status
               <Select
@@ -752,7 +827,36 @@ export default function BusinessCardEdit( ) {
                 styles={selectStyles}
               />
             </label>
+          </section>
 
+          <section>
+            <Process id='Process'>
+              {processTitle === 'Associar Processo' && (
+                <button type="button" id="associar" onClick={handleGridSelectProcess}>
+                  <p>{processTitle}</p>
+                </button>
+              )}
+  
+              {processTitle !== 'Associar Processo' && (
+                <>
+                  <span style={{fontSize:'0.625rem', fontWeight:500, fontFamily:'montserrat'}}>Processo:&nbsp;</span>
+                  <span style={{fontSize:'0.625rem', fontWeight:500, fontFamily:'montserrat'}}>{processTitle}</span>
+                </>
+              )}
+  
+              {processTitle === 'Associar Processo' && (
+                <button type="button" onClick={handleGridSelectProcess}>
+                  <RiFolder2Fill />
+                </button>
+              )}
+  
+              {processTitle !== 'Associar Processo' && (
+                <button type="button" onClick={() => {setProcessTitle('Associar Processo'); setAppointmentMatter(undefined); setMatterId('0'); }}>
+                  &nbsp;&nbsp; <RiEraserLine />
+                </button>
+              )}
+            </Process>
+            
             <label>
               Responsável
               <Select

@@ -8,6 +8,7 @@ export const Container = styled.div`
   }
 `;
 
+
 export const Content = styled.div `
     flex: 1;
     flex-direction: column;
@@ -33,15 +34,16 @@ export const Content = styled.div `
         width: 203%; // browser
       }         
     }
-`
+`;
+
 
 export const Form = styled.form`
     flex-direction: column;
     padding: 0.5rem 1rem;
     font-size: 0.675rem;
 
-    .threeColumns {
-        grid-template-columns: 1fr 1fr 1fr;
+    .fourColumns {
+        grid-template-columns: 1fr 1fr 1fr 1fr;
     }
 
     section{
@@ -154,4 +156,109 @@ export const Form = styled.form`
     .css-yk16xz-control{
       background-color: rgba(255,255,255,0.25);
     }
+`;
+
+
+export const Process = styled.div`
+  width: 98%;
+  background: transparent;
+  padding-top: 0.5rem;
+  padding-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  margin-top: 22px;
+
+  @media (max-width: 480px) {
+    width: 100%;
+  }
+
+  transition: all 0.5s;
+  > label {
+    font-size: 0.75rem;
+    font-weight: 400;
+    padding-right: 0.25rem;
+    margin-right: 1rem;
+  }
+
+  > a {
+    width: 100%;
+    max-width: 560px;
+
+    text-decoration: none;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--secondary);
+    border-bottom: 1px solid var(--grey);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    > p {
+      flex: 1;
+    }
+
+    @media (min-width: 1366px) {
+      max-width: 858px;
+    }
+    @media (max-width: 1366px) {
+      max-width: 560px;
+    }
+
+    &:hover {
+      border-color: var(--orange);
+      color: var(--orange);
+    }
+  }
+  > button#associar {
+    width: 100%;
+    max-width: 560px;
+
+    text-decoration: none;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--secondary);
+    border-bottom: 1px solid var(--grey);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    > p {
+      flex: 1;
+    }
+
+    @media (min-width: 1366px) {
+      max-width: 858px;
+    }
+    @media (max-width: 1366px) {
+      max-width: 560px;
+    }
+
+    &:hover {
+      border-color: var(--orange);
+      color: var(--orange);
+    }
+  }
+
+  > button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    > svg {
+      width: 24px;
+      height: 24px;
+      color: var(--blue-twitter);
+    }
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+
+      > svg {
+        opacity: 1;
+        color: var(--orange);
+      }
+    }
+  }
 `;

@@ -28,7 +28,7 @@ import { RiDeleteBinLine } from 'react-icons/ri';
 import { SiSonarsource } from 'react-icons/si';
 import { ImMenu3, ImMenu4 } from 'react-icons/im';
 import { BiUpArrowAlt, BiDownArrowAlt, BiEditAlt, BiSave, BiLoader } from 'react-icons/bi';
-import { GiNewspaper } from 'react-icons/gi';
+import { GiNewspaper, GiReceiveMoney } from 'react-icons/gi';
 import { MdBlock } from 'react-icons/md';
 import { format } from 'date-fns';
 import Select from 'react-select'
@@ -69,6 +69,12 @@ import MatterFileModal from '../MatterFileModal/index';
 import CredentialModal from '../Credentials/index';
 import FollowModal from '../FollowModal';
 import AwarenessModal from 'components/AwarenessModal';
+import MatterCRMModal from '../../Customer/CRM/Modal';
+
+
+export interface CRMData{
+  id: string;
+}
 
 
 const Matter: React.FC = () => {
@@ -151,8 +157,9 @@ const Matter: React.FC = () => {
   const [awarenessModalTitle, setAwarenessModalTitle] = useState<string>("Tribunal - Abrangência")
   const [awarenessButtonOkText, setAwarenessButtonOkText] = useState<string>("Ver Abrangências")
 
-
   const [isChanging, setIsChanging] = useState<boolean>(false);
+
+  const [showMatterCRMModal, setShowMatterCRMModal] = useState<boolean>(false)
 
 
   useEffect(() => {
@@ -160,6 +167,7 @@ const Matter: React.FC = () => {
     handleCaptureText('')
     VerifyCurrentSearch()
   }, [])
+
 
   useEffect(() => {
 
@@ -795,7 +803,7 @@ const Matter: React.FC = () => {
     }
   }
 
-//
+
   const handleFollowButton = async (matterId: number) => {
 
     const matterFind = matterList.find(item => item.matterId === matterId);
@@ -2078,11 +2086,13 @@ const Matter: React.FC = () => {
     setMatterFilePlace("")
   }
 
+
   const handleOpenFollowModal = async (matter) => {
     setMatterSelectedId(matter.matterId)
     setMatterSelectedNumber(matter.matterNumber)
     setShowFollowModal(true)
   };
+
 
   const handleCloseFollowModal = async () => {
     setShowFollowModal(false)
@@ -2092,23 +2102,28 @@ const Matter: React.FC = () => {
     setSelectedCredentialid(0)
   };
 
+
   const handleSecretJusticeChange = (event: ChangeEvent<HTMLInputElement>) => {
     setIsSecretJustice(event.target.checked);
   }
+
 
   const handleFollowMatter = async () => {
     setIsChanging(true)
     handleFollowButton(matterSelectedId)
   }
 
+  
   const handleSelectCredentialId = (id) => {
     setSelectedCredentialid(id)
   }
+
 
   const handleCloseAwarenessModal = async () => {
     setShowAwarenessModal(false)
     setAwarenessModalMessage('')
   };
+
 
   const handleConfirmAwarenessButton = async () => {
     setShowAwarenessModal(false)
@@ -2116,11 +2131,50 @@ const Matter: React.FC = () => {
     history.push('/Matter/monitoring')
   };
 
+
+  const MatterCRM = async (matterId, matteFilePlace) => {
+    setMatterFileId(matterId)
+    setMatterFilePlace(matteFilePlace)
+
+    const response = await api.get<CRMData[]>('/NegocioCliente/ListarPorProcesso', {
+      params: { matterId, token }
+    });
+
+    if(response.data.length == 0){
+      OpenMatterCRMModal(0)
+      return
+    }
+
+    if(response.data.length == 1){
+      localStorage.setItem('@Gojur:matterRedirect', 'S')
+      history.push(`/customer/business/edit/${response.data[0].id}`)
+    }
+
+    if(response.data.length > 1){
+      OpenMatterCRMModal(matterId)
+      return
+    }
+  }
+
+
+  const OpenMatterCRMModal = async (matterId) => {
+    setShowMatterCRMModal(true)
+    setMatterSelectedId(matterId)
+  }
+
+
+  const CloseMatterCRMModal = async () => {
+    setShowMatterCRMModal(false)
+    setMatterSelectedId(0)
+  }
+
+
   return (
-
     <Container onScroll={handleScrool} ref={scrollRef}>
-
       <HeaderPage />
+
+      {(showMatterCRMModal) && <Overlay />}
+      {showMatterCRMModal && <MatterCRMModal callbackFunction={{ CloseMatterCRMModal, matterSelectedId }} />}
 
       {(showFollowModal) && <Overlay />}
       {showFollowModal && <FollowModal callbackFunction={{ handleCloseFollowModal, matterSelectedNumber, handleSecretJusticeChange, isSecretJustice, handleFollowMatter, handleSelectCredentialId, isChanging }} />}
@@ -2365,9 +2419,7 @@ const Matter: React.FC = () => {
                       <br />
 
                       <div>
-
                         <div className='matterDetails'>
-
                           <div>
                             Processo:
                             {' '}
@@ -2391,7 +2443,6 @@ const Matter: React.FC = () => {
                           <div>
                             Pesquisa automática de processo
                           </div>
-
                         </div>
 
                         <div className="matterEvents">
@@ -2402,33 +2453,22 @@ const Matter: React.FC = () => {
                         </div>
 
                         <div className="matterMenu">
-
                           <div className="menu">
-
                             <div>
-
                               <section>
-
                                 <p>
                                   <RiDeleteBinLine />
                                   <span onClick={() => handleDeleteMatter(item.matterId, true)}>Excluir</span>
                                 </p>
-
                               </section>
-
                             </div>
-
                           </div>
-
                         </div>
-
                       </div>
 
                       <br />
                       <br />
-
                     </MatterItem>
-
                   )
                 }
 
@@ -2436,10 +2476,6 @@ const Matter: React.FC = () => {
 
                   <MatterItem>
                     <header>
-                      {/* <input
-                        type="checkbox"
-                        name="select"
-                      /> */}
                       &nbsp;
                       {' '}
                       <AiFillFolderOpen title='Número de identificação da pasta do processo' />
@@ -2465,7 +2501,6 @@ const Matter: React.FC = () => {
                     />
 
                     <div>
-
                       <div className='matterDetails'>
                         <div>
                           Processo:
@@ -2485,7 +2520,6 @@ const Matter: React.FC = () => {
                             title={item.matterCustomerDesc}
                           >
                             {item.matterCustomerDesc}
-                            {/* {(item.matterCustomerDesc??"").length > 30? `${item.matterCustomerDesc.substring(0,30)  }...`: item.matterCustomerDesc} */}
                           </span>
                           <span>&nbsp; X &nbsp;</span>
                           <span>{item.matterOppossingDesc}</span>
@@ -2545,9 +2579,7 @@ const Matter: React.FC = () => {
                           </>
                         )}
 
-
                         <div className='andamentosList'>
-
                           {item.followList.map((follow, index) => {
                             return (
                               <>
@@ -2627,12 +2659,9 @@ const Matter: React.FC = () => {
                                               Cancelar
                                             </button>
                                           )}
-
                                         </div>
-
                                       </div>
                                     )
-
                                   )}
 
                                   <button className="buttonLinkClick" type="submit">
@@ -2643,7 +2672,6 @@ const Matter: React.FC = () => {
                                   {!follow.editEvent && (
 
                                     <div className="userPhotos">
-
                                       {(follow.imageUserInclude ?? "").length > 0 && (
                                         <img
                                           className='avatar'
@@ -2750,9 +2778,7 @@ const Matter: React.FC = () => {
                           )}
 
                           <br />
-
                         </div>
-
                       </div>
 
                       {/* Show events by matter - Web View */}
@@ -2785,14 +2811,10 @@ const Matter: React.FC = () => {
                       )}
 
                       <div className="matterMenu">
-
                         <div className="menu">
-
                           <div>
-
                             {/* When is mobile visualization hide text and shows only icons */}
                             <section>
-
                               <p
                                 onClick={() => handleRedirectToProcess(item.matterId)}
                                 title="Clique para abrir a pasta do processo"
@@ -2860,6 +2882,11 @@ const Matter: React.FC = () => {
                                 {!isMOBILE && <span>Anexar Documentos</span>}
                               </p>
 
+                              <p onClick={() => MatterCRM(item.matterId, "legal")}>
+                                <GiReceiveMoney />
+                                {!isMOBILE && <span>CRM</span>}
+                              </p>
+
                               {hasButtonDeleteMatterLegal && (
                                 <p
                                   onClick={() => handleDeleteMatter(item.matterId)}
@@ -2925,16 +2952,10 @@ const Matter: React.FC = () => {
 
                                 </>
                               )}
-
-
                             </section>
-
                           </div>
-
                         </div>
-
                       </div>
-
                     </div>
 
                     {/* ROBOT COURT ROBS LOG */}
@@ -2960,11 +2981,8 @@ const Matter: React.FC = () => {
 
         {/* MATTER ADVISORY MATTER */}
         {hasmatterAdvisory && (
-
           <Tab active={tabsControl.tab2}>
-
             <MatterList>
-
               {matterList.map((item) => {
 
                 // if is a OAB search show interface for temp matter
@@ -2972,10 +2990,6 @@ const Matter: React.FC = () => {
                   return (
                     <MatterItem>
                       <header>
-                        {/* <input
-                            type="checkbox"
-                            name="select"
-                          /> */}
                         &nbsp;
                         {' '}
                         <AiFillFolderOpen title='Número de identificação da pasta do processo' />
@@ -2988,9 +3002,7 @@ const Matter: React.FC = () => {
                       <br />
 
                       <div>
-
                         <div className='matterDetails'>
-
                           <div>
                             Processo:
                             {' '}
@@ -3005,49 +3017,35 @@ const Matter: React.FC = () => {
                           <div>
                             <b>Pesquisa automática de processo</b>
                           </div>
-
                         </div>
 
                         <div className="matterEvents">
                           <header>
                             {RenderPendingLoadMessage(item.status, item.statusCreation, item.error)}
                           </header>
-
                         </div>
 
                         <div className="matterMenu">
-
                           <div className="menu">
-
                             <div>
-
                               <section>
-
                                 <p>
                                   <RiDeleteBinLine />
                                   <span onClick={() => handleRedirectToProcess(item.matterId)}>Excluir</span>
                                 </p>
-
                               </section>
-
                             </div>
-
                           </div>
-
                         </div>
-
                       </div>
 
                       <br />
                       <br />
-
                     </MatterItem>
-
                   )
                 }
 
                 return (
-
                   <MatterItem>
                     <header>
                       &nbsp;
@@ -3077,7 +3075,6 @@ const Matter: React.FC = () => {
                     />
 
                     <div>
-
                       <div className='matterDetails'>
                         <div>
                           Controle:
@@ -3143,9 +3140,7 @@ const Matter: React.FC = () => {
                           </>
                         )}
 
-
                         <div className='andamentosList'>
-
                           {item.followList.map((follow, index) => {
                             return (
                               <>
@@ -3340,17 +3335,12 @@ const Matter: React.FC = () => {
 
                               <br />
                             </>
-
                           )}
-
                         </div>
-
-
                       </div>
 
                       {/* Show events by matter - Web View */}
                       {!isMOBILE && (
-
                         <div className="matterEvents">
                           <header>
                             <RiCalendarCheckFill />
@@ -3371,22 +3361,16 @@ const Matter: React.FC = () => {
                                   {`${FormatDate(new Date(appointment.startDate), "dd/MM/yyyy HH:mm")} ${(appointment.subject.length > 25 ? `${appointment.subject.substring(0, 25)}...` : appointment.subject)}`}
                                 </div>
                               )
-
                             })}
                           </div>
-
                         </div>
                       )}
 
                       <div className="matterMenu">
-
                         <div className="menu">
-
                           <div>
-
                             {/* When is mobile visualization hide text and shows only icons */}
                             <section>
-
                               <p onClick={() => handleRedirectToProcess(item.matterId)}>
                                 <FaRegEdit />
                                 {!isMOBILE && <span> Ver Detalhes</span>}
@@ -3426,26 +3410,24 @@ const Matter: React.FC = () => {
                                 {!isMOBILE && <span>Anexar Documentos</span>}
                               </p>
 
+                              <p onClick={() => MatterCRM(item.matterId, "advisory")}>
+                                <GiReceiveMoney />
+                                {!isMOBILE && <span>CRM</span>}
+                              </p>
+
                               {hasButtonDeletematterAdvisory && (
                                 <p onClick={() => handleDeleteMatter(item.matterId)}>
                                   <RiDeleteBinLine />
                                   {!isMOBILE && <span>Excluir</span>}
                                 </p>
                               )}
-
                             </section>
-
                           </div>
-
                         </div>
-
                       </div>
-
                     </div>
-
                   </MatterItem>
                 )
-
               })}
 
               {isLoadingPage && (
@@ -3455,11 +3437,8 @@ const Matter: React.FC = () => {
               )}
 
             </MatterList>
-
           </Tab>
-
         )}
-
       </Tabs>
 
       {(matterLines + tempLines == 0 && !isLoading) && (
@@ -3514,7 +3493,6 @@ const Matter: React.FC = () => {
         />
       )}
 
-
       {showOverlayDeleteEvent && (
         <>
           <Overlay />
@@ -3525,7 +3503,6 @@ const Matter: React.FC = () => {
           </div>
         </>
       )}
-
 
       {showOverlayDelete && (
         <>
