@@ -162,6 +162,10 @@ export default function BussinessList( props ) {
             </p>
           </article>
 
+        </section>
+
+        <section>
+
           <article>
             <p>
               <b>Encerramento:</b>
