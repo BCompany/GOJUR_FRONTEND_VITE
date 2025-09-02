@@ -25,6 +25,8 @@ const HeaderPageOptionsMenu = () => {
   const {permissionsSecurity, handleValidateSecurity } = useSecurity();
   const token = localStorage.getItem('@GoJur:token');
   const baseUrl = envProvider.redirectUrl;
+
+  const [production, setProduction] = useState<boolean>(false);
   
   // Call security permission - passing module
   useEffect(() => {
@@ -118,6 +120,7 @@ const HeaderPageOptionsMenu = () => {
   const checkHoliday = permissionsSecurity.find(item => item.name === "CFGHOLID");
   const checkEconomicIndexes = permissionsSecurity.find(item => item.name === "CFGINDEC");
   const checkReportParameters = permissionsSecurity.find(item => item.name === "CACRPT");
+  const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKF");
 
   // SUPORT LINKS
   const acessoRemotoST = `${envProvider.mainUrl}resources/bcompanyremotost.exe`;
@@ -185,7 +188,7 @@ const HeaderPageOptionsMenu = () => {
           </>
         )}
         
-        {checkReportParameters &&(
+        {(checkWorkflow && production == true) &&(
           <>
             <div style={{display:(showConfig?'grid':'none')}}>
               <hr />

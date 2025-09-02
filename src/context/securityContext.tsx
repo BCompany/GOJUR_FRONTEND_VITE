@@ -109,7 +109,7 @@ const SecurityProvider: React.FC = ({ children }) => {
 
     // Configuration Permissions access Codes
     if (module === SecurityModule.configuration){
-      return "CFGLAW,CFGEMP,CFGOPP,CFGTHIRD,CFGGRTHD,CFGSTATE,CFGHOLID,CFGINDEC,CFGDCMIE,CACINFO,CACRPT,CACINFFI,CFGDCMEM,CFGDCMIE";
+      return "CFGLAW,CFGEMP,CFGOPP,CFGTHIRD,CFGGRTHD,CFGSTATE,CFGHOLID,CFGINDEC,CFGDCMIE,CACINFO,CACRPT,CACINFFI,CFGDCMEM,CFGDCMIE,CFGWKF";
     }
 
     // Financial Permissions access Codes

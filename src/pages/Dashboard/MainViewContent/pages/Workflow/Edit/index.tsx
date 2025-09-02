@@ -249,7 +249,7 @@ export default function Workflow() {
       if (t.triggerType === "data") {
         return Boolean(t.configuration?.label?.trim());
       }
-      return 0; // outros tipos não precisam de label
+      return 0; 
     });
 
     if (!isValid) {
@@ -270,10 +270,10 @@ export default function Workflow() {
       const response = await api.put('/Workflow/Salvar', {
         token,
         apiKey,
-        workflowId: workflow.workflowId ? workflow.workflowId : 0, // cod Workflow
-        name: workflowName, // nome do Workflow
-        companyId, // Cod Empresa   
-        triggers: triggerList // Listagem de gatilhos
+        workflowId: workflow.workflowId ? workflow.workflowId : 0, 
+        name: workflowName,
+        companyId, 
+        triggers: triggerList 
       })
 
 
@@ -293,7 +293,7 @@ export default function Workflow() {
       return id;
 
     } catch (err: any) {
-      const status = err.response?.data?.statusCode;  // protegemos com ?.
+      const status = err.response?.data?.statusCode;  
       const message = err.response?.data?.Message || err.message || "Erro desconhecido";
 
       // eslint-disable-next-line no-alert
@@ -325,7 +325,7 @@ export default function Workflow() {
       if (t.triggerType === "data") {
         return Boolean(t.configuration?.label?.trim());
       }
-      return true; // outros tipos não precisam de label
+      return true; 
     });
 
     if (!isValid) {
@@ -346,10 +346,10 @@ export default function Workflow() {
       const response = await api.put('/Workflow/Salvar', {
         token,
         apiKey,
-        workflowId: workflow.workflowId ? workflow.workflowId : 0, // cod Workflow
-        name: workflowName, // nome do Workflow
-        companyId, // Cod Empresa   
-        triggers: triggerList // Listagem de gatilhos
+        workflowId: workflow.workflowId ? workflow.workflowId : 0, 
+        name: workflowName, 
+        companyId,   
+        triggers: triggerList 
       })
 
 
@@ -360,23 +360,23 @@ export default function Workflow() {
       const trigger = workflowTrigger.find(t => t.workflowTriggerId === painelAberto);
 
       if (Array.isArray(trigger?.actions) && configureEvent == true) {
-    
-        
-          for (const action of trigger.actions) {
-            const sucesso: boolean = await handleSalvarCompromissoWorkflow(
-              action.workflowtriggerId,
-              action.workflowactionId
-            );
 
-            if(sucesso == false)
-                return;
 
-          }
-     
+        for (const action of trigger.actions) {
+          const sucesso: boolean = await handleSalvarCompromissoWorkflow(
+            action.workflowtriggerId,
+            action.workflowactionId
+          );
+
+          if (sucesso == false)
+            return;
+
+        }
+
         await reloadWorkflow(id);
-    
+
         fetchTriggerActions(trigger.workflowTriggerId);
-     
+
       }
       else
         reloadWorkflow(id)
@@ -516,7 +516,7 @@ export default function Workflow() {
           actionType: 'criarcompromisso',
           daysbeforeandafter: 1,
           configuration: {
-            when: "depois", // 👈 já vem preenchido com "depois"
+            when: "depois", 
             privacy: "N"
           }
         };
@@ -560,7 +560,7 @@ export default function Workflow() {
       triggerType: 'data',
       configuration: { label: "" },
       actions: []
-      //actions: [firstAction] // 👈 já começa com uma ação
+      //actions: [firstAction] 
     };
 
     setWorkflowTrigger(oldTrigger => [...oldTrigger, newTrigger]);
@@ -600,7 +600,7 @@ export default function Workflow() {
 
   const handleDeleteTrigger = useCallback((triggerId) => {
     const address = workflowTrigger.filter(item => item.workflowTriggerId !== triggerId);
-    
+
     if (address.length >= 1) {
       setWorkflowTrigger(address)
     } else {
@@ -610,7 +610,7 @@ export default function Workflow() {
         description: "Só é possivel excluir quando há mais de um gatilho cadastrado"
       })
     }
-  }, [addToast, workflowTrigger]); // remove um endereço da interface
+  }, [addToast, workflowTrigger]); 
 
 
   const handleChangeTriggerType = useCallback((value, triggerId) => {
@@ -626,7 +626,7 @@ export default function Workflow() {
 
     setWorkflowTrigger(newTypePhone)
 
-  }, [workflowTrigger]); // atualiza o tipo de telefone 1
+  }, [workflowTrigger]); 
 
 
 
@@ -679,7 +679,7 @@ export default function Workflow() {
       else {
         handleDeleteWorkflowGatilho(currentWorkflowId)
       }
- 
+
       setIsDeleting(false)
       handleConfirmMessage(false)
       handleCaller('')
@@ -687,8 +687,7 @@ export default function Workflow() {
     }
 
 
-    if(isConfirmMessage && caller == "workflowDelete")
-    {
+    if (isConfirmMessage && caller == "workflowDelete") {
       handleDeleteWorkflow(workflowId, true)
       handleConfirmMessage(false)
     }
@@ -785,13 +784,13 @@ export default function Workflow() {
 
 
   useEffect(() => {
-    
-    if (isCancelMessage && caller == "WorkflowList"){
+
+    if (isCancelMessage && caller == "WorkflowList") {
       setIsDeleting(false)
       handleCancelMessage(false)
-    }           
- 
-   if (isCancelMessage && caller == "workflowDelete"){
+    }
+
+    if (isCancelMessage && caller == "workflowDelete") {
       setConfirmDeleteModal(false)
       handleCancelMessage(false)
     }
@@ -1083,7 +1082,7 @@ export default function Workflow() {
               ...action,
               configuration: {
                 ...action.configuration,
-                reminders: newValues, // já salva array direto
+                reminders: newValues, 
               },
             };
           }),
@@ -1111,7 +1110,7 @@ export default function Workflow() {
               ...action,
               configuration: {
                 ...action.configuration,
-                privacy: newValue, // aqui atualiza o valor selecionado
+                privacy: newValue, 
               },
             };
           }),
@@ -1283,7 +1282,7 @@ export default function Workflow() {
       return;
     }
 
-    // encontra o trigger específico
+  
     const trigger = workflowTrigger.find(t => t.workflowTriggerId === triggerId);
 
     if (!trigger.configuration?.label || trigger.configuration.label.trim() === "") {
@@ -1346,7 +1345,7 @@ export default function Workflow() {
         };
       });
 
-      // 👇 se a API não trouxe nada, cria uma nova action padrão
+      
       if (data.length === 0) {
         data = [
           {
@@ -1377,7 +1376,7 @@ export default function Workflow() {
   const handleSalvarCompromissoWorkflow = async (triggerId: number, actionId: number) => {
     try {
 
- 
+
       const trigger = workflowTrigger.find(
         (trigger) => trigger.configuration?.label?.trim() === nameTrigger
       );
@@ -1398,7 +1397,7 @@ export default function Workflow() {
 
 
       if (!action.configuration?.subject) {
-         addToast({
+        addToast({
           type: "error",
           title: "Falha ao cadastrar compromisso",
           description: "O campo 'Assunto' é obrigatório"
@@ -1452,9 +1451,9 @@ export default function Workflow() {
 
 
       const config = {
-        ...action.configuration,  // pega todas as configs existentes
+        ...action.configuration,  
         privacy: action.configuration?.privacy ?? "N",
-        responsible: action.configuration?.responsible ?? "U",  // garante que privacy esteja definido
+        responsible: action.configuration?.responsible ?? "U",  
       };
 
       console.log('Config action ' + JSON.stringify(config));
@@ -1520,7 +1519,7 @@ export default function Workflow() {
       }
 
       console.log(trigger);
-      // encontra a action específica
+    
       const action = trigger.actions?.find(a => a.workflowactionId === actionId);
       if (!action) {
         alert("Action não encontrada");
@@ -1528,7 +1527,7 @@ export default function Workflow() {
       }
 
       if (!action.configuration?.subject) {
-         addToast({
+        addToast({
           type: "error",
           title: "Falha ao cadastrar compromisso",
           description: "O campo 'Assunto' é obrigatório"
@@ -1583,9 +1582,9 @@ export default function Workflow() {
 
 
       const config = {
-        ...action.configuration,  // pega todas as configs existentes
+        ...action.configuration,  
         privacy: action.configuration?.privacy ?? "N",
-        responsible: action.configuration?.responsible ?? "U",  // garante que privacy esteja definido
+        responsible: action.configuration?.responsible ?? "U",  
       };
 
       console.log('Config action ' + JSON.stringify(config));
@@ -1622,7 +1621,7 @@ export default function Workflow() {
       handleNewAction(triggerId);
 
     } catch (err: any) {
-      const status = err.response?.data?.statusCode;  // protegemos com ?.
+      const status = err.response?.data?.statusCode;  
       const message = err.response?.data?.Message || err.message || "Erro desconhecido";
 
       // eslint-disable-next-line no-alert
@@ -1647,48 +1646,47 @@ export default function Workflow() {
   };
 
 
-   const handleDeleteWorkflow  = useCallback(async(workflowId:number, confirmDelete:boolean) => {
-      try {
-        if(confirmDelete == false)
-        {
-          setCurrentWorkflowId(workflowId)
-          setConfirmDeleteModal(true)
-          return;
+  const handleDeleteWorkflow = useCallback(async (workflowId: number, confirmDelete: boolean) => {
+    try {
+      if (confirmDelete == false) {
+        setCurrentWorkflowId(workflowId)
+        setConfirmDeleteModal(true)
+        return;
+      }
+
+      const token = localStorage.getItem('@GoJur:token');
+      setIsDeleting(true)
+
+
+      await api.delete('/Workflow/Deletar', {
+        params: {
+          id: workflowId,
+          token
         }
-        
-        const token = localStorage.getItem('@GoJur:token');
-        setIsDeleting(true)
-  
-    
-        await api.delete('/Workflow/Deletar', {
-          params: {
-            id: workflowId,
-            token
-          }
-        })
-    
-        addToast({
-          type: "success",
-          title: "Workflow Deletado",
-          description: "O workflow selecionado foi deletado"
-        })
-  
-        setIsDeleting(false)
-        history.push('/workflow/list')
-  
-        setCurrentCustomerId(0)
-        setConfirmDeleteModal(false)
-      }
-      catch (err:any) {
-        setIsDeleting(false)
-        setConfirmDeleteModal(false)
-        addToast({
-          type: "info",
-          title: "Falha ao apagar cliente",
-          description:  err.response.data.Message
-        })
-      }
-    },[addToast, history]);
+      })
+
+      addToast({
+        type: "success",
+        title: "Workflow Deletado",
+        description: "O workflow selecionado foi deletado"
+      })
+
+      setIsDeleting(false)
+      history.push('/workflow/list')
+
+      setCurrentCustomerId(0)
+      setConfirmDeleteModal(false)
+    }
+    catch (err: any) {
+      setIsDeleting(false)
+      setConfirmDeleteModal(false)
+      addToast({
+        type: "info",
+        title: "Falha ao apagar cliente",
+        description: err.response.data.Message
+      })
+    }
+  }, [addToast, history]);
 
 
   return (
@@ -1754,7 +1752,7 @@ export default function Workflow() {
                       />
                     </label>
 
-                     <label style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <label style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                       Informe o "label" para data
                       <input
                         id="triggerDescription"
@@ -1782,12 +1780,12 @@ export default function Workflow() {
                         style={{ width: "200px" }}
                       >
 
-                             <FiXCircle />
-                            Configurar compromisso
-                            
-                      { /*painelAberto === trigger.workflowTriggerId || trigger.workflowId === 0 ? ( 
+                        <FiXCircle />
+                        Configurar compromisso
+
+                        { /*painelAberto === trigger.workflowTriggerId || trigger.workflowId === 0 ? ( 
                         
-                         
+                        
                          <>
                             <FiXCircle />
                             Configurar compromisso
@@ -1798,8 +1796,8 @@ export default function Workflow() {
                             Ver compromisso
                           </>
                         )   */}
-
-
+ 
+ 
                       </button>
 
                     </label>
@@ -1821,7 +1819,7 @@ export default function Workflow() {
                               htmlFor="telefone2"
                               id="trigger"
                               style={{
-                                gridColumn: "2 / span 3", // começa na 2ª coluna e ocupa 2 colunas
+                                gridColumn: "2 / span 3", 
                                 display: "flex",
                                 alignItems: "center",
                                 gap: "8px",
@@ -1882,7 +1880,7 @@ export default function Workflow() {
 
 
                             <label htmlFor="telefone" id="trigger" style={{
-                              gridColumn: "2 / span 1", // ocupa 2 colunas a partir da coluna 1
+                              gridColumn: "2 / span 1", 
                               display: "flex",
                               //flexDirection: "column",
                             }}>
@@ -1926,7 +1924,7 @@ export default function Workflow() {
                                   id={`timepicker-${action.workflowactionId}`}
                                   value={toHHmm(action.configuration?.starttime)}
                                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                    const time = e.target.value; // <-- pega a hora do input
+                                    const time = e.target.value; 
                                     handleNewHourBeggin(time, trigger.workflowTriggerId, action.workflowactionId);
                                   }}
                                   disabled={appointmentBlockUpdate}
@@ -1940,7 +1938,7 @@ export default function Workflow() {
                               </div>
                             </label>
                             <label htmlFor="telefone" id="trigger" style={{
-                              gridColumn: "2 / span 1", // ocupa 2 colunas a partir da coluna 1
+                              gridColumn: "2 / span 1", 
                               display: "flex",
                               //flexDirection: "column",
                             }}>
@@ -1991,7 +1989,7 @@ export default function Workflow() {
                             <label
                               htmlFor="obs"
                               style={{
-                                gridColumn: "2 / span 2", // ocupa 2 colunas a partir da coluna 1
+                                gridColumn: "2 / span 2", 
                                 display: "flex",
                                 flexDirection: "column",
                               }}
@@ -2006,7 +2004,7 @@ export default function Workflow() {
                                   value={
                                     (action.configuration?.reminders ?? []).map(reminder =>
                                       optionsLembrete
-                                        .filter(opt => opt.key !== "00") 
+                                        .filter(opt => opt.key !== "00")
                                         .map(opt => ({ value: opt.key, label: opt.value }))
                                         .find(opt => opt.value === reminder)
                                     ).filter(Boolean)
@@ -2016,11 +2014,11 @@ export default function Workflow() {
                                     handleSelectLembretes(values, trigger.workflowTriggerId, action.workflowactionId);
                                   }}
                                   options={optionsLembrete
-                                     .filter(opt => opt.key !== "00") 
+                                    .filter(opt => opt.key !== "00")
                                     .map(opt => ({
-                                    value: opt.key,
-                                    label: opt.value
-                                  }))}
+                                      value: opt.key,
+                                      label: opt.value
+                                    }))}
                                   isDisabled={appointmentBlockUpdate}
                                   styles={{
                                     control: (base) => ({
@@ -2039,7 +2037,7 @@ export default function Workflow() {
                             <label
                               htmlFor="obs"
                               style={{
-                                gridColumn: "2 / span 2", // ocupa 2 colunas a partir da coluna 1
+                                gridColumn: "2 / span 2", 
                                 display: "flex",
                                 flexDirection: "column",
                               }}
@@ -2107,24 +2105,24 @@ export default function Workflow() {
                             </label>
 
 
-                             <label
+                            <label
                               htmlFor="obs"
                               style={{
-                                gridColumn: "2 / span 2", // ocupa 2 colunas a partir da coluna 1
+                                gridColumn: "2 / span 2",
                                 display: "flex",
                                 flexDirection: "column",
                               }}
                             >
 
                               <hr
-  style={{
-    gridColumn: "2 / span 2", // define a largura ocupando 2 colunas
-    width: "100%", // faz a linha ocupar toda a largura da célula
-    border: "none", // remove o estilo padrão
-    borderTop: "3px solid #ccc", // adiciona uma linha superior personalizada
-    margin: "1rem 0", // espaçamento opcional
-  }}
-/>
+                                style={{
+                                  gridColumn: "2 / span 2",
+                                  width: "100%",
+                                  border: "none",
+                                  borderTop: "3px solid #ccc",
+                                  margin: "1rem 0",
+                                }}
+                              />
 
                             </label>
 
@@ -2200,7 +2198,7 @@ export default function Workflow() {
       )}
 
 
-    {confirmDeleteModal && (
+      {confirmDeleteModal && (
         <ConfirmBoxModal
           title="Excluir Registro"
           caller="workflowDelete"
