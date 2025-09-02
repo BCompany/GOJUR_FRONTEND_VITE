@@ -163,7 +163,7 @@ export default function Workflow() {
     let workflowId;
     workflowId = pathname.substr(15);
 
-    //setWorkflowId(pathname.substr(15))
+    setWorkflowId(pathname.substr(15))
 
 
     let hasFilterSaved = false;
@@ -679,14 +679,21 @@ export default function Workflow() {
       else {
         handleDeleteWorkflowGatilho(currentWorkflowId)
       }
-
+ 
       setIsDeleting(false)
       handleConfirmMessage(false)
       handleCaller('')
       handleCheckConfirm(false)
     }
 
-  }, [isConfirmMessage])
+
+    if(isConfirmMessage && caller == "workflowDelete")
+    {
+      handleDeleteWorkflow(workflowId, true)
+      handleConfirmMessage(false)
+    }
+
+  }, [isConfirmMessage, caller])
 
 
   const handleDeleteWorkflowGatilho = async (workflowtriggerId: number) => {
@@ -778,11 +785,18 @@ export default function Workflow() {
 
 
   useEffect(() => {
-    if (isCancelMessage) {
+    
+    if (isCancelMessage && caller == "WorkflowList"){
       setIsDeleting(false)
       handleCancelMessage(false)
+    }           
+ 
+   if (isCancelMessage && caller == "workflowDelete"){
+      setConfirmDeleteModal(false)
+      handleCancelMessage(false)
     }
-  }, [isCancelMessage])
+
+  }, [isCancelMessage, caller])
 
 
   const handleCheckBoxDeleteTrigger = (workflowId: number) => {
@@ -1632,6 +1646,51 @@ export default function Workflow() {
 
   };
 
+
+   const handleDeleteWorkflow  = useCallback(async(workflowId:number, confirmDelete:boolean) => {
+      try {
+        if(confirmDelete == false)
+        {
+          setCurrentWorkflowId(workflowId)
+          setConfirmDeleteModal(true)
+          return;
+        }
+        
+        const token = localStorage.getItem('@GoJur:token');
+        setIsDeleting(true)
+  
+    
+        await api.delete('/Workflow/Deletar', {
+          params: {
+            id: workflowId,
+            token
+          }
+        })
+    
+        addToast({
+          type: "success",
+          title: "Workflow Deletado",
+          description: "O workflow selecionado foi deletado"
+        })
+  
+        setIsDeleting(false)
+        history.push('/workflow/list')
+  
+        setCurrentCustomerId(0)
+        setConfirmDeleteModal(false)
+      }
+      catch (err:any) {
+        setIsDeleting(false)
+        setConfirmDeleteModal(false)
+        addToast({
+          type: "info",
+          title: "Falha ao apagar cliente",
+          description:  err.response.data.Message
+        })
+      }
+    },[addToast, history]);
+
+
   return (
     <Container>
 
@@ -1738,7 +1797,8 @@ export default function Workflow() {
                             <FiPlusCircle />
                             Ver compromisso
                           </>
-                        )*/}
+                        )   */}
+
 
                       </button>
 
@@ -2104,6 +2164,12 @@ export default function Workflow() {
                   </button>
 
 
+                  <button className="buttonClick" type="button" onClick={() => handleDeleteWorkflow(workflowId, false)}>
+                    <FiTrash />
+                    Excluir
+                  </button>
+
+
                   <button className="buttonClick" type="button" onClick={() => history.push('/workflow/list')}>
                     <MdBlock />
                     Fechar
@@ -2131,9 +2197,15 @@ export default function Workflow() {
           caller="WorkflowList"
           message="Confirma a exclusão deste workflow ?"
         />
+      )}
 
 
-
+    {confirmDeleteModal && (
+        <ConfirmBoxModal
+          title="Excluir Registro"
+          caller="workflowDelete"
+          message="Confirma a exclusão deste workflow ?"
+        />
       )}
 
 
