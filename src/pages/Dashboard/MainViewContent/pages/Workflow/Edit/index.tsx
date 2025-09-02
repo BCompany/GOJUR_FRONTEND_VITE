@@ -289,7 +289,7 @@ export default function Workflow() {
         description: workflow.workflowId ? "As alterações feitas no workflow foram salvas" : "Workflow adicionado"
       })
       */
-     
+
       return id;
 
     } catch (err: any) {
@@ -1412,7 +1412,7 @@ export default function Workflow() {
         return false;
       }
 
-
+      /*
       const lembretes = action.configuration?.reminders;
 
       if (!Array.isArray(lembretes) || lembretes.length === 0) {
@@ -1423,6 +1423,7 @@ export default function Workflow() {
         })
         return false;
       }
+      */
 
       const descricao = action.configuration?.description;
 
@@ -1541,7 +1542,7 @@ export default function Workflow() {
         return false;
       }
 
-
+      /*
       const lembretes = action.configuration?.reminders;
 
       if (!Array.isArray(lembretes) || lembretes.length === 0) {
@@ -1552,6 +1553,7 @@ export default function Workflow() {
         })
         return false;
       }
+      */
 
       const descricao = action.configuration?.description;
 
@@ -1656,7 +1658,7 @@ export default function Workflow() {
               <h2>Workflow</h2>
               <section id="dados">
 
-                <label htmlFor="name" className="required">
+                <label htmlFor="name" className="required" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   Nome
                   <input
                     type="text"
@@ -1679,7 +1681,7 @@ export default function Workflow() {
 
                   <section id="endereco" key={trigger.workflowTriggerId}>
 
-                    <label>
+                    <label style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                       Tipo gatilho
                       <Select
                         isSearchable
@@ -1693,7 +1695,7 @@ export default function Workflow() {
                       />
                     </label>
 
-                    <label>
+                     <label style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                       Informe o "label" para data
                       <input
                         id="triggerDescription"
@@ -2059,7 +2061,7 @@ export default function Workflow() {
     gridColumn: "2 / span 2", // define a largura ocupando 2 colunas
     width: "100%", // faz a linha ocupar toda a largura da célula
     border: "none", // remove o estilo padrão
-    borderTop: "1px solid #ccc", // adiciona uma linha superior personalizada
+    borderTop: "3px solid #ccc", // adiciona uma linha superior personalizada
     margin: "1rem 0", // espaçamento opcional
   }}
 />
