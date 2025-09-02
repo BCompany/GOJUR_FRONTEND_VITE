@@ -282,12 +282,14 @@ export default function Workflow() {
 
       await reloadWorkflow(id);
 
+      /*
       addToast({
         type: "success",
         title: "Workflow salvo",
         description: workflow.workflowId ? "As alterações feitas no workflow foram salvas" : "Workflow adicionado"
       })
-
+      */
+     
       return id;
 
     } catch (err: any) {
@@ -305,7 +307,7 @@ export default function Workflow() {
       }
 
       if (status === 1011) {
-        setCustomerActiveModalDoubleCheck(true)
+        //setCustomerActiveModalDoubleCheck(true)
       }
 
       setisSaving(false)
@@ -1290,6 +1292,7 @@ export default function Workflow() {
 
     if (id > 0) {
 
+      await fetchTriggerActions(triggerId);
       setConfigureEvent(true);
       setNameTrigger(trigger.configuration?.label);
 
@@ -1718,8 +1721,13 @@ export default function Workflow() {
                         style={{ width: "200px" }}
                       >
 
-                        {painelAberto === trigger.workflowTriggerId || trigger.workflowId === 0 ? (
-                          <>
+                             <FiXCircle />
+                            Configurar compromisso
+                            
+                      { /*painelAberto === trigger.workflowTriggerId || trigger.workflowId === 0 ? ( 
+                        
+                         
+                         <>
                             <FiXCircle />
                             Configurar compromisso
                           </>
@@ -1728,7 +1736,7 @@ export default function Workflow() {
                             <FiPlusCircle />
                             Ver compromisso
                           </>
-                        )}
+                        )*/}
 
                       </button>
 
@@ -2035,6 +2043,30 @@ export default function Workflow() {
 
                               </div>
                             </label>
+
+
+                             <label
+                              htmlFor="obs"
+                              style={{
+                                gridColumn: "2 / span 2", // ocupa 2 colunas a partir da coluna 1
+                                display: "flex",
+                                flexDirection: "column",
+                              }}
+                            >
+
+                              <hr
+  style={{
+    gridColumn: "2 / span 2", // define a largura ocupando 2 colunas
+    width: "100%", // faz a linha ocupar toda a largura da célula
+    border: "none", // remove o estilo padrão
+    borderTop: "1px solid #ccc", // adiciona uma linha superior personalizada
+    margin: "1rem 0", // espaçamento opcional
+  }}
+/>
+
+                            </label>
+
+
                           </>
 
 
