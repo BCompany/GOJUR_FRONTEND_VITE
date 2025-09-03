@@ -604,7 +604,7 @@ export default function Workflow() {
   const handleDeleteTrigger = useCallback((triggerId) => {
     const address = workflowTrigger.filter(item => item.workflowTriggerId !== triggerId);
 
-    if (address.length >= 1) {
+    if (address.length >= 0) {
       setWorkflowTrigger(address)
     } else {
       addToast({
