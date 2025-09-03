@@ -1357,7 +1357,7 @@ export default function Workflow() {
             workflowTriggerId: triggerId,
             actionType: "criarcompromisso",
             daysbeforeandafter: 0,
-            configuration: { when: "depois", starttime:"09:00" }
+            configuration: { when: "depois", starttime:"09:00",  reminders: [] }
           }
         ];
       }
