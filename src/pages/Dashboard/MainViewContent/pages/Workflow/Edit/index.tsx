@@ -210,7 +210,7 @@ export default function Workflow() {
           companyId,
           workflowTriggerId: id,
           actionType: 'criarcompromisso',
-          daysbeforeandafter: 1
+          daysbeforeandafter: 0
         };
 
         const newTrigger: IWorkflowTriggers = {
@@ -514,10 +514,11 @@ export default function Workflow() {
           companyId,
           workflowTriggerId: id,
           actionType: 'criarcompromisso',
-          daysbeforeandafter: 1,
+          daysbeforeandafter: 0,
           configuration: {
             when: "depois", 
-            privacy: "N"
+            privacy: "N",
+            reminders: []
           }
         };
 
@@ -579,10 +580,12 @@ export default function Workflow() {
       companyId,
       workflowTriggerId: triggerId,
       actionType: 'criarcompromisso',
-      daysbeforeandafter: 1,
+      daysbeforeandafter: 0,
       configuration: {
         when: "depois",
-        privacy: "N"
+        privacy: "N",
+        reminders: [],
+        starttime:"09:00"
       }
     };
 
@@ -1324,7 +1327,7 @@ export default function Workflow() {
       });
 
       let data: IWorkflowActions[] = response.data.map((action: any) => {
-        let configuration = null;
+        let configuration = null; 
         if (action.configDescription) {
           try {
             configuration = JSON.parse(action.configDescription);
@@ -1353,8 +1356,8 @@ export default function Workflow() {
             companyId,
             workflowTriggerId: triggerId,
             actionType: "criarcompromisso",
-            daysbeforeandafter: 1,
-            configuration: { when: "depois" }
+            daysbeforeandafter: 0,
+            configuration: { when: "depois", starttime:"09:00" }
           }
         ];
       }
@@ -1405,6 +1408,7 @@ export default function Workflow() {
         return false;
       }
 
+      /*
       if (!action.daysbeforeandafter || action.daysbeforeandafter == 0) {
         addToast({
           type: "error",
@@ -1413,6 +1417,7 @@ export default function Workflow() {
         })
         return false;
       }
+      */
 
       const hora = action.configuration?.starttime;
 
@@ -1454,6 +1459,7 @@ export default function Workflow() {
         ...action.configuration,  
         privacy: action.configuration?.privacy ?? "N",
         responsible: action.configuration?.responsible ?? "U",  
+        reminders: action.configuration?.reminders ?? []
       };
 
       console.log('Config action ' + JSON.stringify(config));
@@ -1535,6 +1541,7 @@ export default function Workflow() {
         return false;
       }
 
+      /*
       if (!action.daysbeforeandafter || action.daysbeforeandafter == 0) {
         addToast({
           type: "error",
@@ -1543,6 +1550,7 @@ export default function Workflow() {
         })
         return false;
       }
+      */
 
       const hora = action.configuration?.starttime;
 
@@ -1862,8 +1870,8 @@ export default function Workflow() {
                                 Qtd. de dias
                                 <input
                                   type="number"
-                                  min={1}
-                                  value={Math.abs(action.daysbeforeandafter ?? 1)}
+                                  min={0}
+                                  value={Math.abs(action.daysbeforeandafter ?? 0)}
                                   onChange={(e) =>
                                     handleChangeDays(
                                       e.target.value,

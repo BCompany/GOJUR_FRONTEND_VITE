@@ -26,7 +26,7 @@ const HeaderPageOptionsMenu = () => {
   const token = localStorage.getItem('@GoJur:token');
   const baseUrl = envProvider.redirectUrl;
 
-  const [production, setProduction] = useState<boolean>(false);
+  const [production, setProduction] = useState<boolean>(true);
   
   // Call security permission - passing module
   useEffect(() => {
