@@ -25,6 +25,8 @@ const HeaderPageOptionsMenu = () => {
   const {permissionsSecurity, handleValidateSecurity } = useSecurity();
   const token = localStorage.getItem('@GoJur:token');
   const baseUrl = envProvider.redirectUrl;
+
+  const [production, setProduction] = useState<boolean>(true);
   
   // Call security permission - passing module
   useEffect(() => {
@@ -91,6 +93,14 @@ const HeaderPageOptionsMenu = () => {
     handleRedirect(`/ReportParameters`)
   }, []);
 
+  const handleWorkflow = useCallback(() => {
+    handleIsOpenMenuConfig(true)
+    setShowConfig(false)
+    setShowConfigOthers(false)
+    handleIsMenuOpen(false)
+    handleRedirect(`/Workflow/List`)
+  }, []);
+
 
   const handleProfile = useCallback(() => {
     handleIsOpenMenuConfig(true)
@@ -110,6 +120,7 @@ const HeaderPageOptionsMenu = () => {
   const checkHoliday = permissionsSecurity.find(item => item.name === "CFGHOLID");
   const checkEconomicIndexes = permissionsSecurity.find(item => item.name === "CFGINDEC");
   const checkReportParameters = permissionsSecurity.find(item => item.name === "CACRPT");
+  const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKF");
 
   // SUPORT LINKS
   const acessoRemotoST = `${envProvider.mainUrl}resources/bcompanyremotost.exe`;
@@ -177,6 +188,18 @@ const HeaderPageOptionsMenu = () => {
           </>
         )}
         
+        {(checkWorkflow && production == true) &&(
+          <>
+            <div style={{display:(showConfig?'grid':'none')}}>
+              <hr />
+              <button type="button" className="menuLink" onClick={() => {handleWorkflow();}}>
+                Workflow
+              </button>
+            </div>
+          </>
+        )}
+
+
         <hr />
         <div className="menuSection" onClick={() => setShowConfigPeople(!showConfigPeople)}>
           <FaUsersCog />
