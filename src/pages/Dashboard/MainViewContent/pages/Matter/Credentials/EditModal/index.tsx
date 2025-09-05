@@ -5,20 +5,14 @@
 import React, { ChangeEvent, useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import { AutoCompleteSelect } from 'Shared/styles/GlobalStyle';
-import { customStyles, selectStyles, useDelay } from 'Shared/utils/commonFunctions';
+import { customStyles, selectStyles } from 'Shared/utils/commonFunctions';
 import api from 'services/api';
 import { loadingMessage, noOptionsMessage } from 'Shared/utils/commonConfig';
-import { FiTrash } from 'react-icons/fi';
 import Select from 'react-select'
-import LoaderWaiting from 'react-spinners/ClipLoader';
-import { MdBlock } from 'react-icons/md';
 import { useToast } from 'context/toast';
-import { Box, Container, Content, OverlayPermission, ItemBox } from './styles';
-import { set } from 'date-fns';
 import { FaSave, FaIdCard, FaRegTimesCircle } from 'react-icons/fa';
-import { GiConsoleController } from 'react-icons/gi';
-import { red } from '@material-ui/core/colors';
-/*teste commit*/
+import { Container } from './styles';
+
 
 export interface ISelectData {
   id: string;
@@ -56,14 +50,13 @@ export interface ICredential {
   tpo_Credential: string;
   id_CourtReference: string;
   flg_Certificate: boolean;
+  flg_QrCode: boolean;
 }
-
 
 interface SelectCertType {
   id: string;
   label: string;
 }
-
 
 export default function CredentialsDataSourceModal(props) {
   const token = localStorage.getItem('@GoJur:token')
@@ -206,6 +199,8 @@ export default function CredentialsDataSourceModal(props) {
       const response = await api.get<ICredential>('/Credenciais/Editar', { params: {id_Credential: id, token} });
 
       setFlgCertificate(response.data.flg_Certificate)
+      setFlgQrCode(response.data.flg_QrCode);
+
       setDes_user(response.data.des_Username);
       setDescription(response.data.des_Credential);
       setCourtId(response.data.id_Court);
@@ -216,12 +211,10 @@ export default function CredentialsDataSourceModal(props) {
 
       if (response.data.qrCode) {
         setTwoFactorAuth(true);
-        setFlgQrCode(true);
         setQrCode(response.data.qrCode);
       }
       else {
         setTwoFactorAuth(false);
-        setFlgQrCode(true);
         setQrCode('');
       }
 
@@ -280,18 +273,6 @@ export default function CredentialsDataSourceModal(props) {
 
   const ChangeCreditialTypeList = (id: string) => {
     setCredentialType(id)
-
-    if(id == "ESAJ"){
-      setFlgCertificate(true)
-    }
-
-    if(id == "EPROC"){
-      setFlgCertificate(true)
-    }
-
-    if(id == "PJE"){
-      setFlgCertificate(false)
-    }
   }
 
 
@@ -350,11 +331,7 @@ export default function CredentialsDataSourceModal(props) {
           {flgCertificate && (
             <>
               <div style={{display:'flex', marginLeft:'2%'}}>
-                <input
-                  type="checkbox"
-                  checked={digitalCertificate}
-                  onChange={(e) => setDigitalCertificate(e.target.checked)}
-                />
+                <input type="checkbox" checked={digitalCertificate} onChange={(e) => setDigitalCertificate(e.target.checked)} />
                 &nbsp;&nbsp; Utilizar Certificado Digital
               </div>
               <br />
@@ -364,11 +341,7 @@ export default function CredentialsDataSourceModal(props) {
           {flgQrCode && (
             <div style={{ marginLeft: '2%', marginTop: '10px' }}>
               <label style={{ display: 'flex', alignItems: 'center' }}>
-                <input
-                  type="checkbox"
-                  checked={twoFactorAuth}
-                  onChange={(e) => setTwoFactorAuth(e.target.checked)}
-                />
+                <input type="checkbox" checked={twoFactorAuth} onChange={(e) => setTwoFactorAuth(e.target.checked)} />
                 <span style={{ marginLeft: '8px' }}>Autenticação de Dois Fatores</span>
                 <a href="https://gojur.tawk.help/article/configurar-credenciais-eproc" target="_blank" rel="noopener noreferrer" style={{ marginLeft: '8px' }}>
                   Guia para o código QRCode
@@ -493,24 +466,14 @@ export default function CredentialsDataSourceModal(props) {
 
           <div id='Buttons' style={{ flex: '0 0 auto', padding: '5px', width: '100%', textAlign: 'center', marginTop: "2%" }}>
             <div style={{ display: 'inline-block', marginRight: '10px' }}>
-              <button
-                type='button'
-                className="buttonClick"
-                onClick={SaveCredentials}
-                style={{ width: '100px' }}
-              >
+              <button type='button' className="buttonClick" onClick={SaveCredentials} style={{ width: '100px' }}>
                 <FaSave />
                 Salvar
               </button>
             </div>
 
             <div style={{ display: 'inline-block', marginRight: '10px' }}>
-              <button
-                className="buttonClick"
-                title="Clique para incluir uma ação judícial"
-                type="submit"
-                onClick={handleCloseEditModal}
-              >
+              <button className="buttonClick" title="Clique para incluir uma ação judícial" type="submit" onClick={handleCloseEditModal}>
                 <FaRegTimesCircle />
                 Cancelar
               </button>
