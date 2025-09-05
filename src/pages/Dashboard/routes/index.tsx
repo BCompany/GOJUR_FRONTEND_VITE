@@ -17,6 +17,8 @@ import Matter from '../MainViewContent/pages/Matter/List';
 import Publication from '../MainViewContent/pages/Publication';
 import Workflow from '../MainViewContent/pages/Workflow/List';
 import CreateWorkflow from '../MainViewContent/pages/Workflow/Edit';
+import WorkflowExec from '../MainViewContent/pages/Workflow/WorkflowExec/List';
+
 
 import Coverages from '../../Coverages';
 import APIDocumentation from '../../APIDocumentation';
@@ -123,6 +125,7 @@ const Routes: React.FC = () => {
       
       <Route path="/workflow/list" exact component={Workflow} isPrivate />
       <Route path="/workflow/edit/:id" component={CreateWorkflow} isPrivate />
+      <Route path="/workflowexec/list" exact component={WorkflowExec} isPrivate />
 
       <Route path="/documentModel/list" exact component={DocumentModel} isPrivate />
       <Route path="/documentModel/edit/:cod_DocumentoModelo" exact component={DocumentModelEdit} isPrivate />

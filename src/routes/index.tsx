@@ -61,6 +61,8 @@ const Routes: React.FC = () => {
       <Route path="/documentModel/labeditor" exact component={DashBoard} isPrivate />
       <Route path="/workflow/list" exact component={DashBoard} isPrivate />
       <Route path="/workflow/edit/:id" exact component={DashboardPath} isPrivate />
+      <Route path="/workflowexec/list" exact component={DashBoard} isPrivate />
+      
 
       <Route path="/calendar" exact component={DashboardPath} isPrivate />
       <Route path="/cadastro" exact component={DashboardPath} isPrivate />
