@@ -6,7 +6,7 @@
 /* eslint-disable no-alert */
 import React, { useCallback, useEffect, useState, UIEvent, useRef } from 'react';
 import { FiEdit, FiTrash } from 'react-icons/fi'
-import { FaFileAlt } from 'react-icons/fa'
+import { FaFileAlt, FaAngleLeft  } from 'react-icons/fa'
 import { Grid, Table, TableHeaderRow } from '@devexpress/dx-react-grid-material-ui';
 import { GridContainer } from 'Shared/styles/GlobalStyle';
 import { useDevice } from "react-use-device";
@@ -48,7 +48,7 @@ const WorkflowList = () => {
   const { addToast } = useToast();
   const history = useHistory();
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { captureText, handleLoadingData } = useHeader();
+  const { captureText, captureType, handleLoadingData } = useHeader();
   const { handleUserPermission } = useDefaultSettings();
   const [workflowList, setWorkflowList] = useState<IWorkflowData[]>([]);
   const token = localStorage.getItem('@GoJur:token');
@@ -65,17 +65,17 @@ const WorkflowList = () => {
   const [currentWorkflowId, setCurrentWorkflowId] = useState<number>(0);
   const { isConfirmMessage, isCancelMessage, caller, handleCancelMessage, handleConfirmMessage, handleCheckConfirm, handleCaller } = useConfirmBox();
   const [isDeletingCustomer, setIsDeletingCustomer] = useState(false);
-
-
+  const [matterFileId, setMatterFileId] = useState('');
+  const [matterRedirect, setMatterRedirect] = useState<boolean>(false)
 
 
   const columns = [
     { name: 'name', title: 'Workflow' },
-    { name: 'startDate', title: 'Data inicio' },
-    { name: 'endDate', title: ' Data Final' },
-    { name: 'statusType', title: ' Status' },
-    { name: 'processId', title: ' Processo ID' },
-    { name: 'customerId', title: ' Cliente ID' },
+    { name: 'startDate', title: 'Início' },
+    { name: 'endDate', title: ' Fim' },
+    { name: 'statusType', title: 'Status' },
+    { name: 'processId', title: 'Processo' },
+    { name: 'customerId', title: 'Cliente' },
     { name: 'edit', title: ' ' },
     { name: 'remove', title: ' ' }
   ];
@@ -91,7 +91,25 @@ const WorkflowList = () => {
     { columnName: 'btnRemover', width: '5%' },
   ]);
 
+
+   const Initialize = () => {
+                                       
+    const redirectByMatter = localStorage.getItem('@Gojur:matterRedirect') 
+     
+
+    if (redirectByMatter == "S"){
+       setMatterRedirect(true)   
+      setMatterFileId(localStorage.getItem('@Gojur:matterId'))  
+      localStorage.removeItem('@Gojur:matterId')
+      localStorage.removeItem('@Gojur:matterRedirect')
+        
+    }    
+    
+  }
+
+
   useEffect(() => {
+    Initialize();
     setWorkflowList([])
     setIsLoadingSearch(true);
     setIsLoading(true);
@@ -99,7 +117,7 @@ const WorkflowList = () => {
     setIsEndPage(false)
     LoadWorkflow('initialize')
 
-  }, [captureText])
+  }, [captureText, captureType, matterFileId])
 
   useEffect(() => {
     LoadWorkflow();
@@ -191,11 +209,13 @@ const WorkflowList = () => {
 
       const response = await api.get<IWorkflowData[]>('/Workflow/ListarExec', {
         params: {
-          filterTerm: "wf.nom_Workflow like '%" + captureText + "%'",
+          filterTerm: "wf.nom_Workflow like '%" + captureText + "%', wfe.tpo_Status like '%" + captureType + "%', wfe.cod_Processo = " + matterFileId,
           token
         }
       })
 
+
+//alert(captureType);
 
       const formattedData = response.data.map(item => ({
         ...item,
@@ -244,7 +264,7 @@ const WorkflowList = () => {
         signOut()
       }
     }
-  }, [pageNumber, captureText, isPagination, isEndPage])
+  }, [pageNumber, captureText, captureType, matterFileId,isPagination, isEndPage])
 
 
   const handleCheckBoxDeleteWorkflow = (workflowId: number) => {
@@ -330,6 +350,16 @@ const WorkflowList = () => {
     }
   };
 
+  const handleCancel = () => {
+    
+    console.log('MatterRedirect: ', matterRedirect)
+    
+    if (matterRedirect){
+      history.push('../../../matter/list')
+    }
+   
+  }
+
   // PAGE SCROOL
   function handleScroll(e: UIEvent<HTMLDivElement>) {
     const element = e.target as HTMLTextAreaElement;
@@ -396,6 +426,20 @@ const WorkflowList = () => {
                   <FaFileAlt />
                   Incluir novo Workflow
                 </button>
+              </div>
+
+              <div style={{ float: 'right', marginRight: '10px' }}>
+                 
+                <button
+                  className="buttonLinkClick"
+                  title="Clique para incluir um Workflow"
+                  type="submit"
+                  onClick={handleCancel}
+                >
+                  <FaAngleLeft />
+                  Voltar
+                </button>
+
 
               </div>
             </div>

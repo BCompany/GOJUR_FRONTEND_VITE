@@ -28,7 +28,7 @@ import { RiDeleteBinLine } from 'react-icons/ri';
 import { SiSonarsource } from 'react-icons/si';
 import { ImMenu3, ImMenu4 } from 'react-icons/im';
 import { BiUpArrowAlt, BiDownArrowAlt, BiEditAlt, BiSave, BiLoader } from 'react-icons/bi';
-import { GiNewspaper, GiReceiveMoney } from 'react-icons/gi';
+import { GiNewspaper, GiReceiveMoney, GiGears, GiPathDistance } from 'react-icons/gi';
 import { MdBlock } from 'react-icons/md';
 import { format } from 'date-fns';
 import Select from 'react-select'
@@ -2157,6 +2157,17 @@ const Matter: React.FC = () => {
   }
 
 
+
+  const MatterWorkflow = async (matterId, matteFilePlace) => {
+    setMatterFileId(matterId)
+    setMatterFilePlace(matteFilePlace)
+
+    localStorage.setItem('@Gojur:matterRedirect', 'S')
+    localStorage.setItem('@Gojur:matterId', matterId)
+    history.push(`/workflowexec/list`)
+
+  }
+
   const OpenMatterCRMModal = async (matterId) => {
     setShowMatterCRMModal(true)
     setMatterSelectedId(matterId)
@@ -2887,6 +2898,12 @@ const Matter: React.FC = () => {
                                 {!isMOBILE && <span>CRM</span>}
                               </p>
 
+
+                              <p onClick={() => MatterWorkflow(item.matterId, "legal")}>
+                                <GiPathDistance />
+                                {!isMOBILE && <span>Workflow</span>}
+                              </p>
+
                               {hasButtonDeleteMatterLegal && (
                                 <p
                                   onClick={() => handleDeleteMatter(item.matterId)}
@@ -3413,6 +3430,11 @@ const Matter: React.FC = () => {
                               <p onClick={() => MatterCRM(item.matterId, "advisory")}>
                                 <GiReceiveMoney />
                                 {!isMOBILE && <span>CRM</span>}
+                              </p>
+
+                               <p onClick={() => MatterWorkflow(item.matterId, "legal")}>
+                                <GiPathDistance />
+                                {!isMOBILE && <span>Workflow</span>}
                               </p>
 
                               {hasButtonDeletematterAdvisory && (

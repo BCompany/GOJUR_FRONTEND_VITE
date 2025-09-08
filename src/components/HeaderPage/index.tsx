@@ -101,12 +101,14 @@ export function HeaderPage() {
 
 
   if (pathname === '/workflowexec/list'){
-      optionsList.push({ value: 'todos', label: 'Todos' })
       optionsList.push({ value: 'emandamento', label: 'Em andamento' })
+      optionsList.push({ value: '', label: 'Todos' })
       optionsList.push({ value: 'concluido', label: 'Concluído' })
 
       const defaultOpt = optionsList.find(o => o.value === 'emandamento');
       setSelectedOption(defaultOpt);
+
+      handleCaptureType('emandamento')
 
       setOptions(optionsList)
     }
@@ -702,7 +704,7 @@ export function HeaderPage() {
                  value={selectedOption} 
                onChange={(opt) => {
         setSelectedOption(opt);
-        handleCaptureType(opt ? opt.value : null); // pass null se limpou
+        handleCaptureType(opt ? opt.value : ''); 
       }}
                 options={options}
               />
