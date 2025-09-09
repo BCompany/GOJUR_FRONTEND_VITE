@@ -14,6 +14,7 @@ import React, { useEffect, useState, UIEvent, useRef, useCallback, ChangeEvent, 
 import { HeaderPage } from 'components/HeaderPage';
 import { useDefaultSettings } from 'context/defaultSettings';
 import { RiCalendarCheckFill } from 'react-icons/ri';
+import { GoGitMerge  } from "react-icons/go"
 import { useAlert } from 'context/alert';
 import Loader from 'react-spinners/PulseLoader';
 import LoaderWaiting from 'react-spinners/ClipLoader';
@@ -2900,7 +2901,7 @@ const Matter: React.FC = () => {
 
 
                               <p onClick={() => MatterWorkflow(item.matterId, "legal")}>
-                                <GiPathDistance />
+                                <GoGitMerge />
                                 {!isMOBILE && <span>Workflow</span>}
                               </p>
 
@@ -3433,7 +3434,7 @@ const Matter: React.FC = () => {
                               </p>
 
                                <p onClick={() => MatterWorkflow(item.matterId, "legal")}>
-                                <GiPathDistance />
+                                <GoGitMerge />
                                 {!isMOBILE && <span>Workflow</span>}
                               </p>
 

@@ -17,12 +17,14 @@ import React, {
   useRef,
 } from 'react';
 import '@fullcalendar/react/dist/vdom';
+import { useHistory } from 'react-router-dom';
 import FullCalendar from '@fullcalendar/react';
 import { ImMenu3, ImMenu4 } from 'react-icons/im';
 import Loader from 'react-spinners/ClipLoader';
 import { AiOutlineReload, AiOutlineCheckCircle } from 'react-icons/ai';
 import { BiCalendarCheck, BiCalendarEdit, BiLoader } from 'react-icons/bi';
 import { FaRegTimesCircle } from 'react-icons/fa';
+import { GoGitMerge  } from "react-icons/go"
 import { FiX } from 'react-icons/fi';
 import { useAlert } from 'context/alert';
 import ProcessModal from 'components/HeaderPage/TopNavBar/EnvelopeNotificationList/ProcessModal';
@@ -131,6 +133,7 @@ const Calendar: React.FC = () => {
   const [openModalCalendarReport, setOpenModalCalendarReport] =
     useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+   const history = useHistory();
   const [isLoadingSearch, setIsLoadingSearch] = useState<boolean>(false);
   const [isEndPage, setIsEndPage] = useState(false);
   const [isPagination, setIsPagination] = useState(false);
@@ -1234,6 +1237,13 @@ const Calendar: React.FC = () => {
     handlePublicationModal('Calc');
   };
 
+  const handleWorkflow = () => {
+    localStorage.setItem('@Gojur:calendarRedirect', 'S')
+    history.push(`/workflowexec/list`)
+  };
+
+   
+
   const buttonsCalendarLabel = {
     dayGridMonth: 'Mês',
     timeGridWeek: 'Semana',
@@ -1392,6 +1402,18 @@ const Calendar: React.FC = () => {
                 <FaCalculator />
                 Calculadora de Prazos
               </button>
+
+              <button
+                className="buttonLinkClick"
+                onClick={() => handleWorkflow()}
+                title="Clique para abrir o workflow"
+                type="submit"
+              >
+                <GoGitMerge />
+                Workflow
+              </button>
+
+
             </div>
 
             <div className="buttonHamburguer">

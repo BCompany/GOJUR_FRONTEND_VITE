@@ -14,7 +14,8 @@ import { HeaderPage } from 'components/HeaderPage';
 import { useCustomer } from 'context/customer';
 import Modal from 'react-modal';
 import api from 'services/api';
-import { GiReceiveMoney } from 'react-icons/gi';
+import { GiReceiveMoney, GiPathDistance } from 'react-icons/gi';
+import { GoGitMerge  } from "react-icons/go"
 import Loader from 'react-spinners/PulseLoader';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import { ImMenu3, ImMenu4 } from 'react-icons/im';
@@ -285,6 +286,14 @@ const CustomerList: React.FC = () => {
     localStorage.setItem('@GoJur:documentCustomerId', customerId.toString())
     const href = `/customer/edit/${customerId.toString()}`
     history.push(href)
+  }
+
+  const handleWorkflow = async (customerId) => {
+   
+    localStorage.setItem('@Gojur:customerRedirect', 'S')
+    localStorage.setItem('@Gojur:customerId', customerId)
+    history.push(`/workflowexec/list`)
+
   }
 
   const handleCheckBoxDeleteCustomer = (customerId: number) => {
@@ -607,6 +616,7 @@ const CustomerList: React.FC = () => {
                   >
                     <FiFile />
                   </button>
+                  
 
                   {checkpermissionDocument && (
                     <button
@@ -620,6 +630,14 @@ const CustomerList: React.FC = () => {
                       <RiNewspaperFill />
                     </button>
                   )}
+
+                  <button
+                    type="button"
+                    title="Workflow"
+                    onClick={() => handleWorkflow(customer.cod_Cliente)}
+                  >
+                    <GoGitMerge />
+                  </button>
 
                   <button
                     type="button"

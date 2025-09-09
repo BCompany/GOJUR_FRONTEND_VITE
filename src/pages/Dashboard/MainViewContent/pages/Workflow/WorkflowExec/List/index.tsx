@@ -5,7 +5,7 @@
 /* eslint-disable no-return-assign */
 /* eslint-disable no-alert */
 import React, { useCallback, useEffect, useState, UIEvent, useRef } from 'react';
-import { FiEdit, FiTrash } from 'react-icons/fi'
+import { FiEdit, FiTrash, FiArrowLeft } from 'react-icons/fi'
 import { FaFileAlt, FaAngleLeft  } from 'react-icons/fa'
 import { Grid, Table, TableHeaderRow } from '@devexpress/dx-react-grid-material-ui';
 import { GridContainer } from 'Shared/styles/GlobalStyle';
@@ -66,13 +66,16 @@ const WorkflowList = () => {
   const { isConfirmMessage, isCancelMessage, caller, handleCancelMessage, handleConfirmMessage, handleCheckConfirm, handleCaller } = useConfirmBox();
   const [isDeletingCustomer, setIsDeletingCustomer] = useState(false);
   const [matterFileId, setMatterFileId] = useState('');
+  const [customerFileId, setCustomerFileId] = useState('');
   const [matterRedirect, setMatterRedirect] = useState<boolean>(false)
+  const [customerRedirect, setCustomerRedirect] = useState<boolean>(false)
+   const [calendarRedirect, setCalendarRedirect] = useState<boolean>(false) 
 
 
   const columns = [
     { name: 'name', title: 'Workflow' },
     { name: 'startDate', title: 'Início' },
-    { name: 'endDate', title: ' Fim' },
+    { name: 'endDate', title: 'Fim' },
     { name: 'statusType', title: 'Status' },
     { name: 'processId', title: 'Processo' },
     { name: 'customerId', title: 'Cliente' },
@@ -82,7 +85,7 @@ const WorkflowList = () => {
 
   const [tableColumnExtensions] = useState([
     { columnName: 'name', width: '20%' },
-    { columnName: 'startDate', width: '10%' },
+    { columnName: 'startDate', width: '10%' }, 
     { columnName: 'endDate', width: '10%' },
     { columnName: 'statusType', width: '15%' },
     { columnName: 'processId', width: '10%' },
@@ -95,7 +98,7 @@ const WorkflowList = () => {
    const Initialize = () => {
                                        
     const redirectByMatter = localStorage.getItem('@Gojur:matterRedirect') 
-     
+
 
     if (redirectByMatter == "S"){
        setMatterRedirect(true)   
@@ -103,7 +106,21 @@ const WorkflowList = () => {
       localStorage.removeItem('@Gojur:matterId')
       localStorage.removeItem('@Gojur:matterRedirect')
         
-    }    
+    }   
+    
+    const redirectByCustomer = localStorage.getItem('@Gojur:customerRedirect') 
+    if (redirectByCustomer == "S"){
+      setCustomerRedirect(true)   
+      setCustomerFileId(localStorage.getItem('@Gojur:customerId'))  
+      localStorage.removeItem('@Gojur:customerId')    
+      localStorage.removeItem('@Gojur:customerRedirect')
+    }
+
+    const redirectByCalendar = localStorage.getItem('@Gojur:calendarRedirect') 
+    if (redirectByCalendar == "S"){
+      setCalendarRedirect(true);   
+      localStorage.removeItem('@Gojur:calendarRedirect')
+    }
     
   }
 
@@ -113,11 +130,11 @@ const WorkflowList = () => {
     setWorkflowList([])
     setIsLoadingSearch(true);
     setIsLoading(true);
-    setPageNumber(1)
-    setIsEndPage(false)
-    LoadWorkflow('initialize')
-
-  }, [captureText, captureType, matterFileId])
+    setPageNumber(1);
+    setIsEndPage(false);
+    LoadWorkflow('initialize');
+    
+  }, [captureText, captureType, matterFileId, customerFileId])
 
   useEffect(() => {
     LoadWorkflow();
@@ -209,18 +226,26 @@ const WorkflowList = () => {
 
       const response = await api.get<IWorkflowData[]>('/Workflow/ListarExec', {
         params: {
-          filterTerm: "wf.nom_Workflow like '%" + captureText + "%', wfe.tpo_Status like '%" + captureType + "%', wfe.cod_Processo = " + matterFileId,
+          page,
+          rows: 20,
+          filterClause: "wf.nom_Workflow like '%" + captureText + "%', wfe.tpo_Status like '%" + captureType + "%', wfe.cod_Processo = " + matterFileId,
           token
         }
       })
 
 
-//alert(captureType);
+
+      const statusMap: Record<string, string> = {
+        emandamento: "Em andamento",
+        concluido: "Concluído",
+      };
+
 
       const formattedData = response.data.map(item => ({
         ...item,
         startDate: item.startDate ? format(new Date(item.startDate), "dd/MM/yyyy") : "",
-        endDate: item.endDate ? format(new Date(item.endDate), "dd/MM/yyyy") : ""
+        endDate: item.endDate ? format(new Date(item.endDate), "dd/MM/yyyy") : "",
+       statusType: statusMap[item.statusType?.toLowerCase()] || item.statusType, 
       }));
 
       if (response.data.length > 0 && state == 'initialize')
@@ -241,7 +266,20 @@ const WorkflowList = () => {
         setWorkflowList(formattedData);
       }
       else {
-        response.data.map((item) => workflowList.push(item))
+        //response.data.map((item) => workflowList.push(item))
+        response.data.map(item =>
+          workflowList.push({
+            ...item,
+            startDate: item.startDate
+              ? format(new Date(item.startDate), "dd/MM/yyyy")
+              : "",
+            endDate: item.endDate
+              ? format(new Date(item.endDate), "dd/MM/yyyy")
+              : "",
+            statusType: statusMap[item.statusType?.toLowerCase()] || item.statusType,
+          })
+        );
+
         setWorkflowList(workflowList)
       }
 
@@ -357,7 +395,13 @@ const WorkflowList = () => {
     if (matterRedirect){
       history.push('../../../matter/list')
     }
-   
+    else if (customerRedirect){
+      history.push('../customer/list')
+    }
+    else if (calendarRedirect){ 
+      history.push('../calendar')
+    }
+
   }
 
   // PAGE SCROOL
@@ -418,32 +462,37 @@ const WorkflowList = () => {
               <div style={{ float: 'left', marginRight: '10px' }}>
 
                 <button
-                  className="buttonLinkClick"
+                  className="buttonClick"
                   title="Clique para incluir um Workflow"
                   type="submit"
                   onClick={() => history.push('/Workflow/editx/0')}
                 >
                   <FaFileAlt />
-                  Incluir novo Workflow
+                  Iniciar Novo Workflow
                 </button>
               </div>
 
-              <div style={{ float: 'right', marginRight: '10px' }}>
+              <div style={{ float: 'right'}}>
                  
                 <button
-                  className="buttonLinkClick"
-                  title="Clique para incluir um Workflow"
+                  className="buttonClick"
+                  title="Clique para retornar"
                   type="submit"
                   onClick={handleCancel}
                 >
-                  <FaAngleLeft />
-                  Voltar
+                 <FiArrowLeft />
+                  Retornar
                 </button>
 
 
               </div>
             </div>
+             
           </div>
+          <div style={{ float: 'left', marginLeft: '150px', marginTop: '12px' }}>
+            <h5>Workflows em Execução</h5>
+          </div>
+         
 
           <div style={{ width: '100%', height: '25px' }}><></></div>
 
