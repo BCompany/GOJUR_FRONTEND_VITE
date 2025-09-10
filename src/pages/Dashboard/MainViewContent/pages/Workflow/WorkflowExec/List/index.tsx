@@ -38,8 +38,10 @@ export interface IWorkflowData {
   startDate: string;
   endDate: string;
   statusType: string;
-  processId: number;
+  matterId: number;
+  matter: string;   
   customerId: number;
+  customer: string;  
 }
 
 const WorkflowList = () => {
@@ -77,21 +79,21 @@ const WorkflowList = () => {
     { name: 'startDate', title: 'Início' },
     { name: 'endDate', title: 'Fim' },
     { name: 'statusType', title: 'Status' },
-    { name: 'processId', title: 'Processo' },
-    { name: 'customerId', title: 'Cliente' },
+    { name: 'matter', title: 'Processo' },
+    { name: 'customer', title: 'Cliente' },
     { name: 'edit', title: ' ' },
     { name: 'remove', title: ' ' }
   ];
 
   const [tableColumnExtensions] = useState([
-    { columnName: 'name', width: '20%' },
+    { columnName: 'name', width: '10%' },
     { columnName: 'startDate', width: '10%' }, 
     { columnName: 'endDate', width: '10%' },
-    { columnName: 'statusType', width: '15%' },
-    { columnName: 'processId', width: '10%' },
-    { columnName: 'customerId', width: '10%' },
-    { columnName: 'btnEditar', width: '5%' },
-    { columnName: 'btnRemover', width: '5%' },
+    { columnName: 'statusType', width: '10%', wordWrapEnabled: true },
+    { columnName: 'matter', width: '20%', wordWrapEnabled: true },
+    { columnName: 'customer', width: '19%', wordWrapEnabled: true },
+    { columnName: 'btnEditar', width: '2%' },
+    { columnName: 'btnRemover', width: '2%' },
   ]);
 
 
@@ -131,10 +133,11 @@ const WorkflowList = () => {
     setIsLoadingSearch(true);
     setIsLoading(true);
     setPageNumber(1);
-    setIsEndPage(false);
+    setIsEndPage(false);  
     LoadWorkflow('initialize');
-    
+   
   }, [captureText, captureType, matterFileId, customerFileId])
+
 
   useEffect(() => {
     LoadWorkflow();
@@ -224,16 +227,38 @@ const WorkflowList = () => {
       const token = localStorage.getItem('@GoJur:token');
       const page = state == 'initialize' ? 1 : pageNumber;
 
+      const filters: string[] = [];
+
+      if (captureText) {
+        filters.push(`wf.nom_Workflow like '%${captureText}%'`);
+      }
+
+      if (captureType) {
+        filters.push(`wfe.tpo_Status like '%${captureType}%'`);
+      }
+
+      if (matterFileId) { 
+        filters.push(`wfe.cod_Processo = ${matterFileId}`);
+      }
+
+      if (customerFileId) { 
+        filters.push(`wfe.cod_Cliente = ${customerFileId}`);
+      }
+
+      const filterClause = filters.join(", "); 
+
+
       const response = await api.get<IWorkflowData[]>('/Workflow/ListarExec', {
         params: {
           page,
           rows: 20,
-          filterClause: "wf.nom_Workflow like '%" + captureText + "%', wfe.tpo_Status like '%" + captureType + "%', wfe.cod_Processo = " + matterFileId,
+          filterClause,
+          //filterClause: "wf.nom_Workflow like '%" + captureText + "%', wfe.tpo_Status like '%" + captureType + "%', wfe.cod_Processo = " + matterFileId,
           token
         }
       })
 
-
+ 
 
       const statusMap: Record<string, string> = {
         emandamento: "Em andamento",
@@ -302,14 +327,15 @@ const WorkflowList = () => {
         signOut()
       }
     }
-  }, [pageNumber, captureText, captureType, matterFileId,isPagination, isEndPage])
+  }, [pageNumber, captureText, captureType, matterFileId, customerFileId, isPagination, isEndPage])
 
 
   const handleCheckBoxDeleteWorkflow = (workflowId: number) => {
     setIsDeleting(true)
     setCurrentWorkflowId(workflowId);
   }
-
+  
+  /*
   const CustomCell = (props) => {
 
     const { column } = props;
@@ -337,6 +363,48 @@ const WorkflowList = () => {
 
     return <Table.Cell {...props} />;
   };
+*/
+
+const CustomCell = (props) => {
+  const { column, row } = props;
+
+  if (column.name === "edit") {
+    return (
+      <Table.Cell onClick={(e) => handleClick(props)} {...props}>
+        &nbsp;&nbsp;
+        <FiEdit title="Clique para editar " />
+      </Table.Cell>
+    );
+  }
+
+  if (column.name === "remove") {
+    return (
+      <Table.Cell
+        onClick={() =>
+          handleCheckBoxDeleteWorkflow(row.workflowId)
+        }
+      >
+        &nbsp;&nbsp;
+        <FiTrash title="Clique para remover" />
+      </Table.Cell>
+    );
+  }
+
+
+  if (["matter", "customer"].includes(column.name)) {
+    return (
+      <Table.Cell
+        {...props}
+        style={{
+          whiteSpace: "pre-wrap",
+          wordBreak: "break-word",
+        }}
+      />
+    );
+  }
+
+  return <Table.Cell {...props} />;
+};
 
   // CELL CLICK
   const handleClick = (props: any) => {
@@ -403,6 +471,7 @@ const WorkflowList = () => {
     }
 
   }
+
 
   // PAGE SCROOL
   function handleScroll(e: UIEvent<HTMLDivElement>) {
@@ -509,7 +578,7 @@ const WorkflowList = () => {
                   messages={languageGridEmpty}
                 />
                 <TableHeaderRow />
-                {/* <TableHeaderRow /> */}
+           
               </Grid>
             </GridContainer>
 

@@ -291,7 +291,7 @@ const CustomerList: React.FC = () => {
   const handleWorkflow = async (customerId) => {
    
     localStorage.setItem('@Gojur:customerRedirect', 'S')
-    localStorage.setItem('@Gojur:customerId', customerId)
+    localStorage.setItem('@Gojur:customerId', customerId.toString())
     history.push(`/workflowexec/list`)
 
   }

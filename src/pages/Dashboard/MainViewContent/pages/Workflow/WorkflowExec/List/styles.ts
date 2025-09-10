@@ -14,7 +14,15 @@ export const Container = styled.div`
        height: 1.5rem;
      }
   }
+
+
+  .cell-wrap {
+    white-space: pre-wrap;   /* mantém \n como quebra de linha */
+    word-break: break-word;  /* quebra palavras muito grandes */
+  }
+
 `;
+
 
 export const ContainerMobile = styled.div`
   flex: 1;
