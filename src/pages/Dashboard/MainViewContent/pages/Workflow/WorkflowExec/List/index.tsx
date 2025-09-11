@@ -42,6 +42,7 @@ export interface IWorkflowData {
   matter: string;   
   customerId: number;
   customer: string;  
+  count: number;
 }
 
 const WorkflowList = () => {
@@ -97,13 +98,13 @@ const WorkflowList = () => {
   ]);
 
 
-   const Initialize = () => {
-                                       
+   const Initialize = async () => {
+        
+    if(localStorage.getItem('@Gojur:matterRedirect') == null && localStorage.getItem('@Gojur:customerRedirect') == null && localStorage.getItem('@Gojur:calendarRedirect') == null ) return;
+      
     const redirectByMatter = localStorage.getItem('@Gojur:matterRedirect') 
-
-
     if (redirectByMatter == "S"){
-       setMatterRedirect(true)   
+      setMatterRedirect(true)   
       setMatterFileId(localStorage.getItem('@Gojur:matterId'))  
       localStorage.removeItem('@Gojur:matterId')
       localStorage.removeItem('@Gojur:matterRedirect')
@@ -114,8 +115,8 @@ const WorkflowList = () => {
     if (redirectByCustomer == "S"){
       setCustomerRedirect(true)   
       setCustomerFileId(localStorage.getItem('@Gojur:customerId'))  
-      localStorage.removeItem('@Gojur:customerId')    
-      localStorage.removeItem('@Gojur:customerRedirect')
+      localStorage.removeItem('@Gojur:customerId')  
+      localStorage.removeItem('@Gojur:customerRedirect') 
     }
 
     const redirectByCalendar = localStorage.getItem('@Gojur:calendarRedirect') 
@@ -127,21 +128,33 @@ const WorkflowList = () => {
   }
 
 
-  useEffect(() => {
-    Initialize();
-    setWorkflowList([])
+useEffect(() => {
+  const setup = async () => {
+ 
+    await Initialize();
+
+    setWorkflowList([]);
     setIsLoadingSearch(true);
     setIsLoading(true);
     setPageNumber(1);
-    setIsEndPage(false);  
-    LoadWorkflow('initialize');
+    setIsEndPage(false);
    
-  }, [captureText, captureType, matterFileId, customerFileId])
+  
+    if (!matterRedirect && !customerRedirect && !calendarRedirect) return;
 
+    await LoadWorkflow('initialize');
+  };
+
+  setup(); // Executa a função async
+}, [captureText, captureType, matterFileId, customerFileId, calendarRedirect]);
+ 
 
   useEffect(() => {
-    LoadWorkflow();
-  }, [pageNumber])
+   
+    if (matterRedirect ==false && customerRedirect == false && calendarRedirect == false) return;
+    else
+      LoadWorkflow();
+  }, [pageNumber, captureText, captureType])
 
 
   useEffect(() => {
@@ -156,7 +169,7 @@ const WorkflowList = () => {
   useEffect(() => {
 
     if (isConfirmMessage && caller == "WorkflowList") {
-
+ 
       if (!isDeleting) {
         window.open(`${envProvider.redirectUrl}ReactRequest/Redirect?token=${token}&route=workflow/list`)
       }
@@ -219,8 +232,11 @@ const WorkflowList = () => {
 
 
   // METHODS
-  const LoadWorkflow = useCallback(async (state = '') => {
+ const LoadWorkflow = useCallback(
+  async (state = '') => {
+    
     try {
+      
       if (isEndPage && state != 'initialize')
         return;
 
@@ -230,19 +246,19 @@ const WorkflowList = () => {
       const filters: string[] = [];
 
       if (captureText) {
-        filters.push(`wf.nom_Workflow like '%${captureText}%'`);
+        filters.push(` ( T.nom_Workflow like '%${captureText}%' or T.processo like '%${captureText}%' or T.nom_pessoa like '%${captureText}%' or T.tpo_Status like '%${captureText}%' ) `);
       }
 
       if (captureType) {
-        filters.push(`wfe.tpo_Status like '%${captureType}%'`);
+        filters.push(`T.tpo_Status like '%${captureType}%'`);
       }
 
       if (matterFileId) { 
-        filters.push(`wfe.cod_Processo = ${matterFileId}`);
+        filters.push(`T.cod_Processo = ${matterFileId}`);
       }
 
       if (customerFileId) { 
-        filters.push(`wfe.cod_Cliente = ${customerFileId}`);
+        filters.push(`T.cod_Cliente = ${customerFileId}`); 
       }
 
       const filterClause = filters.join(", "); 
@@ -273,9 +289,12 @@ const WorkflowList = () => {
        statusType: statusMap[item.statusType?.toLowerCase()] || item.statusType, 
       }));
 
-      if (response.data.length > 0 && state == 'initialize')
-        setTotalPageCount(response.data.length)
-      //setTotalPageCount(response.data[0].totalRows)
+      //if (response.data.length > 0 && state == 'initialize')
+        //setTotalPageCount(response.data.length)
+        
+      if(response.data.length > 0 && state == 'initialize')
+        setTotalPageCount(response.data[0].count)
+
 
       if (response.data.length == 0 || state === 'initialize') {
         setIsLoadingSearch(false)
@@ -328,6 +347,9 @@ const WorkflowList = () => {
       }
     }
   }, [pageNumber, captureText, captureType, matterFileId, customerFileId, isPagination, isEndPage])
+
+
+
 
 
   const handleCheckBoxDeleteWorkflow = (workflowId: number) => {
