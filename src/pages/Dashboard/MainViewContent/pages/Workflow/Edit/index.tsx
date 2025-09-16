@@ -1348,7 +1348,7 @@ export default function Workflow() {
         };
       });
 
-      
+
       if (data.length === 0) {
         data = [
           {

@@ -294,6 +294,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
 
   const SelectAppointment = useCallback(async () => {
+   
     const appointmentId = modalActiveId
     const recurrenceDate = localStorage.getItem('@GoJur:RecurrenceDate');
 
@@ -610,7 +611,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
   useEffect(() => {
     if (matterSelected !== null && processTitle === 'Associar Processo') {
-
+   
       setProcessTitle(`${matterSelected.matterNumber} - ${(matterSelected.matterFolder != null? "-": "")} ${matterSelected.matterCustomerDesc} - ${matterSelected.matterOppossingDesc}`,);
 
       api.post<IMatterData>('/Processo/SelecionarProcesso', {

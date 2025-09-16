@@ -68,7 +68,7 @@ const WorkflowList = () => {
   ];
 
   const [tableColumnExtensions] = useState([
-    { columnName: 'name', width: '75%' },
+    { columnName: 'name', width: '70%' },
     { columnName: 'btnEditar', width: '5%' },
     { columnName: 'btnRemover',width: '5%' },
   ]);
