@@ -190,7 +190,7 @@ const FinancialPaymentModal = (props) => {
             )}
             {movementType == "D" && (
               <>
-                &nbsp;&nbsp;&nbsp;&nbsp;Liquidar Despesas
+                &nbsp;&nbsp;&nbsp;&nbsp;Liquidar Despesa
               </>
             )} 
           </div>

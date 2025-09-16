@@ -721,24 +721,70 @@ const Financeiro: React.FC = () => {
     }
 
     if (column.name === 'paid') {
-      if(props.row.tpo_Movimento == "R"){
-        return (
-          <Table.Cell onClick={(e) => handleClick(props)} {...props}>
-            <div>
-              <RiMoneyDollarBoxFill style={{height:'30px', width:'25px'}} title="Clique aqui para realizar a liquidação da receita." />
-            </div>
-          </Table.Cell>
-        );
+      if(Number(props.row.vlr_Liquidacao) == 0)
+      {
+        if(props.row.tpo_Movimento == "R"){
+          return (
+            <Table.Cell onClick={(e) => handleClick(props)} {...props}>
+              <div>
+                <RiMoneyDollarBoxFill style={{height:'30px', width:'25px'}} title="Clique aqui para realizar a liquidação da receita." />
+              </div>
+            </Table.Cell>
+          )
+        }
+        if(props.row.tpo_Movimento == "D"){
+          return (
+            <Table.Cell onClick={(e) => handleClick(props)} {...props}>
+              <div>
+                <RiMoneyDollarBoxFill style={{height:'30px', width:'25px'}} title="Clique aqui para realizar a liquidação da despesa." />
+              </div>
+            </Table.Cell>
+          )
+        }
       }
-        
-      if(props.row.tpo_Movimento == "D"){
-        return (
-          <Table.Cell onClick={(e) => handleClick(props)} {...props}>
-            <div>
-              <RiMoneyDollarBoxFill style={{height:'30px', width:'25px'}} title="Clique aqui para realizar a liquidação da despesa." />
-            </div>
-          </Table.Cell>
-        );
+
+      if(Number(props.row.vlr_Liquidacao) >= Number(props.row.vlr_Movimento))
+      {
+        if(props.row.tpo_Movimento == "R"){
+          return (
+            <Table.Cell onClick={(e) => handleClick(props)} {...props}>
+              <div>
+                <RiMoneyDollarBoxFill style={{color:'#48C71F', height:'30px', width:'25px'}} title="Clique aqui para realizar a liquidação da receita." />
+              </div>
+            </Table.Cell>
+          )
+        }
+        if(props.row.tpo_Movimento == "D"){
+          return (
+            <Table.Cell onClick={(e) => handleClick(props)} {...props}>
+              <div>
+                <RiMoneyDollarBoxFill style={{color:'#48C71F', height:'30px', width:'25px'}} title="Clique aqui para realizar a liquidação da despesa." />
+              </div>
+            </Table.Cell>
+          )
+        }
+      }
+
+      if(Number(props.row.vlr_Liquidacao) != Number(props.row.vlr_Movimento))
+      {
+        if(props.row.tpo_Movimento == "R"){
+          return (
+            <Table.Cell onClick={(e) => handleClick(props)} {...props}>
+              <div>
+                <RiMoneyDollarBoxFill style={{color:'#E9ED00', height:'30px', width:'25px'}} title="Clique aqui para realizar a liquidação da receita." />
+              </div>
+            </Table.Cell>
+          )
+        }
+        if(props.row.tpo_Movimento == "D"){
+          return (
+            <Table.Cell onClick={(e) => handleClick(props)} {...props}>
+              <div>
+                <RiMoneyDollarBoxFill style={{color:'#E9ED00', height:'30px', width:'25px'}} title="Clique aqui para realizar a liquidação da despesa." />
+              </div>
+            </Table.Cell>
+          )
+        }
       }
     }
 
