@@ -24,7 +24,7 @@ import { Modal, ModalPostBackValidation, OverlayFinancialPayment } from './style
 
 const FinancialPaymentModal = (props) => {
 
-  const {movementId, invoice, ClosePaymentModal} = props.callbackFunction
+  const {movementId, invoice, movementType, ClosePaymentModal} = props.callbackFunction
   const token = localStorage.getItem('@GoJur:token');
   const { addToast } = useToast();
   const [paymentList, setPaymentList] = useState<IPayments[]>([]);
@@ -183,7 +183,16 @@ const FinancialPaymentModal = (props) => {
 
         <div id='Header' style={{height:'30px'}}>
           <div className='menuTitle'>
-            &nbsp;&nbsp;&nbsp;&nbsp;Realizar pagamento
+            {movementType == "R" && (
+              <>
+                &nbsp;&nbsp;&nbsp;&nbsp;Liquidar Receita
+              </>
+            )}
+            {movementType == "D" && (
+              <>
+                &nbsp;&nbsp;&nbsp;&nbsp;Liquidar Despesas
+              </>
+            )} 
           </div>
           <div className='menuSection'>
             <FiX onClick={(e) => CloseModal()} />

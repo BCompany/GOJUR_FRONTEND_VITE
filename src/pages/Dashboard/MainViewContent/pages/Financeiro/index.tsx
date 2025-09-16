@@ -84,6 +84,7 @@ const Financeiro: React.FC = () => {
   const [checkBillingContract, setCheckBillingContract] = useState<boolean>(false);
   const [parcelaAtual, setParcelaAtual] = useState('');
   const [isDeal, setIsDeal] = useState<boolean>(false);
+  const [movementType, setMovementType] = useState("");
 
   // GRID
   const [pageSizes] = useState([10, 20, 30, 50]);
@@ -720,34 +721,21 @@ const Financeiro: React.FC = () => {
     }
 
     if (column.name === 'paid') {
-      if(Number(props.row.vlr_Liquidacao) == 0)
-      {
+      if(props.row.tpo_Movimento == "R"){
         return (
           <Table.Cell onClick={(e) => handleClick(props)} {...props}>
             <div>
-              <RiMoneyDollarBoxFill style={{height:'30px', width:'25px'}} title="Clique aqui para realizar o pagamento." />
+              <RiMoneyDollarBoxFill style={{height:'30px', width:'25px'}} title="Clique aqui para realizar a liquidação da receita." />
             </div>
           </Table.Cell>
         );
       }
-
-      if(Number(props.row.vlr_Liquidacao) >= Number(props.row.vlr_Movimento))
-      {
+        
+      if(props.row.tpo_Movimento == "D"){
         return (
           <Table.Cell onClick={(e) => handleClick(props)} {...props}>
             <div>
-              <RiMoneyDollarBoxFill style={{color:'#48C71F', height:'30px', width:'25px'}} title="Pagamento efetuado. Clique aqui para editar." />
-            </div>
-          </Table.Cell>
-        );
-      }
-
-      if(Number(props.row.vlr_Liquidacao) != Number(props.row.vlr_Movimento))
-      {
-        return (
-          <Table.Cell onClick={(e) => handleClick(props)} {...props}>
-            <div>
-              <RiMoneyDollarBoxFill style={{color:'#E9ED00', height:'30px', width:'25px'}} title="Clique aqui para completar o pagamento." />
+              <RiMoneyDollarBoxFill style={{height:'30px', width:'25px'}} title="Clique aqui para realizar a liquidação da despesa." />
             </div>
           </Table.Cell>
         );
@@ -816,6 +804,7 @@ const Financeiro: React.FC = () => {
     setMovementId(props.row.cod_Movimento)
     setDealDetailId(props.row.cod_AcordoDetalhe)
     setInvoice(props.row.cod_FaturaParcela)
+    setMovementType(props.row.tpo_Movimento)
 
     if (props.column.name === 'paid'){
       setShowPaymentModal(true)
@@ -875,6 +864,7 @@ const Financeiro: React.FC = () => {
   const ClosePaymentModal = async () => {
     setMovementId('')
     setInvoice('')
+    setMovementType('')
     setShowPaymentModal(false)
     setIsLoading(true)
   }
@@ -1234,6 +1224,7 @@ const Financeiro: React.FC = () => {
     {
       setMovementId(props.row.cod_Movimento1)
       setDealDetailId(props.row.cod_AcordoDetalhe1)
+      setMovementType(props.row.tpo_Movimento)
 
       if (props.column.name === 'paid'){
         setShowPaymentModal(true)
@@ -1253,6 +1244,7 @@ const Financeiro: React.FC = () => {
     {
       setMovementId(props.row.cod_Movimento2)
       setDealDetailId(props.row.cod_AcordoDetalhe2)
+      setMovementType(props.row.tpo_Movimento)
 
       if (props.column.name === 'paid'){
         setShowPaymentModal(true)
@@ -1272,6 +1264,7 @@ const Financeiro: React.FC = () => {
     {
       setMovementId(props.row.cod_Movimento3)
       setDealDetailId(props.row.cod_AcordoDetalhe3)
+      setMovementType(props.row.tpo_Movimento)
 
       if (props.column.name === 'paid'){
         setShowPaymentModal(true)
@@ -2025,7 +2018,7 @@ const Financeiro: React.FC = () => {
       )}
 
       {(showPaymentModal) && <OverlayFinancial /> }
-      {(showPaymentModal) && <FinancialPaymentModal callbackFunction={{movementId, invoice, visualizeType, ClosePaymentModal, LoadMovementsByPeriod, LoadTotalByPeriod, LoadMovementsByExtract, LoadTotalByExtract }} /> }
+      {(showPaymentModal) && <FinancialPaymentModal callbackFunction={{movementId, invoice, visualizeType, movementType, ClosePaymentModal, LoadMovementsByPeriod, LoadTotalByPeriod, LoadMovementsByExtract, LoadTotalByExtract }} /> }
 
       {(showDocumentModal) && <OverlayFinancial /> }
       {(showDocumentModal) && <FinancialDocumentModal callbackFunction={{movementId, CloseDocumentModal}} /> }
