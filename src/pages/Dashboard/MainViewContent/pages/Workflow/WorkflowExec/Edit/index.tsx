@@ -68,7 +68,8 @@ const [workflowList, setWorkflowList] = useState<IOption[]>([]);
 const token = localStorage.getItem('@GoJur:token');
 const [workflowTrigger, setWorkflowTrigger] = useState<IWorkflowTriggers[]>([]);
 //const [workflow, setWorkflow] = useState({} as IWorkflowData);
-
+const [triggerDates, setTriggerDates] = useState<Record<number, string>>({});
+const [optionsSubject, setOptionsSubject] = useState<ISelectValues[]>([]);
 
 const customStyles = {
   input: (provided: any) => ({
@@ -115,6 +116,7 @@ const ListCustomerData = async (term: string) => {
 useEffect(() => {
     LoadPerson()
     ListWorkflow("")
+    LoadSubject();
 }, [])
 
 
@@ -337,27 +339,112 @@ const handleChangeWorkflow = (newValue: any) => {
     
   }
 
-  /*
-  if (newValue) {
-    // dispara ações vinculadas ao workflow selecionado
-    handleAction(newValue);
+  setTriggerDates({});
 
-    if (newValue.dataSentenca) {
-      setDataSentenca(newValue.dataSentenca);
-    }
-    if (newValue.dataPrazo) {
-      setDataPrazo(newValue.dataPrazo);
-    }
-  } else {
-    // se limpou o select, reseta as datas
-    setDataSentenca(null);
-    setDataPrazo(null);
-  }
-*/
 };
 
-  return (
-    <Container onScroll={handleScroolSeeMore} ref={scrollRef}>
+
+ const fetchTriggerActions = async (triggerId: string) => {
+    try {
+
+      const response = await api.get<IWorkflowActions[]>('/Workflow/ListarAcoes', {
+        params: { filterTerm: triggerId, token }
+      });
+
+      let data: IWorkflowActions[] = response.data.map((action: any) => {
+        let configuration = null; 
+        if (action.configDescription) {
+          try {
+            configuration = JSON.parse(action.configDescription);
+            configuration.when = (action.daysbeforeandafter ?? 0) < 0 ? "antes" : "depois";
+            configuration.starttime = configuration.starttime ?? "";
+          } catch (err) {
+            console.error("Erro ao desserializar configDescription:", err);
+          }
+        }
+
+        return {
+          workflowactionId: action.workflowactionId,
+          companyId: action.companyId,
+          workflowTriggerId: action.workflowTriggerId,
+          actionType: action.actionType,
+          daysbeforeandafter: action.daysbeforeandafter,
+          configuration
+        };
+      });
+
+
+      if (data.length === 0) {
+        data = [
+          {
+            workflowactionId: Math.random(),
+            companyId,
+            workflowTriggerId: triggerId,
+            actionType: "criarcompromisso",
+            daysbeforeandafter: 0,
+            configuration: { when: "depois", starttime:"09:00",  reminders: [] }
+          }
+        ];
+      }
+
+      setWorkflowTrigger(prev =>
+        prev.map(tr =>
+          tr.workflowTriggerId === Number(triggerId) ? { ...tr, actions: data } : tr
+        )
+      );
+
+
+    } catch (error) {
+      //console.error(error);
+      //alert("Erro ao carregar ações do compromisso.");
+    }
+  };
+
+
+ const handleSimularWorkflow = async () => {
+ 
+  console.log("Datas digitadas:", triggerDates);
+
+
+  for (const triggerId of Object.keys(triggerDates)) {
+    await fetchTriggerActions(triggerId);
+  }
+};
+
+
+const LoadSubject = useCallback(async () => {
+    try {
+    
+      const response = await api.post(`/Assunto/Listar`, {
+        description: '',
+        token
+      });
+
+      const subjectList: ISelectValues[] = [];
+      response.data.map(item => {
+        return subjectList.push({
+          id: item.id,
+          label: item.value
+        })
+      })
+
+      setOptionsSubject(subjectList);
+    }
+    catch (err) {
+      console.log(err);
+    }
+  }, [])
+
+
+const getSubjectLabel = (id?: number | string) => {
+  if (!id) return "";
+  console.log(optionsSubject);
+  const subject = optionsSubject.find(s => String(s.id) === String(id));
+  return subject ? subject.label : `ID ${id} não encontrado`;
+};
+
+return (
+<Container onScroll={handleScroolSeeMore} ref={scrollRef}>
 
 
 
@@ -366,10 +453,10 @@ const handleChangeWorkflow = (newValue: any) => {
 <Content>
 <div>
       <header>
-        <h1 style={{ fontSize: "1.2rem", fontWeight: "600", marginBottom: "0.5rem" }}>
+        <h1 style={{ fontSize: "1.2rem", fontWeight: "600", marginBottom: "0.5rem", marginLeft:"1.5rem" }}>
           Executar Workflow
         </h1>
-        <p style={{ fontSize: "0.675rem", color: "#64748b" }}>
+        <p style={{ fontSize: "0.675rem", color: "#64748b", marginLeft:"1.5rem" }}>
           Selecione o workflow, informe os parâmetros e visualize automaticamente as ações geradas.
         </p>
       </header>
@@ -473,25 +560,40 @@ const handleChangeWorkflow = (newValue: any) => {
 
           </div>
 
-           {workflowTrigger.map(trigger => (
-
-          <div key={trigger.workflowTriggerId}> 
-            <label>{trigger.configuration?.label}</label>
-            <Input type="date" defaultValue="2025-09-02" />
-          </div>
-
-           ))}
+          {workflowTrigger.map((trigger) => (
+            trigger.triggerType === "data" && (
+              <div key={trigger.workflowTriggerId}>
+                <label>{trigger.configuration?.label}</label>
+               <Input 
+                type="date" 
+                value={triggerDates[trigger.workflowTriggerId] || ""}
+                onChange={(e) =>
+                  setTriggerDates((prev) => ({
+                    ...prev,
+                    [trigger.workflowTriggerId]: e.target.value,
+                  }))
+                }
+              />
+              </div>
+            )
+          ))}
 
         </div>
 
-        <div style={{ marginTop: "1rem" }}>
-          <Button variant="primary">Simular Workflow</Button>
+        <div style={{ marginTop: "1rem", marginBottom: "3rem"  }}>
+        
+          <button type="button" className='buttonClick' onClick={handleSimularWorkflow}>
+       
+            Simular Workflow
+          </button>
+
         </div>
       </Section>
 
      
       <Section>
         <h2 style={{ fontSize: "0.875rem", fontWeight: "500", paddingBottom: "1.0rem" }}>Ações Geradas</h2>
+        {/*
         <Timeline>
           <Step>
             <Circle>1</Circle>
@@ -508,8 +610,72 @@ const handleChangeWorkflow = (newValue: any) => {
             <span style={{ fontSize: "0.675rem" }}>Prazo Judicial (17/09)</span>
           </Step>
         </Timeline>
+          */}
 
-       
+{workflowTrigger.map((trigger) => (
+  <React.Fragment key={trigger.triggerId}>
+    {/* Timeline */}
+    <Timeline>
+      {trigger.actions?.map((action, index) => (
+        <React.Fragment key={action.workflowactionId}>
+          <Step>
+            <Circle>{index + 1}</Circle>
+            <span style={{ fontSize: "0.675rem" }}>
+              {getSubjectLabel(action.configuration?.subject)}
+            </span>
+          </Step>
+
+          {index < (trigger.actions?.length ?? 0) - 1 && (
+            <div style={{ height: "2px", width: "64px", background: "#cbd5e1" }} />
+          )}
+        </React.Fragment>
+      ))}
+    </Timeline>
+
+    {/* Cards das ações do trigger */}
+    <div style={{ display: "flex", flexDirection: "column", paddingTop: "1rem" }}>
+      {trigger.actions?.map((action) => (
+        <Card key={action.workflowactionId} style={{ marginBottom: "1rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div>
+              <h3 style={{ fontSize: "0.675rem", fontWeight: "500" }}>
+                {/* Data + Assunto */}
+                {action.configuration?.date
+                  ? new Date(action.configuration.date).toLocaleDateString()
+                  : "-"} - {getSubjectLabel(action.configuration?.subject)}
+              </h3>
+              <p style={{ fontSize: "0.55rem", color: "#64748b" }}>
+                {action.configuration?.description || "Sem descrição"}
+              </p>
+            </div>
+            <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+              <Select>
+                <option>João</option>
+                <option>Maria</option>
+              </Select>
+              <span
+                style={{
+                  fontSize: "0.75rem",
+                  padding: "0.25rem 0.5rem",
+                  borderRadius: "9999px",
+                  background: "#fef3c7",
+                  color: "#b45309",
+                }}
+              >
+                {action.configuration?.status || "Pendente"}
+              </span>
+            </div>
+          </div>
+        </Card>
+      ))}
+    </div>
+  </React.Fragment>
+))}
+
+
+
+
+       {/*
         <div style={{ display: "flex", flexDirection: "column",  paddingTop: "1.0rem" }}>
           <Card style={{ marginBottom: "1.0rem" }}>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -603,7 +769,7 @@ const handleChangeWorkflow = (newValue: any) => {
           </Card>
 
         </div>
-
+*/}
       </Section>
 
       {/* FOOTER */}
