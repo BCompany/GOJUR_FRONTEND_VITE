@@ -19,7 +19,7 @@
  import { useDocument } from 'context/document';
  import DocumentModal from 'components/Modals/CustomerModal/DocumentModal';
  import { useCustomer } from 'context/customer';
- import { IWorkflowTriggers, IWorkflowActions, IWorkflowData, ISelectValues } from '../Interfaces/IWorkflowEdit';
+ import { IWorkflowTriggers, IWorkflowActions, IWorkflowData, ISelectValues } from '../../Interfaces/IWorkflowEdit';
  import { workflowTriggerTypes } from 'Shared/utils/commonListValues';
  import ConfirmBoxModal from 'components/ConfirmBoxModal';
  import { useConfirmBox } from 'context/confirmBox';
@@ -35,11 +35,14 @@
 import GridSelectProcess from 'pages/Dashboard/MainViewContent/pages/Dashboard/resorces/DashboardComponents/CreateAppointment/GridSelectProcess';
 import { IMatterData } from 'pages/Dashboard/MainViewContent/pages/Interfaces/IMatter';
 
+/*
 export interface IWorkflowData{
     workflowId: number;
     name: string;
     //totalRows: number;
 }
+*/
+
 
 interface IOption {
   value: number;
@@ -54,6 +57,7 @@ const [isLoading, setIsLoading] = useState(true);
 const scrollRef = useRef<HTMLDivElement>(null);
 const [customerList, setCustomerList] = useState<ISelectData[]>([])
 const [customer, setCustomer] = useState(null);
+const [workflow, setWorkflow] = useState(null);
 const [personSearch, setPersonSearch] = useState<string | null>('')
 const [processTitle, setProcessTitle] = useState('Associar Processo'); 
 const {matterSelected, dateEnd, handleModalActiveId, selectProcess,handleModalActive,openSelectProcess,handleSelectProcess,jsonModalObjectResult,handleJsonModalObjectResult,deadLineText,publicationText, modalActiveId, caller } = useModal();
@@ -61,6 +65,10 @@ const userToken = localStorage.getItem('@GoJur:token');
 const [redirectLink, setRedirectLink] = useState('/####'); 
 const [completeLink, setCompleteLink] = useState<boolean>(false);
 const [workflowList, setWorkflowList] = useState<IOption[]>([]);
+const token = localStorage.getItem('@GoJur:token');
+const [workflowTrigger, setWorkflowTrigger] = useState<IWorkflowTriggers[]>([]);
+//const [workflow, setWorkflow] = useState({} as IWorkflowData);
+
 
 const customStyles = {
   input: (provided: any) => ({
@@ -106,7 +114,7 @@ const ListCustomerData = async (term: string) => {
 
 useEffect(() => {
     LoadPerson()
-    LoadWorkflow()
+    ListWorkflow("")
 }, [])
 
 
@@ -118,6 +126,12 @@ const handleReactInputText = (term: string) => {
  const RefreshPersonList = useCallback(async (inputValue: string) => {
     const list = await ListCustomerData(inputValue ?? "");
     setCustomerList(list);
+  }, []);
+
+
+  const RefreshWorkflowList = useCallback(async (inputValue: string) => {
+    const list = await ListWorkflow(inputValue ?? "");
+    setWorkflowList(list);
   }, []);
 
 
@@ -210,8 +224,7 @@ useEffect(() => {
   }, [matterSelected, dateEnd]);
 
 
-   
-  const LoadWorkflow = useCallback(async (state = "") => {
+  const ListWorkflow = useCallback(async (term: string) => {
     try {
       const token = localStorage.getItem("@GoJur:token");
 
@@ -219,7 +232,7 @@ useEffect(() => {
         params: {
           page: 0,
           rows: 50,
-          filterClause: "",
+          filterClause: term,
           token,
         },
       });
@@ -230,11 +243,118 @@ useEffect(() => {
       }));
 
       setWorkflowList(options);
+
+      return options;
+
     } catch (err) {
       console.error(err);
     }
   }, []);
 
+
+
+  const selectWorkflow = useCallback(async (workflowId: string) => {
+  
+    let hasFilterSaved = false;
+    const filterStorage = localStorage.getItem('@GoJur:CustomerFilter')
+
+    // verify if exists filter saved
+    if (Number.isNaN(Number(workflowId))) {
+      if (filterStorage == null) {
+        return false;
+      }
+      // if exists filter exists associate to specific variables and rebuild page
+      const filterJSON = JSON.parse(filterStorage)
+      workflowId = filterJSON.workflowId;
+      hasFilterSaved = true;
+    }
+
+
+    /*
+    if (Number(workflowId) === 0) {
+      handleNewTrigger();
+      return;
+    }
+    */
+
+    try {
+
+      const response = await api.get<IWorkflowData[]>('/Workflow/Selecionar', {
+        params: {
+          id: Number(workflowId),
+          token
+        }
+      })
+
+      //setWorkflow(response.data)
+
+      //setWorkflowName(response.data.name);
+
+
+      if (response.data.triggers.length < 1) {
+        const id = Math.random()
+
+        const firstAction: IWorkflowActions = {
+          workflowactionId: Math.random(),
+          companyId,
+          workflowtriggerId: id,
+          actionType: 'criarcompromisso',
+          daysbeforeandafter: 0
+        };
+
+        const newTrigger: IWorkflowTriggers = {
+          workflowTriggerId: id,
+          companyId,
+          workflowId: 0,
+          triggerType: 'data',
+          configuration: { label: "" },
+          actions: [firstAction]
+        };
+
+        setWorkflowTrigger(oldState => [...oldState, newTrigger])
+
+      }
+      else {
+        setWorkflowTrigger(response.data.triggers)
+
+        console.log(workflowTrigger);
+      }
+
+
+
+    } catch (err) {
+      setIsLoading(false)
+      console.log(err)
+    }
+  }, []);
+
+
+const handleChangeWorkflow = (newValue: any) => {
+  setWorkflow(newValue);
+
+  if (newValue) {
+    selectWorkflow(newValue.value);
+    
+  }
+
+  /*
+  if (newValue) {
+    // dispara ações vinculadas ao workflow selecionado
+    handleAction(newValue);
+
+    if (newValue.dataSentenca) {
+      setDataSentenca(newValue.dataSentenca);
+    }
+    if (newValue.dataPrazo) {
+      setDataPrazo(newValue.dataPrazo);
+    }
+  } else {
+    // se limpou o select, reseta as datas
+    setDataSentenca(null);
+    setDataPrazo(null);
+  }
+*/
+};
 
   return (
     <Container onScroll={handleScroolSeeMore} ref={scrollRef}>
@@ -261,14 +381,26 @@ useEffect(() => {
           
           <div>
             <label>Escolha o Workflow</label>
-            <Select
-            isClearable
-            isSearchable
-            id="teste"
-            options={workflowList}
-            placeholder="Selecione"
-            classNamePrefix="rs"
-            />
+            
+              <Select
+                isClearable
+                isSearchable
+                id="workflow"
+                options={workflowList}
+                placeholder="Selecione"
+                value={workflow}
+                onChange={handleChangeWorkflow}
+                onInputChange={(inputValue, { action }) => {
+                  if (action === "input-change") {
+                    ListWorkflow(inputValue); 
+                  }
+                }}
+                filterOption={(option, inputValue) =>
+                  option.label.toLowerCase().includes(inputValue.toLowerCase())
+                }
+                classNamePrefix="rs"
+              />
+
           </div>
 
 
@@ -332,7 +464,7 @@ useEffect(() => {
                   value={customer}
                   onChange={(e) => setCustomer(e)}
                   onInputChange={(inputValue) => {
-                  RefreshPersonList(inputValue);
+                    RefreshPersonList(inputValue);
                   }}
                   filterOption={(option, inputValue) =>
                   option.label.toLowerCase().includes(inputValue.toLowerCase())
@@ -341,15 +473,15 @@ useEffect(() => {
 
           </div>
 
-          <div> 
-            <label>Data Sentença</label>
+           {workflowTrigger.map(trigger => (
+
+          <div key={trigger.workflowTriggerId}> 
+            <label>{trigger.configuration?.label}</label>
             <Input type="date" defaultValue="2025-09-02" />
           </div>
 
-          <div>
-            <label>Data Prazo</label>
-            <Input type="date" defaultValue="2025-09-17" />
-          </div>
+           ))}
+
         </div>
 
         <div style={{ marginTop: "1rem" }}>
