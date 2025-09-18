@@ -1323,9 +1323,10 @@ export default function Workflow() {
     try {
 
       const response = await api.get<IWorkflowActions[]>('/Workflow/ListarAcoes', {
-        params: { filterTerm: triggerId, token }
+        params: { filterTerm: "gatilho="+triggerId, token }
       });
 
+      
       let data: IWorkflowActions[] = response.data.map((action: any) => {
         let configuration = null; 
         if (action.configDescription) {
