@@ -72,7 +72,7 @@ export default function WorkflowPage() {
   const [optionsSubject, setOptionsSubject] = useState<ISelectValues[]>([]);
   const [triggerActions, setTriggerActions] = useState<ITriggerAction[]>([]);
  const [triggerActionsMap, setTriggerActionsMap] = useState<Record<number, ITriggerAction[]>>({});
-
+  const [userList, setUserList] = useState<userListData[]>([]); 
 
   const customStyles = {
     input: (provided: any) => ({
@@ -120,6 +120,7 @@ export default function WorkflowPage() {
     LoadPerson()
     ListWorkflow("")
     LoadSubject();
+    LoadUserList();
   }, [])
 
 
@@ -462,6 +463,26 @@ const fetchTriggerActions = async (triggerId: number): Promise<ITriggerAction[]>
     return subject ? subject.label : `ID ${id} não encontrado`;
   };
 
+
+   const LoadUserList = useCallback(async () => {
+      try {
+        const response = await api.post<userListData[]>(
+          `/Compromisso/ListarUsuariosETimes`,
+          {
+            userName: '',
+            token: userToken,
+          },
+        );
+  
+        setUserList(response.data);
+  
+        // setUserShareList(response.data);
+      } catch (err: any) {
+        console.log(err.message);
+      }
+    }, []);
+
+
   return (
     <Container onScroll={handleScroolSeeMore} ref={scrollRef}>
 
@@ -767,10 +788,28 @@ const fetchTriggerActions = async (triggerId: number): Promise<ITriggerAction[]>
                 </div>
 
                 <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+                  {/*
                   <Select defaultValue="">
                     <option>João</option>
                     <option>Maria</option>
                   </Select>
+                    */}
+
+                    <label>Responsável</label>
+                      <input
+                        name="responsavel"
+                        type="select"
+                        placeholder="Pesquise um usuário"
+                        list="responsible"
+                      />
+                      <datalist id="responsible">
+                        {userList.map(user => (
+                          <option key={user.id} value={user.value}>
+                            {user.value}
+                          </option>
+                        ))}
+                      </datalist>
+
                   <span
                     style={{
                       fontSize: "0.75rem",
