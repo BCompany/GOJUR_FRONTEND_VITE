@@ -19,7 +19,7 @@ import { useModal } from 'context/modal';
 import { useDocument } from 'context/document';
 import DocumentModal from 'components/Modals/CustomerModal/DocumentModal';
 import { useCustomer } from 'context/customer';
-import { IWorkflowTriggers, IWorkflowActions, IWorkflowData, ISelectValues } from '../../Interfaces/IWorkflowEdit';
+import { IWorkflowTriggers, IWorkflowActions, IWorkflowData, ISelectValues, ITriggerAction, IReminder } from '../../Interfaces/IWorkflowEdit';
 import { workflowTriggerTypes } from 'Shared/utils/commonListValues';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
 import { useConfirmBox } from 'context/confirmBox';
@@ -70,6 +70,9 @@ export default function WorkflowPage() {
   //const [workflow, setWorkflow] = useState({} as IWorkflowData);
   const [triggerDates, setTriggerDates] = useState<Record<number, string>>({});
   const [optionsSubject, setOptionsSubject] = useState<ISelectValues[]>([]);
+  const [triggerActions, setTriggerActions] = useState<ITriggerAction[]>([]);
+ const [triggerActionsMap, setTriggerActionsMap] = useState<Record<number, ITriggerAction[]>>({});
+
 
   const customStyles = {
     input: (provided: any) => ({
@@ -260,24 +263,15 @@ export default function WorkflowPage() {
     let hasFilterSaved = false;
     const filterStorage = localStorage.getItem('@GoJur:CustomerFilter')
 
-    // verify if exists filter saved
     if (Number.isNaN(Number(workflowId))) {
       if (filterStorage == null) {
         return false;
       }
-      // if exists filter exists associate to specific variables and rebuild page
+ 
       const filterJSON = JSON.parse(filterStorage)
       workflowId = filterJSON.workflowId;
       hasFilterSaved = true;
     }
-
-
-    /*
-    if (Number(workflowId) === 0) {
-      handleNewTrigger();
-      return;
-    }
-    */
 
     try {
 
@@ -287,11 +281,6 @@ export default function WorkflowPage() {
           token
         }
       })
-
-      //setWorkflow(response.data)
-
-      //setWorkflowName(response.data.name);
-
 
       if (response.data.triggers.length < 1) {
         const id = Math.random()
@@ -340,10 +329,11 @@ export default function WorkflowPage() {
     }
 
     setTriggerDates({});
+    setTriggerActionsMap({});
 
   };
 
-
+/*
   const fetchTriggerActions = async (triggerId: string) => {
     try {
 
@@ -399,18 +389,47 @@ export default function WorkflowPage() {
       //alert("Erro ao carregar ações do compromisso.");
     }
   };
+*/
+
+
+const fetchTriggerActions = async (triggerId: number): Promise<ITriggerAction[]> => {
+  try {
+    const token = localStorage.getItem('@GoJur:token');
+    const selectedDate = triggerDates[triggerId];
+    /*
+     const response = await api.post(`/Assunto/Listar`, {
+            description: termSearch,
+            token
+          });
+    */
+    const response = await api.post(`/Workflow/ListarAcoesSimulacao`, {
+      workflowTriggerId: triggerId,
+      value: selectedDate, 
+      triggerType:"data",
+      token
+    });
+
+    console.log("Retorno API:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Erro ao carregar ações do compromisso.", error);
+    return [];
+  }
+};
+
 
 
   const handleSimularWorkflow = async () => {
+    setTriggerActionsMap({}); 
 
-    console.log("Datas digitadas:", triggerDates);
+    Object.keys(triggerDates).forEach(async (triggerIdStr) => {
+      const triggerId = Number(triggerIdStr);
+      const actions = await fetchTriggerActions(triggerId);
 
-
-    for (const triggerId of Object.keys(triggerDates)) {
-      await fetchTriggerActions(triggerId);
-    }
+    
+      setTriggerActionsMap(prev => ({ ...prev, [triggerId]: actions }));
+    });
   };
-
 
   const LoadSubject = useCallback(async () => {
     try {
@@ -590,17 +609,17 @@ export default function WorkflowPage() {
               </div>
             </Section>
 
-
+{/*
             <Section>
               <h2 style={{ fontSize: "0.875rem", fontWeight: "500", paddingBottom: "1.0rem" }}>Ações Geradas</h2>
      
 
               {workflowTrigger.map((trigger) => (
                 <React.Fragment key={trigger.workflowTriggerId}>
-                  {/* Timeline */}
+                
 
                   <Timeline>
-                    {/* Passo 1: Trigger */}
+                  
                     <Step style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                       <span style={{ fontSize: "0.675rem", marginBottom: "0.25rem" }}>
                         {trigger.configuration?.label}
@@ -608,7 +627,7 @@ export default function WorkflowPage() {
                       <Circle>1</Circle>
                     </Step>
 
-                    {/* Linha entre Trigger → Subject */}
+                    
                     {trigger.actions && trigger.actions.length > 0 && (
 
                       <div
@@ -622,7 +641,7 @@ export default function WorkflowPage() {
                       />
                     )}
 
-                    {/* Demais passos: Subjects */}
+                   
                     {trigger.actions?.map((action, index) => (
                       <React.Fragment key={action.workflowactionId}>
                         <Step style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -649,7 +668,7 @@ export default function WorkflowPage() {
                     ))}
                   </Timeline>
 
-                  {/* Cards */}
+                
                   <div style={{ display: "flex", flexDirection: "column", paddingTop: "1rem" }}>
 
 
@@ -691,6 +710,88 @@ export default function WorkflowPage() {
 
        
             </Section>
+
+          */}
+
+
+ <Section>
+  <h2 style={{ fontSize: "0.875rem", fontWeight: 500, paddingBottom: "1rem" }}>
+    Ações Geradas
+  </h2>
+
+  {workflowTrigger.map((trigger) => {
+    const actions = triggerActionsMap[trigger.workflowTriggerId] ?? [];
+
+    // Só renderiza se houver actions
+    if (actions.length === 0) return null;
+
+    return (
+      <div key={trigger.workflowTriggerId} style={{ marginBottom: "2rem" }}>
+        {/* Timeline das ações */}
+        <Timeline>
+          {actions.map((action, index) => (
+            <React.Fragment key={action.eventId}>
+              <Step style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                <span style={{ fontSize: "0.675rem", marginBottom: "0.25rem" }}>
+                  {action.description}
+                </span>
+                <Circle>{index + 1}</Circle> {/* numeração começa em 1 */}
+              </Step>
+
+              {index < actions.length - 1 && (
+                <div
+                  style={{
+                    height: "2px",
+                    width: "64px",
+                    background: "#cbd5e1",
+                    alignSelf: "center",
+                    marginTop: "25px",
+                  }}
+                />
+              )}
+            </React.Fragment>
+          ))}
+        </Timeline>
+
+        {/* Cards das ações */}
+        <div style={{ display: "flex", flexDirection: "column", paddingTop: "1rem" }}>
+          {actions.map((action) => (
+            <Card key={action.eventId} style={{ marginBottom: "1rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <div>
+                  <h3 style={{ fontSize: "0.675rem", fontWeight: 500 }}>{action.description}</h3>
+                  <p style={{ fontSize: "0.55rem", color: "#64748b" }}>
+                    {new Date(action.startDate).toLocaleString()} -{" "}
+                    {new Date(action.endDate).toLocaleString()}
+                  </p>
+                </div>
+
+                <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+                  <Select defaultValue="">
+                    <option>João</option>
+                    <option>Maria</option>
+                  </Select>
+                  <span
+                    style={{
+                      fontSize: "0.75rem",
+                      padding: "0.25rem 0.5rem",
+                      borderRadius: "9999px",
+                      background: "#fef3c7",
+                      color: "#b45309",
+                    }}
+                  >
+                    {action.status ?? "Pendente"}
+                  </span>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  })}
+</Section>
+
 
             {/* FOOTER */}
             <footer style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
