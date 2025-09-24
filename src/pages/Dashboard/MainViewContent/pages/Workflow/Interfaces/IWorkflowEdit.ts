@@ -49,6 +49,13 @@ export interface IReminder {
   whatsAppNotification: string | null;
 }
 
+export interface IResponsible {
+  userName: string; // "0M", "10M", etc
+  userCompanyId: string | null;
+  allowEdit: string | null;
+  userType: string | null;
+  accessType: string | null;
+}
 
 export interface ITriggerAction {
   eventId: number;
@@ -73,8 +80,8 @@ export interface ITriggerAction {
   matterEventId: number;
   businessId: number;
   token: string | null;
-  remindersList: Reminder[];
-  responsibleList: any[];  
+  remindersList: IReminder[];
+  responsibleList: IResponsible[];  
   sharedList: any[];
   matter: any;             
   serieRecurrenceChange: any;

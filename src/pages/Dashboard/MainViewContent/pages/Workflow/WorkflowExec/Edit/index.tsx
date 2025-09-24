@@ -4,7 +4,7 @@ import { formatField, selectStyles, useDelay, currencyConfig } from 'Shared/util
 import { RiFolder2Fill, RiEraserLine } from 'react-icons/ri';
 import { useHistory, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form';
-import { FiDelete, FiLock, FiPlus, FiSave, FiTrash, FiX } from 'react-icons/fi';
+import { FiDelete, FiLock, FiPlus, FiSave, FiTrash, FiSearch, FiX } from 'react-icons/fi';
 import { FiPlusCircle, FiXCircle } from "react-icons/fi";
 import { RiCloseLine, RiNewspaperFill } from 'react-icons/ri';
 import { MdBlock } from 'react-icons/md';
@@ -66,13 +66,17 @@ export default function WorkflowPage() {
   const [completeLink, setCompleteLink] = useState<boolean>(false);
   const [workflowList, setWorkflowList] = useState<IOption[]>([]);
   const token = localStorage.getItem('@GoJur:token');
+  const companyId = localStorage.getItem('@GoJur:companyId');
+  const apiKey = localStorage.getItem('@GoJur:apiKey');
   const [workflowTrigger, setWorkflowTrigger] = useState<IWorkflowTriggers[]>([]);
   //const [workflow, setWorkflow] = useState({} as IWorkflowData);
   const [triggerDates, setTriggerDates] = useState<Record<number, string>>({});
   const [optionsSubject, setOptionsSubject] = useState<ISelectValues[]>([]);
   const [triggerActions, setTriggerActions] = useState<ITriggerAction[]>([]);
- const [triggerActionsMap, setTriggerActionsMap] = useState<Record<number, ITriggerAction[]>>({});
-  const [userList, setUserList] = useState<userListData[]>([]); 
+  const [triggerActionsMap, setTriggerActionsMap] = useState<Record<number, ITriggerAction[]>>({});
+  const [userList, setUserList] = useState<userListData[]>([]);
+  const [appointmentMatter, setAppointmentMatter] = useState<MatterData | undefined>({} as MatterData); // processo associado
+
 
   const customStyles = {
     input: (provided: any) => ({
@@ -268,7 +272,7 @@ export default function WorkflowPage() {
       if (filterStorage == null) {
         return false;
       }
- 
+
       const filterJSON = JSON.parse(filterStorage)
       workflowId = filterJSON.workflowId;
       hasFilterSaved = true;
@@ -334,100 +338,44 @@ export default function WorkflowPage() {
 
   };
 
-/*
-  const fetchTriggerActions = async (triggerId: string) => {
+
+
+  const fetchTriggerActions = async (triggerId: number): Promise<ITriggerAction[]> => {
     try {
+      const token = localStorage.getItem('@GoJur:token');
+      const selectedDate = triggerDates[triggerId];
 
-      const response = await api.get<IWorkflowActions[]>('/Workflow/ListarAcoes', {
-        params: { filterTerm: "gatilho="+triggerId, token }
+      let matterId;
+
+      if (processTitle !== 'Associar Processo')
+        matterId = matterSelected?.matterId ?? null;
+
+      const response = await api.post(`/Workflow/ListarAcoesSimulacao`, {
+        workflowTriggerId: triggerId,
+        value: selectedDate,
+        triggerType: "data",
+        matterId,
+        token
       });
 
-      let data: IWorkflowActions[] = response.data.map((action: any) => {
-        let configuration = null;
-        if (action.configDescription) {
-          try {
-            configuration = JSON.parse(action.configDescription);
-            configuration.when = (action.daysbeforeandafter ?? 0) < 0 ? "antes" : "depois";
-            configuration.starttime = configuration.starttime ?? "";
-          } catch (err) {
-            console.error("Erro ao desserializar configDescription:", err);
-          }
-        }
-
-        return {
-          workflowactionId: action.workflowactionId,
-          companyId: action.companyId,
-          workflowTriggerId: action.workflowTriggerId,
-          actionType: action.actionType,
-          daysbeforeandafter: action.daysbeforeandafter,
-          configuration
-        };
-      });
-
-
-      if (data.length === 0) {
-        data = [
-          {
-            workflowactionId: Math.random(),
-            companyId,
-            workflowTriggerId: triggerId,
-            actionType: "criarcompromisso",
-            daysbeforeandafter: 0,
-            configuration: { when: "depois", starttime: "09:00", reminders: [] }
-          }
-        ];
-      }
-
-      setWorkflowTrigger(prev =>
-        prev.map(tr =>
-          tr.workflowTriggerId === Number(triggerId) ? { ...tr, actions: data } : tr
-        )
-      );
-
-
+      console.log("Retorno API:", response.data);
+      return response.data;
     } catch (error) {
-      //console.error(error);
-      //alert("Erro ao carregar ações do compromisso.");
+      console.error("Erro ao carregar ações do compromisso.", error);
+      return [];
     }
   };
-*/
-
-
-const fetchTriggerActions = async (triggerId: number): Promise<ITriggerAction[]> => {
-  try {
-    const token = localStorage.getItem('@GoJur:token');
-    const selectedDate = triggerDates[triggerId];
-    /*
-     const response = await api.post(`/Assunto/Listar`, {
-            description: termSearch,
-            token
-          });
-    */
-    const response = await api.post(`/Workflow/ListarAcoesSimulacao`, {
-      workflowTriggerId: triggerId,
-      value: selectedDate, 
-      triggerType:"data",
-      token
-    });
-
-    console.log("Retorno API:", response.data);
-    return response.data;
-  } catch (error) {
-    console.error("Erro ao carregar ações do compromisso.", error);
-    return [];
-  }
-};
 
 
 
   const handleSimularWorkflow = async () => {
-    setTriggerActionsMap({}); 
+    setTriggerActionsMap({});
 
     Object.keys(triggerDates).forEach(async (triggerIdStr) => {
       const triggerId = Number(triggerIdStr);
       const actions = await fetchTriggerActions(triggerId);
 
-    
+
       setTriggerActionsMap(prev => ({ ...prev, [triggerId]: actions }));
     });
   };
@@ -464,23 +412,64 @@ const fetchTriggerActions = async (triggerId: number): Promise<ITriggerAction[]>
   };
 
 
-   const LoadUserList = useCallback(async () => {
-      try {
-        const response = await api.post<userListData[]>(
-          `/Compromisso/ListarUsuariosETimes`,
-          {
-            userName: '',
-            token: userToken,
-          },
-        );
-  
-        setUserList(response.data);
-  
-        // setUserShareList(response.data);
-      } catch (err: any) {
-        console.log(err.message);
-      }
-    }, []);
+  const LoadUserList = useCallback(async () => {
+    try {
+      const response = await api.post<userListData[]>(
+        `/Compromisso/ListarUsuariosETimes`,
+        {
+          userName: '',
+          token: userToken,
+        },
+      );
+
+      setUserList(response.data);
+
+      // setUserShareList(response.data);
+    } catch (err: any) {
+      console.log(err.message);
+    }
+  }, []);
+
+
+const handleExecutarWorkflow = async () => {
+  const jsonTriggers = workflowTrigger
+    .filter(trigger => trigger.triggerType === "data")
+    .map(trigger => ({
+      label: trigger.configuration?.label || "Trigger sem nome",
+      value: triggerDates[trigger.workflowTriggerId] || ""
+    }));
+
+    let matterId;
+
+    if (processTitle !== 'Associar Processo')
+      matterId = matterSelected?.matterId ?? null;
+    
+const allActions = Object.values(triggerActionsMap).flat(); 
+
+  const payload = {
+    workflowexecId: 0,
+    companyId,
+    workflowId: workflow?.value ?? 0,
+    matterId,
+    customerId: customer?.id ?? null,
+    des_ExecParameters: JSON.stringify(jsonTriggers), 
+    startDate: '09/24/2025',
+    endDate: '09/24/2025',
+    statusType: "emandamento",
+    count: null,
+    eventDTO: allActions,
+    token,
+    apiKey
+  };
+
+  console.log("Payload enviado:", payload);
+
+
+    const response = await api.put(`/WorkflowExec/Salvar`, payload);
+      
+
+};
+
 
 
   return (
@@ -569,6 +558,7 @@ const fetchTriggerActions = async (triggerId: number): Promise<ITriggerAction[]>
                         type="button"
                         onClick={() => {
                           setProcessTitle('Associar Processo');
+                          setAppointmentMatter(undefined);
                         }}
                       >
                         {<RiEraserLine />}
@@ -623,220 +613,159 @@ const fetchTriggerActions = async (triggerId: number): Promise<ITriggerAction[]>
               <div style={{ marginTop: "1rem", marginBottom: "3rem" }}>
 
                 <button type="button" className='buttonClick' onClick={handleSimularWorkflow}>
-
+                  <FiSearch />
                   Simular Workflow
                 </button>
 
               </div>
             </Section>
 
-{/*
+
             <Section>
-              <h2 style={{ fontSize: "0.875rem", fontWeight: "500", paddingBottom: "1.0rem" }}>Ações Geradas</h2>
-     
+              <h2 style={{ fontSize: "0.875rem", fontWeight: 500, paddingBottom: "1rem" }}>
+                Ações Geradas
+              </h2>
 
-              {workflowTrigger.map((trigger) => (
-                <React.Fragment key={trigger.workflowTriggerId}>
-                
-
-                  <Timeline>
-                  
-                    <Step style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                      <span style={{ fontSize: "0.675rem", marginBottom: "0.25rem" }}>
-                        {trigger.configuration?.label}
-                      </span>
-                      <Circle>1</Circle>
-                    </Step>
-
-                    
-                    {trigger.actions && trigger.actions.length > 0 && (
-
-                      <div
-                        style={{
-                          height: "2px",
-                          width: "64px",
-                          background: "#cbd5e1",
-                          alignSelf: "center",      // mantém alinhado no centro vertical do Step
-                          marginTop: "25px"         // empurra a linha para alinhar com a bolinha
-                        }}
-                      />
-                    )}
-
-                   
-                    {trigger.actions?.map((action, index) => (
-                      <React.Fragment key={action.workflowactionId}>
-                        <Step style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                          <span style={{ fontSize: "0.675rem", marginBottom: "0.25rem" }}>
-                            {getSubjectLabel(action.configuration?.subject)}
-                          </span>
-                          <Circle>{index + 2}</Circle>
-                        </Step>
-
-                        {index < (trigger.actions?.length ?? 0) - 1 && (
-
-                          <div
-                            style={{
-                              height: "2px",
-                              width: "64px",
-                              background: "#cbd5e1",
-                              alignSelf: "center",      // mantém alinhado no centro vertical do Step
-                              marginTop: "25px"         // empurra a linha para alinhar com a bolinha
-                            }}
-                          />
-
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </Timeline>
-
-                
-                  <div style={{ display: "flex", flexDirection: "column", paddingTop: "1rem" }}>
+              {workflowTrigger.map((trigger) => {
+                const actions = triggerActionsMap[trigger.workflowTriggerId] ?? [];
 
 
-                    {trigger.actions?.map((action) => (
-                      <Card key={action.workflowactionId} style={{ marginBottom: "1rem" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between" }}>
-                          <div>
-                            <h3 style={{ fontSize: "0.675rem", fontWeight: "500" }}>
-                              {getSubjectLabel(action.configuration?.subject)}
-                            </h3>
-                            <p style={{ fontSize: "0.55rem", color: "#64748b" }}>
-                              {action.configuration?.description || "Sem descrição"}
-                            </p>
-                          </div>
-                          <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-                            <Select>
-                              <option>João</option>
-                              <option>Maria</option>
-                            </Select>
-                            <span
-                              style={{
-                                fontSize: "0.75rem",
-                                padding: "0.25rem 0.5rem",
-                                borderRadius: "9999px",
-                                background: "#fef3c7",
-                                color: "#b45309",
-                              }}
-                            >
-                              {action.configuration?.status || "Pendente"}
+                if (actions.length === 0) return null;
+
+                return (
+                  <div key={trigger.workflowTriggerId} style={{ marginBottom: "2rem" }}>
+
+                    <Timeline>
+
+                      <Step style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                        <span style={{ fontSize: "0.675rem", marginBottom: "0.25rem" }}>
+                          {trigger.configuration?.label ?? "Trigger sem nome"}
+                        </span>
+                        <Circle>1</Circle>
+                      </Step>
+
+                      {actions.length > 0 && (
+                        <div
+                          style={{
+                            height: "2px",
+                            width: "64px",
+                            background: "#cbd5e1",
+                            alignSelf: "center",
+                            marginTop: "25px",
+                          }}
+                        />
+                      )}
+
+
+                      {actions.map((action, index) => (
+                        <React.Fragment key={action.eventId}>
+                          <Step style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+
+                            <span style={{ fontSize: "0.675rem", marginBottom: "0.25rem", fontWeight: 500 }}>
+                              {getSubjectLabel(action.subjectId)}
                             </span>
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
-                    <br/><br/><br/>
-                  </div>
-                </React.Fragment>
-              ))}
 
-       
+
+                            <span style={{ fontSize: "0.6rem", color: "#64748b", marginBottom: "0.25rem" }}>
+                              {`${new Date(action.startDate).getDate().toString().padStart(2, "0")}/${new Date(action.startDate)
+                                .toLocaleDateString("pt-BR", { month: "short" })
+                                .toUpperCase()
+                                .replace(".", "")}`}
+                            </span>
+
+
+                            <Circle>{index + 2}</Circle>
+                          </Step>
+
+                          {index < actions.length - 1 && (
+                            <div
+                              style={{
+                                height: "2px",
+                                width: "64px",
+                                background: "#cbd5e1",
+                                alignSelf: "center",
+                                marginTop: "25px",
+                              }}
+                            />
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </Timeline>
+
+                    <div style={{ display: "flex", flexDirection: "column", paddingTop: "1rem" }}>
+                      {actions.map((action) => (
+                        <Card key={action.eventId} style={{ marginBottom: "1rem" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <div>
+                              <h3 style={{ fontSize: "0.675rem", fontWeight: 500 }}>{getSubjectLabel(action.subjectId)}</h3>
+                              <p style={{ fontSize: "0.55rem", color: "#64748b" }}>
+                                {action.description}
+                              </p>
+                            </div>
+
+                            <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+
+
+                              <label>Responsável</label>
+                              <input
+                                name="responsavel"
+                                type="text"
+                                placeholder="Pesquise um usuário"
+                                list={`responsible-${action.eventId}`}
+                                defaultValue={
+                                  (() => {
+                                    const id = action.responsibleList?.[0]?.userCompanyId ?? "";
+                                    if (!id) return "";
+                                    const user = userList.find(u => String(u.id) === String(id));
+                                    return user ? user.value : ""; // mostra o nome
+                                  })()
+                                }
+                              />
+
+                              <datalist id={`responsible-${action.eventId}`}>
+                                {userList.map((user) => (
+                                  <option key={user.id} value={user.value}>
+                                    {user.id}
+                                  </option>
+                                ))}
+                              </datalist>
+
+                              <span
+                                style={{
+                                  fontSize: "0.75rem",
+                                  padding: "0.25rem 0.5rem",
+                                  borderRadius: "9999px",
+                                  background: "#fef3c7",
+                                  color: "#b45309",
+                                }}
+                              >
+                                {action.status ?? "Pendente"}
+                              </span>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </Section>
 
-          */}
 
 
- <Section>
-  <h2 style={{ fontSize: "0.875rem", fontWeight: 500, paddingBottom: "1rem" }}>
-    Ações Geradas
-  </h2>
 
-  {workflowTrigger.map((trigger) => {
-    const actions = triggerActionsMap[trigger.workflowTriggerId] ?? [];
-
-    // Só renderiza se houver actions
-    if (actions.length === 0) return null;
-
-    return (
-      <div key={trigger.workflowTriggerId} style={{ marginBottom: "2rem" }}>
-        {/* Timeline das ações */}
-        <Timeline>
-          {actions.map((action, index) => (
-            <React.Fragment key={action.eventId}>
-              <Step style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <span style={{ fontSize: "0.675rem", marginBottom: "0.25rem" }}>
-                  {action.description}
-                </span>
-                <Circle>{index + 1}</Circle> {/* numeração começa em 1 */}
-              </Step>
-
-              {index < actions.length - 1 && (
-                <div
-                  style={{
-                    height: "2px",
-                    width: "64px",
-                    background: "#cbd5e1",
-                    alignSelf: "center",
-                    marginTop: "25px",
-                  }}
-                />
-              )}
-            </React.Fragment>
-          ))}
-        </Timeline>
-
-        {/* Cards das ações */}
-        <div style={{ display: "flex", flexDirection: "column", paddingTop: "1rem" }}>
-          {actions.map((action) => (
-            <Card key={action.eventId} style={{ marginBottom: "1rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <div>
-                  <h3 style={{ fontSize: "0.675rem", fontWeight: 500 }}>{action.description}</h3>
-                  <p style={{ fontSize: "0.55rem", color: "#64748b" }}>
-                    {new Date(action.startDate).toLocaleString()} -{" "}
-                    {new Date(action.endDate).toLocaleString()}
-                  </p>
-                </div>
-
-                <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-                  {/*
-                  <Select defaultValue="">
-                    <option>João</option>
-                    <option>Maria</option>
-                  </Select>
-                    */}
-
-                    <label>Responsável</label>
-                      <input
-                        name="responsavel"
-                        type="select"
-                        placeholder="Pesquise um usuário"
-                        list="responsible"
-                      />
-                      <datalist id="responsible">
-                        {userList.map(user => (
-                          <option key={user.id} value={user.value}>
-                            {user.value}
-                          </option>
-                        ))}
-                      </datalist>
-
-                  <span
-                    style={{
-                      fontSize: "0.75rem",
-                      padding: "0.25rem 0.5rem",
-                      borderRadius: "9999px",
-                      background: "#fef3c7",
-                      color: "#b45309",
-                    }}
-                  >
-                    {action.status ?? "Pendente"}
-                  </span>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  })}
-</Section>
-
-
-            {/* FOOTER */}
             <footer style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
-              <Button variant="success">Executar Workflow</Button>
-              <Button variant="danger">Excluir</Button>
-              <Button variant="outline">Status: Em andamento</Button>
+
+              <button type="button" className='buttonClick' onClick={handleExecutarWorkflow}>
+                <FiSave />
+                Executar Workflow
+              </button>
+              <button type="button" className='buttonClick'>
+                <FiTrash />
+                Excluir
+              </button>
+
+              {/*<Button variant="outline">Status: Em andamento</Button>*/}
             </footer>
 
           </Form>
