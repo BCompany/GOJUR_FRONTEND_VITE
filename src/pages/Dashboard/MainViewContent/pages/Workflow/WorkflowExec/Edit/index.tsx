@@ -19,7 +19,7 @@ import { useModal } from 'context/modal';
 import { useDocument } from 'context/document';
 import DocumentModal from 'components/Modals/CustomerModal/DocumentModal';
 import { useCustomer } from 'context/customer';
-import { IWorkflowTriggers, IWorkflowActions, IWorkflowData, ISelectValues, ITriggerAction, IReminder } from '../../Interfaces/IWorkflowEdit';
+import { IWorkflowTriggers, IWorkflowActions, IWorkflowData, ISelectValues, ITriggerAction, IWorkflowActionsExecDTO, IReminder } from '../../Interfaces/IWorkflowEdit';
 import { workflowTriggerTypes } from 'Shared/utils/commonListValues';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
 import { useConfirmBox } from 'context/confirmBox';
@@ -73,7 +73,7 @@ export default function WorkflowPage() {
   const [triggerDates, setTriggerDates] = useState<Record<number, string>>({});
   const [optionsSubject, setOptionsSubject] = useState<ISelectValues[]>([]);
   const [triggerActions, setTriggerActions] = useState<ITriggerAction[]>([]);
-  const [triggerActionsMap, setTriggerActionsMap] = useState<Record<number, ITriggerAction[]>>({});
+  const [ triggerActionsMap, setTriggerActionsMap] = useState<Record<number, ITriggerAction[]>>({});
   const [userList, setUserList] = useState<userListData[]>([]);
   const [appointmentMatter, setAppointmentMatter] = useState<MatterData | undefined>({} as MatterData); // processo associado
 
@@ -424,14 +424,14 @@ export default function WorkflowPage() {
 
       setUserList(response.data);
 
-      // setUserShareList(response.data);
     } catch (err: any) {
       console.log(err.message);
     }
   }, []);
 
 
-const handleExecutarWorkflow = async () => {
+  const handleExecutarWorkflow = async () => {
+  // Monta o JSON das triggers
   const jsonTriggers = workflowTrigger
     .filter(trigger => trigger.triggerType === "data")
     .map(trigger => ({
@@ -439,37 +439,121 @@ const handleExecutarWorkflow = async () => {
       value: triggerDates[trigger.workflowTriggerId] || ""
     }));
 
-    let matterId;
+  let matterId;
+  if (processTitle !== 'Associar Processo')
+    matterId = matterSelected?.matterId ?? null;
 
-    if (processTitle !== 'Associar Processo')
-      matterId = matterSelected?.matterId ?? null;
-    
-const allActions = Object.values(triggerActionsMap).flat(); 
+  // Todas as ações
+  const allActions = Object.values(triggerActionsMap).flat();
 
+  // Data de hoje no formato ISO
+  const today = new Date();
+  const todayISO = today.toISOString().split("T")[0];
+
+  // WorkflowActionsExecDTO com des_ExecParameters filtrado
+  const workflowActionsExec: IWorkflowActionsExecDTO[] = allActions.map((action, index) => {
+    const execParams = {
+      startDate: action.startDate,
+      endDate: action.endDate,
+      status: action.status,
+      description: action.description,
+      subjectId: action.subjectId,
+      privateEvent: action.privateEvent,
+      remindersList: action.remindersList,
+      responsibleList: action.responsibleList
+    };
+
+    return {
+      workflowactionsexecId: 0,
+      companyId,
+      workflowexecId: 0,
+      actionType: "criarcompromisso",
+      des_ExecParameters: JSON.stringify(execParams),
+      //sequence: index + 1,
+      //relatedactionId: action.relatedactionId ?? null,
+      statusType: "Pendente"
+    };
+  });
+
+  // Payload final
   const payload = {
     workflowexecId: 0,
     companyId,
     workflowId: workflow?.value ?? 0,
     matterId,
     customerId: customer?.id ?? null,
-    des_ExecParameters: JSON.stringify(jsonTriggers), 
-    startDate: '09/24/2025',
-    endDate: '09/24/2025',
+    des_ExecParameters: JSON.stringify(jsonTriggers),
+    startDate: todayISO,
+    endDate: null,
     statusType: "emandamento",
     count: null,
     eventDTO: allActions,
+    actionsExecDTO: workflowActionsExec,
     token,
     apiKey
   };
 
   console.log("Payload enviado:", payload);
 
-
-    const response = await api.put(`/WorkflowExec/Salvar`, payload);
-      
-
+  const response = await api.put(`/WorkflowExec/Salvar`, payload);
 };
 
+
+{/*
+  const handleExecutarWorkflow = async () => {
+    const jsonTriggers = workflowTrigger
+      .filter(trigger => trigger.triggerType === "data")
+      .map(trigger => ({
+        label: trigger.configuration?.label || "Trigger sem nome",
+        value: triggerDates[trigger.workflowTriggerId] || ""
+      }));
+
+    let matterId;
+
+    if (processTitle !== 'Associar Processo')
+      matterId = matterSelected?.matterId ?? null;
+
+    const allActions = Object.values(triggerActionsMap).flat();
+
+    const today = new Date(); // data de hoje
+    const todayISO = today.toISOString().split("T")[0]; // "YYYY-MM-DD"
+
+    const workflowActionsExec: IWorkflowActionsExecDTO[] = allActions.map((action, index) => ({
+      workflowactionsexecId: 0,       
+      companyId,
+      workflowexecId: 0,              
+      actionType: "criarcompromisso",  
+      //daysbeforeandafter: action.daysbeforeandafter ?? 0,
+      des_ExecParameters: JSON.stringify(action.des_ExecParameters || {}),
+      //sequence: index + 1,
+      //relatedactionId: action.relatedactionId ?? null,
+      statusType: "Pendente"
+    }));
+
+
+    const payload = {
+      workflowexecId: 0,
+      companyId,
+      workflowId: workflow?.value ?? 0,
+      matterId,
+      customerId: customer?.id ?? null,
+      des_ExecParameters: JSON.stringify(jsonTriggers),
+      startDate: todayISO,
+      endDate: null,
+      statusType: "emandamento",
+      count: null,
+      eventDTO: allActions,
+      actionsExecDTO: workflowActionsExec, 
+      token,
+      apiKey
+    };
+
+    console.log("Payload enviado:", payload);
+
+    const response = await api.put(`/WorkflowExec/Salvar`, payload);
+
+  };
+*/}
 
 
   return (
@@ -641,6 +725,19 @@ const allActions = Object.values(triggerActionsMap).flat();
                         <span style={{ fontSize: "0.675rem", marginBottom: "0.25rem" }}>
                           {trigger.configuration?.label ?? "Trigger sem nome"}
                         </span>
+
+                        {triggerDates[trigger.workflowTriggerId] && (
+                          <span style={{ fontSize: "0.6rem", color: "#64748b", marginBottom: "0.25rem" }}>
+                            {(() => {
+                              const [year, month, day] = triggerDates[trigger.workflowTriggerId].split("-").map(Number);
+                              const date = new Date(year, month - 1, day); // JS: mês é 0-based
+                              return `${date.getDate().toString().padStart(2, "0")}/${date
+                                .toLocaleDateString("pt-BR", { month: "short" })
+                                .toUpperCase()
+                                .replace(".", "")}`;
+                            })()}
+                          </span>
+                        )}
                         <Circle>1</Circle>
                       </Step>
 
@@ -651,7 +748,7 @@ const allActions = Object.values(triggerActionsMap).flat();
                             width: "64px",
                             background: "#cbd5e1",
                             alignSelf: "center",
-                            marginTop: "25px",
+                            marginTop: "70px",
                           }}
                         />
                       )}
@@ -684,7 +781,7 @@ const allActions = Object.values(triggerActionsMap).flat();
                                 width: "64px",
                                 background: "#cbd5e1",
                                 alignSelf: "center",
-                                marginTop: "25px",
+                                marginTop: "70px",
                               }}
                             />
                           )}
@@ -707,34 +804,40 @@ const allActions = Object.values(triggerActionsMap).flat();
 
 
                               <label>Responsável</label>
-                              <input
-                                name="responsavel"
-                                type="text"
-                                placeholder="Pesquise um usuário"
-                                list={`responsible-${action.eventId}`}
-                                defaultValue={
-                                  (() => {
-                                    const id = action.responsibleList?.[0]?.userCompanyId ?? "";
-                                    if (!id) return "";
-                                    const user = userList.find(u => String(u.id) === String(id));
-                                    return user ? user.value : ""; // mostra o nome
-                                  })()
-                                }
+
+
+                              <Select
+                                isMulti
+                                name={`responsavel-${action.eventId}`}
+                                placeholder="Selecione usuários"
+                                options={userList.map((user) => ({
+                                  value: user.id,
+                                  label: user.value,
+                                }))}
+                                defaultValue={action.responsibleList?.map((resp) => {
+                                  const user = userList.find((u) => String(u.id) === String(resp.userCompanyId));
+                                  return user ? { value: user.id, label: user.value } : null;
+                                }).filter(Boolean)}
+                                onChange={(selectedOptions) => {
+
+                                  console.log("Usuários selecionados:", selectedOptions);
+
+                                }}
+                                styles={{
+                                  control: (base) => ({
+                                    ...base,
+                                    width: "350px",
+                                    minWidth: "160px",
+                                  })
+                                }}
                               />
 
-                              <datalist id={`responsible-${action.eventId}`}>
-                                {userList.map((user) => (
-                                  <option key={user.id} value={user.value}>
-                                    {user.id}
-                                  </option>
-                                ))}
-                              </datalist>
 
                               <span
                                 style={{
                                   fontSize: "0.75rem",
                                   padding: "0.25rem 0.5rem",
-                                  borderRadius: "9999px",
+                                  borderRadius: "0px",
                                   background: "#fef3c7",
                                   color: "#b45309",
                                 }}

@@ -92,3 +92,15 @@ export interface ITriggerAction {
   viewName: string | null;
   isConfirmSave: boolean;
 }
+
+export interface IWorkflowActionsExecDTO {
+  workflowactionsexecId: number;
+  companyId: number;
+  workflowexecId: number;
+  actionType: string;
+  daysbeforeandafter: number;
+  des_ExecParameters: string;
+  sequence: number;
+  relatedactionId?: number | null; // opcional, pode ser null
+  statusType: string;
+}
