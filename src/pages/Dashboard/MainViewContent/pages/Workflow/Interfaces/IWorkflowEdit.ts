@@ -79,6 +79,7 @@ export interface ITriggerAction {
   publicationId: number;
   matterEventId: number;
   businessId: number;
+  daysBeforeAndAfter: number;
   token: string | null;
   remindersList: IReminder[];
   responsibleList: IResponsible[];  
@@ -98,7 +99,7 @@ export interface IWorkflowActionsExecDTO {
   companyId: number;
   workflowexecId: number;
   actionType: string;
-  daysbeforeandafter: number;
+  daysBeforeAndAfter: number;
   des_ExecParameters: string;
   sequence: number;
   relatedactionId?: number | null; // opcional, pode ser null

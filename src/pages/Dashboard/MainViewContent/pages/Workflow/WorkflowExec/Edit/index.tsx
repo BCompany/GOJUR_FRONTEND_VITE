@@ -471,6 +471,7 @@ export default function WorkflowPage() {
       des_ExecParameters: JSON.stringify(execParams),
       //sequence: index + 1,
       //relatedactionId: action.relatedactionId ?? null,
+      daysBeforeAndAfter: action.daysBeforeAndAfter,
       statusType: "Pendente"
     };
   });
