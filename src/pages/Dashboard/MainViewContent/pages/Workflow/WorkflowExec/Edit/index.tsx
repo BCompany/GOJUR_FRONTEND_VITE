@@ -52,6 +52,7 @@ interface IOption {
 
 export default function WorkflowPage() {
 
+    const { addToast } = useToast();
   const [isPagination, setIsPagination] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -73,7 +74,7 @@ export default function WorkflowPage() {
   const [triggerDates, setTriggerDates] = useState<Record<number, string>>({});
   const [optionsSubject, setOptionsSubject] = useState<ISelectValues[]>([]);
   const [triggerActions, setTriggerActions] = useState<ITriggerAction[]>([]);
-  const [ triggerActionsMap, setTriggerActionsMap] = useState<Record<number, ITriggerAction[]>>({});
+  const [triggerActionsMap, setTriggerActionsMap] = useState<Record<number, ITriggerAction[]>>({});
   const [userList, setUserList] = useState<userListData[]>([]);
   const [appointmentMatter, setAppointmentMatter] = useState<MatterData | undefined>({} as MatterData); // processo associado
 
@@ -431,76 +432,102 @@ export default function WorkflowPage() {
 
 
   const handleExecutarWorkflow = async () => {
-  // Monta o JSON das triggers
-  const jsonTriggers = workflowTrigger
-    .filter(trigger => trigger.triggerType === "data")
-    .map(trigger => ({
-      label: trigger.configuration?.label || "Trigger sem nome",
-      value: triggerDates[trigger.workflowTriggerId] || ""
-    }));
+    // Monta o JSON das triggers
+    const jsonTriggers = workflowTrigger
+      .filter(trigger => trigger.triggerType === "data")
+      .map(trigger => ({
+        label: trigger.configuration?.label || "Trigger sem nome",
+        value: triggerDates[trigger.workflowTriggerId] || ""
+      }));
 
-  let matterId;
-  if (processTitle !== 'Associar Processo')
-    matterId = matterSelected?.matterId ?? null;
+    let matterId;
+    if (processTitle !== 'Associar Processo')
+      matterId = matterSelected?.matterId ?? null;
 
-  // Todas as ações
-  const allActions = Object.values(triggerActionsMap).flat();
+    // Todas as ações
+    const allActions = Object.values(triggerActionsMap).flat();
 
-  // Data de hoje no formato ISO
-  const today = new Date();
-  const todayISO = today.toISOString().split("T")[0];
+    // Data de hoje no formato ISO
+    const today = new Date();
+    const todayISO = today.toISOString().split("T")[0];
 
-  // WorkflowActionsExecDTO com des_ExecParameters filtrado
-  const workflowActionsExec: IWorkflowActionsExecDTO[] = allActions.map((action, index) => {
-    const execParams = {
-      startDate: action.startDate,
-      endDate: action.endDate,
-      status: action.status,
-      description: action.description,
-      subjectId: action.subjectId,
-      privateEvent: action.privateEvent,
-      remindersList: action.remindersList,
-      responsibleList: action.responsibleList
-    };
+    // WorkflowActionsExecDTO com des_ExecParameters filtrado
+    const workflowActionsExec: IWorkflowActionsExecDTO[] = allActions.map((action, index) => {
+      const execParams = {
+        startDate: action.startDate,
+        endDate: action.endDate,
+        status: action.status,
+        description: action.description,
+        subjectId: action.subjectId,
+        privateEvent: action.privateEvent,
+        remindersList: action.remindersList,
+        responsibleList: action.responsibleList
+      };
 
-    return {
-      workflowactionsexecId: 0,
-      companyId,
+      return {
+        workflowactionsexecId: 0,
+        companyId,
+        workflowexecId: 0,
+        actionType: "criarcompromisso",
+        des_ExecParameters: JSON.stringify(execParams),
+        //sequence: index + 1,
+        //relatedactionId: action.relatedactionId ?? null,
+        daysBeforeAndAfter: action.daysBeforeAndAfter,
+        statusType: "Pendente"
+      };
+    });
+
+    // Payload final
+    const payload = {
       workflowexecId: 0,
-      actionType: "criarcompromisso",
-      des_ExecParameters: JSON.stringify(execParams),
-      //sequence: index + 1,
-      //relatedactionId: action.relatedactionId ?? null,
-      daysBeforeAndAfter: action.daysBeforeAndAfter,
-      statusType: "Pendente"
+      companyId,
+      workflowId: workflow?.value ?? 0,
+      matterId,
+      customerId: customer?.id ?? null,
+      des_ExecParameters: JSON.stringify(jsonTriggers),
+      startDate: todayISO,
+      endDate: null,
+      statusType: "emandamento",
+      count: null,
+      eventDTO: allActions,
+      actionsExecDTO: workflowActionsExec,
+      token,
+      apiKey
     };
-  });
 
-  // Payload final
-  const payload = {
-    workflowexecId: 0,
-    companyId,
-    workflowId: workflow?.value ?? 0,
-    matterId,
-    customerId: customer?.id ?? null,
-    des_ExecParameters: JSON.stringify(jsonTriggers),
-    startDate: todayISO,
-    endDate: null,
-    statusType: "emandamento",
-    count: null,
-    eventDTO: allActions,
-    actionsExecDTO: workflowActionsExec,
-    token,
-    apiKey
+    console.log("Payload enviado:", payload);
+
+    try {
+
+      const response = await api.put(`/WorkflowExec/Salvar`, payload);
+
+        addToast({
+        type: "success",
+        title: "Workflow salvo",
+        description: workflow.workflowId ? "As alterações feitas no ao executar o workflow foram salvas" : "Workflow adicionado"
+      })
+
+
+    } catch (err: any) {
+      const status = err.response?.data?.statusCode;  // protegemos com ?.
+      const message = err.response?.data?.Message || err.message || "Erro desconhecido";
+
+      // eslint-disable-next-line no-alert
+      if (status !== 500) {
+
+        addToast({
+          type: "error",
+          title: "Falha ao Executar Workflow",
+          description: message
+        })
+      }
+
+    }
+
   };
 
-  console.log("Payload enviado:", payload);
 
-  const response = await api.put(`/WorkflowExec/Salvar`, payload);
-};
-
-
-{/*
+  {/*
   const handleExecutarWorkflow = async () => {
     const jsonTriggers = workflowTrigger
       .filter(trigger => trigger.triggerType === "data")
@@ -806,7 +833,7 @@ export default function WorkflowPage() {
 
                               <label>Responsável</label>
 
-
+                              {/*
                               <Select
                                 isMulti
                                 name={`responsavel-${action.eventId}`}
@@ -829,8 +856,65 @@ export default function WorkflowPage() {
                                     ...base,
                                     width: "350px",
                                     minWidth: "160px",
-                                  })
+                                  }),
+                                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                  option: (base) => ({
+                                    ...base,
+                                    fontSize: "0.7rem", // tamanho da fonte da listagem
+                                  }),
+                                  multiValueLabel: (base) => ({
+                                    ...base,
+                                    fontSize: "0.7rem", // tamanho da fonte dos selecionados
+                                  }),
                                 }}
+                                menuPortalTarget={document.body}
+                              />
+                                */}
+
+
+
+                              <Select
+                                isMulti
+                                name={`responsavel-${action.eventId}`}
+                                placeholder="Selecione usuários"
+                                options={userList.map((user) => ({
+                                  value: user.id,
+                                  label: user.value,
+                                }))}
+                                defaultValue={action.responsibleList?.map((resp) => {
+                                  const user = userList.find(
+                                    (u) => String(u.id) === String(resp.userCompanyId)
+                                  );
+                                  return user ? { value: user.id, label: user.value } : null;
+                                }).filter(Boolean)}
+                                onChange={(selectedOptions) => {
+                                  // converte as opções selecionadas para o formato de responsibleList
+                                  const newResponsibleList = selectedOptions?.map((option) => ({
+                                    userCompanyId: option.value, userType: "C"
+                                  })) ?? [];
+
+                                  // atualiza a lista dentro da action
+                                  action.responsibleList = newResponsibleList;
+
+                                  console.log("Atualizado:", action.responsibleList);
+                                }}
+                                styles={{
+                                  control: (base) => ({
+                                    ...base,
+                                    width: "350px",
+                                    minWidth: "160px",
+                                  }),
+                                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                  option: (base) => ({
+                                    ...base,
+                                    fontSize: "0.7rem",
+                                  }),
+                                  multiValueLabel: (base) => ({
+                                    ...base,
+                                    fontSize: "0.7rem",
+                                  }),
+                                }}
+                                menuPortalTarget={document.body}
                               />
 
 

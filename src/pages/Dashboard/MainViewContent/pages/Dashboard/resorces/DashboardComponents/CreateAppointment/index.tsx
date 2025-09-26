@@ -363,6 +363,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         if (data.blockUpdate === true) {
           setPrivacyChange(!privacyChange);
         }
+
+        //setAppointmentBlockUpdate(false);
         setAppointmentBlockUpdate(data.blockUpdate);
       } 
       else {
