@@ -107,7 +107,7 @@ const WorkflowList = () => {
       setMatterRedirect(true)   
       setMatterFileId(localStorage.getItem('@Gojur:matterId'))  
       localStorage.removeItem('@Gojur:matterId')
-      localStorage.removeItem('@Gojur:matterRedirect')
+      //localStorage.removeItem('@Gojur:matterRedirect')
         
     }   
     
@@ -116,13 +116,13 @@ const WorkflowList = () => {
       setCustomerRedirect(true)   
       setCustomerFileId(localStorage.getItem('@Gojur:customerId'))  
       localStorage.removeItem('@Gojur:customerId')  
-      localStorage.removeItem('@Gojur:customerRedirect') 
+      //localStorage.removeItem('@Gojur:customerRedirect') 
     }
 
     const redirectByCalendar = localStorage.getItem('@Gojur:calendarRedirect') 
     if (redirectByCalendar == "S"){
       setCalendarRedirect(true);   
-      localStorage.removeItem('@Gojur:calendarRedirect')
+      //localStorage.removeItem('@Gojur:calendarRedirect')
     }
   
  
@@ -431,18 +431,19 @@ const CustomCell = (props) => {
   // CELL CLICK
   const handleClick = (props: any) => {
 
+    console.log(props.row);
     if (props.column.name === 'edit') {
-      handleEdit(props.row.workflowId)
+      handleEdit(props.row.workflowexecId)
     }
 
     if (props.column.name === 'remove') {
-      deleteWorkflow(props.row.workflowId)
+      deleteWorkflow(props.row.workflowexecId)
     }
   }
 
   // EDIT
   const handleEdit = async (id: number) => {
-    history.push(`/workflow/editx/${id}`)
+    history.push(`/workflowexec/edit/${id}`)
   };
 
   // DELETE
@@ -556,7 +557,7 @@ const CustomCell = (props) => {
                   className="buttonClick"
                   title="Clique para incluir um Workflow"
                   type="submit"
-                  onClick={() => history.push('/Workflow/editx/0')}
+                  onClick={() => history.push('/WorkflowExec/edit/0')}
                 >
                   <FaFileAlt />
                   Iniciar Novo Workflow

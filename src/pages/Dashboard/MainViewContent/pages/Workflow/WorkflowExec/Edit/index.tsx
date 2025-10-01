@@ -78,6 +78,8 @@ export default function WorkflowPage() {
   const [workflowExecId, setWorkflowExecId] = useState<number>(0);
   const [workflowExec, setWorkflowExec] = useState<any>(null);
   const [refresh, setRefresh] = useState(0);
+ const [blockUpdate, setBlockUpdate] = useState(false);
+
 
   const customStyles = {
     input: (provided: any) => ({
@@ -518,7 +520,7 @@ export default function WorkflowPage() {
 
 
     const payload = {
-      workflowexecId: 0,
+      workflowexecId: workflowExecId ? workflowExecId : 0,
       companyId,
       workflowId: workflow?.value ?? 0,
       matterId,
@@ -543,7 +545,8 @@ export default function WorkflowPage() {
       const id = Number(response.data);
       setWorkflowExecId(id);
 
-      //await loadWorkflowExec(id);
+      setTriggerActionsMap({});
+      await loadWorkflowExec(id);
 
       addToast({
         type: "success",
@@ -572,8 +575,7 @@ export default function WorkflowPage() {
 
 
   useEffect(() => {
-    loadWorkflowExec(0);
-
+      loadWorkflowExec(pathname.substr(19));
   }, [])
 
 
@@ -691,18 +693,22 @@ export default function WorkflowPage() {
   */
 
   const loadWorkflowExec = useCallback(async (workflowExecIdParam: number) => {
-    const workflowExecId = pathname.substr(19);
+    //let workflowExecId = pathname.substr(19);
+
+    if (workflowExecIdParam == 0) {
+        return
+    }
 
     try {
       const response = await api.get('/WorkflowExec/SelecionarExec', {
         params: {
-          id: Number(workflowExecId),
+          id: Number(workflowExecIdParam),
           token,
         },
       });
 
       setWorkflowExec(response.data);
-
+      setBlockUpdate(true);
 
       const execParams: { label: string; value: string; workflowTriggerId: number }[] =
         response.data.des_ExecParameters
@@ -889,6 +895,7 @@ export default function WorkflowPage() {
                       option.label.toLowerCase().includes(inputValue.toLowerCase())
                     }
                     classNamePrefix="rs"
+                    isDisabled={blockUpdate}
                   />
 
                 </div>
@@ -905,6 +912,7 @@ export default function WorkflowPage() {
                         type="button"
                         id="associar"
                         onClick={handleGridSelectProcess}
+                         disabled={blockUpdate}
                       >
                         <p>{processTitle}</p>
                       </button>
@@ -922,6 +930,7 @@ export default function WorkflowPage() {
                       <button
                         type="button"
                         onClick={handleGridSelectProcess}
+                         disabled={blockUpdate}
                       >
                         <RiFolder2Fill />
                       </button>
@@ -930,6 +939,7 @@ export default function WorkflowPage() {
                     {processTitle !== 'Associar Processo' && (
                       <button
                         type="button"
+                         disabled={blockUpdate}
                         onClick={() => {
                           setProcessTitle('Associar Processo');
                           setAppointmentMatter(undefined);
@@ -960,6 +970,7 @@ export default function WorkflowPage() {
                     filterOption={(option, inputValue) =>
                       option.label.toLowerCase().includes(inputValue.toLowerCase())
                     }
+                    isDisabled={blockUpdate}
                   />
 
                 </div>
@@ -977,6 +988,7 @@ export default function WorkflowPage() {
                             [trigger.workflowTriggerId]: e.target.value,
                           }))
                         }
+                        disabled={blockUpdate}
                       />
                     </div>
                   )
@@ -986,7 +998,7 @@ export default function WorkflowPage() {
 
               <div style={{ marginTop: "1rem", marginBottom: "3rem" }}>
 
-                <button type="button" className='buttonClick' onClick={handleSimularWorkflow}>
+                <button type="button" className='buttonClick' onClick={handleSimularWorkflow} disabled={blockUpdate}>
                   <FiSearch />
                   Simular Workflow
                 </button>
@@ -1094,53 +1106,7 @@ export default function WorkflowPage() {
 
 
                               <label>Responsável</label>
-                              {/*
-                              <Select
-                                isMulti
-                                name={`responsavel-${action.eventId}`}
-                                placeholder="Selecione usuários"
-                                options={userList.map((user) => ({
-                                  value: user.id,
-                                  label: user.value,
-                                }))}
-                                defaultValue={action.responsibleList?.map((resp) => {
-                                  const user = userList.find(
-                                    (u) => String(u.id) === String(resp.userCompanyId)
-                                  );
-                                  return user ? { value: user.id, label: user.value } : null;
-                                }).filter(Boolean)}
-                                onChange={(selectedOptions) => {
-                                  // converte as opções selecionadas para o formato de responsibleList
-                                  const newResponsibleList = selectedOptions?.map((option) => ({
-                                    userCompanyId: option.value, userType: "C"
-                                  })) ?? [];
-
-                                  // atualiza a lista dentro da action
-                                  action.responsibleList = newResponsibleList;
-
-                                  console.log("Atualizado:", action.responsibleList);
-
-                                }}
-                                styles={{
-                                  control: (base) => ({
-                                    ...base,
-                                    width: "350px",
-                                    minWidth: "160px",
-                                  }),
-                                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                                  option: (base) => ({
-                                    ...base,
-                                    fontSize: "0.7rem",
-                                  }),
-                                  multiValueLabel: (base) => ({
-                                    ...base,
-                                    fontSize: "0.7rem",
-                                  }),
-                                }}
-                                menuPortalTarget={document.body}
-                              />
-                                */}
-
+                             
                               <Select
                                 isMulti
                                 name={`responsavel-${action.eventId}`}
@@ -1155,18 +1121,19 @@ export default function WorkflowPage() {
                                   );
                                   return user ? { value: user.id, label: user.value } : null;
                                 }).filter(Boolean)}
-
                                 onChange={(selectedOptions) => {
+                                  // converte as opções selecionadas para o formato de responsibleList
                                   const newResponsibleList = selectedOptions?.map((option) => ({
-                                    userCompanyId: option.value,
-                                    userType: "C"
+                                    userCompanyId: option.value, userType: "C"
                                   })) ?? [];
 
+                                  // atualiza a lista dentro da action
                                   action.responsibleList = newResponsibleList;
 
-                                  console.log("Atualizado:", action.responsibleList);
-                                }}
+                                  setTriggerActionsMap((prev) => ({ ...prev }));
 
+                                }}
+                                isDisabled={blockUpdate}
                                 styles={{
                                   control: (base) => ({
                                     ...base,
@@ -1185,6 +1152,8 @@ export default function WorkflowPage() {
                                 }}
                                 menuPortalTarget={document.body}
                               />
+                               
+
 
                               <span
                                 style={{
@@ -1212,10 +1181,14 @@ export default function WorkflowPage() {
 
             <footer style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
 
+          {blockUpdate === false && (
               <button type="button" className='buttonClick' onClick={handleExecutarWorkflow}>
                 <FiSave />
                 Executar Workflow
               </button>
+        )}
+
+
               <button type="button" className='buttonClick'>
                 <FiTrash />
                 Excluir
