@@ -92,6 +92,7 @@ export interface ITriggerAction {
   dateRecurrence: string | null;
   viewName: string | null;
   isConfirmSave: boolean;
+  workflowTriggerId: number | null;
 }
 
 export interface IWorkflowActionsExecDTO {
@@ -104,4 +105,16 @@ export interface IWorkflowActionsExecDTO {
   sequence: number;
   relatedactionId?: number | null; // opcional, pode ser null
   statusType: string;
+}
+
+
+export interface IActionExecParams {
+  startDate: string;
+  endDate: string;
+  status: string | null;
+  description: string;
+  subjectId: number;
+  privateEvent: string;
+  remindersList: IReminder[];
+  responsibleList: IResponsible[];
 }

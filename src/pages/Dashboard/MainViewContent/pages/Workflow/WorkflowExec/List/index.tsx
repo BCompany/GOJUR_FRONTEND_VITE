@@ -124,9 +124,10 @@ const WorkflowList = () => {
       setCalendarRedirect(true);   
       localStorage.removeItem('@Gojur:calendarRedirect')
     }
-    
-  }
-
+  
+ 
+  } 
+  
 
 useEffect(() => {
   const setup = async () => {
@@ -138,10 +139,9 @@ useEffect(() => {
     setIsLoading(true);
     setPageNumber(1);
     setIsEndPage(false);
-   
-  
-    if (!matterRedirect && !customerRedirect && !calendarRedirect) return;
 
+    if (!matterRedirect && !customerRedirect && !calendarRedirect) return;
+    
     await LoadWorkflow('initialize');
   };
 
@@ -264,7 +264,7 @@ useEffect(() => {
       const filterClause = filters.join(", "); 
 
 
-      const response = await api.get<IWorkflowData[]>('/Workflow/ListarExec', {
+      const response = await api.get<IWorkflowData[]>('/WorkflowExec/ListarExec', {
         params: {
           page,
           rows: 20,

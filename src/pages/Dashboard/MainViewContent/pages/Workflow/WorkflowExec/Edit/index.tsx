@@ -35,24 +35,22 @@ import { ISelectData } from '../../../Interfaces/IMatter';
 import GridSelectProcess from 'pages/Dashboard/MainViewContent/pages/Dashboard/resorces/DashboardComponents/CreateAppointment/GridSelectProcess';
 import { IMatterData } from 'pages/Dashboard/MainViewContent/pages/Interfaces/IMatter';
 
-/*
-export interface IWorkflowData{
-    workflowId: number;
-    name: string;
-    //totalRows: number;
-}
-*/
-
 
 interface IOption {
   value: number;
   label: string;
 }
 
+interface IExecParameter {
+  label: string;
+  value: string;
+}
+
 
 export default function WorkflowPage() {
 
-    const { addToast } = useToast();
+  const { addToast } = useToast();
+  const { pathname } = useLocation();
   const [isPagination, setIsPagination] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -77,7 +75,9 @@ export default function WorkflowPage() {
   const [triggerActionsMap, setTriggerActionsMap] = useState<Record<number, ITriggerAction[]>>({});
   const [userList, setUserList] = useState<userListData[]>([]);
   const [appointmentMatter, setAppointmentMatter] = useState<MatterData | undefined>({} as MatterData); // processo associado
-
+  const [workflowExecId, setWorkflowExecId] = useState<number>(0);
+  const [workflowExec, setWorkflowExec] = useState<any>(null);
+  const [refresh, setRefresh] = useState(0);
 
   const customStyles = {
     input: (provided: any) => ({
@@ -126,6 +126,7 @@ export default function WorkflowPage() {
     ListWorkflow("")
     LoadSubject();
     LoadUserList();
+
   }, [])
 
 
@@ -340,6 +341,36 @@ export default function WorkflowPage() {
   };
 
 
+  /*
+    const fetchTriggerActions = async (triggerId: number): Promise<ITriggerAction[]> => {
+      try {
+        const token = localStorage.getItem('@GoJur:token');
+        const selectedDate = triggerDates[triggerId];
+  
+        let matterId;
+  
+        if (processTitle !== 'Associar Processo')
+          matterId = matterSelected?.matterId ?? null;
+  
+        const response = await api.post(`/WorkflowExec/ListarAcoesSimulacao`, {
+          workflowTriggerId: triggerId,
+          value: selectedDate,
+          triggerType: "data",
+          matterId,
+          token
+        });
+  
+        console.log("Retorno API:", response.data);
+        return response.data;
+      } catch (error) {
+        console.error("Erro ao carregar ações do compromisso.", error);
+        return [];
+      }
+    };
+  
+  */
+
+
 
   const fetchTriggerActions = async (triggerId: number): Promise<ITriggerAction[]> => {
     try {
@@ -347,11 +378,10 @@ export default function WorkflowPage() {
       const selectedDate = triggerDates[triggerId];
 
       let matterId;
-
       if (processTitle !== 'Associar Processo')
         matterId = matterSelected?.matterId ?? null;
 
-      const response = await api.post(`/Workflow/ListarAcoesSimulacao`, {
+      const response = await api.post(`/WorkflowExec/ListarAcoesSimulacao`, {
         workflowTriggerId: triggerId,
         value: selectedDate,
         triggerType: "data",
@@ -360,13 +390,20 @@ export default function WorkflowPage() {
       });
 
       console.log("Retorno API:", response.data);
-      return response.data;
+
+      // Forçar o vínculo do workflowTriggerId em cada action
+      const actionsWithTriggerId: ITriggerAction[] = response.data.map((action: ITriggerAction) => ({
+        ...action,
+        workflowTriggerId: triggerId
+      }));
+
+      return actionsWithTriggerId;
+
     } catch (error) {
       console.error("Erro ao carregar ações do compromisso.", error);
       return [];
     }
   };
-
 
 
   const handleSimularWorkflow = async () => {
@@ -432,26 +469,27 @@ export default function WorkflowPage() {
 
 
   const handleExecutarWorkflow = async () => {
-    // Monta o JSON das triggers
+
     const jsonTriggers = workflowTrigger
       .filter(trigger => trigger.triggerType === "data")
       .map(trigger => ({
         label: trigger.configuration?.label || "Trigger sem nome",
-        value: triggerDates[trigger.workflowTriggerId] || ""
+        value: triggerDates[trigger.workflowTriggerId] || "",
+        workflowTriggerId: trigger.workflowTriggerId
       }));
 
     let matterId;
     if (processTitle !== 'Associar Processo')
       matterId = matterSelected?.matterId ?? null;
 
-    // Todas as ações
+
     const allActions = Object.values(triggerActionsMap).flat();
 
-    // Data de hoje no formato ISO
+
     const today = new Date();
     const todayISO = today.toISOString().split("T")[0];
 
-    // WorkflowActionsExecDTO com des_ExecParameters filtrado
+
     const workflowActionsExec: IWorkflowActionsExecDTO[] = allActions.map((action, index) => {
       const execParams = {
         startDate: action.startDate,
@@ -461,7 +499,8 @@ export default function WorkflowPage() {
         subjectId: action.subjectId,
         privateEvent: action.privateEvent,
         remindersList: action.remindersList,
-        responsibleList: action.responsibleList
+        responsibleList: action.responsibleList,
+        workflowTriggerId: action.workflowTriggerId
       };
 
       return {
@@ -477,7 +516,7 @@ export default function WorkflowPage() {
       };
     });
 
-    // Payload final
+
     const payload = {
       workflowexecId: 0,
       companyId,
@@ -501,7 +540,12 @@ export default function WorkflowPage() {
 
       const response = await api.put(`/WorkflowExec/Salvar`, payload);
 
-        addToast({
+      const id = Number(response.data);
+      setWorkflowExecId(id);
+
+      //await loadWorkflowExec(id);
+
+      addToast({
         type: "success",
         title: "Workflow salvo",
         description: workflow.workflowId ? "As alterações feitas no ao executar o workflow foram salvas" : "Workflow adicionado"
@@ -509,7 +553,7 @@ export default function WorkflowPage() {
 
 
     } catch (err: any) {
-      const status = err.response?.data?.statusCode;  // protegemos com ?.
+      const status = err.response?.data?.statusCode;
       const message = err.response?.data?.Message || err.message || "Erro desconhecido";
 
       // eslint-disable-next-line no-alert
@@ -527,61 +571,279 @@ export default function WorkflowPage() {
   };
 
 
-  {/*
-  const handleExecutarWorkflow = async () => {
-    const jsonTriggers = workflowTrigger
-      .filter(trigger => trigger.triggerType === "data")
-      .map(trigger => ({
-        label: trigger.configuration?.label || "Trigger sem nome",
-        value: triggerDates[trigger.workflowTriggerId] || ""
-      }));
+  useEffect(() => {
+    loadWorkflowExec(0);
 
-    let matterId;
-
-    if (processTitle !== 'Associar Processo')
-      matterId = matterSelected?.matterId ?? null;
-
-    const allActions = Object.values(triggerActionsMap).flat();
-
-    const today = new Date(); // data de hoje
-    const todayISO = today.toISOString().split("T")[0]; // "YYYY-MM-DD"
-
-    const workflowActionsExec: IWorkflowActionsExecDTO[] = allActions.map((action, index) => ({
-      workflowactionsexecId: 0,       
-      companyId,
-      workflowexecId: 0,              
-      actionType: "criarcompromisso",  
-      //daysbeforeandafter: action.daysbeforeandafter ?? 0,
-      des_ExecParameters: JSON.stringify(action.des_ExecParameters || {}),
-      //sequence: index + 1,
-      //relatedactionId: action.relatedactionId ?? null,
-      statusType: "Pendente"
-    }));
+  }, [])
 
 
-    const payload = {
-      workflowexecId: 0,
-      companyId,
-      workflowId: workflow?.value ?? 0,
-      matterId,
-      customerId: customer?.id ?? null,
-      des_ExecParameters: JSON.stringify(jsonTriggers),
-      startDate: todayISO,
-      endDate: null,
-      statusType: "emandamento",
-      count: null,
-      eventDTO: allActions,
-      actionsExecDTO: workflowActionsExec, 
-      token,
-      apiKey
-    };
+  /*
+  const loadWorkflowExec = useCallback(async (workflowExecIdParam: number) => {
+    const workflowExecId = pathname.substr(19);
+  
+    try {
+      const response = await api.get('/WorkflowExec/SelecionarExec', {
+        params: {
+          id: Number(workflowExecId),
+          token,
+        },
+      });
+  
+      setWorkflowExec(response.data);
+  
+      const execParams: { label: string; value: string }[] = response.data.des_ExecParameters
+        ? JSON.parse(response.data.des_ExecParameters)
+        : [];
+  
+  
+      const newTriggers: IWorkflowTriggers[] = execParams.map((param, idx) => {
+        const triggerId = idx; // previsível e consistente
+        const firstAction: IWorkflowActions = {
+          workflowactionId: idx, 
+          companyId,
+          workflowtriggerId: triggerId,
+          actionType: "criarcompromisso",
+          daysbeforeandafter: 0,
+        };
+  
+        return {
+          workflowTriggerId: triggerId,
+          companyId,
+          workflowId: response.data.workflowId,
+          triggerType: "data",
+          configuration: { label: param.label },
+          actions: [firstAction],
+        };
+      });
+  
+      setWorkflowTrigger(newTriggers);
+  
+    
+      const newTriggerDates: { [key: number]: string } = {};
+      newTriggers.forEach((trigger, idx) => {
+        newTriggerDates[trigger.workflowTriggerId] = execParams[idx]?.value ?? "";
+      });
+      setTriggerDates(newTriggerDates);
+  
+   
+      const newTriggerActionsMap: { [key: number]: any[] } = {};
+  
+      console.log('actionsExecDTO length:', (response.data.actionsExecDTO || []).length);
+      (response.data.actionsExecDTO || []).forEach((action: any, idx: number) => {
+        let parsedParams: any = null;
+        try {
+          parsedParams = action.des_ExecParameters ? JSON.parse(action.des_ExecParameters) : null;
+        } catch (e) {
+          console.error("Erro ao parsear action.des_ExecParameters:", e, action.des_ExecParameters);
+        }
+  
+     
+        let triggerIndex: number | null = null;
+  
+      
+        if (typeof action.sequence === 'number' && !Number.isNaN(action.sequence)) {
+  
+          triggerIndex = action.sequence >= 1 ? action.sequence - 1 : action.sequence;
+        }
+  
+  
+        if (triggerIndex === null && (action.relatedactionId !== undefined && action.relatedactionId !== null)) {
+          const foundIndex = newTriggers.findIndex(t => t.actions?.[0]?.workflowactionId === action.relatedactionId);
+          if (foundIndex >= 0) triggerIndex = foundIndex;
+        }
+  
+  
+        if (triggerIndex === null) {
+          triggerIndex = idx;
+        }
+  
+  
+        if (triggerIndex < 0 || triggerIndex >= newTriggers.length) {
+          console.warn('triggerIndex fora do range para action', { idx, triggerIndex, newTriggersLength: newTriggers.length, action });
+          return;
+        }
+  
+        const trigger = newTriggers[triggerIndex];
+        const key = trigger.workflowTriggerId;
+  
+        if (!newTriggerActionsMap[key]) newTriggerActionsMap[key] = [];
+  
+        newTriggerActionsMap[key].push({
+          eventId: action.workflowactionsexecId,
+          actionType: action.actionType,
+          status: action.statusType,
+          description: parsedParams?.description ?? "",
+          subjectId: parsedParams?.subjectId ?? null,
+          startDate: parsedParams?.startDate ?? null,
+          endDate: parsedParams?.endDate ?? null,
+          responsibleList: parsedParams?.responsibleList ?? [],
+          remindersList: parsedParams?.remindersList ?? [],
+        });
+      });
+  
+      console.log('newTriggerActionsMap', newTriggerActionsMap);
+      setTriggerActionsMap(newTriggerActionsMap);
+  
+    } catch (err) {
+      console.error("Erro ao carregar WorkflowExec:", err);
+    }
+  }, [token, companyId, pathname]);
+  */
 
-    console.log("Payload enviado:", payload);
+  const loadWorkflowExec = useCallback(async (workflowExecIdParam: number) => {
+    const workflowExecId = pathname.substr(19);
 
-    const response = await api.put(`/WorkflowExec/Salvar`, payload);
+    try {
+      const response = await api.get('/WorkflowExec/SelecionarExec', {
+        params: {
+          id: Number(workflowExecId),
+          token,
+        },
+      });
 
-  };
-*/}
+      setWorkflowExec(response.data);
+
+
+      const execParams: { label: string; value: string; workflowTriggerId: number }[] =
+        response.data.des_ExecParameters
+          ? JSON.parse(response.data.des_ExecParameters)
+          : [];
+
+      const newTriggers: IWorkflowTriggers[] = execParams.map((param) => {
+        const triggerId = param.workflowTriggerId;
+
+        const firstAction: IWorkflowActions = {
+          workflowactionId: Math.random(),
+          companyId,
+          workflowtriggerId: triggerId,
+          actionType: "criarcompromisso",
+          daysbeforeandafter: 0,
+        };
+
+        return {
+          workflowTriggerId: triggerId,
+          companyId,
+          workflowId: response.data.workflowId,
+          triggerType: "data",
+          configuration: { label: param.label },
+          actions: [firstAction],
+        };
+      });
+
+      setWorkflowTrigger(newTriggers);
+
+
+      const newTriggerDates: { [key: number]: string } = {};
+      execParams.forEach((param) => {
+        newTriggerDates[param.workflowTriggerId] = param.value;
+      });
+      setTriggerDates(newTriggerDates);
+
+
+      const newTriggerActionsMap: { [key: number]: any[] } = {};
+
+      (response.data.actionsExecDTO || []).forEach((action: any) => {
+        let parsedParams: any = null;
+        try {
+          parsedParams = action.des_ExecParameters
+            ? JSON.parse(action.des_ExecParameters)
+            : null;
+        } catch (e) {
+          console.error("Erro ao parsear action.des_ExecParameters:", e, action.des_ExecParameters);
+        }
+
+        // pega o workflowTriggerId que já vem dentro do JSON
+        const triggerId = parsedParams?.workflowTriggerId;
+
+        if (!triggerId) {
+          console.warn("Action sem workflowTriggerId no des_ExecParameters:", action);
+          return;
+        }
+
+        if (!newTriggerActionsMap[triggerId]) {
+          newTriggerActionsMap[triggerId] = [];
+        }
+
+        newTriggerActionsMap[triggerId].push({
+          eventId: action.workflowactionsexecId,
+          actionType: action.actionType,
+          status: action.statusType,
+          description: parsedParams?.description ?? "",
+          subjectId: parsedParams?.subjectId ?? null,
+          startDate: parsedParams?.startDate ?? null,
+          endDate: parsedParams?.endDate ?? null,
+          responsibleList: parsedParams?.responsibleList ?? [],
+          remindersList: parsedParams?.remindersList ?? [],
+        });
+      });
+
+      setTriggerActionsMap(newTriggerActionsMap);
+
+      console.log("newTriggerActionsMap", newTriggerActionsMap);
+
+
+    } catch (err) {
+      console.error("Erro ao carregar WorkflowExec:", err);
+    }
+  }, [token, companyId, pathname]);
+
+
+
+  useEffect(() => {
+    if (workflowExec?.matterId) {
+      const loadProcess = async () => {
+        try {
+          const responseMatter = await api.post('/Processo/SelecionarProcesso', {
+            matterId: workflowExec.matterId,
+            token: userToken,
+            companyId: localStorage.getItem('@GoJur:companyId'),
+            apiKey: localStorage.getItem('@GoJur:apiKey')
+          })
+            .then(response => {
+              const matterType = response.data.typeAdvisorId == null ? 'legal' : 'advisory'
+              const url = `/matter/edit/${matterType}/${workflowExec.matterId}`
+              setRedirectLink(url);
+              setCompleteLink(true);
+
+              const title = `${response.data.matterNumber} - ${response.data.matterFolder} - ${response.data.matterCustomerDesc} - ${response.data.matterOppossingDesc}`;
+              setProcessTitle(title);
+              console.log('Process title set:', title);
+
+            })
+
+        } catch (err) {
+          console.error('Erro ao carregar processo:', err);
+        }
+      };
+
+      loadProcess();
+    }
+  }, [workflowExec]);
+
+
+  useEffect(() => {
+    if (workflowExec && customerList.length > 0) {
+      const selected = customerList.find(
+        (c) => String(c.id) === String(workflowExec.customerId)
+      );
+
+      setCustomer(
+        selected
+          ? { value: selected.id, label: selected.label } // formato do react-select
+          : null
+      );
+    }
+  }, [workflowExec, customerList]);
+
+
+  useEffect(() => {
+    if (workflowExec && workflowList.length > 0) {
+      const selected = workflowList.find(
+        (w) => String(w.value) === String(workflowExec.workflowId)
+      );
+      setWorkflow(selected || null);
+    }
+  }, [workflowExec, workflowList]);
 
 
   return (
@@ -832,47 +1094,7 @@ export default function WorkflowPage() {
 
 
                               <label>Responsável</label>
-
                               {/*
-                              <Select
-                                isMulti
-                                name={`responsavel-${action.eventId}`}
-                                placeholder="Selecione usuários"
-                                options={userList.map((user) => ({
-                                  value: user.id,
-                                  label: user.value,
-                                }))}
-                                defaultValue={action.responsibleList?.map((resp) => {
-                                  const user = userList.find((u) => String(u.id) === String(resp.userCompanyId));
-                                  return user ? { value: user.id, label: user.value } : null;
-                                }).filter(Boolean)}
-                                onChange={(selectedOptions) => {
-
-                                  console.log("Usuários selecionados:", selectedOptions);
-
-                                }}
-                                styles={{
-                                  control: (base) => ({
-                                    ...base,
-                                    width: "350px",
-                                    minWidth: "160px",
-                                  }),
-                                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                                  option: (base) => ({
-                                    ...base,
-                                    fontSize: "0.7rem", // tamanho da fonte da listagem
-                                  }),
-                                  multiValueLabel: (base) => ({
-                                    ...base,
-                                    fontSize: "0.7rem", // tamanho da fonte dos selecionados
-                                  }),
-                                }}
-                                menuPortalTarget={document.body}
-                              />
-                                */}
-
-
-
                               <Select
                                 isMulti
                                 name={`responsavel-${action.eventId}`}
@@ -897,6 +1119,7 @@ export default function WorkflowPage() {
                                   action.responsibleList = newResponsibleList;
 
                                   console.log("Atualizado:", action.responsibleList);
+
                                 }}
                                 styles={{
                                   control: (base) => ({
@@ -916,7 +1139,52 @@ export default function WorkflowPage() {
                                 }}
                                 menuPortalTarget={document.body}
                               />
+                                */}
 
+                              <Select
+                                isMulti
+                                name={`responsavel-${action.eventId}`}
+                                placeholder="Selecione usuários"
+                                options={userList.map((user) => ({
+                                  value: user.id,
+                                  label: user.value,
+                                }))}
+                                value={action.responsibleList?.map((resp) => {
+                                  const user = userList.find(
+                                    (u) => String(u.id) === String(resp.userCompanyId)
+                                  );
+                                  return user ? { value: user.id, label: user.value } : null;
+                                }).filter(Boolean)}
+
+                                onChange={(selectedOptions) => {
+                                  const newResponsibleList = selectedOptions?.map((option) => ({
+                                    userCompanyId: option.value,
+                                    userType: "C"
+                                  })) ?? [];
+
+                                  action.responsibleList = newResponsibleList;
+
+                                  console.log("Atualizado:", action.responsibleList);
+                                }}
+
+                                styles={{
+                                  control: (base) => ({
+                                    ...base,
+                                    width: "350px",
+                                    minWidth: "160px",
+                                  }),
+                                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                  option: (base) => ({
+                                    ...base,
+                                    fontSize: "0.7rem",
+                                  }),
+                                  multiValueLabel: (base) => ({
+                                    ...base,
+                                    fontSize: "0.7rem",
+                                  }),
+                                }}
+                                menuPortalTarget={document.body}
+                              />
 
                               <span
                                 style={{
