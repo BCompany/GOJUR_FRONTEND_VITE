@@ -441,6 +441,7 @@ export const ContentLegalResume = styled.div`
     color: #444;
     margin-top: 0.5rem;
 
+    
     > div {
       display: flex;
 
@@ -467,27 +468,64 @@ export const ContentLegalResume = styled.div`
           }
       }
     }
+
+    .emojiEvaluate {
+        display: flex;
+        justify-content: flex-end; 
+        gap: 8px;
+        align-items: center;
+
+         > svg {
+          width: 1.2rem;
+          height: 1.2rem;
+          cursor: pointer;
+          &:hover {
+            color: var(--orange);
+            transform: scale(1.1);
+          }          
+        }
+      }
+
+    }
   }
+`;
 
-  // .prazoLink {
-  //   > svg {
-  //     margin-right: 0.25rem;
-  //     width: 0.765rem;
-  //     height: 0.765rem;;
-  //     color: var(--blue);
-  //     cursor: pointer;
-  //   }
-  //   font-weight: 600;
-  //   color: var(--blue);
-  //   text-decoration: none;
-  //   transition: color 0.2s ease;
-  //   cursor: pointer;
+export const ModalDiasPrazo = styled.div`
+  border: 1px solid var(--blue-twitter);
+  font-size:0.665rem;
+  box-shadow: 1px 1px 4px 0.5px rgba(0,0,0,0.15);
+  width:20rem;
+  height:10rem;
+  background-color:var(--white);
+  position:absolute;
+  z-index:99999;
+  justify-content:center;
+  margin-left:35%;
+  margin-top:5%;
+   
+  .ModalSubjectColorButton {
+    width : 25px;
+    height: 25px;
+    border-top: solid 2px #626262;
+    border-left: solid 2px #626262;
+    border-right: solid 2px black;
+    border-bottom: solid 2px black;
+  }
+  
 
-  //   &:hover {
-  //     color: #0d47a1;
-  //     text-decoration: underline;
-  //   }
-  // }
+  input, select {
+      flex: 1;
+      font-size: 0.675rem;
+      padding: 0.25rem;
+      background-color: rgba(255,255,255,0.25);
+      width: 99%;
+      border-bottom: 1px solid rgba(0,0,0,0.15);
+      color: var(--secondary);
+
+      &:focus {
+        border-bottom: 1px solid var(--orange);
+      }
+    }
 `;
 
 

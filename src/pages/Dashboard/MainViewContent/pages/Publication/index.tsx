@@ -13,7 +13,7 @@ import { FiCheckSquare,FiMenu } from 'react-icons/fi';
 import { useAuth } from 'context/AuthContext';
 import { ImMenu3, ImMenu4 } from 'react-icons/im';
 import { FaCalculator , FaFileAlt, FaRegEdit } from 'react-icons/fa';
-import { RiCalendarCheckFill, RiDeleteBinLine, RiNewspaperFill } from 'react-icons/ri';
+import { RiCalendarCheckFill, RiTimer2Line, RiEmotionUnhappyLine, RiEmotionHappyLine, RiDeleteBinLine, RiNewspaperFill } from 'react-icons/ri';
 import { AiFillExperiment, AiOutlinePrinter } from 'react-icons/ai';
 import { VscFolderOpened, VscFolder } from 'react-icons/vsc';
 import Loader from 'react-spinners/PulseLoader';
@@ -21,11 +21,11 @@ import { BiMenuAltLeft } from 'react-icons/bi';
 import { ImHammer2 } from "react-icons/im";
 import { CgDetailsMore } from 'react-icons/cg'
 import { format } from 'date-fns';
-import { Container, Filter, Wrapper, PublicationItem, MatterEventItem, ContentItem, MenuItem, Multi, Menu, EventList, ContentItemMatterEvent,ContentLegalResume } from './styles';
+import { Container, Filter, Wrapper, PublicationItem, MatterEventItem, ContentItem, MenuItem, Multi, Menu, EventList, ContentItemMatterEvent,ContentLegalResume,ModalDiasPrazo } from './styles';
 import { HeaderPage } from 'components/HeaderPage';
 import VideoTrainningModal from 'components/Modals/VideoTrainning/Index';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
-import { CompromissosData, DefaultsProps, filterProps, PrintData, ProcessData,PropsPublicationIA, PublicationAICalculatorDTO,PublicationAIAnalyserDTO, PublicationData, PublicationDto, usernameListProps } from './Interfaces/IPublication';
+import { CompromissosData, DefaultsProps, filterProps, PrintData, ProcessData,PropsPublicationIA, PublicationAICalculatorDTO,PublicationAIAnalyserDTO, PublicationData, PublicationDto, PropsPublicationDeadlineIA, PublicationAIDeadlinesDTO,usernameListProps } from './Interfaces/IPublication';
 import ReportModal from 'components/Modals/PublicationModal/ReportModal';
 import ReportModalPopUp from 'components/Modals/Report';
 import Coverages from '../../../../Coverages';
@@ -86,6 +86,8 @@ const Publication: React.FC = () => {
   const [showCustomDates, setShowCustomDates] = useState<boolean>(false);
   const [showReportOpenFileModal, setShowReportOpenFileModal] = useState<boolean>(false);
   const [reportLink, setReportLink] = useState<string>('');
+  const [currentDeadlineIA, setCurrentDeadlineIA] = useState<PublicationAIDeadlinesDTO>(null)
+  const [openModalDaysIA, setOpenModalDaysIA] = useState<boolean>(false);
 
   const options = [
     { value: 'itemSearch_withMatter', label: 'Com Processo' },
@@ -93,7 +95,6 @@ const Publication: React.FC = () => {
     { value: 'itemSearch_read', label: 'Lidas' },
     { value: 'itemSearch_unread', label: 'Não Lidas' },
   ];
-
 
   // Custom Dates
   useEffect(() => {
@@ -828,15 +829,14 @@ const Publication: React.FC = () => {
         handleCaptureTextPublication(`${matterText}\n\n${textComplement}`);
       }
   }
-  
-  const handlePublicationIAModalEvent = async ( LegalResumeAI: PublicationAIAnalyserDTO, legalResumeActionId: number, Data: string, Hora: string) => 
+
+  const handleEvaluateIA = async (publicationId: Number, legalResumeId: Number, flag: string) => 
   {
-    setActionType('deadLineCalculate');
-    const response = await api.post<PublicationAICalculatorDTO>('/PublicacoesIA/CalcularPrazo',
+    setActionType('evaluateIA');
+    var response = await api.post<PublicationAICalculatorDTO>('/PublicacoesIA/Avaliar',
     {
-        legalResumeId: LegalResumeAI.legalResumeId,
-        legalResumeType: LegalResumeAI.Tipo,
-        legalResumeActionId: legalResumeActionId,
+        legalResumeId: legalResumeId,
+        evaluateValue: flag,
         companyId,
         apiKey,
         token,
@@ -854,25 +854,88 @@ const Publication: React.FC = () => {
         return;
       }
 
-    handleCaptureTextPublication(LegalResumeAI.Resumo);
+      addToast({
+          type: 'success',
+          title: 'Operação realizada com sucesso',
+          description: "Feedback enviado com sucesso, Obrigado !"
+      });
 
-    if (Data == "") Data = response.data.FormatDate;
+      const read = publication.map(publi =>
+      publi.id === publicationId || publi.meCod_ProcessoAcompanhamento == publicationId ? 
+      {
+            ...publi,
+            publicationResumeAI: {
+              ...publi.publicationResumeAI,
+              AvaliacaoPositiva: flag
+          }}: publi,
+      );
 
+      setPublication(read);
+ 
+      setActionType('none');
+  }
+  
+  const handleDefinirDias = async (deadLineIA: PublicationAIDeadlinesDTO) => 
+  {
+      alert('definir dias')
+
+      // console.log(deadLineIA);
+      // setOpenModalDaysIA(true);
+      // setCurrentDeadlineIA(deadLineIA);
+  }
+
+  const handleCloseDeadlineModal = async() => 
+  {
+      setCurrentDeadlineIA(null);
+  }
+
+
+  const handlePublicationIAModalEvent = async ( LegalResumeAI: PublicationAIAnalyserDTO, legalResumeActionId: number) => 
+  {
+    setActionType('deadLineCalculate');
+
+    const response = await api.post<PublicationAICalculatorDTO>('/PublicacoesIA/CalcularPrazo',
+    {
+        legalResumeId: LegalResumeAI.legalResumeId,
+        legalResumeType: LegalResumeAI.Tipo,
+        legalResumeActionId: legalResumeActionId,
+        companyId,
+        apiKey,
+        token,
+    });
+
+    console.log(response);
+
+     if (response.data.Message != null)
+      {
+          addToast({
+            type: 'info',
+            title: 'Operação não realizada',
+            description: response.data.Message
+        });
+      
+        setActionType('none');
+        return;
+      }
+
+
+    var DataCalculadaFormatada = response.data.FormatDate;
+    var HoraFormatada = "";
+    
+    if (LegalResumeAI.Audiencia)
+    {
+        HoraFormatada = LegalResumeAI.Audiencia.Hora;
+    }
     var filtersJSON = 
     {
-        DataCalculadaFormatada: Data,
-        HoraFormatada: Hora,
+        DataCalculadaFormatada,
+        HoraFormatada,
         SubjectName: response.data.SubjectName,
         SubjectId: response.data.SubjectId,
     };
     
     handleCaptureTextPublication(LegalResumeAI.Resumo);
 
-    var matterId = response.data.MatterId;
-    if (matterId > 0)
-    {
-        handleAssociateMatter(matterId, LegalResumeAI.Resumo)
-    }
 
     localStorage.setItem('@GoJur:LegalResumeIA', JSON.stringify(filtersJSON));
     
@@ -1518,7 +1581,8 @@ const Publication: React.FC = () => {
 
     handlePublicationModal('Calc')
   }
-
+  
+  
   function ContentLegalResumeRender({ publicationAI }: PropsPublicationIA) {
 
     return (
@@ -1538,48 +1602,94 @@ const Publication: React.FC = () => {
 
         <p className="title">Prazos e Audiências:</p>
         <div className="prazos">
-
-          {(!publicationAI.Prazos?.length && 
-            (!publicationAI.Audiencia || publicationAI.Audiencia.Data === "" || publicationAI.Audiencia.Tipo === "")) ? (
-              <div>
-                <span>Não foram identificados prazos nem audiências.</span>
-              </div>
-          ) : (
-            <>
-              {publicationAI.Prazos?.map((item) => (
+          <>
+            {(!publicationAI.Prazos?.length && 
+              (!publicationAI.Audiencia || publicationAI.Audiencia.Data === "" || publicationAI.Audiencia.Tipo === "")) ? (
                 <div>
-                  {item.Prazo ? (
-                    <>
-                      <p onClick={() => } title="Clique para agendar um prazo">
-                        <RiCalendarCheckFill />
-                        { item.TipoAcao } {item.Prazo} 
-                      </p>  
-                      <span>{item.Destinatario} - {item.Finalidade}</span>
-                    </>
-                  ) : (
-                    <span></span>
-                  )}
+                  <span>Não foram identificados prazos nem audiências.</span>
                 </div>
-              ))}
-
-              {publicationAI.Audiencia != null &&
-                publicationAI.Audiencia.Data !== "" &&
-                publicationAI.Audiencia.Tipo !== "" && (
+            ) : (
+              <>
+                {publicationAI.Prazos?.map((item) => (
+                  
                   <div>
-                     <>
-                      <p onClick={() =>} title="Clique para agendar um prazo">
-                        <RiCalendarCheckFill />
-                        Audiência dia {publicationAI.Audiencia.Data} as {publicationAI.Audiencia.Hora}
-                      </p>  
-                      <span> - {publicationAI.Audiencia.Tipo}</span>
-                    </>
+                    
+                    {item.LegalResumeActionId ? (
+                      <>
+                        {item.DefinirDiasManualmente ? (
+                          <p
+                            onClick={() => handleDefinirDias(item) }
+                            title="Clique para definir manualmente os dias do prazo"
+                          >
+                            <RiTimer2Line />
+                            <span>Agendar Prazo</span>
+                          </p>
+                        ) : (
+                          <p
+                            onClick={() =>
+                              handlePublicationIAModalEvent(
+                                publicationAI,
+                                item.LegalResumeActionId
+                              )
+                            }
+                            title="Clique para agendar um prazo automáticamente através da calculadora de prazos"
+                          >
+                            <RiCalendarCheckFill />
+                            {`${item.TipoAcao} ${item.Prazo}`}
+                          </p>
+                        )}
+
+                        <span>{item.Destinatario} - {item.Finalidade}</span>
+                      </>
+                    ) : (
+                      <span></span>
+                    )}
+
                   </div>
-                )}
-            </>
-          )}
+
+
+                ))}
+
+                {publicationAI.Audiencia != null &&
+                  publicationAI.Audiencia.Data !== "" &&
+                  publicationAI.Audiencia.Tipo !== "" && (
+                    <div>
+                      <>
+                        <p onClick={() => handlePublicationIAModalEvent(publicationAI,  publicationAI.Audiencia.LegalResumeActionId)} title="Clique para agendar um prazo">
+                          <RiCalendarCheckFill />
+                          Audiência dia {publicationAI.Audiencia.Data} as {publicationAI.Audiencia.Hora}
+                        </p>  
+                        <span> - {publicationAI.Audiencia.Tipo}</span>
+                      </>
+                    </div>
+                  )}             
+              </>            
+            )}
+            
+            <div className='emojiEvaluate'>
+              <RiEmotionHappyLine  
+                  onClick={() => handleEvaluateIA(publicationAI.legalResumeId, publicationAI.Id, 'S')} 
+                  title={
+                    publicationAI.AvaliacaoPositiva === 'S'
+                      ? 'Você avaliou positivamente esta análise de publicação feita via inteligência artificial.'
+                      : 'Clique para avaliar positivamente esta análise de publicação feita via inteligência artificial.'
+                  }
+                   style={{ color: publicationAI.AvaliacaoPositiva === 'S' ? '#4DA3FF' : '#B0B0B0' }}
+                  />
+              <RiEmotionUnhappyLine 
+                  onClick={() => handleEvaluateIA(publicationAI.legalResumeId, publicationAI.Id,'N')} 
+                  title={
+                    publicationAI.AvaliacaoPositiva === 'N'
+                      ? 'Você avaliou negativamente esta análise de publicação feita via inteligência artificial.'
+                      : 'Clique para avaliar negativamente esta análise de publicação feita via inteligência artificial.'
+                  }
+                  style={{ color: publicationAI.AvaliacaoPositiva === 'N' ? '#FF6B6B' : '#B0B0B0' }}
+                  />
+            </div>   
+            
+          </>
         </div>
       </ContentLegalResume>
-
     );
 }
 
@@ -1892,8 +2002,14 @@ const Publication: React.FC = () => {
                   )}
 
                   {(item.hasPublicationResumeAI && item.publicationResumeAI != null) && (                    
-                    <ContentLegalResumeRender publicationAI={item.publicationResumeAI} />
+                    <ContentLegalResumeRender publicationAI={item.publicationResumeAI} />                    
                   )}
+
+                  
+
+                  {/* {(openModalDaysIA) && (                    
+                    <ContentLegalResumeDaysModal deadlineIA={null} />
+                  )} */}
 
                 </ContentItem>
 

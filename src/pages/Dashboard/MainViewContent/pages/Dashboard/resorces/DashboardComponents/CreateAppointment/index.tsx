@@ -278,8 +278,13 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       {
         const legalResumeJson = JSON.parse(legalResumeDataJSON.toString())
 
+        console.log('teste')
+        console.log(legalResumeJson)
+
+        
         setAppointmentDateBeggin(legalResumeJson.DataCalculadaFormatada);
         setAppointmentDateEnd(legalResumeJson.DataCalculadaFormatada);
+
 
         if (legalResumeJson.HoraFormatada != null && legalResumeJson.HoraFormatada != '')
         {
@@ -307,7 +312,6 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
             setAppointmentSubjectId(legalResumeJson.SubjectId);
         }
 
-        localStorage.removeItem('@GoJur:LegalResumeIA');
 
       }
       

@@ -8,8 +8,14 @@ export type PropsPublicationIA = {
    publicationAI: PublicationAIAnalyserDTO; 
 }
 
+export type PropsPublicationDeadlineIA = {
+   deadlineIA: PublicationAIDeadlinesDTO; 
+}
+
+
 export interface PublicationAIAnalyserDTO
 {
+  Id: Number,
   Message: string;
   Area: string;
   Resumo: string;
@@ -34,12 +40,14 @@ export interface PublicationAIDeadlinesDTO{
   Finalidade: string;
   DeadlineDescription: string;
   DataCalculadaFormatada: string;
+  DefinirDiasManualmente: boolean;
 }
 
 export interface PublicationAICalculatorDTO
 {
     Message: string;
     FormatDate: string;
+    DateCalculate: Date;
     SubjectName: string;
     SubjectId: number;
     MatterId: number;
