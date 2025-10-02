@@ -99,15 +99,16 @@ const WorkflowList = () => {
 
 
    const Initialize = async () => {
-        
-    if(localStorage.getItem('@Gojur:matterRedirect') == null && localStorage.getItem('@Gojur:customerRedirect') == null && localStorage.getItem('@Gojur:calendarRedirect') == null ) return;
-      
+
+     //alert('PASSO 2');
+    //if(localStorage.getItem('@Gojur:matterRedirect') == null && localStorage.getItem('@Gojur:customerRedirect') == null && localStorage.getItem('@Gojur:calendarRedirect') == null ) return;
+  
     const redirectByMatter = localStorage.getItem('@Gojur:matterRedirect') 
     if (redirectByMatter == "S"){
       setMatterRedirect(true)   
       setMatterFileId(localStorage.getItem('@Gojur:matterId'))  
       localStorage.removeItem('@Gojur:matterId')
-      //localStorage.removeItem('@Gojur:matterRedirect')
+      localStorage.removeItem('@Gojur:matterRedirect')
         
     }   
     
@@ -116,10 +117,11 @@ const WorkflowList = () => {
       setCustomerRedirect(true)   
       setCustomerFileId(localStorage.getItem('@Gojur:customerId'))  
       localStorage.removeItem('@Gojur:customerId')  
-      //localStorage.removeItem('@Gojur:customerRedirect') 
+      localStorage.removeItem('@Gojur:customerRedirect') 
     }
 
-    const redirectByCalendar = localStorage.getItem('@Gojur:calendarRedirect') 
+    //const redirectByCalendar = localStorage.getItem('@Gojur:calendarRedirect') 
+    const redirectByCalendar = "S" 
     if (redirectByCalendar == "S"){
       setCalendarRedirect(true);   
       //localStorage.removeItem('@Gojur:calendarRedirect')
@@ -131,7 +133,7 @@ const WorkflowList = () => {
 
 useEffect(() => {
   const setup = async () => {
- 
+
     await Initialize();
 
     setWorkflowList([]);
@@ -255,12 +257,10 @@ useEffect(() => {
 
       if (matterFileId) { 
         filters.push(`T.cod_Processo = ${matterFileId}`);
-      }
-
-      if (customerFileId) { 
+      }else if (customerFileId) { 
         filters.push(`T.cod_Cliente = ${customerFileId}`); 
       }
-
+ 
       const filterClause = filters.join(", "); 
 
 

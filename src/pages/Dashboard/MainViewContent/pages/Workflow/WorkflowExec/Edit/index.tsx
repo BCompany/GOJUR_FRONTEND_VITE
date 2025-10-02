@@ -574,9 +574,17 @@ export default function WorkflowPage() {
   };
 
 
-  useEffect(() => {
-      loadWorkflowExec(pathname.substr(19));
-  }, [])
+ useEffect(() => {
+  const fetchData = async () => {
+    try {
+      await loadWorkflowExec(pathname.substr(19));
+    } catch (err) {
+      console.error("Erro no useEffect:", err);
+    }
+  };
+
+  fetchData();
+}, [pathname]);
 
 
   /*
@@ -694,7 +702,7 @@ export default function WorkflowPage() {
 
   const loadWorkflowExec = useCallback(async (workflowExecIdParam: number) => {
     //let workflowExecId = pathname.substr(19);
-
+    // alert(workflowExecIdParam);
     if (workflowExecIdParam == 0) {
         return
     }
