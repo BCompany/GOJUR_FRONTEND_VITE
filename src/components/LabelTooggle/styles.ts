@@ -2,8 +2,8 @@ import styled, { css } from 'styled-components';
 
 
 export const Content = styled.p `
-  font-size :0.75rem;
-  position :relative;
+  position: relative;
+  font-family: Verdana;
 
   &.hightLight{
     background-color:yellow;

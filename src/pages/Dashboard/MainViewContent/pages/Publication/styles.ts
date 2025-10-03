@@ -420,7 +420,7 @@ export const ContentItemMatterEvent = styled.div<PublicationProps>`
   }
 
   > p {
-    font-size: 0.775rem;
+    font-size: 14px;
     color: var(--secondary);
     text-align: justify;
     padding-right: 0.5rem;
