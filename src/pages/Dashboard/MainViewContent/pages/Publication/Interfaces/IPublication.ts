@@ -9,7 +9,7 @@ export type PropsPublicationIA = {
 }
 
 export type PropsPublicationDeadlineIA = {
-   deadlineIA: PublicationAIDeadlinesDTO; 
+   publicationAI: PublicationAIDeadlinesDTO; 
 }
 
 

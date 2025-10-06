@@ -1,4 +1,4 @@
-import React, {useEffect,useState,useCallback,ChangeEvent,UIEvent } from 'react';
+import React, {useEffect,useState,useCallback,ChangeEvent,UIEvent, useRef, useMemo } from 'react';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import { usePublication } from 'context/publication';
 import { useModal } from 'context/modal';
@@ -9,11 +9,11 @@ import LabelTooggle from 'components/LabelTooggle'
 import { isMobile } from 'react-device-detect'
 import api from 'services/api';
 import { FcAbout } from 'react-icons/fc';
-import { FiCheckSquare,FiMenu } from 'react-icons/fi';
+import { FiCheckSquare,FiMenu, FiSave } from 'react-icons/fi';
 import { useAuth } from 'context/AuthContext';
 import { ImMenu3, ImMenu4 } from 'react-icons/im';
-import { FaCalculator , FaFileAlt, FaRegEdit } from 'react-icons/fa';
-import { RiCalendarCheckFill, RiTimer2Line, RiEmotionUnhappyLine, RiEmotionHappyLine, RiDeleteBinLine, RiNewspaperFill } from 'react-icons/ri';
+import { FaCalculator , FaFileAlt, FaRegEdit, FaRegTimesCircle } from 'react-icons/fa';
+import { RiCalendarCheckFill, RiDeleteBinLine, RiNewspaperFill } from 'react-icons/ri';
 import { AiFillExperiment, AiOutlinePrinter } from 'react-icons/ai';
 import { VscFolderOpened, VscFolder } from 'react-icons/vsc';
 import Loader from 'react-spinners/PulseLoader';
@@ -21,11 +21,11 @@ import { BiMenuAltLeft } from 'react-icons/bi';
 import { ImHammer2 } from "react-icons/im";
 import { CgDetailsMore } from 'react-icons/cg'
 import { format } from 'date-fns';
-import { Container, Filter, Wrapper, PublicationItem, MatterEventItem, ContentItem, MenuItem, Multi, Menu, EventList, ContentItemMatterEvent,ContentLegalResume,ModalDiasPrazo } from './styles';
+import { Container, Filter, Wrapper, PublicationItem, MatterEventItem, ContentItem, MenuItem, Multi, Menu, EventList, ContentItemMatterEvent } from './styles';
 import { HeaderPage } from 'components/HeaderPage';
 import VideoTrainningModal from 'components/Modals/VideoTrainning/Index';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
-import { CompromissosData, DefaultsProps, filterProps, PrintData, ProcessData,PropsPublicationIA, PublicationAICalculatorDTO,PublicationAIAnalyserDTO, PublicationData, PublicationDto, PropsPublicationDeadlineIA, PublicationAIDeadlinesDTO,usernameListProps } from './Interfaces/IPublication';
+import { CompromissosData, DefaultsProps, filterProps, PrintData, ProcessData,PropsPublicationIA, PublicationAICalculatorDTO,PublicationAIAnalyserDTO, PublicationData, PublicationDto,usernameListProps, PublicationAIDeadlinesDTO } from './Interfaces/IPublication';
 import ReportModal from 'components/Modals/PublicationModal/ReportModal';
 import ReportModalPopUp from 'components/Modals/Report';
 import Coverages from '../../../../Coverages';
@@ -35,8 +35,7 @@ import { Overlay } from 'Shared/styles/GlobalStyle';
 import PublicationOptionsMenu from 'components/MenuHamburguer/publicationOptions';
 import { useHistory } from 'react-router-dom';
 import LogModal from 'components/LogModal';
-import { Console } from 'console';
-import { DataSchema } from 'ckeditor5';
+import { ContentLegalResumeRender, ContentLegalResumeDaysModal } from './LegalResumeIA'
 
 const Publication: React.FC = () => {
   const { signOut } = useAuth();
@@ -87,6 +86,7 @@ const Publication: React.FC = () => {
   const [showReportOpenFileModal, setShowReportOpenFileModal] = useState<boolean>(false);
   const [reportLink, setReportLink] = useState<string>('');
   const [currentDeadlineIA, setCurrentDeadlineIA] = useState<PublicationAIDeadlinesDTO>(null)
+  const [daysDeadline, setDaysDeadline] = useState<number>()
   const [openModalDaysIA, setOpenModalDaysIA] = useState<boolean>(false);
 
   const options = [
@@ -843,16 +843,16 @@ const Publication: React.FC = () => {
     });
 
      if (response.data.Message != null)
-      {
-          addToast({
-            type: 'info',
-            title: 'Operação não realizada',
-            description: response.data.Message
-        });
-      
-        setActionType('none');
-        return;
-      }
+    {
+        addToast({
+          type: 'info',
+          title: 'Operação não realizada',
+          description: response.data.Message
+      });
+    
+      setActionType('none');
+      return;
+    }
 
       addToast({
           type: 'success',
@@ -877,16 +877,80 @@ const Publication: React.FC = () => {
   
   const handleDefinirDias = async (deadLineIA: PublicationAIDeadlinesDTO) => 
   {
-      alert('definir dias')
-
-      // console.log(deadLineIA);
-      // setOpenModalDaysIA(true);
-      // setCurrentDeadlineIA(deadLineIA);
+      setOpenModalDaysIA(true); 
+      setCurrentDeadlineIA(deadLineIA);
   }
 
-  const handleCloseDeadlineModal = async() => 
+  const handleDeadlineDays = (number) => {
+    setDaysDeadline(number)
+  };
+  
+  const handleSaveDays = async() => 
   {
+    try
+    {      
+      if (daysDeadline == null || daysDeadline == 0)
+      {    
+        addToast({
+            type: 'info',
+            title: 'Operação não realizada',
+            description: "Defina um dia válido para realizar o cálculo de prazo."
+        });
+
+        return;
+      }
+
+      setActionType('daysDeadLine');
+
+      await api.post('/PublicacoesIA/DefinirDias',
+      {
+          legalResumeActionId: currentDeadlineIA.LegalResumeActionId,
+          Days: daysDeadline,
+          companyId,
+          apiKey,
+          token,
+      });
+
+      addToast({
+          type: 'success',
+          title: 'Operação realizada com sucesso',
+          description: "Definição manual de dias executada com sucesso."
+      });
+
+      setPublication(prev =>
+        prev.map(item =>
+          item.hasPublicationResumeAI
+            ? {
+                ...item,
+                publicationResumeAI: {
+                  ...item.publicationResumeAI,
+                  Prazos: item.publicationResumeAI.Prazos.map(d =>
+                    d.LegalResumeActionId === currentDeadlineIA.LegalResumeActionId
+                      ? { ...d, Prazo: `${daysDeadline}D`, DefinirDiasManualmente: false } 
+                      : d
+                  )
+                }
+              }
+            : item
+        )
+      );
+
+      handleCloseDaysModal();
+    }
+    catch (err) {
+      handleCloseDaysModal();
+      console.log(err);
+    }
+  }
+  
+
+  const handleCloseDaysModal = async() => 
+  {
+      setOpenModalDaysIA(false);
       setCurrentDeadlineIA(null);
+      setDaysDeadline(null)
+      
+      setActionType('none');
   }
 
 
@@ -936,7 +1000,13 @@ const Publication: React.FC = () => {
     
     handleCaptureTextPublication(LegalResumeAI.Resumo);
 
+    var matterId = response.data.MatterId;
+    if (matterId > 0)
+    {
+        handleAssociateMatter(matterId, LegalResumeAI.Resumo)
+    }
 
+    localStorage.setItem('@GoJur:PublicationId', LegalResumeAI.legalResumeId.toString())
     localStorage.setItem('@GoJur:LegalResumeIA', JSON.stringify(filtersJSON));
     
     handleModalActiveId(0)
@@ -1581,119 +1651,6 @@ const Publication: React.FC = () => {
 
     handlePublicationModal('Calc')
   }
-  
-  
-  function ContentLegalResumeRender({ publicationAI }: PropsPublicationIA) {
-
-    return (
-      <ContentLegalResume>
-        <p className="title">Resumo:</p>
-        <div className="resumo">{publicationAI.Resumo}</div>
-
-        <p className="title">Partes:</p>
-        <div className="partes">
-          <div>
-            <strong>Demandante:</strong> {publicationAI.Partes.Demandante}
-          </div>
-          <div>
-            <strong>Demandado:</strong> {publicationAI.Partes.Demandado}
-          </div>
-        </div>
-
-        <p className="title">Prazos e Audiências:</p>
-        <div className="prazos">
-          <>
-            {(!publicationAI.Prazos?.length && 
-              (!publicationAI.Audiencia || publicationAI.Audiencia.Data === "" || publicationAI.Audiencia.Tipo === "")) ? (
-                <div>
-                  <span>Não foram identificados prazos nem audiências.</span>
-                </div>
-            ) : (
-              <>
-                {publicationAI.Prazos?.map((item) => (
-                  
-                  <div>
-                    
-                    {item.LegalResumeActionId ? (
-                      <>
-                        {item.DefinirDiasManualmente ? (
-                          <p
-                            onClick={() => handleDefinirDias(item) }
-                            title="Clique para definir manualmente os dias do prazo"
-                          >
-                            <RiTimer2Line />
-                            <span>Agendar Prazo</span>
-                          </p>
-                        ) : (
-                          <p
-                            onClick={() =>
-                              handlePublicationIAModalEvent(
-                                publicationAI,
-                                item.LegalResumeActionId
-                              )
-                            }
-                            title="Clique para agendar um prazo automáticamente através da calculadora de prazos"
-                          >
-                            <RiCalendarCheckFill />
-                            {`${item.TipoAcao} ${item.Prazo}`}
-                          </p>
-                        )}
-
-                        <span>{item.Destinatario} - {item.Finalidade}</span>
-                      </>
-                    ) : (
-                      <span></span>
-                    )}
-
-                  </div>
-
-
-                ))}
-
-                {publicationAI.Audiencia != null &&
-                  publicationAI.Audiencia.Data !== "" &&
-                  publicationAI.Audiencia.Tipo !== "" && (
-                    <div>
-                      <>
-                        <p onClick={() => handlePublicationIAModalEvent(publicationAI,  publicationAI.Audiencia.LegalResumeActionId)} title="Clique para agendar um prazo">
-                          <RiCalendarCheckFill />
-                          Audiência dia {publicationAI.Audiencia.Data} as {publicationAI.Audiencia.Hora}
-                        </p>  
-                        <span> - {publicationAI.Audiencia.Tipo}</span>
-                      </>
-                    </div>
-                  )}             
-              </>            
-            )}
-            
-            <div className='emojiEvaluate'>
-              <RiEmotionHappyLine  
-                  onClick={() => handleEvaluateIA(publicationAI.legalResumeId, publicationAI.Id, 'S')} 
-                  title={
-                    publicationAI.AvaliacaoPositiva === 'S'
-                      ? 'Você avaliou positivamente esta análise de publicação feita via inteligência artificial.'
-                      : 'Clique para avaliar positivamente esta análise de publicação feita via inteligência artificial.'
-                  }
-                   style={{ color: publicationAI.AvaliacaoPositiva === 'S' ? '#4DA3FF' : '#B0B0B0' }}
-                  />
-              <RiEmotionUnhappyLine 
-                  onClick={() => handleEvaluateIA(publicationAI.legalResumeId, publicationAI.Id,'N')} 
-                  title={
-                    publicationAI.AvaliacaoPositiva === 'N'
-                      ? 'Você avaliou negativamente esta análise de publicação feita via inteligência artificial.'
-                      : 'Clique para avaliar negativamente esta análise de publicação feita via inteligência artificial.'
-                  }
-                  style={{ color: publicationAI.AvaliacaoPositiva === 'N' ? '#FF6B6B' : '#B0B0B0' }}
-                  />
-            </div>   
-            
-          </>
-        </div>
-      </ContentLegalResume>
-    );
-}
-
-
 
   return (
     <Container style={{pointerEvents:(loadingData?'none':'all'),opacity:(isMobile && isPagination?'0.3':'1')}} onScrollCapture={handleScroll}>
@@ -1930,6 +1887,15 @@ const Publication: React.FC = () => {
           </h6>
         )}
 
+        {openModalDaysIA && (
+          <ContentLegalResumeDaysModal
+            daysDeadline={daysDeadline}
+            handleDeadlineDays={(handleDeadlineDays)}
+            handleSaveDays={handleSaveDays}
+            handleCloseDaysModal={handleCloseDaysModal}
+          />
+        )}
+
         {publication.map(item => (
 
           item.TIPO === 'P' ? (
@@ -2001,18 +1967,17 @@ const Publication: React.FC = () => {
                       </button>     
                   )}
 
-                  {(item.hasPublicationResumeAI && item.publicationResumeAI != null) && (                    
-                    <ContentLegalResumeRender publicationAI={item.publicationResumeAI} />                    
+                  {(item.hasPublicationResumeAI && item.publicationResumeAI != null) && (       
+                      <ContentLegalResumeRender
+                        publicationAI={item.publicationResumeAI}
+                        handleDefinirDias={handleDefinirDias}
+                        handlePublicationIAModalEvent={handlePublicationIAModalEvent}
+                        handleEvaluateIA={handleEvaluateIA}
+                      />
                   )}
-
-                  
-
-                  {/* {(openModalDaysIA) && (                    
-                    <ContentLegalResumeDaysModal deadlineIA={null} />
-                  )} */}
-
+                 
                 </ContentItem>
-
+                                 
                 <MenuItem open={item.openMenu}>
                   {item.openMenu ? (
                     <div>
@@ -2168,10 +2133,15 @@ const Publication: React.FC = () => {
                       Analisar Andamento - IA Gojur
                   </button> 
 
-                    {(item.hasPublicationResumeAI && item.publicationResumeAI != null) && (                    
-                        <ContentLegalResumeRender publicationAI={item.publicationResumeAI} />
-                    )} 
-
+                  {(item.hasPublicationResumeAI && item.publicationResumeAI != null) && (       
+                      <ContentLegalResumeRender
+                        publicationAI={item.publicationResumeAI}
+                        handleDefinirDias={handleDefinirDias}
+                        handlePublicationIAModalEvent={handlePublicationIAModalEvent}
+                        handleEvaluateIA={handleEvaluateIA}
+                      />
+                  )}
+                    
                 </ContentItemMatterEvent>
 
                 <MenuItem open={item.openMenu}>
@@ -2259,7 +2229,7 @@ const Publication: React.FC = () => {
       </Wrapper>
 
       <VideoTrainningModal />
-
+       
       {(loadingData && !isPagination) && (
         <>
           <Overlay />
