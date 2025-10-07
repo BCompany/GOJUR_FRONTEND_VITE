@@ -35,6 +35,7 @@ export interface IDefaultsProps {
 export interface IWorkflowData {
   workflowId: number;
   name: string;
+  workflowexecId: number;
   startDate: string;
   endDate: string;
   statusType: string;
@@ -65,7 +66,7 @@ const WorkflowList = () => {
   const { isMOBILE } = useDevice();
   const [hasAccess, setHasAccess] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [currentWorkflowId, setCurrentWorkflowId] = useState<number>(0);
+  const [currentWorkflowExecId, setCurrentWorkflowExecId] = useState<number>(0);
   const { isConfirmMessage, isCancelMessage, caller, handleCancelMessage, handleConfirmMessage, handleCheckConfirm, handleCaller } = useConfirmBox();
   const [isDeletingCustomer, setIsDeletingCustomer] = useState(false);
   const [matterFileId, setMatterFileId] = useState('');
@@ -100,7 +101,6 @@ const WorkflowList = () => {
 
    const Initialize = async () => {
 
-     //alert('PASSO 2');
     //if(localStorage.getItem('@Gojur:matterRedirect') == null && localStorage.getItem('@Gojur:customerRedirect') == null && localStorage.getItem('@Gojur:calendarRedirect') == null ) return;
   
     const redirectByMatter = localStorage.getItem('@Gojur:matterRedirect') 
@@ -176,7 +176,7 @@ useEffect(() => {
         window.open(`${envProvider.redirectUrl}ReactRequest/Redirect?token=${token}&route=workflow/list`)
       }
       else {
-        handleDeleteWorkflow(currentWorkflowId)
+        handleDeleteWorkflow(currentWorkflowExecId)
       }
 
       setIsDeleting(false)
@@ -189,26 +189,26 @@ useEffect(() => {
 
 
 
-  const handleDeleteWorkflow = async (workflowId: number) => {
+  const handleDeleteWorkflow = async (workflowExecId: number) => {
     try {
       setIsDeletingCustomer(true)
 
-      await api.delete('/Workflow/Deletar33', {
+      await api.delete('/WorkflowExec/Deletar', {
         params: {
-          id: workflowId,
+          filterClause: 'cod_WorkflowExec=' + workflowExecId,
           token
         }
       })
 
 
-      const workflow = workflowList.find(wk => wk.workflowId === workflowId);
+      const workflow = workflowList.find(wk => wk.workflowexecId === workflowExecId);
       if (workflow) {
-        const workflowListRefresh = workflowList.filter(wk => wk.workflowId !== workflowId);
-        // customerListRefresh = customerList.filter(cust => cust.nom_Pessoa.toLowerCase() !== customer.nom_Pessoa.toLowerCase());
+        const workflowListRefresh = workflowList.filter(wk => wk.workflowexecId !== workflowExecId);
+      
         setWorkflowList(workflowListRefresh);
       }
 
-      addToast({
+      addToast({ 
         type: 'success',
         title: 'Workflow Deletado',
         description: 'O workflow selecionado foi deletado',
@@ -216,7 +216,7 @@ useEffect(() => {
 
       setIsDeleting(false)
       setIsDeletingCustomer(false)
-      setCurrentWorkflowId(0)
+      setCurrentWorkflowExecId(0)
 
     } catch (err) {
       addToast({
@@ -227,7 +227,7 @@ useEffect(() => {
 
       setIsDeletingCustomer(false)
       setIsDeleting(false)
-      setCurrentWorkflowId(0)
+      setCurrentWorkflowExecId(0)
     }
   }
 
@@ -354,7 +354,7 @@ useEffect(() => {
 
   const handleCheckBoxDeleteWorkflow = (workflowId: number) => {
     setIsDeleting(true)
-    setCurrentWorkflowId(workflowId);
+    setCurrentWorkflowExecId(workflowId);
   }
   
   /*
@@ -403,7 +403,7 @@ const CustomCell = (props) => {
     return (
       <Table.Cell
         onClick={() =>
-          handleCheckBoxDeleteWorkflow(row.workflowId)
+          handleCheckBoxDeleteWorkflow(row.workflowexecId)
         }
       >
         &nbsp;&nbsp;
@@ -432,7 +432,9 @@ const CustomCell = (props) => {
   const handleClick = (props: any) => {
 
     console.log(props.row);
+   
     if (props.column.name === 'edit') {
+      localStorage.setItem('@Gojur:customer',props.row.customer);
       handleEdit(props.row.workflowexecId)
     }
 

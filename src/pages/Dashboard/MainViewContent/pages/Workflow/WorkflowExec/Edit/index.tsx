@@ -49,7 +49,10 @@ interface IExecParameter {
 
 export default function WorkflowPage() {
 
+
+  const history = useHistory();
   const { addToast } = useToast();
+  const [confirmDeleteModal, setConfirmDeleteModal] = useState<boolean>(false);
   const { pathname } = useLocation();
   const [isPagination, setIsPagination] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -59,7 +62,7 @@ export default function WorkflowPage() {
   const [workflow, setWorkflow] = useState(null);
   const [personSearch, setPersonSearch] = useState<string | null>('')
   const [processTitle, setProcessTitle] = useState('Associar Processo');
-  const { matterSelected, dateEnd, handleModalActiveId, selectProcess, handleModalActive, openSelectProcess, handleSelectProcess, jsonModalObjectResult, handleJsonModalObjectResult, deadLineText, publicationText, modalActiveId, caller } = useModal();
+  const { matterSelected, dateEnd, handleModalActiveId, selectProcess, handleModalActive, openSelectProcess, handleSelectProcess, jsonModalObjectResult, handleJsonModalObjectResult, deadLineText, publicationText, modalActiveId } = useModal();
   const userToken = localStorage.getItem('@GoJur:token');
   const [redirectLink, setRedirectLink] = useState('/####');
   const [completeLink, setCompleteLink] = useState<boolean>(false);
@@ -78,8 +81,10 @@ export default function WorkflowPage() {
   const [workflowExecId, setWorkflowExecId] = useState<number>(0);
   const [workflowExec, setWorkflowExec] = useState<any>(null);
   const [refresh, setRefresh] = useState(0);
- const [blockUpdate, setBlockUpdate] = useState(false);
-
+  const [blockUpdate, setBlockUpdate] = useState(false);
+  const { isConfirmMessage, isCancelMessage, caller, handleCancelMessage, handleConfirmMessage, handleCheckConfirm, handleCaller } = useConfirmBox();
+  
+  const [isDeleting, setIsDeleting] = useState<boolean>(); // set trigger for show loader
 
   const customStyles = {
     input: (provided: any) => ({
@@ -343,37 +348,7 @@ export default function WorkflowPage() {
   };
 
 
-  /*
-    const fetchTriggerActions = async (triggerId: number): Promise<ITriggerAction[]> => {
-      try {
-        const token = localStorage.getItem('@GoJur:token');
-        const selectedDate = triggerDates[triggerId];
-  
-        let matterId;
-  
-        if (processTitle !== 'Associar Processo')
-          matterId = matterSelected?.matterId ?? null;
-  
-        const response = await api.post(`/WorkflowExec/ListarAcoesSimulacao`, {
-          workflowTriggerId: triggerId,
-          value: selectedDate,
-          triggerType: "data",
-          matterId,
-          token
-        });
-  
-        console.log("Retorno API:", response.data);
-        return response.data;
-      } catch (error) {
-        console.error("Erro ao carregar ações do compromisso.", error);
-        return [];
-      }
-    };
-  
-  */
-
-
-
+ 
   const fetchTriggerActions = async (triggerId: number): Promise<ITriggerAction[]> => {
     try {
       const token = localStorage.getItem('@GoJur:token');
@@ -472,6 +447,48 @@ export default function WorkflowPage() {
 
   const handleExecutarWorkflow = async () => {
 
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0); 
+      let invalido = false;
+
+      for (const [triggerId, dateStr] of Object.entries(triggerDates)) {
+        if (dateStr) {
+          const dataSelecionada = new Date(dateStr + "T00:00:00"); 
+          if (dataSelecionada < hoje) {
+            invalido = true;
+            break;
+          }
+        }
+      }
+
+      if (invalido) {
+        addToast({
+            type: "error",
+            title: "Campos Obrigatórios",
+            description: "Existem datas menores que hoje. Corrija antes de salvar."
+          })
+        return;
+      }
+
+
+      Object.values(triggerActionsMap).forEach((actions) => {
+        actions.forEach((action) => {
+          if (!action.responsibleList || action.responsibleList.length === 0) {
+            invalido = true;
+          }
+        });
+      });
+
+      if (invalido) {
+        addToast({
+            type: "error",
+            title: "Campos Obrigatórios",
+            description: "Existem ações sem usuário selecionado"
+          })
+        return;
+      }
+      
+
     const jsonTriggers = workflowTrigger
       .filter(trigger => trigger.triggerType === "data")
       .map(trigger => ({
@@ -487,10 +504,8 @@ export default function WorkflowPage() {
 
     const allActions = Object.values(triggerActionsMap).flat();
 
-
     const today = new Date();
     const todayISO = today.toISOString().split("T")[0];
-
 
     const workflowActionsExec: IWorkflowActionsExecDTO[] = allActions.map((action, index) => {
       const execParams = {
@@ -587,118 +602,7 @@ export default function WorkflowPage() {
 }, [pathname]);
 
 
-  /*
-  const loadWorkflowExec = useCallback(async (workflowExecIdParam: number) => {
-    const workflowExecId = pathname.substr(19);
-  
-    try {
-      const response = await api.get('/WorkflowExec/SelecionarExec', {
-        params: {
-          id: Number(workflowExecId),
-          token,
-        },
-      });
-  
-      setWorkflowExec(response.data);
-  
-      const execParams: { label: string; value: string }[] = response.data.des_ExecParameters
-        ? JSON.parse(response.data.des_ExecParameters)
-        : [];
-  
-  
-      const newTriggers: IWorkflowTriggers[] = execParams.map((param, idx) => {
-        const triggerId = idx; // previsível e consistente
-        const firstAction: IWorkflowActions = {
-          workflowactionId: idx, 
-          companyId,
-          workflowtriggerId: triggerId,
-          actionType: "criarcompromisso",
-          daysbeforeandafter: 0,
-        };
-  
-        return {
-          workflowTriggerId: triggerId,
-          companyId,
-          workflowId: response.data.workflowId,
-          triggerType: "data",
-          configuration: { label: param.label },
-          actions: [firstAction],
-        };
-      });
-  
-      setWorkflowTrigger(newTriggers);
-  
-    
-      const newTriggerDates: { [key: number]: string } = {};
-      newTriggers.forEach((trigger, idx) => {
-        newTriggerDates[trigger.workflowTriggerId] = execParams[idx]?.value ?? "";
-      });
-      setTriggerDates(newTriggerDates);
-  
-   
-      const newTriggerActionsMap: { [key: number]: any[] } = {};
-  
-      console.log('actionsExecDTO length:', (response.data.actionsExecDTO || []).length);
-      (response.data.actionsExecDTO || []).forEach((action: any, idx: number) => {
-        let parsedParams: any = null;
-        try {
-          parsedParams = action.des_ExecParameters ? JSON.parse(action.des_ExecParameters) : null;
-        } catch (e) {
-          console.error("Erro ao parsear action.des_ExecParameters:", e, action.des_ExecParameters);
-        }
-  
-     
-        let triggerIndex: number | null = null;
-  
-      
-        if (typeof action.sequence === 'number' && !Number.isNaN(action.sequence)) {
-  
-          triggerIndex = action.sequence >= 1 ? action.sequence - 1 : action.sequence;
-        }
-  
-  
-        if (triggerIndex === null && (action.relatedactionId !== undefined && action.relatedactionId !== null)) {
-          const foundIndex = newTriggers.findIndex(t => t.actions?.[0]?.workflowactionId === action.relatedactionId);
-          if (foundIndex >= 0) triggerIndex = foundIndex;
-        }
-  
-  
-        if (triggerIndex === null) {
-          triggerIndex = idx;
-        }
-  
-  
-        if (triggerIndex < 0 || triggerIndex >= newTriggers.length) {
-          console.warn('triggerIndex fora do range para action', { idx, triggerIndex, newTriggersLength: newTriggers.length, action });
-          return;
-        }
-  
-        const trigger = newTriggers[triggerIndex];
-        const key = trigger.workflowTriggerId;
-  
-        if (!newTriggerActionsMap[key]) newTriggerActionsMap[key] = [];
-  
-        newTriggerActionsMap[key].push({
-          eventId: action.workflowactionsexecId,
-          actionType: action.actionType,
-          status: action.statusType,
-          description: parsedParams?.description ?? "",
-          subjectId: parsedParams?.subjectId ?? null,
-          startDate: parsedParams?.startDate ?? null,
-          endDate: parsedParams?.endDate ?? null,
-          responsibleList: parsedParams?.responsibleList ?? [],
-          remindersList: parsedParams?.remindersList ?? [],
-        });
-      });
-  
-      console.log('newTriggerActionsMap', newTriggerActionsMap);
-      setTriggerActionsMap(newTriggerActionsMap);
-  
-    } catch (err) {
-      console.error("Erro ao carregar WorkflowExec:", err);
-    }
-  }, [token, companyId, pathname]);
-  */
+ 
 
   const loadWorkflowExec = useCallback(async (workflowExecIdParam: number) => {
     //let workflowExecId = pathname.substr(19);
@@ -715,6 +619,7 @@ export default function WorkflowPage() {
         },
       });
 
+      setWorkflowExecId(workflowExecIdParam);
       setWorkflowExec(response.data);
       setBlockUpdate(true);
 
@@ -766,7 +671,7 @@ export default function WorkflowPage() {
           console.error("Erro ao parsear action.des_ExecParameters:", e, action.des_ExecParameters);
         }
 
-        // pega o workflowTriggerId que já vem dentro do JSON
+  
         const triggerId = parsedParams?.workflowTriggerId;
 
         if (!triggerId) {
@@ -804,6 +709,7 @@ export default function WorkflowPage() {
 
 
   useEffect(() => {
+   
     if (workflowExec?.matterId) {
       const loadProcess = async () => {
         try {
@@ -832,18 +738,26 @@ export default function WorkflowPage() {
 
       loadProcess();
     }
+    else
+    {
+      setRedirectLink('');
+      setCompleteLink(false);
+      setProcessTitle('Associar Processo');
+    }
   }, [workflowExec]);
 
 
   useEffect(() => {
     if (workflowExec && customerList.length > 0) {
+      //alert(localStorage.getItem('@Gojur:customer'));
+      RefreshPersonList(localStorage.getItem('@Gojur:customer'));
       const selected = customerList.find(
         (c) => String(c.id) === String(workflowExec.customerId)
       );
-
+      
       setCustomer(
         selected
-          ? { value: selected.id, label: selected.label } // formato do react-select
+          ? { value: selected.id, label: selected.label } 
           : null
       );
     }
@@ -858,6 +772,70 @@ export default function WorkflowPage() {
       setWorkflow(selected || null);
     }
   }, [workflowExec, workflowList]);
+
+
+
+    useEffect(() => {
+ 
+      if (isConfirmMessage && caller == "workflowDelete") {
+        handleDeleteWorkflow(workflowExecId, true)
+        handleConfirmMessage(false)
+      }
+  
+    }, [isConfirmMessage, caller])
+
+
+    useEffect(() => {
+      
+      if (isCancelMessage && caller == "workflowDelete") {
+        setConfirmDeleteModal(false)
+        handleCancelMessage(false)
+      }
+  
+    }, [isCancelMessage, caller])
+
+
+  const handleDeleteWorkflow = useCallback(async (workflowExecId: number, confirmDelete: boolean) => {
+      try {
+        if (confirmDelete == false) {
+          //setCurrentWorkflowExecId(workflowId)
+          setConfirmDeleteModal(true)
+          return;
+        }
+  
+        const token = localStorage.getItem('@GoJur:token');
+        setIsDeleting(true)
+  
+  
+        await api.delete('/WorkflowExec/Deletar', {
+          params: {
+            filterClause: 'cod_WorkflowExec=' + workflowExecId,
+            token
+          }
+        })
+  
+        addToast({
+          type: "success",
+          title: "Workflow Deletado",
+          description: "O workflow selecionado foi deletado"
+        })
+  
+        setIsDeleting(false)
+        history.push('/workflowExec/list')
+  
+        //setCurrentCustomerId(0)
+        setConfirmDeleteModal(false)
+      }
+      catch (err: any) {
+        setIsDeleting(false)
+        setConfirmDeleteModal(false)
+        addToast({
+          type: "info",
+          title: "Falha ao apagar cliente",
+          description: err.response.data.Message
+        })
+      }
+    }, [addToast, history]);
 
 
   return (
@@ -1130,9 +1108,9 @@ export default function WorkflowPage() {
                                   return user ? { value: user.id, label: user.value } : null;
                                 }).filter(Boolean)}
                                 onChange={(selectedOptions) => {
-                                  // converte as opções selecionadas para o formato de responsibleList
+                                
                                   const newResponsibleList = selectedOptions?.map((option) => ({
-                                    userCompanyId: option.value, userType: "C"
+                                    userCompanyId: option.value, userType: "R"
                                   })) ?? [];
 
                                   // atualiza a lista dentro da action
@@ -1197,10 +1175,16 @@ export default function WorkflowPage() {
         )}
 
 
-              <button type="button" className='buttonClick'>
+              <button type="button" className='buttonClick' onClick={() => handleDeleteWorkflow(workflowExecId, false)}>
                 <FiTrash />
                 Excluir
               </button>
+
+
+      <button className="buttonClick" type="button" onClick={() => history.push('/workflowExec/list')}>
+                    <MdBlock />
+                    Fechar
+                  </button>
 
               {/*<Button variant="outline">Status: Em andamento</Button>*/}
             </footer>
@@ -1215,6 +1199,15 @@ export default function WorkflowPage() {
 
 
       </Content>
+
+
+      {confirmDeleteModal && (
+        <ConfirmBoxModal
+          title="Excluir Registro"
+          caller="workflowDelete"
+          message="Confirma a exclusão deste workflow ?"
+        />
+      )}
 
     </Container>
   );
