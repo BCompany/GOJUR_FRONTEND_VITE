@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useCallback, useEffect, useRef, useState, UIEvent } from 'react'
 import Select from 'react-select'
 import { formatField, selectStyles, useDelay, currencyConfig } from 'Shared/utils/commonFunctions';
-import { RiFolder2Fill, RiEraserLine } from 'react-icons/ri';
+import { RiFolder2Fill, RiEraserLine, RiCalendarCheckFill } from 'react-icons/ri';
 import { useHistory, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form';
 import { FiDelete, FiLock, FiPlus, FiSave, FiTrash, FiSearch, FiX } from 'react-icons/fi';
@@ -62,7 +62,7 @@ export default function WorkflowPage() {
   const [workflow, setWorkflow] = useState(null);
   const [personSearch, setPersonSearch] = useState<string | null>('')
   const [processTitle, setProcessTitle] = useState('Associar Processo');
-  const { matterSelected, dateEnd, handleModalActiveId, selectProcess, handleModalActive, openSelectProcess, handleSelectProcess, jsonModalObjectResult, handleJsonModalObjectResult, deadLineText, publicationText, modalActiveId } = useModal();
+  const { matterSelected, dateEnd, selectProcess, openSelectProcess, handleSelectProcess, jsonModalObjectResult, handleJsonModalObjectResult, deadLineText, publicationText, modalActiveId } = useModal();
   const userToken = localStorage.getItem('@GoJur:token');
   const [redirectLink, setRedirectLink] = useState('/####');
   const [completeLink, setCompleteLink] = useState<boolean>(false);
@@ -83,8 +83,17 @@ export default function WorkflowPage() {
   const [refresh, setRefresh] = useState(0);
   const [blockUpdate, setBlockUpdate] = useState(false);
   const { isConfirmMessage, isCancelMessage, caller, handleCancelMessage, handleConfirmMessage, handleCheckConfirm, handleCaller } = useConfirmBox();
-  
   const [isDeleting, setIsDeleting] = useState<boolean>(); // set trigger for show loader
+
+
+const {
+  isOpenModal,
+  handleDeadLineCalculatorText,
+  handleCaptureTextPublication,
+  handleModalActive,
+  modalActive,
+} = useModal();
+
 
   const customStyles = {
     input: (provided: any) => ({
@@ -176,6 +185,7 @@ export default function WorkflowPage() {
   const handleGridSelectProcess = useCallback(() => {
     if (processTitle === 'Associar Processo') {
       handleSelectProcess('Open');
+      setTriggerActionsMap({});
     }
   }, [handleSelectProcess, processTitle]);
 
@@ -419,12 +429,26 @@ export default function WorkflowPage() {
   }, [])
 
 
+  /*
   const getSubjectLabel = (id?: number | string) => {
     if (!id) return "";
     console.log(optionsSubject);
     const subject = optionsSubject.find(s => String(s.id) === String(id));
     return subject ? subject.label : `ID ${id} não encontrado`;
   };
+*/
+
+const getSubjectLabel = (id?: number | string, maxLength: number = 15) => {
+  if (!id) return "";
+  const subject = optionsSubject.find(s => String(s.id) === String(id));
+
+  if (!subject) return `ID ${id} não encontrado`;
+
+  const label = subject.label;
+  return label.length > maxLength
+    ? label.substring(0, maxLength) + "..."
+    : label;
+};
 
 
   const LoadUserList = useCallback(async () => {
@@ -446,6 +470,16 @@ export default function WorkflowPage() {
 
 
   const handleExecutarWorkflow = async () => {
+
+    if (Object.keys(triggerActionsMap).length === 0) {
+      
+       addToast({
+            type: "error",
+            title: "Campos Obrigatórios",
+            description: "É necessário simular Workflow"
+          })
+      return;
+    }
 
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0); 
@@ -684,14 +718,17 @@ export default function WorkflowPage() {
         }
 
         newTriggerActionsMap[triggerId].push({
-          eventId: action.workflowactionsexecId,
+          //eventId: action.workflowactionsexecId,
+          eventId: action.eventId,
           actionType: action.actionType,
           status: action.statusType,
           description: parsedParams?.description ?? "",
           subjectId: parsedParams?.subjectId ?? null,
-          startDate: parsedParams?.startDate ?? null,
-          endDate: parsedParams?.endDate ?? null,
-          responsibleList: parsedParams?.responsibleList ?? [],
+          ///startDate: parsedParams?.startDate ?? null,
+          //endDate: parsedParams?.endDate ?? null,
+          startDate: action.eventStartDate ?? null,
+          endDate: action.eventEndDate ?? null,
+          responsibleList: parsedParams?.responsibleList ?? [], 
           remindersList: parsedParams?.remindersList ?? [],
         });
       });
@@ -838,6 +875,19 @@ export default function WorkflowPage() {
     }, [addToast, history]);
 
 
+
+
+const handleClickEdit = (eventId: any) => {
+    /*localStorage.setItem(
+      '@GoJur:RecurrenceDate',
+      FormatDate(new Date(item.event.start), 'yyyy-MM-dd'),
+    );*/
+    //handleModalActive(true);
+    isOpenModal(eventId);
+
+  };
+
+
   return (
     <Container onScroll={handleScroolSeeMore} ref={scrollRef}>
 
@@ -929,6 +979,7 @@ export default function WorkflowPage() {
                         onClick={() => {
                           setProcessTitle('Associar Processo');
                           setAppointmentMatter(undefined);
+                          setTriggerActionsMap({});
                         }}
                       >
                         {<RiEraserLine />}
@@ -965,6 +1016,7 @@ export default function WorkflowPage() {
                   trigger.triggerType === "data" && (
                     <div key={trigger.workflowTriggerId}>
                       <label>{trigger.configuration?.label}</label>
+                      {/*
                       <Input
                         type="date"
                         value={triggerDates[trigger.workflowTriggerId] || ""}
@@ -976,6 +1028,25 @@ export default function WorkflowPage() {
                         }
                         disabled={blockUpdate}
                       />
+                        */}
+
+                      <Input
+                        type="date"
+                        value={triggerDates[trigger.workflowTriggerId] || ""}
+                        onChange={(e) => {
+                 
+                          setTriggerDates((prev) => ({
+                            ...prev,
+                            [trigger.workflowTriggerId]: e.target.value,
+                          }));
+
+                          setTriggerActionsMap({});
+                        }}
+                        disabled={blockUpdate}
+                      />
+
+
+
                     </div>
                   )
                 ))}
@@ -1009,9 +1080,14 @@ export default function WorkflowPage() {
 
                     <Timeline>
 
-                      <Step style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                        <span style={{ fontSize: "0.675rem", marginBottom: "0.25rem" }}>
-                          {trigger.configuration?.label ?? "Trigger sem nome"}
+                      <Step style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0" }}>
+                        <span style={{ fontSize: "0.675rem", marginBottom: "0.25rem", fontWeight: 500  }}>
+                          {trigger.configuration?.label
+                            ? trigger.configuration.label.length > 15
+                              ? trigger.configuration.label.substring(0, 15) + "..."
+                              : trigger.configuration.label
+                            : "Trigger sem nome"}
+
                         </span>
 
                         {triggerDates[trigger.workflowTriggerId] && (
@@ -1033,10 +1109,10 @@ export default function WorkflowPage() {
                         <div
                           style={{
                             height: "2px",
-                            width: "64px",
+                            width: "100px",
                             background: "#cbd5e1",
                             alignSelf: "center",
-                            marginTop: "70px",
+                            marginTop: "50px",
                           }}
                         />
                       )}
@@ -1044,7 +1120,7 @@ export default function WorkflowPage() {
 
                       {actions.map((action, index) => (
                         <React.Fragment key={action.eventId}>
-                          <Step style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                          <Step style={{ display: "flex", flexDirection: "column", alignItems: "center" , gap: "0"}}>
 
                             <span style={{ fontSize: "0.675rem", marginBottom: "0.25rem", fontWeight: 500 }}>
                               {getSubjectLabel(action.subjectId)}
@@ -1052,10 +1128,15 @@ export default function WorkflowPage() {
 
 
                             <span style={{ fontSize: "0.6rem", color: "#64748b", marginBottom: "0.25rem" }}>
-                              {`${new Date(action.startDate).getDate().toString().padStart(2, "0")}/${new Date(action.startDate)
-                                .toLocaleDateString("pt-BR", { month: "short" })
-                                .toUpperCase()
-                                .replace(".", "")}`}
+
+                              {action.startDate 
+                                ? `${new Date(action.startDate).getDate().toString().padStart(2, "0")}/${new Date(action.startDate)
+                                    .toLocaleDateString("pt-BR", { month: "short" })
+                                    .toUpperCase()
+                                    .replace(".", "")}`
+                                : <span style={{ color: "red" }}>Excluída</span>
+                              }
+
                             </span>
 
 
@@ -1066,10 +1147,10 @@ export default function WorkflowPage() {
                             <div
                               style={{
                                 height: "2px",
-                                width: "64px",
+                                width: "100px",
                                 background: "#cbd5e1",
                                 alignSelf: "center",
-                                marginTop: "70px",
+                                marginTop: "50px",
                               }}
                             />
                           )}
@@ -1082,7 +1163,7 @@ export default function WorkflowPage() {
                         <Card key={action.eventId} style={{ marginBottom: "1rem" }}>
                           <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <div>
-                              <h3 style={{ fontSize: "0.675rem", fontWeight: 500 }}>{getSubjectLabel(action.subjectId)}</h3>
+                              <h3 style={{ fontSize: "0.675rem", fontWeight: 500 }}>{getSubjectLabel(action.subjectId,50)}</h3>
                               <p style={{ fontSize: "0.55rem", color: "#64748b" }}>
                                 {action.description}
                               </p>
@@ -1152,6 +1233,17 @@ export default function WorkflowPage() {
                               >
                                 {action.status ?? "Pendente"}
                               </span>
+
+
+                           {action.eventId > 0 && (
+                            <p onClick={() => handleClickEdit(action.eventId)} style={{ cursor: "pointer" }}>
+                              <RiCalendarCheckFill />
+                              <span>Evento</span>
+                            </p>
+                          )}
+
+
+
                             </div>
                           </div>
                         </Card>
