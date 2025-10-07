@@ -40,7 +40,7 @@ export default function ContentLegalResumeRender({
           </div>
         ) : (
           <>
-            {publicationAI.Prazos?.map((item: any, index: number) => (
+            {publicationAI.Prazos.map((item: any, index: number) => (
               <div key={index}>
                 {item.LegalResumeActionId ? (
                   <>
@@ -52,11 +52,10 @@ export default function ContentLegalResumeRender({
                         <RiTimer2Line />
                         <span>Agendar Prazo</span>
                       </p>
-                    ) : (
+                    ) : 
+                    (
                       <p
-                        onClick={() =>
-                          handlePublicationIAModalEvent(publicationAI, item.LegalResumeActionId)
-                        }
+                        onClick={() => handlePublicationIAModalEvent(publicationAI, item.LegalResumeActionId)}
                         title="Clique para agendar um prazo automaticamente através da calculadora de prazos"
                       >
                         <RiCalendarCheckFill />
@@ -64,7 +63,7 @@ export default function ContentLegalResumeRender({
                       </p>
                     )}
                     <span>
-                      {item.Destinatario} - {item.Finalidade}
+                     {"- "} {item.Finalidade}
                     </span>
                   </>
                 ) : (

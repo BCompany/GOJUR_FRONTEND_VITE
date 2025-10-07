@@ -47,6 +47,7 @@ export interface PublicationAICalculatorDTO
 {
     Message: string;
     FormatDate: string;
+    TextCalculation: string;
     DateCalculate: Date;
     SubjectName: string;
     SubjectId: number;

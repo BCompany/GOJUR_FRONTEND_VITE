@@ -63,7 +63,7 @@ export const ContentLegalResume = styled.div`
           text-decoration: none;
           transition: color 0.2s ease;
           cursor: pointer;
-          margin-right: 0.5rem;
+          margin-right: 0.15rem;
           min-width: 100px;
           
 

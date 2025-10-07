@@ -25,7 +25,7 @@ import { Container, Filter, Wrapper, PublicationItem, MatterEventItem, ContentIt
 import { HeaderPage } from 'components/HeaderPage';
 import VideoTrainningModal from 'components/Modals/VideoTrainning/Index';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
-import { CompromissosData, DefaultsProps, filterProps, PrintData, ProcessData,PropsPublicationIA, PublicationAICalculatorDTO,PublicationAIAnalyserDTO, PublicationData, PublicationDto,usernameListProps, PublicationAIDeadlinesDTO } from './Interfaces/IPublication';
+import { CompromissosData, DefaultsProps, filterProps, PrintData, ProcessData, PublicationAICalculatorDTO,PublicationAIAnalyserDTO, PublicationData, PublicationDto,usernameListProps, PublicationAIDeadlinesDTO } from './Interfaces/IPublication';
 import ReportModal from 'components/Modals/PublicationModal/ReportModal';
 import ReportModalPopUp from 'components/Modals/Report';
 import Coverages from '../../../../Coverages';
@@ -772,7 +772,7 @@ const Publication: React.FC = () => {
     setCurrentPublicationId(publicationId)
   }
 
-  const handleAssociateMatter = async (matterId:number, textComplement: string) =>
+  const handleAssociateMatter = async (matterId:number, textComplement: string, textDeadlineRule: string) =>
   {
       if (matterId > 0)
       {
@@ -826,7 +826,15 @@ const Publication: React.FC = () => {
 
         localStorage.setItem('@GoJur:PublicationHasMatter', 'S')
 
-        handleCaptureTextPublication(`${matterText}\n\n${textComplement}`);
+        var textEvent = "";
+        if (textDeadlineRule.length > 0)
+        {
+            textEvent = `${textDeadlineRule}\n\n`;
+        }
+
+        textEvent +=`${matterText}\n\n${textComplement}`
+
+        handleCaptureTextPublication(textEvent);
       }
   }
 
@@ -968,8 +976,6 @@ const Publication: React.FC = () => {
         token,
     });
 
-    console.log(response);
-
      if (response.data.Message != null)
       {
           addToast({
@@ -990,6 +996,7 @@ const Publication: React.FC = () => {
     {
         HoraFormatada = LegalResumeAI.Audiencia.Hora;
     }
+
     var filtersJSON = 
     {
         DataCalculadaFormatada,
@@ -998,12 +1005,24 @@ const Publication: React.FC = () => {
         SubjectId: response.data.SubjectId,
     };
     
-    handleCaptureTextPublication(LegalResumeAI.Resumo);
+    console.log(`${response.data.TextCalculation}\n\n${LegalResumeAI.Resumo}`)
+
+    var textPublication = ""
+    if (response.data.TextCalculation)
+    {
+        textPublication = `${response.data.TextCalculation}\n\n${LegalResumeAI.Resumo}`
+    }
+    else
+    {
+        textPublication = `${LegalResumeAI.Resumo}`
+    }
+
+    handleCaptureTextPublication(`${textPublication}`);
 
     var matterId = response.data.MatterId;
     if (matterId > 0)
     {
-        handleAssociateMatter(matterId, LegalResumeAI.Resumo)
+        handleAssociateMatter(matterId, LegalResumeAI.Resumo, response.data.TextCalculation)
     }
 
     localStorage.setItem('@GoJur:PublicationId', LegalResumeAI.legalResumeId.toString())
@@ -1955,16 +1974,15 @@ const Publication: React.FC = () => {
 
                   {/* Show de button to analize by IA only if description is greater than 100 characters */}
                   {item.description.length > 100 && (
-                      <button
-                        className="buttonLinkClick"
-                        title="Clique para incluir um novo processo"
-                        type="button"
-                        style={{textAlign:'left', marginTop:'10px', width:'220px'}}
-                        onClick={() => handlePublicationGojurAI(item.id, "P")}
-                      >
-                        <AiFillExperiment />
-                        Analisar Publicação - IA Gojur
-                      </button>     
+                    <button
+                      className="buttonClick"
+                      title='Clique para iniciar a análise desta publicação através da Inteligência Artificial'
+                      type='button'
+                      onClick={() => handlePublicationGojurAI(item.id, "P")}
+                      style={{width:'140px', height:'28px', marginTop:'15px'}}
+                    >
+                      Analisar Publicação
+                    </button>                  
                   )}
 
                   {(item.hasPublicationResumeAI && item.publicationResumeAI != null) && (       
@@ -2123,15 +2141,14 @@ const Publication: React.FC = () => {
                   ></LabelTooggle>
 
                   <button
-                      className="buttonLinkClick"
-                      title="Clique para incluir um novo processo"
-                      type="button"
-                      style={{textAlign:'left', marginTop:'10px', width:'220px'}}
+                      className="buttonClick"
+                      title='Clique para iniciar a análise deste acompanhamento através da Inteligência Artificial'
+                      type='button'
                       onClick={() => handlePublicationGojurAI(item.meCod_ProcessoAcompanhamento, "A")}
+                      style={{width:'200px', height:'28px', marginTop:'15px'}}
                     >
-                      <AiFillExperiment />
-                      Analisar Andamento - IA Gojur
-                  </button> 
+                      Analisar Acompanhamento
+                    </button>   
 
                   {(item.hasPublicationResumeAI && item.publicationResumeAI != null) && (       
                       <ContentLegalResumeRender
