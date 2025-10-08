@@ -381,7 +381,8 @@ export default function WorkflowPage() {
       // Forçar o vínculo do workflowTriggerId em cada action
       const actionsWithTriggerId: ITriggerAction[] = response.data.map((action: ITriggerAction) => ({
         ...action,
-        workflowTriggerId: triggerId
+        workflowTriggerId: triggerId,
+        isConfirmSave: true
       }));
 
       return actionsWithTriggerId;
@@ -484,7 +485,7 @@ export default function WorkflowPage() {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
     let invalido = false;
-
+    /*
     for (const [triggerId, dateStr] of Object.entries(triggerDates)) {
       if (dateStr) {
         const dataSelecionada = new Date(dateStr + "T00:00:00");
@@ -503,7 +504,7 @@ export default function WorkflowPage() {
       })
       return;
     }
-
+    */
 
     Object.values(triggerActionsMap).forEach((actions) => {
       actions.forEach((action) => {
@@ -724,10 +725,10 @@ export default function WorkflowPage() {
           status: action.statusType,
           description: parsedParams?.description ?? "",
           subjectId: parsedParams?.subjectId ?? null,
-          ///startDate: parsedParams?.startDate ?? null,
-          //endDate: parsedParams?.endDate ?? null,
-          startDate: action.eventStartDate ?? null,
-          endDate: action.eventEndDate ?? null,
+          startDate: parsedParams?.startDate ?? null,
+          endDate: parsedParams?.endDate ?? null,
+          eventStartDate: action.eventStartDate ?? null,
+          eventEndDate: action.eventEndDate ?? null,
           responsibleList: parsedParams?.responsibleList ?? [],
           remindersList: parsedParams?.remindersList ?? [],
         });
@@ -743,6 +744,80 @@ export default function WorkflowPage() {
     }
   }, [token, companyId, pathname]);
 
+
+  
+
+ useEffect(() => {
+    if (localStorage.getItem('@Gojur:customer'))
+      RefreshPersonList(localStorage.getItem('@Gojur:customer')); 
+  
+}, []);
+
+
+useEffect(() => {
+  if (customerList.length === 0) return;
+
+  const storedCustomerId = localStorage.getItem('@Gojur:customerId');
+
+  if (storedCustomerId) {
+    const selected = customerList.find(
+      (c) => String(c.id) === String(storedCustomerId)
+    );
+
+    // Atualiza o estado
+    setCustomer(selected ? { value: selected.id, label: selected.label } : null);
+
+    // Remove do localStorage apenas se encontrar
+    if (selected) {
+      localStorage.removeItem('@Gojur:customerId');
+      localStorage.removeItem('@Gojur:customer');
+    }
+  }
+}, [customerList]);
+
+
+
+
+useEffect(() => {
+
+    if (localStorage.getItem('@Gojur:matterId')) {
+
+      const loadProcess = async () => {
+        try {
+      
+          const responseMatter = await api.post('/Processo/SelecionarProcesso', {
+            matterId: localStorage.getItem('@Gojur:matterId'),
+            token: userToken,
+            companyId: localStorage.getItem('@GoJur:companyId'),
+            apiKey: localStorage.getItem('@GoJur:apiKey')
+          })
+            .then(response => {
+              const matterType = response.data.typeAdvisorId == null ? 'legal' : 'advisory'
+              const url = `/matter/edit/${matterType}/${localStorage.getItem('@Gojur:matterId')}`
+              setRedirectLink(url);
+              setCompleteLink(true);
+
+              const title = `${response.data.matterNumber} - ${response.data.matterFolder} - ${response.data.matterCustomerDesc} - ${response.data.matterOppossingDesc}`;
+              setProcessTitle(title);
+              console.log('Process title set:', title);
+
+            })
+    
+        } catch (err) {
+          console.error('Erro ao carregar processo:', err);
+        }
+      };
+
+      loadProcess();
+    }
+    else {
+      setRedirectLink('');
+      setCompleteLink(false);
+      setProcessTitle('Associar Processo');
+    }
+    
+    }, []);      
+   
 
 
   useEffect(() => {
@@ -785,7 +860,7 @@ export default function WorkflowPage() {
 
   useEffect(() => {
     if (workflowExec && customerList.length > 0) {
-      //alert(localStorage.getItem('@Gojur:customer'));
+
       RefreshPersonList(localStorage.getItem('@Gojur:customer'));
       const selected = customerList.find(
         (c) => String(c.id) === String(workflowExec.customerId)
@@ -1101,7 +1176,14 @@ export default function WorkflowPage() {
                             })()}
                           </span>
                         )}
-                        <Circle>1</Circle>
+                        <Circle
+                          style={{
+                            border: "2px solid",
+                            borderColor: "#22c55e",
+                            background: "#d1fae5",
+                            color: "#065f46",
+                          }}
+                        >1</Circle>
                       </Step>
 
                       {actions.length > 0 && (
@@ -1125,7 +1207,7 @@ export default function WorkflowPage() {
                               {getSubjectLabel(action.subjectId)}
                             </span>
 
-
+                            {/*
                             <span style={{ fontSize: "0.6rem", color: "#64748b", marginBottom: "0.25rem" }}>
 
                               {action.startDate
@@ -1135,36 +1217,63 @@ export default function WorkflowPage() {
                                   .replace(".", "")}`
                                 : <span style={{ color: "red" }}>Deletada</span>
                               }
+                              &nbsp;-&nbsp; 
+                              {action.eventStartDate
+                                ? `${new Date(action.eventStartDate).getDate().toString().padStart(2, "0")}/${new Date(action.eventStartDate)
+                                  .toLocaleDateString("pt-BR", { month: "short" })
+                                  .toUpperCase()
+                                  .replace(".", "")}`
+                                : <span style={{ color: "red" }}>Deletada</span>
+                              }
+  
+                            </span>
+                              */}
 
+
+                            <span style={{ fontSize: "0.6rem", color: "#64748b", marginBottom: "0.25rem" }}>
+                              {action.startDate ? (
+                                <span
+                                  style={{
+                                    textDecoration:
+                                      action.eventStartDate && action.eventStartDate !== action.startDate
+                                        ? "line-through"
+                                        : "none",
+                                  }}
+                                >
+                                  {new Date(action.startDate).getDate().toString().padStart(2, "0")}/
+                                  {new Date(action.startDate)
+                                    .toLocaleDateString("pt-BR", { month: "short" })
+                                    .toUpperCase()
+                                    .replace(".", "")}
+                                </span>
+                              ) : (
+                                <span style={{ color: "red" }}>Deletada</span>
+                              )}
+
+                              {/* Mostra o eventStartDate se for diferente do startDate */}
+                              {action.eventStartDate && action.eventStartDate !== action.startDate && (
+                                <>
+                                  &nbsp;-&nbsp;
+                                  {new Date(action.eventStartDate).getDate().toString().padStart(2, "0")}/
+                                  {new Date(action.eventStartDate)
+                                    .toLocaleDateString("pt-BR", { month: "short" })
+                                    .toUpperCase()
+                                    .replace(".", "")}
+                                </>
+                              )}
                             </span>
 
 
-                            <Circle style={{
-                              borderColor:
-                                action.status === "Pendente"
-                                  ? "#facc15" // amarelo
-                                  : action.status === "Concluido"
-                                    ? "#22c55e" // verde
-                                    : action.status === "Deletada"
-                                      ? "#ef4444" // vermelho
-                                      : "#9ca3af", // cinza padrão
-                              background:
-                                action.status === "Pendente"
-                                  ? "#fef3c7"
-                                  : action.status === "Concluido"
-                                    ? "#d1fae5"
-                                    : action.status === "Deletada"
-                                      ? "#fee2e2"
-                                      : "#e5e7eb",
-                              color:
-                                action.status === "Pendente"
-                                  ? "#b45309"
-                                  : action.status === "Concluido"
-                                    ? "#065f46"
-                                    : action.status === "Deletada"
-                                      ? "#991b1b"
-                                      : "#374151",
-                            }}>{index + 2}</Circle>
+                            <Circle
+                              style={{
+                                border: "2px solid",
+                                borderColor: action.status === "Concluido" ? "#22c55e" : "#9ca3af",
+                                background: action.status === "Concluido" ? "#d1fae5" : "#fff",
+                                color: action.status === "Concluido" ? "#065f46" : "#374151",
+                              }}
+                            >
+                              {index + 2}
+                            </Circle>
 
                           </Step>
 

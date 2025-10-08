@@ -288,10 +288,12 @@ const CustomerList: React.FC = () => {
     history.push(href)
   }
 
-  const handleWorkflow = async (customerId) => {
+  const handleWorkflow = async (customerId, customer) => {
    
     localStorage.setItem('@Gojur:customerRedirect', 'S')
     localStorage.setItem('@Gojur:customerId', customerId.toString())
+    localStorage.setItem('@Gojur:customer', customer)
+   
     history.push(`/workflowexec/list`)
 
   }
@@ -634,7 +636,7 @@ const CustomerList: React.FC = () => {
                   <button
                     type="button"
                     title="Workflow"
-                    onClick={() => handleWorkflow(customer.cod_Cliente)}
+                    onClick={() => handleWorkflow(customer.cod_Cliente, customer.nom_Pessoa)}
                   >
                     <GoGitMerge />
                   </button>

@@ -109,7 +109,7 @@ const WorkflowList = () => {
       setMatterFileId(localStorage.getItem('@Gojur:matterId'))  
       localStorage.removeItem('@Gojur:matterId')
       localStorage.removeItem('@Gojur:matterRedirect')
-        
+                    
     }   
     
     const redirectByCustomer = localStorage.getItem('@Gojur:customerRedirect') 
@@ -535,6 +535,15 @@ const CustomCell = (props) => {
   }
 
 
+  const handleWorkflow = () => {
+
+    localStorage.setItem('@Gojur:matterId', matterFileId ); 
+    localStorage.setItem('@Gojur:customerId', customerFileId ); 
+
+    history.push('/WorkflowExec/edit/0')
+
+  };
+
   // HTML CODE
   return (
     <>
@@ -559,7 +568,7 @@ const CustomCell = (props) => {
                   className="buttonClick"
                   title="Clique para incluir um Workflow"
                   type="submit"
-                  onClick={() => history.push('/WorkflowExec/edit/0')}
+                  onClick={() =>handleWorkflow()}
                 >
                   <FaFileAlt />
                   Iniciar Novo Workflow
