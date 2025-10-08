@@ -86,13 +86,13 @@ export default function WorkflowPage() {
   const [isDeleting, setIsDeleting] = useState<boolean>(); // set trigger for show loader
 
 
-const {
-  isOpenModal,
-  handleDeadLineCalculatorText,
-  handleCaptureTextPublication,
-  handleModalActive,
-  modalActive,
-} = useModal();
+  const {
+    isOpenModal,
+    handleDeadLineCalculatorText,
+    handleCaptureTextPublication,
+    handleModalActive,
+    modalActive,
+  } = useModal();
 
 
   const customStyles = {
@@ -358,7 +358,7 @@ const {
   };
 
 
- 
+
   const fetchTriggerActions = async (triggerId: number): Promise<ITriggerAction[]> => {
     try {
       const token = localStorage.getItem('@GoJur:token');
@@ -438,17 +438,17 @@ const {
   };
 */
 
-const getSubjectLabel = (id?: number | string, maxLength: number = 15) => {
-  if (!id) return "";
-  const subject = optionsSubject.find(s => String(s.id) === String(id));
+  const getSubjectLabel = (id?: number | string, maxLength: number = 15) => {
+    if (!id) return "";
+    const subject = optionsSubject.find(s => String(s.id) === String(id));
 
-  if (!subject) return `ID ${id} não encontrado`;
+    if (!subject) return `ID ${id} não encontrado`;
 
-  const label = subject.label;
-  return label.length > maxLength
-    ? label.substring(0, maxLength) + "..."
-    : label;
-};
+    const label = subject.label;
+    return label.length > maxLength
+      ? label.substring(0, maxLength) + "..."
+      : label;
+  };
 
 
   const LoadUserList = useCallback(async () => {
@@ -472,56 +472,56 @@ const getSubjectLabel = (id?: number | string, maxLength: number = 15) => {
   const handleExecutarWorkflow = async () => {
 
     if (Object.keys(triggerActionsMap).length === 0) {
-      
-       addToast({
-            type: "error",
-            title: "Campos Obrigatórios",
-            description: "É necessário simular Workflow"
-          })
+
+      addToast({
+        type: "error",
+        title: "Campos Obrigatórios",
+        description: "É necessário simular Workflow"
+      })
       return;
     }
 
-      const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0); 
-      let invalido = false;
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    let invalido = false;
 
-      for (const [triggerId, dateStr] of Object.entries(triggerDates)) {
-        if (dateStr) {
-          const dataSelecionada = new Date(dateStr + "T00:00:00"); 
-          if (dataSelecionada < hoje) {
-            invalido = true;
-            break;
-          }
+    for (const [triggerId, dateStr] of Object.entries(triggerDates)) {
+      if (dateStr) {
+        const dataSelecionada = new Date(dateStr + "T00:00:00");
+        if (dataSelecionada < hoje) {
+          invalido = true;
+          break;
         }
       }
+    }
 
-      if (invalido) {
-        addToast({
-            type: "error",
-            title: "Campos Obrigatórios",
-            description: "Existem datas menores que hoje. Corrija antes de salvar."
-          })
-        return;
-      }
+    if (invalido) {
+      addToast({
+        type: "error",
+        title: "Campos Obrigatórios",
+        description: "Existem datas menores que hoje. Corrija antes de salvar."
+      })
+      return;
+    }
 
 
-      Object.values(triggerActionsMap).forEach((actions) => {
-        actions.forEach((action) => {
-          if (!action.responsibleList || action.responsibleList.length === 0) {
-            invalido = true;
-          }
-        });
+    Object.values(triggerActionsMap).forEach((actions) => {
+      actions.forEach((action) => {
+        if (!action.responsibleList || action.responsibleList.length === 0) {
+          invalido = true;
+        }
       });
+    });
 
-      if (invalido) {
-        addToast({
-            type: "error",
-            title: "Campos Obrigatórios",
-            description: "Existem ações sem usuário selecionado"
-          })
-        return;
-      }
-      
+    if (invalido) {
+      addToast({
+        type: "error",
+        title: "Campos Obrigatórios",
+        description: "Existem ações sem usuário selecionado"
+      })
+      return;
+    }
+
 
     const jsonTriggers = workflowTrigger
       .filter(trigger => trigger.triggerType === "data")
@@ -623,26 +623,26 @@ const getSubjectLabel = (id?: number | string, maxLength: number = 15) => {
   };
 
 
- useEffect(() => {
-  const fetchData = async () => {
-    try {
-      await loadWorkflowExec(pathname.substr(19));
-    } catch (err) {
-      console.error("Erro no useEffect:", err);
-    }
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        await loadWorkflowExec(pathname.substr(19));
+      } catch (err) {
+        console.error("Erro no useEffect:", err);
+      }
+    };
 
-  fetchData();
-}, [pathname]);
+    fetchData();
+  }, [pathname]);
 
 
- 
+
 
   const loadWorkflowExec = useCallback(async (workflowExecIdParam: number) => {
     //let workflowExecId = pathname.substr(19);
     // alert(workflowExecIdParam);
     if (workflowExecIdParam == 0) {
-        return
+      return
     }
 
     try {
@@ -705,7 +705,7 @@ const getSubjectLabel = (id?: number | string, maxLength: number = 15) => {
           console.error("Erro ao parsear action.des_ExecParameters:", e, action.des_ExecParameters);
         }
 
-  
+
         const triggerId = parsedParams?.workflowTriggerId;
 
         if (!triggerId) {
@@ -728,7 +728,7 @@ const getSubjectLabel = (id?: number | string, maxLength: number = 15) => {
           //endDate: parsedParams?.endDate ?? null,
           startDate: action.eventStartDate ?? null,
           endDate: action.eventEndDate ?? null,
-          responsibleList: parsedParams?.responsibleList ?? [], 
+          responsibleList: parsedParams?.responsibleList ?? [],
           remindersList: parsedParams?.remindersList ?? [],
         });
       });
@@ -746,7 +746,7 @@ const getSubjectLabel = (id?: number | string, maxLength: number = 15) => {
 
 
   useEffect(() => {
-   
+
     if (workflowExec?.matterId) {
       const loadProcess = async () => {
         try {
@@ -775,8 +775,7 @@ const getSubjectLabel = (id?: number | string, maxLength: number = 15) => {
 
       loadProcess();
     }
-    else
-    {
+    else {
       setRedirectLink('');
       setCompleteLink(false);
       setProcessTitle('Associar Processo');
@@ -791,10 +790,10 @@ const getSubjectLabel = (id?: number | string, maxLength: number = 15) => {
       const selected = customerList.find(
         (c) => String(c.id) === String(workflowExec.customerId)
       );
-      
+
       setCustomer(
         selected
-          ? { value: selected.id, label: selected.label } 
+          ? { value: selected.id, label: selected.label }
           : null
       );
     }
@@ -812,72 +811,72 @@ const getSubjectLabel = (id?: number | string, maxLength: number = 15) => {
 
 
 
-    useEffect(() => {
- 
-      if (isConfirmMessage && caller == "workflowDelete") {
-        handleDeleteWorkflow(workflowExecId, true)
-        handleConfirmMessage(false)
-      }
-  
-    }, [isConfirmMessage, caller])
+  useEffect(() => {
+
+    if (isConfirmMessage && caller == "workflowDelete") {
+      handleDeleteWorkflow(workflowExecId, true)
+      handleConfirmMessage(false)
+    }
+
+  }, [isConfirmMessage, caller])
 
 
-    useEffect(() => {
-      
-      if (isCancelMessage && caller == "workflowDelete") {
-        setConfirmDeleteModal(false)
-        handleCancelMessage(false)
-      }
-  
-    }, [isCancelMessage, caller])
+  useEffect(() => {
+
+    if (isCancelMessage && caller == "workflowDelete") {
+      setConfirmDeleteModal(false)
+      handleCancelMessage(false)
+    }
+
+  }, [isCancelMessage, caller])
 
 
   const handleDeleteWorkflow = useCallback(async (workflowExecId: number, confirmDelete: boolean) => {
-      try {
-        if (confirmDelete == false) {
-          //setCurrentWorkflowExecId(workflowId)
-          setConfirmDeleteModal(true)
-          return;
+    try {
+      if (confirmDelete == false) {
+        //setCurrentWorkflowExecId(workflowId)
+        setConfirmDeleteModal(true)
+        return;
+      }
+
+      const token = localStorage.getItem('@GoJur:token');
+      setIsDeleting(true)
+
+
+      await api.delete('/WorkflowExec/Deletar', {
+        params: {
+          filterClause: 'cod_WorkflowExec=' + workflowExecId,
+          token
         }
-  
-        const token = localStorage.getItem('@GoJur:token');
-        setIsDeleting(true)
-  
-  
-        await api.delete('/WorkflowExec/Deletar', {
-          params: {
-            filterClause: 'cod_WorkflowExec=' + workflowExecId,
-            token
-          }
-        })
-  
-        addToast({
-          type: "success",
-          title: "Workflow Deletado",
-          description: "O workflow selecionado foi deletado"
-        })
-  
-        setIsDeleting(false)
-        history.push('/workflowExec/list')
-  
-        //setCurrentCustomerId(0)
-        setConfirmDeleteModal(false)
-      }
-      catch (err: any) {
-        setIsDeleting(false)
-        setConfirmDeleteModal(false)
-        addToast({
-          type: "info",
-          title: "Falha ao apagar cliente",
-          description: err.response.data.Message
-        })
-      }
-    }, [addToast, history]);
+      })
+
+      addToast({
+        type: "success",
+        title: "Workflow Deletado",
+        description: "O workflow selecionado foi deletado"
+      })
+
+      setIsDeleting(false)
+      history.push('/workflowExec/list')
+
+      //setCurrentCustomerId(0)
+      setConfirmDeleteModal(false)
+    }
+    catch (err: any) {
+      setIsDeleting(false)
+      setConfirmDeleteModal(false)
+      addToast({
+        type: "info",
+        title: "Falha ao apagar cliente",
+        description: err.response.data.Message
+      })
+    }
+  }, [addToast, history]);
 
 
 
 
-const handleClickEdit = (eventId: any) => {
+  const handleClickEdit = (eventId: any) => {
     /*localStorage.setItem(
       '@GoJur:RecurrenceDate',
       FormatDate(new Date(item.event.start), 'yyyy-MM-dd'),
@@ -948,7 +947,7 @@ const handleClickEdit = (eventId: any) => {
                         type="button"
                         id="associar"
                         onClick={handleGridSelectProcess}
-                         disabled={blockUpdate}
+                        disabled={blockUpdate}
                       >
                         <p>{processTitle}</p>
                       </button>
@@ -966,7 +965,7 @@ const handleClickEdit = (eventId: any) => {
                       <button
                         type="button"
                         onClick={handleGridSelectProcess}
-                         disabled={blockUpdate}
+                        disabled={blockUpdate}
                       >
                         <RiFolder2Fill />
                       </button>
@@ -975,7 +974,7 @@ const handleClickEdit = (eventId: any) => {
                     {processTitle !== 'Associar Processo' && (
                       <button
                         type="button"
-                         disabled={blockUpdate}
+                        disabled={blockUpdate}
                         onClick={() => {
                           setProcessTitle('Associar Processo');
                           setAppointmentMatter(undefined);
@@ -1034,7 +1033,7 @@ const handleClickEdit = (eventId: any) => {
                         type="date"
                         value={triggerDates[trigger.workflowTriggerId] || ""}
                         onChange={(e) => {
-                 
+
                           setTriggerDates((prev) => ({
                             ...prev,
                             [trigger.workflowTriggerId]: e.target.value,
@@ -1081,7 +1080,7 @@ const handleClickEdit = (eventId: any) => {
                     <Timeline>
 
                       <Step style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0" }}>
-                        <span style={{ fontSize: "0.675rem", marginBottom: "0.25rem", fontWeight: 500  }}>
+                        <span style={{ fontSize: "0.675rem", marginBottom: "0.25rem", fontWeight: 500 }}>
                           {trigger.configuration?.label
                             ? trigger.configuration.label.length > 15
                               ? trigger.configuration.label.substring(0, 15) + "..."
@@ -1120,7 +1119,7 @@ const handleClickEdit = (eventId: any) => {
 
                       {actions.map((action, index) => (
                         <React.Fragment key={action.eventId}>
-                          <Step style={{ display: "flex", flexDirection: "column", alignItems: "center" , gap: "0"}}>
+                          <Step style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0" }}>
 
                             <span style={{ fontSize: "0.675rem", marginBottom: "0.25rem", fontWeight: 500 }}>
                               {getSubjectLabel(action.subjectId)}
@@ -1129,18 +1128,44 @@ const handleClickEdit = (eventId: any) => {
 
                             <span style={{ fontSize: "0.6rem", color: "#64748b", marginBottom: "0.25rem" }}>
 
-                              {action.startDate 
+                              {action.startDate
                                 ? `${new Date(action.startDate).getDate().toString().padStart(2, "0")}/${new Date(action.startDate)
-                                    .toLocaleDateString("pt-BR", { month: "short" })
-                                    .toUpperCase()
-                                    .replace(".", "")}`
-                                : <span style={{ color: "red" }}>Excluída</span>
+                                  .toLocaleDateString("pt-BR", { month: "short" })
+                                  .toUpperCase()
+                                  .replace(".", "")}`
+                                : <span style={{ color: "red" }}>Deletada</span>
                               }
 
                             </span>
 
 
-                            <Circle>{index + 2}</Circle>
+                            <Circle style={{
+                              borderColor:
+                                action.status === "Pendente"
+                                  ? "#facc15" // amarelo
+                                  : action.status === "Concluido"
+                                    ? "#22c55e" // verde
+                                    : action.status === "Deletada"
+                                      ? "#ef4444" // vermelho
+                                      : "#9ca3af", // cinza padrão
+                              background:
+                                action.status === "Pendente"
+                                  ? "#fef3c7"
+                                  : action.status === "Concluido"
+                                    ? "#d1fae5"
+                                    : action.status === "Deletada"
+                                      ? "#fee2e2"
+                                      : "#e5e7eb",
+                              color:
+                                action.status === "Pendente"
+                                  ? "#b45309"
+                                  : action.status === "Concluido"
+                                    ? "#065f46"
+                                    : action.status === "Deletada"
+                                      ? "#991b1b"
+                                      : "#374151",
+                            }}>{index + 2}</Circle>
+
                           </Step>
 
                           {index < actions.length - 1 && (
@@ -1163,7 +1188,7 @@ const handleClickEdit = (eventId: any) => {
                         <Card key={action.eventId} style={{ marginBottom: "1rem" }}>
                           <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <div>
-                              <h3 style={{ fontSize: "0.675rem", fontWeight: 500 }}>{getSubjectLabel(action.subjectId,50)}</h3>
+                              <h3 style={{ fontSize: "0.675rem", fontWeight: 500 }}>{getSubjectLabel(action.subjectId, 50)}</h3>
                               <p style={{ fontSize: "0.55rem", color: "#64748b" }}>
                                 {action.description}
                               </p>
@@ -1173,7 +1198,7 @@ const handleClickEdit = (eventId: any) => {
 
 
                               <label>Responsável</label>
-                             
+
                               <Select
                                 isMulti
                                 name={`responsavel-${action.eventId}`}
@@ -1189,7 +1214,7 @@ const handleClickEdit = (eventId: any) => {
                                   return user ? { value: user.id, label: user.value } : null;
                                 }).filter(Boolean)}
                                 onChange={(selectedOptions) => {
-                                
+
                                   const newResponsibleList = selectedOptions?.map((option) => ({
                                     userCompanyId: option.value, userType: "R"
                                   })) ?? [];
@@ -1219,7 +1244,6 @@ const handleClickEdit = (eventId: any) => {
                                 }}
                                 menuPortalTarget={document.body}
                               />
-                               
 
 
                               <span
@@ -1227,20 +1251,30 @@ const handleClickEdit = (eventId: any) => {
                                   fontSize: "0.75rem",
                                   padding: "0.25rem 0.5rem",
                                   borderRadius: "0px",
-                                  background: "#fef3c7",
-                                  color: "#b45309",
+                                  ...(action.status === "Pendente" && {
+                                    background: "#fef3c7", // amarelo claro
+                                    color: "#b45309",
+                                  }),
+                                  ...(action.status === "Concluido" && {
+                                    background: "#d1fae5", // verde claro
+                                    color: "#065f46",
+                                  }),
+                                  ...(action.status === "Deletada" && {
+                                    background: "#fee2e2", // vermelho claro
+                                    color: "#991b1b",
+                                  }),
                                 }}
                               >
                                 {action.status ?? "Pendente"}
                               </span>
 
 
-                           {action.eventId > 0 && (
-                            <p onClick={() => handleClickEdit(action.eventId)} style={{ cursor: "pointer" }}>
-                              <RiCalendarCheckFill />
-                              <span>Evento</span>
-                            </p>
-                          )}
+                              {action.eventId > 0 && (
+                                <p onClick={() => handleClickEdit(action.eventId)} style={{ cursor: "pointer" }}>
+                                  <RiCalendarCheckFill />
+                                  <span>Evento</span>
+                                </p>
+                              )}
 
 
 
@@ -1259,12 +1293,12 @@ const handleClickEdit = (eventId: any) => {
 
             <footer style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem" }}>
 
-          {blockUpdate === false && (
-              <button type="button" className='buttonClick' onClick={handleExecutarWorkflow}>
-                <FiSave />
-                Executar Workflow
-              </button>
-        )}
+              {blockUpdate === false && (
+                <button type="button" className='buttonClick' onClick={handleExecutarWorkflow}>
+                  <FiSave />
+                  Executar Workflow
+                </button>
+              )}
 
 
               <button type="button" className='buttonClick' onClick={() => handleDeleteWorkflow(workflowExecId, false)}>
@@ -1273,10 +1307,10 @@ const handleClickEdit = (eventId: any) => {
               </button>
 
 
-      <button className="buttonClick" type="button" onClick={() => history.push('/workflowExec/list')}>
-                    <MdBlock />
-                    Fechar
-                  </button>
+              <button className="buttonClick" type="button" onClick={() => history.push('/workflowExec/list')}>
+                <MdBlock />
+                Fechar
+              </button>
 
               {/*<Button variant="outline">Status: Em andamento</Button>*/}
             </footer>
