@@ -14,7 +14,7 @@ import React, { useEffect, useState, UIEvent, useRef, useCallback, ChangeEvent, 
 import { HeaderPage } from 'components/HeaderPage';
 import { useDefaultSettings } from 'context/defaultSettings';
 import { RiCalendarCheckFill } from 'react-icons/ri';
-import { GoGitMerge  } from "react-icons/go"
+import { GoGitMerge } from "react-icons/go"
 import { useAlert } from 'context/alert';
 import Loader from 'react-spinners/PulseLoader';
 import LoaderWaiting from 'react-spinners/ClipLoader';
@@ -71,9 +71,9 @@ import CredentialModal from '../Credentials/index';
 import FollowModal from '../FollowModal';
 import AwarenessModal from 'components/AwarenessModal';
 import MatterCRMModal from '../../Customer/CRM/Modal';
+import { useSecurity } from 'context/securityContext';
 
-
-export interface CRMData{
+export interface CRMData {
   id: string;
 }
 
@@ -162,6 +162,8 @@ const Matter: React.FC = () => {
 
   const [showMatterCRMModal, setShowMatterCRMModal] = useState<boolean>(false)
 
+  const { permissionsSecurity, handleValidateSecurity } = useSecurity();
+  const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKFEX");
 
   useEffect(() => {
     handleIsOpenMenuConfig(false)
@@ -494,7 +496,7 @@ const Matter: React.FC = () => {
       const rows = matter.followRows === 0 ? 1 : matter.followList.length;
 
       const response = await api.get<IMatterFollowData[]>('/ProcessoAcompanhamento/ListarAcompanhamentos', {
-        params:{ matterId, count: rows, filter: 'all', token }
+        params: { matterId, count: rows, filter: 'all', token }
       });
 
       if (response.data.length == 0) {
@@ -2114,7 +2116,7 @@ const Matter: React.FC = () => {
     handleFollowButton(matterSelectedId)
   }
 
-  
+
   const handleSelectCredentialId = (id) => {
     setSelectedCredentialid(id)
   }
@@ -2141,17 +2143,17 @@ const Matter: React.FC = () => {
       params: { matterId, token }
     });
 
-    if(response.data.length == 0){
+    if (response.data.length == 0) {
       OpenMatterCRMModal(0)
       return
     }
 
-    if(response.data.length == 1){
+    if (response.data.length == 1) {
       localStorage.setItem('@Gojur:matterRedirect', 'S')
       history.push(`/customer/business/edit/${response.data[0].id}`)
     }
 
-    if(response.data.length > 1){
+    if (response.data.length > 1) {
       OpenMatterCRMModal(matterId)
       return
     }
@@ -2391,7 +2393,7 @@ const Matter: React.FC = () => {
 
         )}
 
-      {showAwarenessModal && <AwarenessModal callbackFunction={{ awarenessModalTitle, awarenessModalMessage, awarenessButtonOkText, handleCloseAwarenessModal, handleConfirmAwarenessButton }}  />}
+        {showAwarenessModal && <AwarenessModal callbackFunction={{ awarenessModalTitle, awarenessModalMessage, awarenessButtonOkText, handleCloseAwarenessModal, handleConfirmAwarenessButton }} />}
 
         {isDeletingTemp && (
 
@@ -2900,10 +2902,14 @@ const Matter: React.FC = () => {
                               </p>
 
 
-                              <p onClick={() => MatterWorkflow(item.matterId, "legal")}>
-                                <GoGitMerge />
-                                {!isMOBILE && <span>Workflow</span>}
-                              </p>
+                              {(checkWorkflow) && (
+                                <>
+                                  <p onClick={() => MatterWorkflow(item.matterId, "legal")}>
+                                    <GoGitMerge />
+                                    {!isMOBILE && <span>Workflow</span>}
+                                  </p>
+                                </>
+                              )}
 
                               {hasButtonDeleteMatterLegal && (
                                 <p
@@ -2926,7 +2932,7 @@ const Matter: React.FC = () => {
                                         <Switch
                                           onChange={() => {
                                             if (item.isFollowing) {
-                                              handleFollowButton(item.matterId);                                            
+                                              handleFollowButton(item.matterId);
                                             } else {
                                               handleOpenFollowModal(item);
                                             }
@@ -3433,7 +3439,7 @@ const Matter: React.FC = () => {
                                 {!isMOBILE && <span>CRM</span>}
                               </p>
 
-                               <p onClick={() => MatterWorkflow(item.matterId, "legal")}>
+                              <p onClick={() => MatterWorkflow(item.matterId, "legal")}>
                                 <GoGitMerge />
                                 {!isMOBILE && <span>Workflow</span>}
                               </p>

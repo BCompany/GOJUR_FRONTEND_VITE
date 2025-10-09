@@ -120,7 +120,7 @@ const HeaderPageOptionsMenu = () => {
   const checkHoliday = permissionsSecurity.find(item => item.name === "CFGHOLID");
   const checkEconomicIndexes = permissionsSecurity.find(item => item.name === "CFGINDEC");
   const checkReportParameters = permissionsSecurity.find(item => item.name === "CACRPT");
-  const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKF");
+  const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKFCD");
 
   // SUPORT LINKS
   const acessoRemotoST = `${envProvider.mainUrl}resources/bcompanyremotost.exe`;
@@ -188,7 +188,7 @@ const HeaderPageOptionsMenu = () => {
           </>
         )}
         
-        {(checkWorkflow && production == true) &&(
+        {(checkWorkflow && production == false) &&(
           <>
             <div style={{display:(showConfig?'grid':'none')}}>
               <hr />

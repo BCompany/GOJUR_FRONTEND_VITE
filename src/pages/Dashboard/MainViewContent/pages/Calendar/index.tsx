@@ -18,6 +18,7 @@ import React, {
 } from 'react';
 import '@fullcalendar/react/dist/vdom';
 import { useHistory } from 'react-router-dom';
+import { useSecurity } from 'context/securityContext';
 import FullCalendar from '@fullcalendar/react';
 import { ImMenu3, ImMenu4 } from 'react-icons/im';
 import Loader from 'react-spinners/ClipLoader';
@@ -224,6 +225,10 @@ const Calendar: React.FC = () => {
   const [subjectDescription, setSubjectDescription] = useState<string>();
   const [subjectType, setSubjectType] = useState<string>('A');
   const [principalColor, setPrincipalColor] = useState<string>('#51B749');
+
+const {permissionsSecurity, handleValidateSecurity } = useSecurity();
+  const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKFEX");
+
 
   // DATE SELECT
   const [openModalDateSelect, setOpenModalDateSelect] =
@@ -1403,6 +1408,8 @@ const Calendar: React.FC = () => {
                 Calculadora de Prazos
               </button>
 
+  {(checkWorkflow ) && (
+     <>
               <button
                 className="buttonLinkClick"
                 onClick={() => handleWorkflow()}
@@ -1412,7 +1419,8 @@ const Calendar: React.FC = () => {
                 <GoGitMerge />
                 Workflow
               </button>
-
+              </>
+ )}
 
             </div>
 

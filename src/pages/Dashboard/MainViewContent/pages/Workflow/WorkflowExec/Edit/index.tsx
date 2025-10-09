@@ -564,7 +564,7 @@ export default function WorkflowPage() {
         //sequence: index + 1,
         //relatedactionId: action.relatedactionId ?? null,
         daysBeforeAndAfter: action.daysBeforeAndAfter,
-        statusType: "Pendente"
+        statusType: "PENDENTE"
       };
     });
 
@@ -745,46 +745,46 @@ export default function WorkflowPage() {
   }, [token, companyId, pathname]);
 
 
-  
 
- useEffect(() => {
+
+  useEffect(() => {
     if (localStorage.getItem('@Gojur:customer'))
-      RefreshPersonList(localStorage.getItem('@Gojur:customer')); 
-  
-}, []);
+      RefreshPersonList(localStorage.getItem('@Gojur:customer'));
+
+  }, []);
 
 
-useEffect(() => {
-  if (customerList.length === 0) return;
+  useEffect(() => {
+    if (customerList.length === 0) return;
 
-  const storedCustomerId = localStorage.getItem('@Gojur:customerId');
+    const storedCustomerId = localStorage.getItem('@Gojur:customerId');
 
-  if (storedCustomerId) {
-    const selected = customerList.find(
-      (c) => String(c.id) === String(storedCustomerId)
-    );
+    if (storedCustomerId) {
+      const selected = customerList.find(
+        (c) => String(c.id) === String(storedCustomerId)
+      );
 
-    // Atualiza o estado
-    setCustomer(selected ? { value: selected.id, label: selected.label } : null);
+      // Atualiza o estado
+      setCustomer(selected ? { value: selected.id, label: selected.label } : null);
 
-    // Remove do localStorage apenas se encontrar
-    if (selected) {
-      localStorage.removeItem('@Gojur:customerId');
-      localStorage.removeItem('@Gojur:customer');
+      // Remove do localStorage apenas se encontrar
+      if (selected) {
+        localStorage.removeItem('@Gojur:customerId');
+        localStorage.removeItem('@Gojur:customer');
+      }
     }
-  }
-}, [customerList]);
+  }, [customerList]);
 
 
 
 
-useEffect(() => {
+  useEffect(() => {
 
     if (localStorage.getItem('@Gojur:matterId')) {
 
       const loadProcess = async () => {
         try {
-      
+
           const responseMatter = await api.post('/Processo/SelecionarProcesso', {
             matterId: localStorage.getItem('@Gojur:matterId'),
             token: userToken,
@@ -802,7 +802,7 @@ useEffect(() => {
               console.log('Process title set:', title);
 
             })
-    
+
         } catch (err) {
           console.error('Erro ao carregar processo:', err);
         }
@@ -815,9 +815,9 @@ useEffect(() => {
       setCompleteLink(false);
       setProcessTitle('Associar Processo');
     }
-    
-    }, []);      
-   
+
+  }, []);
+
 
 
   useEffect(() => {
@@ -1207,29 +1207,6 @@ useEffect(() => {
                               {getSubjectLabel(action.subjectId)}
                             </span>
 
-                            {/*
-                            <span style={{ fontSize: "0.6rem", color: "#64748b", marginBottom: "0.25rem" }}>
-
-                              {action.startDate
-                                ? `${new Date(action.startDate).getDate().toString().padStart(2, "0")}/${new Date(action.startDate)
-                                  .toLocaleDateString("pt-BR", { month: "short" })
-                                  .toUpperCase()
-                                  .replace(".", "")}`
-                                : <span style={{ color: "red" }}>Deletada</span>
-                              }
-                              &nbsp;-&nbsp; 
-                              {action.eventStartDate
-                                ? `${new Date(action.eventStartDate).getDate().toString().padStart(2, "0")}/${new Date(action.eventStartDate)
-                                  .toLocaleDateString("pt-BR", { month: "short" })
-                                  .toUpperCase()
-                                  .replace(".", "")}`
-                                : <span style={{ color: "red" }}>Deletada</span>
-                              }
-  
-                            </span>
-                              */}
-
-
                             <span style={{ fontSize: "0.6rem", color: "#64748b", marginBottom: "0.25rem" }}>
                               {action.startDate ? (
                                 <span
@@ -1267,9 +1244,26 @@ useEffect(() => {
                             <Circle
                               style={{
                                 border: "2px solid",
-                                borderColor: action.status === "Concluido" ? "#22c55e" : "#9ca3af",
-                                background: action.status === "Concluido" ? "#d1fae5" : "#fff",
-                                color: action.status === "Concluido" ? "#065f46" : "#374151",
+                                borderColor:
+                                  action.status === "CONCLUIDO"
+                                    ? "#22c55e" // verde
+                                    : action.status === "DELETADA"
+                                      ? "#f87171" // vermelho
+                                      : "#9ca3af", // cinza
+
+                                background:
+                                  action.status === "CONCLUIDO"
+                                    ? "#d1fae5" // verde claro
+                                    : action.status === "DELETADA"
+                                      ? "#fee2e2" // vermelho claro
+                                      : "#fff",
+
+                                color:
+                                  action.status === "CONCLUIDO"
+                                    ? "#065f46" // verde escuro
+                                    : action.status === "DELETADA"
+                                      ? "#7f1d1d" // vermelho escuro
+                                      : "#374151", // cinza
                               }}
                             >
                               {index + 2}
@@ -1360,15 +1354,11 @@ useEffect(() => {
                                   fontSize: "0.75rem",
                                   padding: "0.25rem 0.5rem",
                                   borderRadius: "0px",
-                                  ...(action.status === "Pendente" && {
-                                    background: "#fef3c7", // amarelo claro
-                                    color: "#b45309",
-                                  }),
-                                  ...(action.status === "Concluido" && {
+                                  ...(action.status === "CONCLUIDO" && {
                                     background: "#d1fae5", // verde claro
                                     color: "#065f46",
                                   }),
-                                  ...(action.status === "Deletada" && {
+                                  ...(action.status === "DELETADA" && {
                                     background: "#fee2e2", // vermelho claro
                                     color: "#991b1b",
                                   }),
