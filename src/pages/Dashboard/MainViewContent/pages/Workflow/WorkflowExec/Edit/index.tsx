@@ -59,6 +59,7 @@ export default function WorkflowPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [customerList, setCustomerList] = useState<ISelectData[]>([])
   const [customer, setCustomer] = useState(null);
+  const [customerId, setCustomerId] = useState(null);
   const [workflow, setWorkflow] = useState(null);
   const [personSearch, setPersonSearch] = useState<string | null>('')
   const [processTitle, setProcessTitle] = useState('Associar Processo');
@@ -532,9 +533,45 @@ export default function WorkflowPage() {
         workflowTriggerId: trigger.workflowTriggerId
       }));
 
+    /*
     let matterId;
-    if (processTitle !== 'Associar Processo')
+    if (processTitle !== 'Associar Processo'){
       matterId = matterSelected?.matterId ?? null;
+    }
+     */
+
+let matterId;
+
+if (processTitle !== 'Associar Processo') {
+  matterId = matterSelected?.matterId ?? null;
+
+  if (matterId == null) {
+    //alert('matterId' + localStorage.getItem('@Gojur:matterId'));
+    const storedMatterId = localStorage.getItem('@Gojur:matterId');
+
+    if (storedMatterId !== null) {
+      matterId = storedMatterId; 
+    } else {
+      matterId = null; 
+    }
+  }
+}
+
+
+let selectCustomerId;
+selectCustomerId =customer?.id ?? null;
+
+  if (selectCustomerId == null) {
+
+    const storedCustomerId = customerId;
+
+    if (storedCustomerId !== null) {
+      selectCustomerId = storedCustomerId; 
+    } else {
+      selectCustomerId = null; 
+    }
+  }
+
 
 
     const allActions = Object.values(triggerActionsMap).flat();
@@ -574,7 +611,7 @@ export default function WorkflowPage() {
       companyId,
       workflowId: workflow?.value ?? 0,
       matterId,
-      customerId: customer?.id ?? null,
+      customerId: selectCustomerId,
       des_ExecParameters: JSON.stringify(jsonTriggers),
       startDate: todayISO,
       endDate: null,
@@ -748,9 +785,10 @@ export default function WorkflowPage() {
 
 
   useEffect(() => {
-    if (localStorage.getItem('@Gojur:customer'))
+    if (localStorage.getItem('@Gojur:customer') && pathname.substr(19) == 0 )
+    {
       RefreshPersonList(localStorage.getItem('@Gojur:customer'));
-
+    }
   }, []);
 
 
@@ -769,6 +807,7 @@ export default function WorkflowPage() {
 
       // Remove do localStorage apenas se encontrar
       if (selected) {
+        setCustomerId(localStorage.getItem('@Gojur:customerId'));
         localStorage.removeItem('@Gojur:customerId');
         localStorage.removeItem('@Gojur:customer');
       }
@@ -841,6 +880,7 @@ export default function WorkflowPage() {
               setProcessTitle(title);
               console.log('Process title set:', title);
 
+               localStorage.removeItem('@Gojur:matterId');
             })
 
         } catch (err) {
@@ -858,9 +898,10 @@ export default function WorkflowPage() {
   }, [workflowExec]);
 
 
+  /*
   useEffect(() => {
-    if (workflowExec && customerList.length > 0) {
-
+    if (workflowExec && customerList.length > 0 ) {
+      
       RefreshPersonList(localStorage.getItem('@Gojur:customer'));
       const selected = customerList.find(
         (c) => String(c.id) === String(workflowExec.customerId)
@@ -873,6 +914,23 @@ export default function WorkflowPage() {
       );
     }
   }, [workflowExec, customerList]);
+*/
+
+useEffect(() => {
+  if (workflowExec && customerList.length > 0 && !customer) {
+    RefreshPersonList(localStorage.getItem('@Gojur:customer'));
+
+    const selected = customerList.find(
+      (c) => String(c.id) === String(workflowExec.customerId)
+    );
+
+    setCustomer(
+      selected
+        ? { value: selected.id, label: selected.label }
+        : null
+    );
+  }
+}, [workflowExec, customerList, customer]);
 
 
   useEffect(() => {
@@ -1246,24 +1304,24 @@ export default function WorkflowPage() {
                                 border: "2px solid",
                                 borderColor:
                                   action.status === "CONCLUIDO"
-                                    ? "#22c55e" // verde
-                                    : action.status === "DELETADA"
-                                      ? "#f87171" // vermelho
-                                      : "#9ca3af", // cinza
+                                    ? "#22c55e" 
+                                    : action.status === "EXCLUIDO"
+                                      ? "#f87171" 
+                                      : "#9ca3af", 
 
                                 background:
                                   action.status === "CONCLUIDO"
-                                    ? "#d1fae5" // verde claro
-                                    : action.status === "DELETADA"
-                                      ? "#fee2e2" // vermelho claro
+                                    ? "#d1fae5" 
+                                    : action.status === "EXCLUIDO"
+                                      ? "#fee2e2" 
                                       : "#fff",
 
                                 color:
                                   action.status === "CONCLUIDO"
-                                    ? "#065f46" // verde escuro
-                                    : action.status === "DELETADA"
-                                      ? "#7f1d1d" // vermelho escuro
-                                      : "#374151", // cinza
+                                    ? "#065f46" 
+                                    : action.status === "EXCLUIDO"
+                                      ? "#7f1d1d" 
+                                      : "#374151", 
                               }}
                             >
                               {index + 2}
@@ -1358,13 +1416,15 @@ export default function WorkflowPage() {
                                     background: "#d1fae5", // verde claro
                                     color: "#065f46",
                                   }),
-                                  ...(action.status === "DELETADA" && {
+                                  ...(action.status === "EXCLUIDO" && {
                                     background: "#fee2e2", // vermelho claro
                                     color: "#991b1b",
                                   }),
                                 }}
                               >
-                                {action.status ?? "Pendente"}
+                                {action.status
+                                  ? action.status.charAt(0).toUpperCase() + action.status.slice(1).toLowerCase()
+                                  : "Pendente"}
                               </span>
 
 

@@ -188,7 +188,7 @@ const HeaderPageOptionsMenu = () => {
           </>
         )}
         
-        {(checkWorkflow && production == false) &&(
+        {(checkWorkflow) &&(
           <>
             <div style={{display:(showConfig?'grid':'none')}}>
               <hr />
