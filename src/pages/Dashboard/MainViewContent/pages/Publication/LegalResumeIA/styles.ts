@@ -1,6 +1,9 @@
 import styled from 'styled-components';
+interface PublicationProps {
+  isRead: boolean;
+}
 
-export const ContentLegalResume = styled.div`
+export const ContentLegalResume =  styled.div<PublicationProps>`
   border: 0.5px solid #E0E0E0;
   border-radius: 8px;
   padding: 0.5rem;
@@ -8,6 +11,7 @@ export const ContentLegalResume = styled.div`
   margin-top: 1rem;
   background-color: #fff;
   color: #333;
+  opacity: ${props => (props.isRead ? 0.5 : 1)};
 
   .title {
     font-size: 0.775rem;
@@ -81,8 +85,8 @@ export const ContentLegalResume = styled.div`
         align-items: center;
 
          > svg {
-          width: 1.2rem;
-          height: 1.2rem;
+          width: 1.5rem;
+          height: 1.5rem;
           cursor: pointer;
           &:hover {
             color: var(--orange);

@@ -3,19 +3,22 @@ import { ContentLegalResume } from "./styles"
 
 type PropsPublicationIA = {
   publicationAI: any,
-  handleDefinirDias: (item: any) => void,
+  handleDefinirDias: (publicationAI: any, legalResumeActionId: number) => void,
   handlePublicationIAModalEvent: (publicationAI: any, legalResumeActionId: string | number) => void,
-  handleEvaluateIA: (legalResumeId: number, id: number, value: 'S' | 'N') => void
+  handleEvaluateIA: (legalResumeId: number, id: number, value: 'S' | 'N') => void,
+  isRead: boolean
 }
 
 export default function ContentLegalResumeRender({
   publicationAI,
   handleDefinirDias,
   handlePublicationIAModalEvent,
-  handleEvaluateIA
+  handleEvaluateIA,
+  isRead
 }: PropsPublicationIA) {
+
   return (
-    <ContentLegalResume>
+    <ContentLegalResume isRead={isRead}>
       <p className="title">Resumo:</p>
       <div className="resumo">{publicationAI.Resumo}</div>
 
@@ -46,7 +49,8 @@ export default function ContentLegalResumeRender({
                   <>
                     {item.DefinirDiasManualmente ? (
                       <p
-                        onClick={() => handleDefinirDias(item)}
+                        // onClick={() => handleDefinirDias(item)}
+                        onClick={() => handleDefinirDias(publicationAI, item.LegalResumeActionId)}
                         title="Clique para definir manualmente os dias do prazo"
                       >
                         <RiTimer2Line />
@@ -97,22 +101,14 @@ export default function ContentLegalResumeRender({
         <div className="emojiEvaluate">
           <RiEmotionHappyLine
             onClick={() => handleEvaluateIA(publicationAI.legalResumeId, publicationAI.Id, "S")}
-            title={
-              publicationAI.AvaliacaoPositiva === "S"
-                ? "Você avaliou positivamente esta análise de publicação feita via inteligência artificial."
-                : "Clique para avaliar positivamente esta análise de publicação feita via inteligência artificial."
-            }
+            title="Gostei da análise"
             style={{
               color: publicationAI.AvaliacaoPositiva === "S" ? "#4DA3FF" : "#B0B0B0"
             }}
           />
           <RiEmotionUnhappyLine
             onClick={() => handleEvaluateIA(publicationAI.legalResumeId, publicationAI.Id, "N")}
-            title={
-              publicationAI.AvaliacaoPositiva === "N"
-                ? "Você avaliou negativamente esta análise de publicação feita via inteligência artificial."
-                : "Clique para avaliar negativamente esta análise de publicação feita via inteligência artificial."
-            }
+            title="Não gostei da análise"
             style={{
               color: publicationAI.AvaliacaoPositiva === "N" ? "#FF6B6B" : "#B0B0B0"
             }}

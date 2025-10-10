@@ -40,7 +40,7 @@ export default function ContentLegalResumeDaysModal({
               value={daysDeadline}
               onChange={(e) => handleDeadlineDays(e.target.value)}
               autoComplete="off"
-              style={{ backgroundColor: "white" }}
+              style={{ backgroundColor: "white", marginTop:"10px" }}
             />
           </label>
 

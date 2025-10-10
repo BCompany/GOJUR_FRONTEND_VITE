@@ -25,7 +25,7 @@ import { Container, Filter, Wrapper, PublicationItem, MatterEventItem, ContentIt
 import { HeaderPage } from 'components/HeaderPage';
 import VideoTrainningModal from 'components/Modals/VideoTrainning/Index';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
-import { CompromissosData, DefaultsProps, filterProps, PrintData, ProcessData, PublicationAICalculatorDTO,PublicationAIAnalyserDTO, PublicationData, PublicationDto,usernameListProps, PublicationAIDeadlinesDTO } from './Interfaces/IPublication';
+import { CompromissosData, DefaultsProps, filterProps, PrintData, ProcessData, PublicationAICalculatorDTO,PublicationAIAnalyserDTO, PublicationData, PublicationDto,usernameListProps, PublicationAIDeadlinesDTO, PublicationAIAudienceDTO } from './Interfaces/IPublication';
 import ReportModal from 'components/Modals/PublicationModal/ReportModal';
 import ReportModalPopUp from 'components/Modals/Report';
 import Coverages from '../../../../Coverages';
@@ -66,6 +66,7 @@ const Publication: React.FC = () => {
   const [ multiFilter, setMultiFilter] = useState<filterProps[]>([]) // valor do multi filter
   const [ hasItemCheckBoxSelected, setHasItemCheckBoxSelected] = useState(false) // caso clique no botão selecionar todos mudar para desmarcar todos
   const [ currentPublicationId, setCurrentPublicationId] = useState<number>(0)
+  const [ checkMessageDeadlineIA, setCheckMessageDeadlineIA] = useState(false)
   const [ checkMessage, setCheckMessage] = useState(false)
   const [ isDeleting, setIsDeleting] = useState(false)
   const [ isGeneratingReport, setIsGeneratingReport] = useState(false)
@@ -85,7 +86,8 @@ const Publication: React.FC = () => {
   const [showCustomDates, setShowCustomDates] = useState<boolean>(false);
   const [showReportOpenFileModal, setShowReportOpenFileModal] = useState<boolean>(false);
   const [reportLink, setReportLink] = useState<string>('');
-  const [currentDeadlineIA, setCurrentDeadlineIA] = useState<PublicationAIDeadlinesDTO>(null)
+  const [currentLegalResume, setCurrentLegalResume] = useState<PublicationAIAnalyserDTO>(null)
+  const [currentLegalResumaActionId, setCurrentLegalResumeActionId] = useState<number>(null)
   const [daysDeadline, setDaysDeadline] = useState<number>()
   const [openModalDaysIA, setOpenModalDaysIA] = useState<boolean>(false);
 
@@ -482,6 +484,7 @@ const Publication: React.FC = () => {
   useEffect(() => {
     if (isCancelMessage){
       setCheckMessage(false)
+      setCheckMessageDeadlineIA(false)
       handleCancelMessage(false)
     }
   }, [isCancelMessage])
@@ -489,12 +492,17 @@ const Publication: React.FC = () => {
 
    // When appear confirm box to delete and is clicked on confirm
    useEffect(() => {
+
     if (isConfirmMessage && isDeleting && itemType == 'A'){
       handleDeleteMatterEvent()
     }
     
     if (isConfirmMessage && isDeleting && itemType == 'P'){
       handleDeletePublication()
+    }
+
+    if (isConfirmMessage && itemType == 'IA'){
+      handlePublicationIAModalEvent(currentLegalResume, currentLegalResumaActionId, true);
     }
   }, [isConfirmMessage])
 
@@ -883,17 +891,18 @@ const Publication: React.FC = () => {
       setActionType('none');
   }
   
-  const handleDefinirDias = async (deadLineIA: PublicationAIDeadlinesDTO) => 
+  const handleDefinirDias = async (LegalResumeAI: PublicationAIAnalyserDTO, legalResumeActionId: number) => 
   {
       setOpenModalDaysIA(true); 
-      setCurrentDeadlineIA(deadLineIA);
+      setCurrentLegalResume(LegalResumeAI);
+      setCurrentLegalResumeActionId(legalResumeActionId);
   }
 
   const handleDeadlineDays = (number) => {
     setDaysDeadline(number)
   };
   
-  const handleSaveDays = async() => 
+  const handleSaveDays = async () => 
   {
     try
     {      
@@ -906,65 +915,32 @@ const Publication: React.FC = () => {
         });
 
         return;
-      }
+      }        
 
-      setActionType('daysDeadLine');
-
-      await api.post('/PublicacoesIA/DefinirDias',
-      {
-          legalResumeActionId: currentDeadlineIA.LegalResumeActionId,
-          Days: daysDeadline,
-          companyId,
-          apiKey,
-          token,
-      });
-
-      addToast({
-          type: 'success',
-          title: 'Operação realizada com sucesso',
-          description: "Definição manual de dias executada com sucesso."
-      });
-
-      setPublication(prev =>
-        prev.map(item =>
-          item.hasPublicationResumeAI
-            ? {
-                ...item,
-                publicationResumeAI: {
-                  ...item.publicationResumeAI,
-                  Prazos: item.publicationResumeAI.Prazos.map(d =>
-                    d.LegalResumeActionId === currentDeadlineIA.LegalResumeActionId
-                      ? { ...d, Prazo: `${daysDeadline}D`, DefinirDiasManualmente: false } 
-                      : d
-                  )
-                }
-              }
-            : item
-        )
-      );
-
-      handleCloseDaysModal();
+      setOpenModalDaysIA(false);
+      handlePublicationIAModalEvent(currentLegalResume, currentLegalResumaActionId);
     }
     catch (err) {
       handleCloseDaysModal();
       console.log(err);
     }
   }
-  
 
-  const handleCloseDaysModal = async() => 
-  {
-      setOpenModalDaysIA(false);
-      setCurrentDeadlineIA(null);
-      setDaysDeadline(null)
-      
-      setActionType('none');
-  }
-
-
-  const handlePublicationIAModalEvent = async ( LegalResumeAI: PublicationAIAnalyserDTO, legalResumeActionId: number) => 
+  const handlePublicationIAModalEvent = async (LegalResumeAI: PublicationAIAnalyserDTO, legalResumeActionId: number, ignoreConfirm: boolean = false) => 
   {
     setActionType('deadLineCalculate');
+
+    var daysManual = 0;
+
+    if (currentLegalResumaActionId)
+    {
+        legalResumeActionId = currentLegalResumaActionId
+        daysManual = daysDeadline
+    }
+    
+    handleCancelMessage(false)
+    handleConfirmMessage(false)
+    setCheckMessageDeadlineIA(false)
 
     const response = await api.post<PublicationAICalculatorDTO>('/PublicacoesIA/CalcularPrazo',
     {
@@ -974,27 +950,43 @@ const Publication: React.FC = () => {
         companyId,
         apiKey,
         token,
+        daysManual,
+        confirmBox: ignoreConfirm    
     });
 
-     if (response.data.Message != null)
-      {
-          addToast({
-            type: 'info',
-            title: 'Operação não realizada',
-            description: response.data.Message
-        });
-      
-        setActionType('none');
-        return;
-      }
+    if (response.data.Message != null)
+    {
+        if (response.data.Message.includes("confirmEventDate") && !ignoreConfirm)
+        {
+            setCheckMessageDeadlineIA(true)
 
+            setCurrentLegalResume(LegalResumeAI)
+            setCurrentLegalResumeActionId(legalResumeActionId);
+            setItemType("IA");
+
+            setActionType('none');
+            return;
+        }
+
+        addToast({
+          type: 'info',
+          title: 'Operação não realizada',
+          description: response.data.Message
+      });
+    
+      handleCloseDaysModal();
+      return;
+    }
 
     var DataCalculadaFormatada = response.data.FormatDate;
-    var HoraFormatada = "";
+    var HoraFormatada = "09:00";
     
     if (LegalResumeAI.Audiencia)
     {
-        HoraFormatada = LegalResumeAI.Audiencia.Hora;
+      if (LegalResumeAI.Audiencia.LegalResumeActionId == legalResumeActionId)
+      {
+          HoraFormatada = LegalResumeAI.Audiencia.Hora;
+      }
     }
 
     var filtersJSON = 
@@ -1005,8 +997,6 @@ const Publication: React.FC = () => {
         SubjectId: response.data.SubjectId,
     };
     
-    console.log(`${response.data.TextCalculation}\n\n${LegalResumeAI.Resumo}`)
-
     var textPublication = ""
     if (response.data.TextCalculation)
     {
@@ -1028,8 +1018,19 @@ const Publication: React.FC = () => {
     localStorage.setItem('@GoJur:PublicationId', LegalResumeAI.legalResumeId.toString())
     localStorage.setItem('@GoJur:LegalResumeIA', JSON.stringify(filtersJSON));
     
+    handleCloseDaysModal();
     handleModalActiveId(0)
     isOpenModal('0')
+  }
+  
+  const handleCloseDaysModal = async() => 
+  {
+      setOpenModalDaysIA(false);
+      setCurrentLegalResume(null);
+      setCurrentLegalResumeActionId(null);
+      setDaysDeadline(null)
+      setActionType('none');
+      setItemType("");
   }
 
   const handleAppointmentModalInclude = async (matterId: number, publicationId: number, hasMatter: boolean) => {
@@ -1698,9 +1699,14 @@ const Publication: React.FC = () => {
         <ConfirmBoxModal
           useCheckBoxConfirm
           title="Exclusão da publicação"
-          message="A publicação será excluida.
-                   Caso ela esteja associada a um processo ele também será excluída da pasta.
-                   Confirma a operação ?"
+          message="Identificamos um prazo ou audiência agendado para a mesma data, deseja prosseguir com o agendamento? ?"
+        />
+      )}
+
+      {checkMessageDeadlineIA && (
+        <ConfirmBoxModal
+          title="Criação de Prazos"
+          message="Identificamos um prazo ou audiência agendado para a mesma data, deseja prosseguir com o agendamento? ?"
         />
       )}
 
@@ -1979,14 +1985,15 @@ const Publication: React.FC = () => {
                       title='Clique para iniciar a análise desta publicação através da Inteligência Artificial'
                       type='button'
                       onClick={() => handlePublicationGojurAI(item.id, "P")}
-                      style={{width:'140px', height:'28px', marginTop:'15px'}}
+                      style={{width:'220px', height:'38px', marginTop:'20px'}}
                     >
-                      Analisar Publicação
+                      Analisar Notificação – IA GOJUR
                     </button>                  
                   )}
 
                   {(item.hasPublicationResumeAI && item.publicationResumeAI != null) && (       
                       <ContentLegalResumeRender
+                        isRead={item.read}
                         publicationAI={item.publicationResumeAI}
                         handleDefinirDias={handleDefinirDias}
                         handlePublicationIAModalEvent={handlePublicationIAModalEvent}
@@ -2142,16 +2149,17 @@ const Publication: React.FC = () => {
 
                   <button
                       className="buttonClick"
-                      title='Clique para iniciar a análise deste acompanhamento através da Inteligência Artificial'
+                      title='Clique para iniciar a análise desta notificação através da Inteligência Artificial'
                       type='button'
                       onClick={() => handlePublicationGojurAI(item.meCod_ProcessoAcompanhamento, "A")}
-                      style={{width:'200px', height:'28px', marginTop:'15px'}}
+                      style={{width:'220px', height:'38px', marginTop:'20px'}}
                     >
-                      Analisar Acompanhamento
+                      Analisar Notificação – IA GOJUR
                     </button>   
 
                   {(item.hasPublicationResumeAI && item.publicationResumeAI != null) && (       
-                      <ContentLegalResumeRender
+                      <ContentLegalResumeRender 
+                        isRead={item.readMatterEvent}
                         publicationAI={item.publicationResumeAI}
                         handleDefinirDias={handleDefinirDias}
                         handlePublicationIAModalEvent={handlePublicationIAModalEvent}

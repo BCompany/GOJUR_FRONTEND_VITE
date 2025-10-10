@@ -41,6 +41,7 @@ export interface PublicationAIDeadlinesDTO{
   DeadlineDescription: string;
   DataCalculadaFormatada: string;
   DefinirDiasManualmente: boolean;
+  DiasManual: number;
 }
 
 export interface PublicationAICalculatorDTO
