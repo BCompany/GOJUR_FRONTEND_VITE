@@ -830,7 +830,9 @@ const Publication: React.FC = () => {
 
         const publi = publication.filter(item => item.id === publicationId);
 
-        const publicationText = publi.map(i => i.description);
+        // remove html format from publication text in order to send to 
+        // calendar appointment - Marcelo 10/2025
+        const publicationText = publi.map(i => i.description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
 
         handleMatterAssociated(hasMatter? true:false);
 
@@ -838,7 +840,9 @@ const Publication: React.FC = () => {
       }
       else{
         const publi = publication.filter(item => item.id === publicationId);
-        const publicationText = publi.map(i => i.description);
+        // remove html format from publication text in order to send to 
+        // calendar appointment - Marcelo 10/2025
+        const publicationText = publi.map(i => i.description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
 
         localStorage.setItem('@GoJur:PublicationHasMatter', 'N')
         handleCaptureTextPublication(`${publicationText}`);
@@ -1066,6 +1070,9 @@ const Publication: React.FC = () => {
     const publicationData = publication.find(item => item.id == idPublication);
 
     if (publicationData){
+      // remove html format from publication text in order to send to 
+      // calendar appointment - Marcelo 10/2025
+      publicationData.description = publicationData.description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
       handleDetailsAnyType(publicationData)
     }
 
