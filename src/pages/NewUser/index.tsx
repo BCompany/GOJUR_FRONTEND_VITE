@@ -67,9 +67,8 @@ const NewUser: React.FC = () => {
           localStorage.setItem('@GoJur:PublicationFilter', JSON.stringify(filtersJSON));
           history.push('/publication');
         }
-
-        if (publicationId === ''){
-          history.push('/dashboard');
+        else {
+          history.push('/clientRedirect');
         }
       } catch (err) {
         history.push('/');
