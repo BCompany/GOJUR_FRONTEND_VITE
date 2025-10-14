@@ -35,6 +35,7 @@ import { loadingMessage, noOptionsMessage } from 'Shared/utils/commonConfig';
 import { AppointmentPropsSave, AppointmentPropsDelete, SelectValues, Data, dataProps, LembretesData, MatterData, ModalProps, ResponsibleDTO, Settings, ShareListDTO, userListData } from 'pages/Dashboard/MainViewContent/pages/Interfaces/ICalendar';
 import { dayRecurrence, optionsLembrete, weekRecurrence } from 'pages/Dashboard/MainViewContent/pages/Dashboard/resorces/DashboardComponents/CreateAppointment/ListValues/List'
 import TimePicker from 'components/TimePicker';
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 export default function Workflow() {
 
@@ -320,6 +321,7 @@ export default function Workflow() {
 
 
   const handleSubmitWorkflow = useCallback(async () => {
+
     // Valida apenas gatilhos do tipo "data"
     const isValid = workflowTrigger.every(t => {
       if (t.triggerType === "data") {
@@ -352,7 +354,7 @@ export default function Workflow() {
         triggers: triggerList 
       })
 
-
+   
       const id = Number(response.data);
       setWorkflowId(id);
 
@@ -379,10 +381,28 @@ export default function Workflow() {
 
       }
       else
-        reloadWorkflow(id)
-      //handleSalvarCompromisso()
+      {
+     
+        //const currentOrder = [...workflowTrigger];
+        
+        await reloadWorkflow(id)
 
+        /*
+        setWorkflowTrigger(prev => {
+        const updated = [...prev];
+     
+          updated.sort((a, b) => {
+            const orderA = currentOrder.findIndex(t => t.workflowTriggerId === a.workflowTriggerId);
+            const orderB = currentOrder.findIndex(t => t.workflowTriggerId === b.workflowTriggerId);
+            return orderA - orderB;
+          });
+          return updated;
+        });
+        */
 
+      }
+
+     
       addToast({
         type: "success",
         title: "Workflow salvo",
@@ -761,12 +781,24 @@ export default function Workflow() {
       setIsDeletingTrigger(false)
       //setCurrentWorkflowId(0)
 
+        const currentOrder = [...workflowTrigger];
       await reloadWorkflow(workflowId);
-
 
       setPainelAberto(workflowtriggerId);
       fetchTriggerActions(workflowtriggerId);
       handleNewAction(workflowtriggerId);
+
+       setWorkflowTrigger(prev => {
+      const updated = [...prev];
+    
+      updated.sort((a, b) => {
+        const orderA = currentOrder.findIndex(t => t.workflowTriggerId === a.workflowTriggerId);
+        const orderB = currentOrder.findIndex(t => t.workflowTriggerId === b.workflowTriggerId);
+        return orderA - orderB;
+      });
+      return updated;
+    });
+
 
 
     } catch (err) {
@@ -1303,18 +1335,30 @@ export default function Workflow() {
       return;
     }
 
-
+    //const currentOrder = [...workflowTrigger];
     const id = await handleSalvarWorkflow();
 
     if (id > 0) {
 
       await fetchTriggerActions(triggerId);
+
+    /*
+    setWorkflowTrigger(prev => {
+      const updated = [...prev];
+     
+      updated.sort((a, b) => {
+        const orderA = currentOrder.findIndex(t => t.workflowTriggerId === a.workflowTriggerId);
+        const orderB = currentOrder.findIndex(t => t.workflowTriggerId === b.workflowTriggerId);
+        return orderA - orderB;
+      });
+      return updated;
+    });
+    */  
+      setPainelAberto(triggerId);
       setConfigureEvent(true);
       setNameTrigger(trigger.configuration?.label);
 
-
     }
-
 
   };
 
@@ -1363,12 +1407,13 @@ export default function Workflow() {
         ];
       }
 
+      
       setWorkflowTrigger(prev =>
         prev.map(tr =>
           tr.workflowTriggerId === triggerId ? { ...tr, actions: data } : tr
         )
       );
-
+      
 
     } catch (error) {
       //console.error(error);
@@ -1624,10 +1669,26 @@ export default function Workflow() {
       })
 
 
+      const currentOrder = [...workflowTrigger];
+
       await reloadWorkflow(workflowId);
       setPainelAberto(triggerId);
       fetchTriggerActions(triggerId);
       handleNewAction(triggerId);
+
+
+    setWorkflowTrigger(prev => {
+      const updated = [...prev];
+
+      updated.sort((a, b) => {
+        const orderA = currentOrder.findIndex(t => t.workflowTriggerId === a.workflowTriggerId);
+        const orderB = currentOrder.findIndex(t => t.workflowTriggerId === b.workflowTriggerId);
+        return orderA - orderB;
+      });
+      return updated;
+    });
+
+
 
     } catch (err: any) {
       const status = err.response?.data?.statusCode;  
@@ -1743,10 +1804,44 @@ export default function Workflow() {
 
               <label htmlFor="endereco" style={{ marginTop: '-55px' }}>
                 <p>Informe abaixo as datas que serão gatilhos para iniciar o workflow</p>
-                {workflowTrigger.map(trigger => (
+                
+                <DragDropContext
+    onDragEnd={(result) => {
+      if (!result.destination) return;
 
-                  <section id="endereco" key={trigger.workflowTriggerId}>
+      const reordered = Array.from(workflowTrigger);
+      const [removed] = reordered.splice(result.source.index, 1);
+      reordered.splice(result.destination.index, 0, removed);
 
+      // Atualiza a ordem
+      setWorkflowTrigger(reordered);
+    }}
+  >
+    <Droppable droppableId="workflowTriggers">
+      {(provided) => (
+        <div ref={provided.innerRef} {...provided.droppableProps}>
+          {workflowTrigger.map((trigger, index) => (
+            <Draggable
+              key={trigger.workflowTriggerId}
+              draggableId={String(trigger.workflowTriggerId)}
+              index={index}
+            >
+              {(provided) => (
+                <section
+                  id="endereco"
+                  ref={provided.innerRef}
+                  {...provided.draggableProps}
+                  {...provided.dragHandleProps}
+                  style={{
+                    background: "#fff",
+                    border: "1px solid #ccc",
+                    borderRadius: "8px",
+                    padding: "16px",
+                    marginBottom: "16px",
+                    ...provided.draggableProps.style,
+                  }}
+                >
+                   
                     <label style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                       Tipo gatilho
                       <Select
@@ -1810,6 +1905,7 @@ export default function Workflow() {
                       </button>
 
                     </label>
+                    
                     <label htmlFor="telefone" id="trigger">
 
 
@@ -2146,12 +2242,16 @@ export default function Workflow() {
                     )}
 
 
-                  </section>
-
-
-                ))}
-
-              </label>
+                </section>
+              )}
+            </Draggable>
+          ))}
+          {provided.placeholder}
+        </div>
+      )}
+    </Droppable>
+  </DragDropContext>
+</label>
 
 
               <br />

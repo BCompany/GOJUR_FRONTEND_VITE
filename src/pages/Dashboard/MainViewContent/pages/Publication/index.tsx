@@ -10,6 +10,7 @@ import { isMobile } from 'react-device-detect'
 import api from 'services/api';
 import { FcAbout } from 'react-icons/fc';
 import { FiCheckSquare,FiMenu } from 'react-icons/fi';
+import { GoGitMerge } from "react-icons/go"
 import { useAuth } from 'context/AuthContext';
 import { ImMenu3, ImMenu4 } from 'react-icons/im';
 import { FaCalculator , FaRegEdit } from 'react-icons/fa';
@@ -35,6 +36,7 @@ import { Overlay } from 'Shared/styles/GlobalStyle';
 import PublicationOptionsMenu from 'components/MenuHamburguer/publicationOptions';
 import { useHistory } from 'react-router-dom';
 import LogModal from 'components/LogModal';
+import { useSecurity } from 'context/securityContext';
 
 const Publication: React.FC = () => {
   const { signOut } = useAuth();
@@ -82,6 +84,9 @@ const Publication: React.FC = () => {
   const [showCustomDates, setShowCustomDates] = useState<boolean>(false);
   const [showReportOpenFileModal, setShowReportOpenFileModal] = useState<boolean>(false);
   const [reportLink, setReportLink] = useState<string>('');
+
+    const { permissionsSecurity, handleValidateSecurity } = useSecurity();
+   const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKFEX");
 
   const options = [
     { value: 'itemSearch_withMatter', label: 'Com Processo' },
@@ -1338,6 +1343,13 @@ const Publication: React.FC = () => {
     handlePublicationModal('Calc')
   }
 
+  const MatterWorkflow = async () => {
+ 
+    localStorage.setItem('@Gojur:publicationRedirect', 'S')
+    history.push(`/workflowexec/list`)
+
+  }
+
 
   return (
     <Container style={{pointerEvents:(loadingData?'none':'all'),opacity:(isMobile && isPagination?'0.3':'1')}} onScrollCapture={handleScroll}>
@@ -1684,6 +1696,16 @@ const Publication: React.FC = () => {
                           <RiDeleteBinLine />
                           Excluir
                         </p>
+
+
+                      {(checkWorkflow) && (
+                          <>
+                            <p onClick={() => MatterWorkflow()}>
+                              <GoGitMerge />
+                              <span>Workflow</span>
+                            </p>
+                          </>
+                        )}
 
                         <p onClick={() => handleLog(item.id)} title="Clique para visualizar os logs de alteração desta publicação">
                           <CgDetailsMore />

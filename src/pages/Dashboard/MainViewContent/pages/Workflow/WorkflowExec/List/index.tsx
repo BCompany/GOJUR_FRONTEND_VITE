@@ -73,6 +73,7 @@ const WorkflowList = () => {
   const [customerFileId, setCustomerFileId] = useState('');
   const [matterRedirect, setMatterRedirect] = useState<boolean>(false)
   const [customerRedirect, setCustomerRedirect] = useState<boolean>(false)
+  const [publicationRedirect, setPublicationRedirect] = useState<boolean>(false)
    const [calendarRedirect, setCalendarRedirect] = useState<boolean>(false) 
 
 
@@ -119,6 +120,13 @@ const WorkflowList = () => {
       localStorage.removeItem('@Gojur:customerId')  
       localStorage.removeItem('@Gojur:customerRedirect') 
     }
+
+    const redirectByPublication = localStorage.getItem('@Gojur:publicationRedirect') 
+    if (redirectByPublication == "S"){
+      setPublicationRedirect(true)  
+      localStorage.removeItem('@Gojur:publicationRedirect') 
+    }
+
 
     //const redirectByCalendar = localStorage.getItem('@Gojur:calendarRedirect') 
     const redirectByCalendar = "S" 
@@ -255,12 +263,14 @@ useEffect(() => {
         filters.push(`T.tpo_Status like '%${captureType}%'`);
       }
 
+      /*
       if (matterFileId) { 
         filters.push(`T.cod_Processo = ${matterFileId}`);
       }else if (customerFileId) { 
         filters.push(`T.cod_Cliente = ${customerFileId}`); 
       }
- 
+      */
+     
       const filterClause = filters.join(", "); 
 
 
@@ -488,13 +498,15 @@ const CustomCell = (props) => {
     if (matterRedirect){
       history.push('../../../matter/list')
     }
-    else if (customerRedirect){
+    else if (customerRedirect){ 
       history.push('../customer/list')
+    }else if (publicationRedirect){ 
+      history.push('../publication')
     }
     else if (calendarRedirect){ 
       history.push('../calendar')
     }
-
+ 
   }
 
 

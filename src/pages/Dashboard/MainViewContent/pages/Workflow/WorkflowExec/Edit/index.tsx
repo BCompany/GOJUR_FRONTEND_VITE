@@ -388,25 +388,72 @@ export default function WorkflowPage() {
 
       return actionsWithTriggerId;
 
-    } catch (error) {
-      console.error("Erro ao carregar ações do compromisso.", error);
-      return [];
+    } catch (err) {
+      
+      const status = err.response?.data?.statusCode;
+      const message = err.response?.data?.Message || err.message || "Erro desconhecido";
+
+      // eslint-disable-next-line no-alert
+      if (status !== 500) {
+
+        addToast({
+          type: "error",
+          title: "Falha ao Executar Workflow",
+          description: message
+        })
+      }
+
+      //return [];
+      throw new Error("error");
+
     }
   };
 
 
+  /*
   const handleSimularWorkflow = async () => {
+    
+    try{
     setTriggerActionsMap({});
 
     Object.keys(triggerDates).forEach(async (triggerIdStr) => {
       const triggerId = Number(triggerIdStr);
       const actions = await fetchTriggerActions(triggerId);
-
-
+      
+      if (actions.length === 0) 
+   
       setTriggerActionsMap(prev => ({ ...prev, [triggerId]: actions }));
     });
+    } catch (err) {
+      
+      return [];
+    }
   };
+*/
 
+const handleSimularWorkflow = async () => {
+  try {
+    setTriggerActionsMap({});
+
+    for (const triggerIdStr of Object.keys(triggerDates)) {
+      const triggerId = Number(triggerIdStr);
+      const actions = await fetchTriggerActions(triggerId);
+
+      //if (!actions || actions.length === 0) {
+      if (actions === "error") {
+       
+        return; 
+      }
+
+      setTriggerActionsMap((prev) => ({ ...prev, [triggerId]: actions }));
+    }
+
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+};
+  
   const LoadSubject = useCallback(async () => {
     try {
 
@@ -785,7 +832,7 @@ selectCustomerId =customer?.id ?? null;
 
 
   useEffect(() => {
-    if (localStorage.getItem('@Gojur:customer') && pathname.substr(19) == 0 )
+    if (localStorage.getItem('@Gojur:customer') && localStorage.getItem('@Gojur:customerId') && pathname.substr(19) == 0 )
     {
       RefreshPersonList(localStorage.getItem('@Gojur:customer'));
     }
@@ -802,10 +849,10 @@ selectCustomerId =customer?.id ?? null;
         (c) => String(c.id) === String(storedCustomerId)
       );
 
-      // Atualiza o estado
+  
       setCustomer(selected ? { value: selected.id, label: selected.label } : null);
 
-      // Remove do localStorage apenas se encontrar
+     
       if (selected) {
         setCustomerId(localStorage.getItem('@Gojur:customerId'));
         localStorage.removeItem('@Gojur:customerId');
@@ -1019,6 +1066,12 @@ useEffect(() => {
 
   };
 
+
+  const handleClose = () => {
+    //localStorage.removeItem('@Gojur:customer');
+    history.push('/workflowExec/list')
+ 
+  };
 
   return (
     <Container onScroll={handleScroolSeeMore} ref={scrollRef}>
@@ -1466,7 +1519,7 @@ useEffect(() => {
               </button>
 
 
-              <button className="buttonClick" type="button" onClick={() => history.push('/workflowExec/list')}>
+              <button className="buttonClick" type="button" onClick={() => handleClose()}>
                 <MdBlock />
                 Fechar
               </button>

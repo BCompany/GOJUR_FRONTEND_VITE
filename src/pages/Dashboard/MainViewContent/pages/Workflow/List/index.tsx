@@ -375,6 +375,10 @@ const WorkflowList = () => {
             </div>  
           </div>
 
+          <div style={{ float: 'left', marginLeft: '150px', marginTop: '12px' }}>
+            <h5>Configurações de Workflows</h5>
+          </div>
+
           <div style={{width:'100%', height:'25px'}}><></></div> 
 
           <Content onScroll={handleScroll} ref={scrollRef}>
