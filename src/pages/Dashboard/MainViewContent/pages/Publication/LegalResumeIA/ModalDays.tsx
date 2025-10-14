@@ -24,13 +24,13 @@ export default function ContentLegalResumeDaysModal({
 
         <div className="modal-title">
           Definição de Prazo
-          <FcAbout title="Defina manualmente uma quantidade de dias para realizar o cálculo de prazo automaticamente." style={{ cursor: 'pointer' }} />
+          <FcAbout title="Não foi possivel identificar os dias do prazo na análise da notificação, informe abaixo para prosseguir." style={{ cursor: 'pointer' }} />
         </div>
         
 
         <div style={{ marginLeft: "15px", marginTop: "10px", marginRight: "10px" }}>
           <label htmlFor="dias" style={{ fontSize: "12px" }}>
-            Digite a quantidade de dias:
+            Informe a quantidade de dias para calcular o prazo:
             <input
               required
               type="number"

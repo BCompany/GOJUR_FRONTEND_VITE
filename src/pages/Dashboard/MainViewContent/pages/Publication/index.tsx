@@ -485,6 +485,7 @@ const Publication: React.FC = () => {
     if (isCancelMessage){
       setCheckMessage(false)
       setCheckMessageDeadlineIA(false)
+      handleCloseDaysModal();
       handleCancelMessage(false)
     }
   }, [isCancelMessage])
@@ -1024,7 +1025,7 @@ const Publication: React.FC = () => {
   }
   
   const handleCloseDaysModal = async() => 
-  {
+  {   
       setOpenModalDaysIA(false);
       setCurrentLegalResume(null);
       setCurrentLegalResumeActionId(null);
