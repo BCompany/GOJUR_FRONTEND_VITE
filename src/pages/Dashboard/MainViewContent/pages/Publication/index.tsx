@@ -1700,14 +1700,14 @@ const Publication: React.FC = () => {
         <ConfirmBoxModal
           useCheckBoxConfirm
           title="Exclusão da publicação"
-          message="Identificamos um prazo ou audiência agendado para a mesma data, deseja prosseguir com o agendamento? ?"
+          message="A publicação será excluida. Caso ela esteja associada a um processo ele também será excluída da pasta. Confirma a operação?"
         />
       )}
 
       {checkMessageDeadlineIA && (
         <ConfirmBoxModal
           title="Criação de Prazos"
-          message="Identificamos um prazo ou audiência agendado para a mesma data, deseja prosseguir com o agendamento? ?"
+          message="Identificamos que já há um prazo ou audiência agendado na mesma data para esta notificação, deseja prosseguir com o agendamento?"
         />
       )}
 
