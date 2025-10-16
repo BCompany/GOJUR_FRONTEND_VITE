@@ -4,6 +4,12 @@ import { TiCancel } from 'react-icons/ti';
 import { Container, ContainerDetails } from './styles';
 
 export default function ConfirmDeleteModal (props) {
+
+   const {
+    callbackFunction,
+    appointmentWorkflowActionsExecId
+  } = props;
+
   const {handleCloseConfirmDelete, handleConfirmDelete} = props.callbackFunction
   const token = localStorage.getItem('@GoJur:token')
 
@@ -21,7 +27,14 @@ export default function ConfirmDeleteModal (props) {
         </header>
 
         <div>
-          <p>Deseja realmente apagar este compromisso ?</p>
+         {/* <p>Deseja realmente apagar este compromisso ?</p> */}
+
+  {appointmentWorkflowActionsExecId === 0 ? (
+    <p>Deseja realmente apagar este compromisso?</p>
+  ) : (
+    <p>Deseja realmente apagar este compromisso, ele está associado a um Workflow?</p>
+  )}
+
         </div>
 
         <footer>

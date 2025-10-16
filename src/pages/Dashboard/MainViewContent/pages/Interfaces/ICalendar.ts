@@ -69,6 +69,7 @@ export interface Data {
   privacityOptions: [];
   userCreator: string;
   recurrenceRule: string;
+  workflowActionsExecId:number; 
 }
 
 export interface SelectValues {

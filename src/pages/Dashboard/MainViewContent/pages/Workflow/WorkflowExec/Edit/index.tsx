@@ -232,7 +232,7 @@ export default function WorkflowPage() {
 
   useEffect(() => {
     if (matterSelected !== null && processTitle === 'Associar Processo') {
-
+     
       setProcessTitle(`${matterSelected.matterNumber} - ${(matterSelected.matterFolder != null ? "-" : "")} ${matterSelected.matterCustomerDesc} - ${matterSelected.matterOppossingDesc}`,);
 
       api.post<IMatterData>('/Processo/SelecionarProcesso', {
@@ -568,6 +568,7 @@ const handleSimularWorkflow = async () => {
         title: "Campos Obrigatórios",
         description: "Existem ações sem usuário selecionado"
       })
+      
       return;
     }
 
@@ -580,21 +581,42 @@ const handleSimularWorkflow = async () => {
         workflowTriggerId: trigger.workflowTriggerId
       }));
 
-    /*
-    let matterId;
-    if (processTitle !== 'Associar Processo'){
-      matterId = matterSelected?.matterId ?? null;
-    }
-     */
+ 
 
 let matterId;
+if (processTitle !== 'Associar Processo') {
 
+  const storedIdFromLocalStorage = localStorage.getItem('@Gojur:matterId'); 
+  
+  //alert('PASSO 1 - localStorage:' + storedIdFromLocalStorage);
+
+  if (storedIdFromLocalStorage.length == 0 ) { 
+    
+    const storedMatterId = matterSelected?.matterId ?? null;
+    //alert('PASSO 2 - matterSelected:' + storedMatterId);
+
+    if (storedMatterId !== null) {
+      matterId = storedMatterId; 
+    } else {
+      matterId = null; 
+    }
+  }
+  else
+    matterId = storedIdFromLocalStorage;
+
+}
+
+
+/*
 if (processTitle !== 'Associar Processo') {
   matterId = matterSelected?.matterId ?? null;
 
+  alert('PASSO 1 ' + matterSelected?.matterId)
   if (matterId == null) {
     //alert('matterId' + localStorage.getItem('@Gojur:matterId'));
     const storedMatterId = localStorage.getItem('@Gojur:matterId');
+
+    alert('PASSO 2 ' + storedMatterId)
 
     if (storedMatterId !== null) {
       matterId = storedMatterId; 
@@ -603,7 +625,7 @@ if (processTitle !== 'Associar Processo') {
     }
   }
 }
-
+*/
 
 let selectCustomerId;
 selectCustomerId =customer?.id ?? null;
@@ -882,6 +904,7 @@ selectCustomerId =customer?.id ?? null;
               const url = `/matter/edit/${matterType}/${localStorage.getItem('@Gojur:matterId')}`
               setRedirectLink(url);
               setCompleteLink(true);
+           
 
               const title = `${response.data.matterNumber} - ${response.data.matterFolder} - ${response.data.matterCustomerDesc} - ${response.data.matterOppossingDesc}`;
               setProcessTitle(title);
@@ -945,24 +968,9 @@ selectCustomerId =customer?.id ?? null;
   }, [workflowExec]);
 
 
-  /*
-  useEffect(() => {
-    if (workflowExec && customerList.length > 0 ) {
-      
-      RefreshPersonList(localStorage.getItem('@Gojur:customer'));
-      const selected = customerList.find(
-        (c) => String(c.id) === String(workflowExec.customerId)
-      );
 
-      setCustomer(
-        selected
-          ? { value: selected.id, label: selected.label }
-          : null
-      );
-    }
-  }, [workflowExec, customerList]);
-*/
 
+/*
 useEffect(() => {
   if (workflowExec && customerList.length > 0 && !customer) {
     RefreshPersonList(localStorage.getItem('@Gojur:customer'));
@@ -977,7 +985,41 @@ useEffect(() => {
         : null
     );
   }
-}, [workflowExec, customerList, customer]);
+}, [workflowExec, customerList]);
+*/
+
+
+const [refreshCount, setRefreshCount] = useState(0); 
+
+useEffect(() => {
+  const runRefresh = async () => {
+    if (refreshCount < 2 && workflowExec && customerList.length > 0 && !customer) {
+
+ 
+      await RefreshPersonList(localStorage.getItem('@Gojur:customer'));
+
+
+      const selected = customerList.find(
+        (c) => String(c.id) === String(workflowExec.customerId)
+      );
+
+      if (selected && pathname.substr(19) != 0) {
+        setRefreshCount((prev) => prev + 1);
+        setCustomer({ value: selected.id, label: selected.label });
+      }
+    
+      if ( pathname.substr(19) == 0 )
+      {
+         //alert('refreshCount11: ' + refreshCount) 
+         setRefreshCount((prev) => prev + 1);
+        
+      } 
+    }
+  };
+
+  runRefresh();
+}, [workflowExec, customerList, customer, refreshCount]);
+
 
 
   useEffect(() => {
@@ -1069,7 +1111,7 @@ useEffect(() => {
 
   const handleClose = () => {
     //localStorage.removeItem('@Gojur:customer');
-    history.push('/workflowExec/list')
+    history.push('/workflowexec/list')
  
   };
 

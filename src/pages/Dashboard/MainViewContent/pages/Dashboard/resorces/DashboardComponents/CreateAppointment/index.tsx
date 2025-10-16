@@ -19,6 +19,7 @@ import { Responsive as ResponsiveGridLayout } from 'react-grid-layout';
 import { RiFolder2Fill, RiEraserLine } from 'react-icons/ri';
 import { IoIosPaper } from 'react-icons/io';
 import { FiClock, FiTrash, FiSave, FiMail } from 'react-icons/fi';
+import { GoGitMerge } from "react-icons/go"
 import { FaRegTimesCircle, FaWhatsapp } from 'react-icons/fa';
 import { BsCheckBox } from 'react-icons/bs';
 import { TiCancel } from 'react-icons/ti';
@@ -156,6 +157,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   const [confirmDeleteCalendarEvent, setConfirmDeleteCalendarEvent] = useState<boolean>(false)
   const { handleCancelMessage, handleConfirmMessage, isCancelMessage, isConfirmMessage } = useConfirmBox();
   const [completeLink, setCompleteLink] = useState<boolean>(false);
+  const [appointmentWorkflowActionsExecId, setAppointmentWorkflowActionsExecId] = useState(0);
+
 
   useEffect(() => {
     if (isCancelMessage) {
@@ -324,6 +327,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       setAppointmentSharedList(data.sharedList); // lista de compartilhados
       setAppointmentNotifyMatterCustomer('N'); // notifica o responsavel
       setAppointmentUser(data.userCreator); // criador do compromisso
+      setAppointmentWorkflowActionsExecId(data.workflowActionsExecId); //Workflow relacionado
 
       setIsLoading(false)
       setAppointmentId(Number(appointmentId))
@@ -2593,6 +2597,14 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                     {appointmentUser}
                   </p>
                 </section>
+
+                {appointmentWorkflowActionsExecId !== 0 && (
+                  <div title="Esse compromisso está associado a um Workflow">
+                    <GoGitMerge/>
+                  </div>
+                )}
+  
+
                 <div>
                   <button type="button" onClick={handleSaveModal}>
                     Salvar
@@ -3453,7 +3465,9 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
       {(confirmDeleteCalendarEvent) && <Overlay /> }
       {confirmDeleteCalendarEvent && (
-        <ConfirmDeleteModal callbackFunction={{handleCloseConfirmDelete, handleConfirmDelete}} />
+        <ConfirmDeleteModal 
+        appointmentWorkflowActionsExecId={appointmentWorkflowActionsExecId}
+        callbackFunction={{handleCloseConfirmDelete, handleConfirmDelete}} />
       )}
 
 
