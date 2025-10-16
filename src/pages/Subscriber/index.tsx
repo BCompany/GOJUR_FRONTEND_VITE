@@ -121,7 +121,8 @@ const Subscriber: React.FC = () => {
         password,
         phone,
         chanel,
-        plan
+        plan,
+        otherText
       });
 
       window.open(`/newFirstAccess?token=${response.data.token}`, '_parent');
