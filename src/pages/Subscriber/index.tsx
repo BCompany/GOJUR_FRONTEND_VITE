@@ -60,7 +60,7 @@ const Subscriber: React.FC = () => {
   const [genericError, setGenericError] = useState<string>('')
   const [plan, setPlan] = useState<string>('GOJURFR')
   const [showOthersField, setShowOthersField] = useState(false);
-  const [otherFieldText, setotherFieldText] = useState(null);
+  const [otherFieldText, setOtherFieldText] = useState(null);
   const location = useLocation();
   const { isMOBILE } = useDevice()
 
@@ -283,7 +283,7 @@ const Subscriber: React.FC = () => {
                     maxLength={100}
                     type="text"
                     value={otherFieldText}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setotherFieldText(e.target.value)}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setOtherFieldText(e.target.value)}
                     autoComplete="off"
                   />
                 </>
@@ -490,7 +490,7 @@ const Subscriber: React.FC = () => {
                       type="text"
                       value={otherFieldText}
                       style={{ width: '100%', minHeight: '40px', fontSize: '14px', lineHeight: '1.8', padding: '6px 12px', verticalAlign: 'middle', color: '#333', border: 'solid 1px #ddd', borderRadius: '3px' }}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>  setotherFieldText(e.target.value)}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>  setOtherFieldText(e.target.value)}
                       autoComplete="off"
                     />
                   </>
