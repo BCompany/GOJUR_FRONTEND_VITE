@@ -60,7 +60,7 @@ const Subscriber: React.FC = () => {
   const [genericError, setGenericError] = useState<string>('')
   const [plan, setPlan] = useState<string>('GOJURFR')
   const [showOthersField, setShowOthersField] = useState(false);
-  const [otherText, setOtherText] = useState('');
+  const [otherFieldText, setotherFieldText] = useState('');
   const location = useLocation();
   const { isMOBILE } = useDevice()
 
@@ -122,7 +122,7 @@ const Subscriber: React.FC = () => {
         phone,
         chanel,
         plan,
-        otherText
+        otherFieldText
       });
 
       window.open(`/newFirstAccess?token=${response.data.token}`, '_parent');
@@ -263,7 +263,7 @@ const Subscriber: React.FC = () => {
               <SelectField
                 onChange={(e: ChangeEvent<HTMLSelectElement>) => {
                   setChanel(e.target.value);
-                  setShowOthersField(e.target.value==="Outros");
+                  setShowOthersField(e.target.value === "Outros");
                 }
                 }
               >
@@ -271,22 +271,21 @@ const Subscriber: React.FC = () => {
                 <option value="Google, Yahoo, Bing">Google, Yahoo, Bing</option>
                 <option value="Facebook/Instagram">Facebook/Instagram</option>
                 <option value="CAASP-OAB">CAASP-OAB</option>
-                <option value="MentoriaLorena">MentoriaLorena</option>
                 <option value="Outros">Outros</option>
               </SelectField>
               <br /><br />
 
               {showOthersField && (
                 <>
-              <InputLabel>Nos conte mais ou insira ou insira seu cupom</InputLabel><br />
-              <InputField
-                maxLength={50}
-                type="text"
-                value={otherText}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setOtherText(e.target.value)}
-                autoComplete="off"
-              />
-              </>
+                  <InputLabel>Nos conte mais ou insira seu cupom</InputLabel><br />
+                  <InputField
+                    maxLength={100}
+                    type="text"
+                    value={otherFieldText}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setotherFieldText(e.target.value)}
+                    autoComplete="off"
+                  />
+                </>
               )}
 
               <br /><br />
@@ -464,16 +463,38 @@ const Subscriber: React.FC = () => {
                 <label style={{ color: '#929292', fontSize: '14px', fontFamily: 'sans-serif' }}>Como nos conheceu ?</label><br />
                 <select
                   style={{ width: '100%', minHeight: '40px', fontSize: '14px', lineHeight: '1.8', padding: '6px 12px', verticalAlign: 'middle', color: '#333', border: 'solid 1px #ddd', borderRadius: '3px' }}
-                  onChange={(e: ChangeEvent<HTMLSelectElement>) => setChanel(e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+                    setChanel(e.target.value);
+                    setShowOthersField(e.target.value === "Outros");
+                  }
+                  }
+
+
+
                 >
                   <option value="0">Informe como nos conheceu</option>
                   <option value="Google, Yahoo, Bing">Google, Yahoo, Bing</option>
                   <option value="Facebook/Instagram">Facebook/Instagram</option>
                   <option value="CAASP-OAB">CAASP-OAB</option>
-                  <option value="MentoriaLorena">MentoriaLorena</option>
                   <option value="Outros">Outros</option>
                 </select>
-                <br /><br /><br />
+                <br /><br />
+
+                {showOthersField && (
+                  <>
+                    <label style={{ color: '#929292', fontSize: '14px', fontFamily: 'sans-serif' }}>Nos conte mais ou insira seu cupom</label><br />
+                    <input
+                      maxLength={100}
+                      type="text"
+                      value={otherFieldText}
+                      style={{ width: '100%', minHeight: '40px', fontSize: '14px', lineHeight: '1.8', padding: '6px 12px', verticalAlign: 'middle', color: '#333', border: 'solid 1px #ddd', borderRadius: '3px' }}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => setotherFieldText(e.target.value)}
+                      autoComplete="off"
+                    />
+                  </>
+                )}
+
+                <br /><br />
 
                 <input
                   type="checkbox"
