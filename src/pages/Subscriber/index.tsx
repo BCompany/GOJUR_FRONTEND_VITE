@@ -60,7 +60,7 @@ const Subscriber: React.FC = () => {
   const [genericError, setGenericError] = useState<string>('')
   const [plan, setPlan] = useState<string>('GOJURFR')
   const [showOthersField, setShowOthersField] = useState(false);
-  const [otherFieldText, setotherFieldText] = useState('');
+  const [otherFieldText, setotherFieldText] = useState(null);
   const location = useLocation();
   const { isMOBILE } = useDevice()
 
@@ -122,14 +122,15 @@ const Subscriber: React.FC = () => {
         phone,
         chanel,
         plan,
-        otherFieldText
+        otherFieldText: otherFieldText === '' ? null : otherFieldText
       });
 
       window.open(`/newFirstAccess?token=${response.data.token}`, '_parent');
     } catch (err: any) {
+      setGenericError(err.response.data.Message);
       setIsLoading(false);
       setHasError(true);
-      setGenericError(err.response.data.Message);
+      console.log(err.response.data.Message);
     }
   }, [name, email, password, phone, chanel, checkTerm]);
 
@@ -336,6 +337,7 @@ const Subscriber: React.FC = () => {
                 {errorPhone}{errorPhone != '' ? <br /> : ''}
                 {errorChanel}{errorChanel != '' ? <br /> : ''}
                 {errorTerm}{errorTerm != '' ? <br /> : ''}
+                {genericError}{genericError != '' ? <br /> : ''}
                 <br /><br />
               </ModalContent>
               <ModalButton className="buttonClick" type='button' onClick={() => CloseModal()}>
