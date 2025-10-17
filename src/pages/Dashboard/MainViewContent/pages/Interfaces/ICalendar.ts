@@ -70,6 +70,7 @@ export interface Data {
   userCreator: string;
   recurrenceRule: string;
   workflowActionsExecId:number; 
+  workflowExecId:number; 
 }
 
 export interface SelectValues {

@@ -34,6 +34,8 @@ import { HeaderPage } from 'components/HeaderPage';
 import { ISelectData } from '../../../Interfaces/IMatter';
 import GridSelectProcess from 'pages/Dashboard/MainViewContent/pages/Dashboard/resorces/DashboardComponents/CreateAppointment/GridSelectProcess';
 import { IMatterData } from 'pages/Dashboard/MainViewContent/pages/Interfaces/IMatter';
+import LoaderWaiting from 'react-spinners/ClipLoader';
+import { AutoCompleteSelect, Overlay } from 'Shared/styles/GlobalStyle';
 
 
 interface IOption {
@@ -55,6 +57,7 @@ export default function WorkflowPage() {
   const [confirmDeleteModal, setConfirmDeleteModal] = useState<boolean>(false);
   const { pathname } = useLocation();
   const [isPagination, setIsPagination] = useState(false);
+  const [isSaving, setisSaving] = useState<boolean>();
   const [isLoading, setIsLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [customerList, setCustomerList] = useState<ISelectData[]>([])
@@ -92,8 +95,42 @@ export default function WorkflowPage() {
     handleDeadLineCalculatorText,
     handleCaptureTextPublication,
     handleModalActive,
-    modalActive,
+    modalActive
   } = useModal();
+
+  const [wasOpened, setWasOpened] = useState(false);
+
+
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+
+        if (modalActive) {
+          setWasOpened(true);
+        } else if (wasOpened && !modalActive) {
+
+          let id;
+
+          if(workflowExecId)
+            id = workflowExecId;
+          else
+            id = pathname.substr(19)
+
+          await loadWorkflowExec(id);
+
+        }
+
+      } catch (err) {
+        console.error("Erro no useEffect:", err);
+      }
+    };
+
+    fetchData();
+  }, [modalActive, wasOpened]);
+
+
 
 
   const customStyles = {
@@ -232,7 +269,7 @@ export default function WorkflowPage() {
 
   useEffect(() => {
     if (matterSelected !== null && processTitle === 'Associar Processo') {
-     
+
       setProcessTitle(`${matterSelected.matterNumber} - ${(matterSelected.matterFolder != null ? "-" : "")} ${matterSelected.matterCustomerDesc} - ${matterSelected.matterOppossingDesc}`,);
 
       api.post<IMatterData>('/Processo/SelecionarProcesso', {
@@ -389,7 +426,7 @@ export default function WorkflowPage() {
       return actionsWithTriggerId;
 
     } catch (err) {
-      
+
       const status = err.response?.data?.statusCode;
       const message = err.response?.data?.Message || err.message || "Erro desconhecido";
 
@@ -431,29 +468,29 @@ export default function WorkflowPage() {
   };
 */
 
-const handleSimularWorkflow = async () => {
-  try {
-    setTriggerActionsMap({});
+  const handleSimularWorkflow = async () => {
+    try {
+      setTriggerActionsMap({});
 
-    for (const triggerIdStr of Object.keys(triggerDates)) {
-      const triggerId = Number(triggerIdStr);
-      const actions = await fetchTriggerActions(triggerId);
+      for (const triggerIdStr of Object.keys(triggerDates)) {
+        const triggerId = Number(triggerIdStr);
+        const actions = await fetchTriggerActions(triggerId);
 
-      //if (!actions || actions.length === 0) {
-      if (actions === "error") {
-       
-        return; 
+        //if (!actions || actions.length === 0) {
+        if (actions === "error") {
+
+          return;
+        }
+
+        setTriggerActionsMap((prev) => ({ ...prev, [triggerId]: actions }));
       }
 
-      setTriggerActionsMap((prev) => ({ ...prev, [triggerId]: actions }));
+    } catch (err) {
+      console.error(err);
+      return [];
     }
+  };
 
-  } catch (err) {
-    console.error(err);
-    return [];
-  }
-};
-  
   const LoadSubject = useCallback(async () => {
     try {
 
@@ -520,6 +557,8 @@ const handleSimularWorkflow = async () => {
 
   const handleExecutarWorkflow = async () => {
 
+    setisSaving(true)
+
     if (Object.keys(triggerActionsMap).length === 0) {
 
       addToast({
@@ -527,32 +566,14 @@ const handleSimularWorkflow = async () => {
         title: "Campos Obrigatórios",
         description: "É necessário simular Workflow"
       })
+
+      setisSaving(false)
       return;
     }
 
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
     let invalido = false;
-    /*
-    for (const [triggerId, dateStr] of Object.entries(triggerDates)) {
-      if (dateStr) {
-        const dataSelecionada = new Date(dateStr + "T00:00:00");
-        if (dataSelecionada < hoje) {
-          invalido = true;
-          break;
-        }
-      }
-    }
-
-    if (invalido) {
-      addToast({
-        type: "error",
-        title: "Campos Obrigatórios",
-        description: "Existem datas menores que hoje. Corrija antes de salvar."
-      })
-      return;
-    }
-    */
 
     Object.values(triggerActionsMap).forEach((actions) => {
       actions.forEach((action) => {
@@ -568,7 +589,8 @@ const handleSimularWorkflow = async () => {
         title: "Campos Obrigatórios",
         description: "Existem ações sem usuário selecionado"
       })
-      
+
+      setisSaving(false);
       return;
     }
 
@@ -581,67 +603,46 @@ const handleSimularWorkflow = async () => {
         workflowTriggerId: trigger.workflowTriggerId
       }));
 
- 
 
-let matterId;
-if (processTitle !== 'Associar Processo') {
 
-  const storedIdFromLocalStorage = localStorage.getItem('@Gojur:matterId'); 
-  
-  //alert('PASSO 1 - localStorage:' + storedIdFromLocalStorage);
+    let matterId;
+    if (processTitle !== 'Associar Processo') {
 
-  if (storedIdFromLocalStorage.length == 0 ) { 
-    
-    const storedMatterId = matterSelected?.matterId ?? null;
-    //alert('PASSO 2 - matterSelected:' + storedMatterId);
+      const storedIdFromLocalStorage = localStorage.getItem('@Gojur:matterId');
 
-    if (storedMatterId !== null) {
-      matterId = storedMatterId; 
-    } else {
-      matterId = null; 
+      //alert('PASSO 1 - localStorage:' + storedIdFromLocalStorage);
+
+      if (storedIdFromLocalStorage.length == 0) {
+
+        const storedMatterId = matterSelected?.matterId ?? null;
+        //alert('PASSO 2 - matterSelected:' + storedMatterId);
+
+        if (storedMatterId !== null) {
+          matterId = storedMatterId;
+        } else {
+          matterId = null;
+        }
+      }
+      else
+        matterId = storedIdFromLocalStorage;
+
     }
-  }
-  else
-    matterId = storedIdFromLocalStorage;
-
-}
 
 
-/*
-if (processTitle !== 'Associar Processo') {
-  matterId = matterSelected?.matterId ?? null;
 
-  alert('PASSO 1 ' + matterSelected?.matterId)
-  if (matterId == null) {
-    //alert('matterId' + localStorage.getItem('@Gojur:matterId'));
-    const storedMatterId = localStorage.getItem('@Gojur:matterId');
+    let selectCustomerId;
+    selectCustomerId = customer?.id ?? null;
 
-    alert('PASSO 2 ' + storedMatterId)
+    if (selectCustomerId == null) {
 
-    if (storedMatterId !== null) {
-      matterId = storedMatterId; 
-    } else {
-      matterId = null; 
+      const storedCustomerId = customerId;
+
+      if (storedCustomerId !== null) {
+        selectCustomerId = storedCustomerId;
+      } else {
+        selectCustomerId = null;
+      }
     }
-  }
-}
-*/
-
-let selectCustomerId;
-selectCustomerId =customer?.id ?? null;
-
-  if (selectCustomerId == null) {
-
-    const storedCustomerId = customerId;
-
-    if (storedCustomerId !== null) {
-      selectCustomerId = storedCustomerId; 
-    } else {
-      selectCustomerId = null; 
-    }
-  }
-
-
 
     const allActions = Object.values(triggerActionsMap).flat();
 
@@ -684,7 +685,7 @@ selectCustomerId =customer?.id ?? null;
       des_ExecParameters: JSON.stringify(jsonTriggers),
       startDate: todayISO,
       endDate: null,
-      statusType: "emandamento",
+      statusType: "EMANDAMENTO",
       count: null,
       eventDTO: allActions,
       actionsExecDTO: workflowActionsExec,
@@ -710,6 +711,8 @@ selectCustomerId =customer?.id ?? null;
         description: workflow.workflowId ? "As alterações feitas no ao executar o workflow foram salvas" : "Workflow adicionado"
       })
 
+      setisSaving(false);
+
 
     } catch (err: any) {
       const status = err.response?.data?.statusCode;
@@ -727,6 +730,7 @@ selectCustomerId =customer?.id ?? null;
 
     }
 
+    setisSaving(false);
   };
 
 
@@ -741,8 +745,6 @@ selectCustomerId =customer?.id ?? null;
 
     fetchData();
   }, [pathname]);
-
-
 
 
   const loadWorkflowExec = useCallback(async (workflowExecIdParam: number) => {
@@ -854,8 +856,7 @@ selectCustomerId =customer?.id ?? null;
 
 
   useEffect(() => {
-    if (localStorage.getItem('@Gojur:customer') && localStorage.getItem('@Gojur:customerId') && pathname.substr(19) == 0 )
-    {
+    if (localStorage.getItem('@Gojur:customer') && localStorage.getItem('@Gojur:customerId') && pathname.substr(19) == 0) {
       RefreshPersonList(localStorage.getItem('@Gojur:customer'));
     }
   }, []);
@@ -871,10 +872,10 @@ selectCustomerId =customer?.id ?? null;
         (c) => String(c.id) === String(storedCustomerId)
       );
 
-  
+
       setCustomer(selected ? { value: selected.id, label: selected.label } : null);
 
-     
+
       if (selected) {
         setCustomerId(localStorage.getItem('@Gojur:customerId'));
         localStorage.removeItem('@Gojur:customerId');
@@ -904,7 +905,7 @@ selectCustomerId =customer?.id ?? null;
               const url = `/matter/edit/${matterType}/${localStorage.getItem('@Gojur:matterId')}`
               setRedirectLink(url);
               setCompleteLink(true);
-           
+
 
               const title = `${response.data.matterNumber} - ${response.data.matterFolder} - ${response.data.matterCustomerDesc} - ${response.data.matterOppossingDesc}`;
               setProcessTitle(title);
@@ -950,7 +951,7 @@ selectCustomerId =customer?.id ?? null;
               setProcessTitle(title);
               console.log('Process title set:', title);
 
-               localStorage.removeItem('@Gojur:matterId');
+              localStorage.removeItem('@Gojur:matterId');
             })
 
         } catch (err) {
@@ -970,55 +971,54 @@ selectCustomerId =customer?.id ?? null;
 
 
 
-/*
-useEffect(() => {
-  if (workflowExec && customerList.length > 0 && !customer) {
-    RefreshPersonList(localStorage.getItem('@Gojur:customer'));
-
-    const selected = customerList.find(
-      (c) => String(c.id) === String(workflowExec.customerId)
-    );
-
-    setCustomer(
-      selected
-        ? { value: selected.id, label: selected.label }
-        : null
-    );
-  }
-}, [workflowExec, customerList]);
-*/
-
-
-const [refreshCount, setRefreshCount] = useState(0); 
-
-useEffect(() => {
-  const runRefresh = async () => {
-    if (refreshCount < 2 && workflowExec && customerList.length > 0 && !customer) {
-
- 
-      await RefreshPersonList(localStorage.getItem('@Gojur:customer'));
-
-
+  /*
+  useEffect(() => {
+    if (workflowExec && customerList.length > 0 && !customer) {
+      RefreshPersonList(localStorage.getItem('@Gojur:customer'));
+  
       const selected = customerList.find(
         (c) => String(c.id) === String(workflowExec.customerId)
       );
-
-      if (selected && pathname.substr(19) != 0) {
-        setRefreshCount((prev) => prev + 1);
-        setCustomer({ value: selected.id, label: selected.label });
-      }
-    
-      if ( pathname.substr(19) == 0 )
-      {
-         //alert('refreshCount11: ' + refreshCount) 
-         setRefreshCount((prev) => prev + 1);
-        
-      } 
+  
+      setCustomer(
+        selected
+          ? { value: selected.id, label: selected.label }
+          : null
+      );
     }
-  };
+  }, [workflowExec, customerList]);
+  */
 
-  runRefresh();
-}, [workflowExec, customerList, customer, refreshCount]);
+
+  const [refreshCount, setRefreshCount] = useState(0);
+
+  useEffect(() => {
+    const runRefresh = async () => {
+      if (refreshCount < 2 && workflowExec && customerList.length > 0 && !customer) {
+
+
+        await RefreshPersonList(localStorage.getItem('@Gojur:customer'));
+
+
+        const selected = customerList.find(
+          (c) => String(c.id) === String(workflowExec.customerId)
+        );
+
+        if (selected && pathname.substr(19) != 0) {
+          setRefreshCount((prev) => prev + 1);
+          setCustomer({ value: selected.id, label: selected.label });
+        }
+
+        if (pathname.substr(19) == 0) {
+          //alert('refreshCount11: ' + refreshCount) 
+          setRefreshCount((prev) => prev + 1);
+
+        }
+      }
+    };
+
+    runRefresh();
+  }, [workflowExec, customerList, customer, refreshCount]);
 
 
 
@@ -1106,13 +1106,14 @@ useEffect(() => {
     //handleModalActive(true);
     isOpenModal(eventId);
 
+
   };
 
 
   const handleClose = () => {
     //localStorage.removeItem('@Gojur:customer');
     history.push('/workflowexec/list')
- 
+
   };
 
   return (
@@ -1399,24 +1400,24 @@ useEffect(() => {
                                 border: "2px solid",
                                 borderColor:
                                   action.status === "CONCLUIDO"
-                                    ? "#22c55e" 
+                                    ? "#22c55e"
                                     : action.status === "EXCLUIDO"
-                                      ? "#f87171" 
-                                      : "#9ca3af", 
+                                      ? "#f87171"
+                                      : "#9ca3af",
 
                                 background:
                                   action.status === "CONCLUIDO"
-                                    ? "#d1fae5" 
+                                    ? "#d1fae5"
                                     : action.status === "EXCLUIDO"
-                                      ? "#fee2e2" 
+                                      ? "#fee2e2"
                                       : "#fff",
 
                                 color:
                                   action.status === "CONCLUIDO"
-                                    ? "#065f46" 
+                                    ? "#065f46"
                                     : action.status === "EXCLUIDO"
-                                      ? "#7f1d1d" 
-                                      : "#374151", 
+                                      ? "#7f1d1d"
+                                      : "#374151",
                               }}
                             >
                               {index + 2}
@@ -1579,6 +1580,16 @@ useEffect(() => {
 
 
       </Content>
+
+      {isSaving && (
+        <>
+          <Overlay />
+          <div className='waitingMessage'>
+            <LoaderWaiting size={15} color="var(--blue-twitter)" />
+            &nbsp;&nbsp; Salvando...
+          </div>
+        </>
+      )}
 
 
       {confirmDeleteModal && (

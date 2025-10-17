@@ -1803,7 +1803,7 @@ export default function Workflow() {
               <br /><br /><br /> <br />
 
               <label htmlFor="endereco" style={{ marginTop: '-55px' }}>
-                <p>Informe abaixo as datas que serão gatilhos para iniciar o workflow</p>
+                <p>Informe abaixo as datas que serão gatilhos para iniciar o workflow - arraste para reordenar as datas</p>
                 
                 <DragDropContext
     onDragEnd={(result) => {

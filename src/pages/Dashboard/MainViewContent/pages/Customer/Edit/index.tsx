@@ -571,7 +571,7 @@ export default function Customer() {
     const token = localStorage.getItem('@GoJur:token');
 
     setisSaving(true)
-
+    
     let emailValidation = true;
 
     // email financial validation
@@ -2469,6 +2469,8 @@ export default function Customer() {
         />
       )}
 
+      
+      
       {isSaving && (
         <>
           <Overlay />
@@ -2478,6 +2480,7 @@ export default function Customer() {
           </div>
         </>
       )}
+        
 
       {isDeleting && (
         <>
@@ -2498,6 +2501,7 @@ export default function Customer() {
           </div>
         </>
       )}
+        
 
       <DocumentModal />
 
