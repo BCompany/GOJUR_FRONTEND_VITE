@@ -138,19 +138,6 @@ export default function CredentialsDataSourceModal(props) {
 
 
   const SaveCredentials = async () => {
-    // if(flgCertificate == false){
-    //   if (des_user == '' || password == ''){
-    //     addToast({type: "info", title: "Operação não realizada", description: "Usuário e senha são obrigatórios."})
-    //     return;
-    //   }
-    // }
-    // else{
-    //   if (file==null || passwordCredential == ''){
-    //     addToast({type: "info", title: "Operação não realizada", description: "Certificado e a senha são obrigatórios."})
-    //     return;
-    //   }
-    // }
-
     if (description == ''){
       addToast({type: "info", title: "Operação não realizada", description: "A Descrição é obrigatória."})
       return;
@@ -276,6 +263,16 @@ export default function CredentialsDataSourceModal(props) {
   }
 
 
+  const ChangeDigitalCertificate = (item: boolean) => {
+    setDigitalCertificate(item)
+
+    if(item == true){
+      setDes_user('')
+      setPassword('')
+    }
+  }
+
+
   return (
     <>
       <Modal
@@ -331,7 +328,7 @@ export default function CredentialsDataSourceModal(props) {
           {flgCertificate && (
             <>
               <div style={{display:'flex', marginLeft:'2%'}}>
-                <input type="checkbox" checked={digitalCertificate} onChange={(e) => setDigitalCertificate(e.target.checked)} />
+                <input type="checkbox" checked={digitalCertificate} onChange={(e) => ChangeDigitalCertificate(e.target.checked)} />
                 &nbsp;&nbsp; Utilizar Certificado Digital
               </div>
               <br />
@@ -412,6 +409,7 @@ export default function CredentialsDataSourceModal(props) {
                     readOnly={readOnly}
                     onFocus={() => setReadOnly(false)}
                     required
+                    autoComplete="off"
                     style={{display:'block', width:'94%', backgroundColor:'white', height:'30px' }}
                   />
                 </label>
@@ -450,6 +448,7 @@ export default function CredentialsDataSourceModal(props) {
                     readOnly={readOnly}
                     onFocus={() => setReadOnly(false)}
                     required
+                    autoComplete="off"
                     style={{ display: 'block', width: '94%', backgroundColor: 'white', height: '30px' }}
                   />
                 </label>

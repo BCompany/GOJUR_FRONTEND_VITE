@@ -1,3 +1,4 @@
+
 import React, {useEffect,useState,useCallback,ChangeEvent,UIEvent, useRef, useMemo } from 'react';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import { usePublication } from 'context/publication';
@@ -41,11 +42,11 @@ const Publication: React.FC = () => {
   const { signOut } = useAuth();
   const { handlePublicationModal, handleSetFilterName, handleSetFilterChanged, filterName, isReportModalOpen, filterChanged, handleDetailsAnyType, handleOpenReportModal, handleCloseReportModal, handleReload, reloadTrigger } = usePublication();
   const { handleShowListSearch, handleLoadingData } = useHeader()
-  const { isOpenModal, handleModalActiveId, selectProcess,modalActive,handleCaptureTextPublication,handleMatterAssociated, handleDeadLineCalculatorText,handleModalActive,handleShowVideoTrainning} = useModal();
-  const { captureText,handleCaptureText, handleDispathCallback,dispathCallback } = useHeader();
+  const { isOpenModal, handleModalActiveId, selectProcess, modalActive, handleCaptureTextPublication, handleMatterAssociated, handleDeadLineCalculatorText, handleModalActive, handleShowVideoTrainning } = useModal();
+  const { captureText, handleCaptureText, handleDispathCallback, dispathCallback } = useHeader();
   const { isConfirmMessage, isCancelMessage, handleCancelMessage, handleConfirmMessage } = useConfirmBox();
-  const [ showLog, setShowLog] = useState(false); // Controla a abertura do modal de Log de publicação
-  const [ showMatterEventLog, setShowMatterEventLog] = useState(false); // Controla a abertura do modal de Log de acompanhamentos
+  const [showLog, setShowLog] = useState(false); // Controla a abertura do modal de Log de publicação
+  const [showMatterEventLog, setShowMatterEventLog] = useState(false); // Controla a abertura do modal de Log de acompanhamentos
   const { addToast } = useToast();
   const history = useHistory();
   const [ loadingData, setLoadingData] = useState(true) //trigger to reload page
@@ -127,10 +128,10 @@ const Publication: React.FC = () => {
   const Initialize = useCallback(async () => {
     try {
       // Request list publication names
-      const response = await api.post<usernameListProps[]>(`/Publicacao/ListarNomesPublicacao`,  { 
-        token: token, 
+      const response = await api.post<usernameListProps[]>(`/Publicacao/ListarNomesPublicacao`, {
+        token: token,
         companyId: localStorage.getItem('@GoJur:companyId'),
-        apiKey: localStorage.getItem('@GoJur:apiKey') 
+        apiKey: localStorage.getItem('@GoJur:apiKey')
       });
 
       // Save names to appear in dropdownlist
@@ -142,7 +143,7 @@ const Publication: React.FC = () => {
       setCurrentPublicationId(0)
       setIsFirstLoad(false)
     }
-    catch (err:any) {
+    catch (err: any) {
       setLoadingData(false)
       console.log(err.message)
     }
@@ -158,7 +159,7 @@ const Publication: React.FC = () => {
 
       if (firstLoad) {
         const response = await VerifyParameterFilterName();
-        if (response){
+        if (response) {
           nameFilterSearch = response;
         }
       }
@@ -179,19 +180,18 @@ const Publication: React.FC = () => {
 
       // verify if exists filter saved on redirect operations
       const filterStorage = localStorage.getItem('@GoJur:PublicationFilter')
-      if (filterStorage){
+      if (filterStorage) {
         const filterJSON = JSON.parse(filterStorage);
 
         if (filterJSON.period) period = filterJSON.period // set period from saved filter
 
         let filterString = '';
 
-        if (filterJSON.matter)
-        {
+        if (filterJSON.matter) {
           filterJSON.matter.map(item => {
             filterString += item.value + ',';
           })
-            
+
           filterMulti = filterString;
         }
 
@@ -199,14 +199,13 @@ const Publication: React.FC = () => {
 
         if (filterJSON.name) search = filterJSON.name // set term from saved filter
 
-        if(filterJSON.dtaStart)
-        {
+        if (filterJSON.dtaStart) {
           setDtaCustomStart(filterJSON.dtaStart)
           setDtaCustomEnd(filterJSON.dtaEnd)
           filterDatesCustom = `${filterJSON.dtaStart}|${filterJSON.dtaEnd}`
           setShowCustomDates(true)
         }
-        
+
         // set filters control
         setFilterPeriod(filterJSON.period)
         setFilterTerm(filterJSON.term)
@@ -217,13 +216,12 @@ const Publication: React.FC = () => {
         // remove storage to filter saved to avoid apply again
         localStorage.removeItem('@GoJur:PublicationFilter')
       }
-      
-      if(changeDates)
-      {
+
+      if (changeDates) {
         filterDatesCustom = `${dtaCustomStart}|${dtaCustomEnd}`
       }
 
-      const filters =  `${period},${filterMulti},term_${term},${search},`
+      const filters = `${period},${filterMulti},term_${term},${search},`
 
       //request load publication
       const response = await api.post<PublicationData[]>(`/Publicacao/Listar`, {
@@ -256,15 +254,14 @@ const Publication: React.FC = () => {
           },
       );
 
-      if (!isPagination){
+      if (!isPagination) {
         //if is NOT a pagination set newData values to array list publication
         setPublication(newData)
         setIsEndPage(false)
-        setTotalPublications(newData.length === 0? 0: newData[0].totalRows)
+        setTotalPublications(newData.length === 0 ? 0 : newData[0].totalRows)
       }
-      else
-      {
-        if (newData.length == 0){
+      else {
+        if (newData.length == 0) {
           setIsEndPage(true);     //if there is no more data, define as endpage
         }
         //If is a pagination, append new data to publication list already existent
@@ -281,17 +278,16 @@ const Publication: React.FC = () => {
       setFilterPublicationId(0)
       setPrintData([])
 
-      if(isFirstLoad)
-      {
-        const responseLog = api.post('/Usuario/SalvarLogNavegacaoUsuario', {token, module: 'MEN_PUBLICACAO'});
+      if (isFirstLoad) {
+        const responseLog = api.post('/Usuario/SalvarLogNavegacaoUsuario', { token, module: 'MEN_PUBLICACAO' });
       }
 
-    } catch (err:any) {
+    } catch (err: any) {
       setIsPagination(false)
       setLoadingData(false)
       handleLoadingData(false)
       console.log(err)
-      if (err.response.data.statusCode == 1002){
+      if (err.response.data.statusCode == 1002) {
         addToast({
           type: 'info',
           title: 'Permissão negada',
@@ -340,33 +336,31 @@ const Publication: React.FC = () => {
       const pub1 = publication.find(publi => publi.id === currentPublicationId)
       const pub2 = publication.find(publi => publi.meCod_ProcessoAcompanhamento === currentPublicationId)
 
-      if(pub1)
-      {
+      if (pub1) {
         // refresh list of events relashion to current publication id
         const pub = publication.map(publi =>
           publi.id === currentPublicationId
             ? {
-                ...publi,
-                eventList: response.data,
-              }
+              ...publi,
+              eventList: response.data,
+            }
             : publi,
         );
-        
+
         setPublication(pub)
       }
-      
-      if(pub2)
-      {
+
+      if (pub2) {
         // refresh list of events relashion to current publication id
         const pub = publication.map(publi =>
           publi.meCod_ProcessoAcompanhamento === currentPublicationId
             ? {
-                ...publi,
-                eventList: response.data,
-              }
+              ...publi,
+              eventList: response.data,
+            }
             : publi,
         );
-        
+
         setPublication(pub)
       }
 
@@ -385,18 +379,19 @@ const Publication: React.FC = () => {
 
   // Set header callback when customer set some value on search text
   useEffect(() => {
-    if (dispathCallback){
+    if (dispathCallback) {
       handleLoadingData(true)
       setLoadingData(true)
+      setPageNumber(1)
     }
-  },[dispathCallback])
+  }, [dispathCallback])
 
 
   // Save capture text from header component
   useEffect(() => {
     setFilterTerm(captureText)
     handleLoadingData(false)
-  },[captureText])
+  }, [captureText])
 
 
     // Refresh event list publication when modal is closed
@@ -404,15 +399,14 @@ const Publication: React.FC = () => {
     
     let publicationId = currentPublicationId;
 
-    if (currentPublicationId == 0 && localStorage.getItem('@GoJur:PublicationId') !== ''){
+    if (currentPublicationId == 0 && localStorage.getItem('@GoJur:PublicationId') !== '') {
       publicationId = Number(localStorage.getItem('@GoJur:PublicationId'));
       setCurrentPublicationId(publicationId)
     }
-
     setActionType('none');
-
     if (!modalActive && publicationId > 0){
         RefreshEventList()
+
     }
   }, [modalActive])
 
@@ -429,60 +423,60 @@ const Publication: React.FC = () => {
 
   // When change some filter reset some states
   useEffect(() => {
-    if (reloadTrigger){
+    if (reloadTrigger) {
       RefreshCard();
     }
   }, [reloadTrigger])
 
 
-  const RefreshCard = async() => {
-      const publicationId = Number(localStorage.getItem('@GoJur:PublicationId'))
-      if (publicationId == 0) return;
+  const RefreshCard = async () => {
+    const publicationId = Number(localStorage.getItem('@GoJur:PublicationId'))
+    if (publicationId == 0) return;
 
-      const response = await api.get<PublicationData>(`/Publicacao/GetPublicationById`, {
-        params:{
-          publicationId,
-          token: token
-        }
-      })
-
-      let newPublicationList = publication.map(publi =>
-        publi.id === Number(publicationId)
-          ? {
-              ...publi,
-              matterId: response.data.matterId,
-              matterNumber: response.data.matterNumber,
-              judicialAction: response.data.judicialAction,
-              withMatter: true,
-              matterResponsibleFirst: response.data.matterResponsibleFirst,
-              matterResponsibleAll: response.data.matterResponsibleAll,
-              matterParts: response.data.matterParts,
-            }
-          : publi,
-      )
-
-      let hasFilterWithoutMatter = multiFilter.filter(filter => filter.value == 'itemSearch_withoutMatter').length > 0;
-      let hasFilterWithMatter = multiFilter.filter(filter => filter.value == 'itemSearch_withMatter').length > 0;
-
-      // if was filtered by withoutmatter and there is no filter with matter, remove current publication from list updated
-      if (hasFilterWithoutMatter && !hasFilterWithMatter){
-        newPublicationList = newPublicationList.filter(filter => filter.id != publicationId);
+    const response = await api.get<PublicationData>(`/Publicacao/GetPublicationById`, {
+      params: {
+        publicationId,
+        token: token
       }
+    })
 
-      // update list and total
-      setPublication(newPublicationList)
-      setTotalPublications(newPublicationList.length)
-      
-      localStorage.removeItem('@GoJur:PublicationId');
+    let newPublicationList = publication.map(publi =>
+      publi.id === Number(publicationId)
+        ? {
+          ...publi,
+          matterId: response.data.matterId,
+          matterNumber: response.data.matterNumber,
+          judicialAction: response.data.judicialAction,
+          withMatter: true,
+          matterResponsibleFirst: response.data.matterResponsibleFirst,
+          matterResponsibleAll: response.data.matterResponsibleAll,
+          matterParts: response.data.matterParts,
+        }
+        : publi,
+    )
 
-      // set handleReload as false, this context is responsible for re-render the publication card
-      handleReload(false)
+    let hasFilterWithoutMatter = multiFilter.filter(filter => filter.value == 'itemSearch_withoutMatter').length > 0;
+    let hasFilterWithMatter = multiFilter.filter(filter => filter.value == 'itemSearch_withMatter').length > 0;
+
+    // if was filtered by withoutmatter and there is no filter with matter, remove current publication from list updated
+    if (hasFilterWithoutMatter && !hasFilterWithMatter) {
+      newPublicationList = newPublicationList.filter(filter => filter.id != publicationId);
+    }
+
+    // update list and total
+    setPublication(newPublicationList)
+    setTotalPublications(newPublicationList.length)
+
+    localStorage.removeItem('@GoJur:PublicationId');
+
+    // set handleReload as false, this context is responsible for re-render the publication card
+    handleReload(false)
   }
 
 
   // When appear confirm box to delete and is clicked on cancel
   useEffect(() => {
-    if (isCancelMessage){
+    if (isCancelMessage) {
       setCheckMessage(false)
       setCheckMessageDeadlineIA(false)
       handleCloseDaysModal();
@@ -491,14 +485,13 @@ const Publication: React.FC = () => {
   }, [isCancelMessage])
 
 
-   // When appear confirm box to delete and is clicked on confirm
-   useEffect(() => {
-
-    if (isConfirmMessage && isDeleting && itemType == 'A'){
+  // When appear confirm box to delete and is clicked on confirm
+  useEffect(() => {
+    if (isConfirmMessage && isDeleting && itemType == 'A') {
       handleDeleteMatterEvent()
     }
-    
-    if (isConfirmMessage && isDeleting && itemType == 'P'){
+
+    if (isConfirmMessage && isDeleting && itemType == 'P') {
       handleDeletePublication()
     }
 
@@ -510,38 +503,38 @@ const Publication: React.FC = () => {
 
   // When exists report id verify if is available every 5 seconds
   useEffect(() => {
-    if (idReportGenerate > 0){
+    if (idReportGenerate > 0) {
       const checkInterval = setInterval(() => { CheckReportPending(checkInterval) }, 5000);
     }
-  },[idReportGenerate])
+  }, [idReportGenerate])
 
 
   // Check is report is already
   const CheckReportPending = useCallback(async (checkInterval) => {
-    if (isGeneratingReport){
-        let response = await api.post(`/ProcessosGOJUR/VerificarStatus`, {
-          id: idReportGenerate,
-          token: token
-        })
+    if (isGeneratingReport) {
+      let response = await api.post(`/ProcessosGOJUR/VerificarStatus`, {
+        id: idReportGenerate,
+        token: token
+      })
 
-        if (response.data == "F" && isGeneratingReport){
-          clearInterval(checkInterval);
-          setIsGeneratingReport(false)
-          OpenReportAmazon()
-        }
+      if (response.data == "F" && isGeneratingReport) {
+        clearInterval(checkInterval);
+        setIsGeneratingReport(false)
+        OpenReportAmazon()
+      }
 
-        if (response.data == "E"){
-          clearInterval(checkInterval);
-          setIsGeneratingReport(false)
-  
-          addToast({type: "error", title: "Operação não realizada", description: "Não foi possível gerar o relatório."})
-        }
+      if (response.data == "E") {
+        clearInterval(checkInterval);
+        setIsGeneratingReport(false)
+
+        addToast({ type: "error", title: "Operação não realizada", description: "Não foi possível gerar o relatório." })
+      }
     }
-  },[isGeneratingReport, idReportGenerate])
+  }, [isGeneratingReport, idReportGenerate])
 
 
   // Open link with report
-  const OpenReportAmazon = async() => {
+  const OpenReportAmazon = async () => {
     const response = await api.post(`/ProcessosGOJUR/Editar`, {
       id: idReportGenerate,
       token: token
@@ -551,13 +544,11 @@ const Publication: React.FC = () => {
     setIdReportGenerate(0)
     const newWin = window.open(`${response.data.des_Parametro}`, '_blank');
 
-    if(!newWin || newWin.closed || typeof newWin.closed=='undefined') 
-    { 
+    if (!newWin || newWin.closed || typeof newWin.closed == 'undefined') {
       handleCloseReportModal()
       setShowReportOpenFileModal(true)
     }
-    else
-    {
+    else {
       handleCloseReportModal()
     }
   }
@@ -571,7 +562,7 @@ const Publication: React.FC = () => {
 
 
   // Save state filter period
-  const handleChangeFilterDate = (period: string) =>  {
+  const handleChangeFilterDate = (period: string) => {
     setDtaCustomStart('')
     setDtaCustomEnd('')
     setChangeDates(false)
@@ -591,7 +582,7 @@ const Publication: React.FC = () => {
   }
 
 
-  const handleModalPublicationEmail= () => {
+  const handleModalPublicationEmail = () => {
     setIsOpenMenu(false)
     handlePublicationModal('Email')
   }
@@ -627,9 +618,9 @@ const Publication: React.FC = () => {
       const menu = publication.map(publi =>
         publi.id === id
           ? {
-              ...publi,
-              openMenu: !publi.openMenu,
-            }
+            ...publi,
+            openMenu: !publi.openMenu,
+          }
           : publi,
       );
 
@@ -640,35 +631,34 @@ const Publication: React.FC = () => {
 
 
   const PublicationReadOrNot = useCallback(async id => {
-      try {
-        setActionType('readUnread')
+    try {
+      setActionType('readUnread')
 
-        await api.post('/Publicacao/LidoNaoLido', {publicationId: id, token });
+      await api.post('/Publicacao/LidoNaoLido', { publicationId: id, token });
 
-        const read = publication.map(publi =>
-          publi.id === id
-            ? {
-                ...publi,
-                read: !publi.read,
-                hasLog: true
-              }
-            : publi,
-        );
+      const read = publication.map(publi =>
+        publi.id === id
+          ? {
+            ...publi,
+            read: !publi.read,
+            hasLog: true
+          }
+          : publi,
+      );
 
-        setPublication(read);
-        setActionType('none')
+      setPublication(read);
+      setActionType('none')
 
-      } catch (err) {
-        console.log(err);
-        setActionType('none')
-      }
-    },
+    } catch (err) {
+      console.log(err);
+      setActionType('none')
+    }
+  },
     [publication],
   ); // Marca Publicação como lido ou não lido
 
 
-  const handleDeletePublication = async () =>
-  {
+  const handleDeletePublication = async () => {
     try {
 
       setActionType('delete')
@@ -690,7 +680,7 @@ const Publication: React.FC = () => {
 
       // update total number
       let total = totalPublications - 1;
-      if (total < 0) { total = 0}
+      if (total < 0) { total = 0 }
       setTotalPublications(total);
       setActionType('none')
       setItemType('')
@@ -710,44 +700,41 @@ const Publication: React.FC = () => {
     }, [publication])
 
 
-  const handleRedirectToProcess = useCallback(async id =>
-    {
-      const responseLog = api.post('/Usuario/SalvarLogNavegacaoUsuario', {
-        token,
-        module: 'MEN_PROCESSO'
-      });
-      
-      // Validar se usuário tem acesso ao módulo de processos
-      const tokenapi = localStorage.getItem('@GoJur:token');
+  const handleRedirectToProcess = useCallback(async id => {
+    const responseLog = api.post('/Usuario/SalvarLogNavegacaoUsuario', {
+      token,
+      module: 'MEN_PROCESSO'
+    });
 
-      const response = await api.post<boolean>('Processo/PermissaoAcesso', {
-        id: id,
-        token: tokenapi
-       })
+    // Validar se usuário tem acesso ao módulo de processos
+    const tokenapi = localStorage.getItem('@GoJur:token');
 
-      if (response.data)
-      {
-        const filtersJSON = {
-          period: filterPeriod,
-          name: nameFilterValue,
-          matter: multiFilter,
-          term: filterTerm,
-          dtaStart: dtaCustomStart,
-          dtaEnd: dtaCustomEnd,
-          changeDate: changeDates,
-        };
+    const response = await api.post<boolean>('Processo/PermissaoAcesso', {
+      id: id,
+      token: tokenapi
+    })
 
-        //Save object JSON with all filters
-        localStorage.setItem('@GoJur:PublicationFilter', JSON.stringify(filtersJSON));
-        const url = `/matter/edit/legal/${id}`
-        history.push(url)
-        localStorage.setItem('@GoJur:redirectFromPublication', 'S')
-      }
-      else
-      {
-        addToast({type: 'info', title: 'Operação não realizada', description: 'Acesso Não Autorizado - O usuário não tem acesso ao módulo de processos ou a este processo.'});
-      }
-    },
+    if (response.data) {
+      const filtersJSON = {
+        period: filterPeriod,
+        name: nameFilterValue,
+        matter: multiFilter,
+        term: filterTerm,
+        dtaStart: dtaCustomStart,
+        dtaEnd: dtaCustomEnd,
+        changeDate: changeDates,
+      };
+
+      //Save object JSON with all filters
+      localStorage.setItem('@GoJur:PublicationFilter', JSON.stringify(filtersJSON));
+      const url = `/matter/edit/legal/${id}`
+      history.push(url)
+      localStorage.setItem('@GoJur:redirectFromPublication', 'S')
+    }
+    else {
+      addToast({ type: 'info', title: 'Operação não realizada', description: 'Acesso Não Autorizado - O usuário não tem acesso ao módulo de processos ou a este processo.' });
+    }
+  },
     [filterPeriod, filterTerm, multiFilter, nameFilterValue, dtaCustomStart, dtaCustomEnd],
   ); // Redireciona para a publicação
 
@@ -766,7 +753,7 @@ const Publication: React.FC = () => {
 
     }
     catch (err) {
-      addToast({type: 'error', title: 'Falha ao associar todos os processos', description: 'Não foi possivel realizar a operação desejada, tente novamente!'});
+      addToast({ type: 'error', title: 'Falha ao associar todos os processos', description: 'Não foi possivel realizar a operação desejada, tente novamente!' });
     }
   }, [addToast, filterPeriod]); // Associa todas as publicações sem processo
 
@@ -774,9 +761,9 @@ const Publication: React.FC = () => {
   const handleAppointmentModalEdit = async (publicationId: number, hasMatter: boolean, eventItem: any) => {
     isOpenModal(eventItem.eventId)
 
-    localStorage.setItem('@GoJur:RecurrenceDate', FormatDate(new Date(eventItem.startDate),'yyyy-MM-dd'))
+    localStorage.setItem('@GoJur:RecurrenceDate', FormatDate(new Date(eventItem.startDate), 'yyyy-MM-dd'))
     localStorage.setItem('@GoJur:AppointmentId', eventItem.eventId);
-    localStorage.setItem('@GoJur:PublicationHasMatter', (hasMatter?'S':'N'))
+    localStorage.setItem('@GoJur:PublicationHasMatter', (hasMatter ? 'S' : 'N'))
 
     setCurrentPublicationId(publicationId)
   }
@@ -1046,25 +1033,24 @@ const Publication: React.FC = () => {
 
       // keep saved publication id to send id to API make the relashionship between both
       localStorage.setItem('@GoJur:PublicationId', publicationId.toString())
-      localStorage.setItem('@GoJur:PublicationHasMatter', (hasMatter?'S':'N'))
+      localStorage.setItem('@GoJur:PublicationHasMatter', (hasMatter ? 'S' : 'N'))
       localStorage.removeItem('@GoJur:RecurrenceDate');
 
       selectProcess(null)
 
-      if (matterId > 0)
-      {
-        const response = await api.post<ProcessData>('/Processo/SelecionarProcesso',{
-            matterId: matterId,
-            token: localStorage.getItem('@GoJur:token'),
-            companyId: localStorage.getItem('@GoJur:companyId'),
-            apiKey: localStorage.getItem('@GoJur:apiKey')
-          }
+      if (matterId > 0) {
+        const response = await api.post<ProcessData>('/Processo/SelecionarProcesso', {
+          matterId: matterId,
+          token: localStorage.getItem('@GoJur:token'),
+          companyId: localStorage.getItem('@GoJur:companyId'),
+          apiKey: localStorage.getItem('@GoJur:apiKey')
+        }
         );
 
         let courtDesc = "";
         let courtDeptDesc = "";
 
-        if(response.data.instanceList.length > 0){
+        if (response.data.instanceList.length > 0) {
           const court = response.data.instanceList[0];
 
           courtDesc = `${court.forumDesc.toString()} - ${court.instance.toString()} Instância`;
@@ -1083,33 +1069,37 @@ const Publication: React.FC = () => {
 
         let matterText = `Pasta: ${matter.matterFolder} - Proc: ${matter.matterNumber}`
 
-        if (matter.matterCustomerDesc){
+        if (matter.matterCustomerDesc) {
           matterText += `\n${matter.matterCustomerDesc}`
         }
 
-        if (matter.matterOppossingDesc){
+        if (matter.matterOppossingDesc) {
           matterText += ` X ${matter.matterOppossingDesc}`
         }
 
-        if (courtDesc){
+        if (courtDesc) {
           matterText += `\n${courtDesc}`
         }
 
-        if (courtDeptDesc){
+        if (courtDeptDesc) {
           matterText += `\n${courtDeptDesc}`
         }
 
         const publi = publication.filter(item => item.id === publicationId);
 
-        const publicationText = publi.map(i => i.description);
+        // remove html format from publication text in order to send to 
+        // calendar appointment - Marcelo 10/2025
+        const publicationText = publi.map(i => i.description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
 
-        handleMatterAssociated(hasMatter? true:false);
+        handleMatterAssociated(hasMatter ? true : false);
 
         handleCaptureTextPublication(`${matterText}\n\n${publicationText}`);
       }
-      else{
+      else {
         const publi = publication.filter(item => item.id === publicationId);
-        const publicationText = publi.map(i => i.description);
+        // remove html format from publication text in order to send to 
+        // calendar appointment - Marcelo 10/2025
+        const publicationText = publi.map(i => i.description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
 
         localStorage.setItem('@GoJur:PublicationHasMatter', 'N')
         handleCaptureTextPublication(`${publicationText}`);
@@ -1120,7 +1110,7 @@ const Publication: React.FC = () => {
     }
   }
 
-  
+
   const PublicationSelectToReport = useCallback(id => {
     const select = publication.map(item =>
       item.id === id ? {
@@ -1151,7 +1141,7 @@ const Publication: React.FC = () => {
       publi =>
         publi && {
           ...publi,
-          publicationSelected: publi.TIPO == 'P' ?  publi.id : publi.meCod_ProcessoAcompanhamento,
+          publicationSelected: publi.TIPO == 'P' ? publi.id : publi.meCod_ProcessoAcompanhamento,
         },
     );
 
@@ -1163,8 +1153,8 @@ const Publication: React.FC = () => {
     setHasItemCheckBoxSelected(false);
     setIsOpenMenu(false)
 
-    publication.map( (pub) => {
-        pub.publicationSelected = 0;
+    publication.map((pub) => {
+      pub.publicationSelected = 0;
     })
 
     setHasItemCheckBoxSelected(false)
@@ -1176,7 +1166,7 @@ const Publication: React.FC = () => {
     const publicationSelected = publication.find(item => item.id === id)
 
     if (!publicationSelected) {
-      addToast({type: 'info', title: 'Operação NÃO realizada', description:'Não foi possível imprimir esta publicação'});
+      addToast({ type: 'info', title: 'Operação NÃO realizada', description: 'Não foi possível imprimir esta publicação' });
       return;
     }
 
@@ -1200,8 +1190,8 @@ const Publication: React.FC = () => {
   const handlePrintSelectPublications = useCallback(async () => {
     const existsSelectedPublication = publication.find(item => item.publicationSelected > 0);
 
-    if (!existsSelectedPublication){
-      addToast({type: 'info', title: 'Nenhuma publicação foi selecionada para impressão', description: 'Selecione ao menos uma publicação para realizar a operação'})
+    if (!existsSelectedPublication) {
+      addToast({ type: 'info', title: 'Nenhuma publicação foi selecionada para impressão', description: 'Selecione ao menos uma publicação para realizar a operação' })
       setIsOpenMenu(false)
       return
     }
@@ -1209,8 +1199,7 @@ const Publication: React.FC = () => {
     const printDataList: PrintData[] = []
 
     publication.map(item => {
-      if(item.publicationSelected > 0)
-      {
+      if (item.publicationSelected > 0) {
         return printDataList.push({
           id: item.publicationSelected, type: item.TIPO
         })
@@ -1233,36 +1222,35 @@ const Publication: React.FC = () => {
   }, [publication]);
 
 
-  const handleCopyClipBoard = async() => {
-     // verify if exists some publication selected
-     const existsSelectedPublication = publication.find(item => item.publicationSelected > 0);
+  const handleCopyClipBoard = async () => {
+    // verify if exists some publication selected
+    const existsSelectedPublication = publication.find(item => item.publicationSelected > 0);
 
-     // if not exists show message
-     if (!existsSelectedPublication){
-       addToast({type: 'info', title: 'Nenhuma publicação foi selecionada para cópia', description: 'Selecione ao menos uma publicação para realizar a operação'});
-       setIsOpenMenu(false)
+    // if not exists show message
+    if (!existsSelectedPublication) {
+      addToast({ type: 'info', title: 'Nenhuma publicação foi selecionada para cópia', description: 'Selecione ao menos uma publicação para realizar a operação' });
+      setIsOpenMenu(false)
 
-       return;
-     }
+      return;
+    }
 
-     addToast({type: 'info', title: 'Aguarde...', description: 'Gerando cópia de dados para a área de transferência...'});
-     setIsOpenMenu(false)
+    addToast({ type: 'info', title: 'Aguarde...', description: 'Gerando cópia de dados para a área de transferência...' });
+    setIsOpenMenu(false)
 
-     const copyDataList: PrintData[] = []
+    const copyDataList: PrintData[] = []
 
-      publication.map(item => {
-        if(item.publicationSelected > 0)
-        {
-          return copyDataList.push({
-            id: item.publicationSelected, type: item.TIPO
-          })
-        }
-      })
+    publication.map(item => {
+      if (item.publicationSelected > 0) {
+        return copyDataList.push({
+          id: item.publicationSelected, type: item.TIPO
+        })
+      }
+    })
 
-      setCopyData(copyDataList)
+    setCopyData(copyDataList)
 
-     try {
-       const response = await api.post(`/CentralNotificacoes/CopiarSelecionadosClipBoard`, { printDataList: copyDataList, token: token });
+    try {
+      const response = await api.post(`/CentralNotificacoes/CopiarSelecionadosClipBoard`, { printDataList: copyDataList, token: token });
 
       // Create an iframe (isolated container) for the HTML
       var container = document.createElement('div')
@@ -1276,7 +1264,7 @@ const Publication: React.FC = () => {
       var activeSheets = Array.prototype.slice.call(document.styleSheets)
         .filter(function (sheet) {
           return !sheet.disabled
-      })
+        })
 
       // Mount the iframe to the DOM to make `contentWindow` available
       document.body.appendChild(container)
@@ -1296,32 +1284,34 @@ const Publication: React.FC = () => {
       // Remove the iframe
       document.body.removeChild(container)
 
-      addToast({type: 'success', title: 'Operação executada com sucesso', description: 'Os dados relacionados as publicações selecionadas estão disponíveis para colagem (Ctrl + V)'});
-     }
-     catch (err) {
-       console.log(err);
-     }
+      addToast({ type: 'success', title: 'Operação executada com sucesso', description: 'Os dados relacionados as publicações selecionadas estão disponíveis para colagem (Ctrl + V)' });
+    }
+    catch (err) {
+      console.log(err);
+    }
   }
 
   // Trigguer event when achieve end of scrool and active pagination for publication list
-  function handleScroll(e: UIEvent<HTMLDivElement>){
-    var element =  e.target as HTMLTextAreaElement;
+  function handleScroll(e: UIEvent<HTMLDivElement>) {
+    var element = e.target as HTMLTextAreaElement;
 
     if (isEndPage || publication.length == 0) return;
 
-    var isEndScrool = ((element.scrollHeight - element.scrollTop)-50) <= element.clientHeight
+    var isEndScrool = ((element.scrollHeight - element.scrollTop) - 50) <= element.clientHeight
 
     //calculate if achieve end of scrool page
     if (isEndScrool) {
 
-        //if is not loading increment for next page
-        if (!loadingData) {
-          setPageNumber(pageNumber + 1)
-        }
-
-        //active scrooling and pagination
+      //if is not loading increment for next page and active pagination
+      // Change that snippet - just set pagination/loadindata if ! ever loading
+      //  to avoid double trigger - this is because one customer has twice the same 
+      // publication record in the panel - Marcelo 10/25
+      if (!loadingData) {
+        setPageNumber(pageNumber + 1)
         setIsPagination(true)
         setLoadingData(true)
+      }
+
     }
   }
 
@@ -1332,11 +1322,14 @@ const Publication: React.FC = () => {
 
     // keep saved publication id to send id to API make the relashionship between both
     localStorage.setItem('@GoJur:PublicationId', idPublication.toString())
-    localStorage.setItem('@GoJur:PublicationHasMatter', (hasMatter?'S':'N'))
+    localStorage.setItem('@GoJur:PublicationHasMatter', (hasMatter ? 'S' : 'N'))
 
     const publicationData = publication.find(item => item.id == idPublication);
 
-    if (publicationData){
+    if (publicationData) {
+      // remove html format from publication text in order to send to 
+      // calendar appointment - Marcelo 10/2025
+      publicationData.description = publicationData.description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
       handleDetailsAnyType(publicationData)
     }
 
@@ -1350,7 +1343,7 @@ const Publication: React.FC = () => {
   }
 
 
-  const handleCloseLog= () => {
+  const handleCloseLog = () => {
     setShowLog(false)
     setShowMatterEventLog(false)
   }
@@ -1361,13 +1354,13 @@ const Publication: React.FC = () => {
     setShowLog(true)
   }
 
-  
+
   const OpenDateModal = async () => {
     setChangeDates(false)
     setShowDateModal(true)
   }
 
-  
+
   const CloseDateModal = async () => {
     setShowDateModal(false)
   }
@@ -1379,9 +1372,9 @@ const Publication: React.FC = () => {
       const menu = publication.map(publi =>
         publi.meCod_ProcessoAcompanhamento === id
           ? {
-              ...publi,
-              openMenu: !publi.openMenu,
-            }
+            ...publi,
+            openMenu: !publi.openMenu,
+          }
           : publi,
       );
 
@@ -1395,15 +1388,15 @@ const Publication: React.FC = () => {
     try {
       setActionType('readUnread')
 
-      await api.post('/ProcessoAcompanhamentos/LidoNaoLido', {matterEventId: id, token });
+      await api.post('/ProcessoAcompanhamentos/LidoNaoLido', { matterEventId: id, token });
 
       const read = publication.map(publi =>
-        publi.TIPO == 'A' && publi.meCod_ProcessoAcompanhamento === id ? 
-        {
-          ...publi,
-          readMatterEvent: !publi.readMatterEvent,
-          hasMatterEventLog: true
-        } : publi,
+        publi.TIPO == 'A' && publi.meCod_ProcessoAcompanhamento === id ?
+          {
+            ...publi,
+            readMatterEvent: !publi.readMatterEvent,
+            hasMatterEventLog: true
+          } : publi,
       );
 
       setPublication(read);
@@ -1419,7 +1412,7 @@ const Publication: React.FC = () => {
 
     try {
       const response = await api.get(`/ProcessoAcompanhamentos/Relatorio`, {
-        params:{
+        params: {
           matterEventIds: id.toString(),
           token: token
         }
@@ -1474,20 +1467,19 @@ const Publication: React.FC = () => {
 
       selectProcess(null)
 
-      if (matterId > 0)
-      {
-        const response = await api.post<ProcessData>('/Processo/SelecionarProcesso',{
-            matterId: matterId,
-            token: localStorage.getItem('@GoJur:token'),
-            companyId: localStorage.getItem('@GoJur:companyId'),
-            apiKey: localStorage.getItem('@GoJur:apiKey')
-          }
+      if (matterId > 0) {
+        const response = await api.post<ProcessData>('/Processo/SelecionarProcesso', {
+          matterId: matterId,
+          token: localStorage.getItem('@GoJur:token'),
+          companyId: localStorage.getItem('@GoJur:companyId'),
+          apiKey: localStorage.getItem('@GoJur:apiKey')
+        }
         );
 
         let courtDesc = "";
         let courtDeptDesc = "";
 
-        if(response.data.instanceList.length > 0){
+        if (response.data.instanceList.length > 0) {
           const court = response.data.instanceList[0];
 
           courtDesc = `${court.forumDesc.toString()} - ${court.instance.toString()} Instância`;
@@ -1506,19 +1498,19 @@ const Publication: React.FC = () => {
 
         let matterText = `Pasta: ${matter.matterFolder} - Proc: ${matter.matterNumber}`
 
-        if (matter.matterCustomerDesc){
+        if (matter.matterCustomerDesc) {
           matterText += `\n${matter.matterCustomerDesc}`
         }
 
-        if (matter.matterOppossingDesc){
+        if (matter.matterOppossingDesc) {
           matterText += ` X ${matter.matterOppossingDesc}`
         }
 
-        if (courtDesc){
+        if (courtDesc) {
           matterText += `\n${courtDesc}`
         }
 
-        if (courtDeptDesc){
+        if (courtDeptDesc) {
           matterText += `\n${courtDeptDesc}`
         }
 
@@ -1530,7 +1522,7 @@ const Publication: React.FC = () => {
 
         handleCaptureTextPublication(`${matterText}\n\n${publicationText}`);
       }
-      else{
+      else {
         const publi = publication.filter(item => item.meCod_ProcessoAcompanhamento === matterEventIdId);
         const publicationText = publi.map(i => i.meDes_Acompanhamento);
 
@@ -1549,18 +1541,17 @@ const Publication: React.FC = () => {
     setIsDeleting(true)
     setCheckMessage(true);
     setCurrentPublicationId(id)
-    
+
   }, [publication])
 
 
-  const handleDeleteMatterEvent = async () =>
-  {
+  const handleDeleteMatterEvent = async () => {
     try {
 
       setActionType('delete')
 
       await api.delete('/ProcessoAcompanhamentos/ExcluirPelaPublicacao', {
-        params:{id: currentPublicationId, token}
+        params: { id: currentPublicationId, token }
       });
 
       setCheckMessage(false)
@@ -1575,7 +1566,7 @@ const Publication: React.FC = () => {
 
       // update total number
       let total = totalPublications - 1;
-      if (total < 0) { total = 0}
+      if (total < 0) { total = 0 }
       setTotalPublications(total);
       setActionType('none')
       setItemType('')
@@ -1662,11 +1653,11 @@ const Publication: React.FC = () => {
 
     // keep saved publication id to send id to API make the relashionship between both
     localStorage.setItem('@GoJur:MatterEventId', matterEventId.toString())
-    localStorage.setItem('@GoJur:PublicationHasMatter', (hasMatter?'S':'N'))
+    localStorage.setItem('@GoJur:PublicationHasMatter', (hasMatter ? 'S' : 'N'))
 
     const publicationData = publication.find(item => item.meCod_ProcessoAcompanhamento == matterEventId);
 
-    if (publicationData){
+    if (publicationData) {
       handleDetailsAnyType(publicationData)
     }
 
@@ -1674,11 +1665,11 @@ const Publication: React.FC = () => {
   }
 
   return (
-    <Container style={{pointerEvents:(loadingData?'none':'all'),opacity:(isMobile && isPagination?'0.3':'1')}} onScrollCapture={handleScroll}>
+    <Container style={{ pointerEvents: (loadingData ? 'none' : 'all'), opacity: (isMobile && isPagination ? '0.3' : '1') }} onScrollCapture={handleScroll}>
       <HeaderPage />
 
-      {(showReportOpenFileModal) && <Overlay /> }
-      {(showReportOpenFileModal) && <ReportModalPopUp callbackFunction={{CloseReportModal, reportLink}} /> }
+      {(showReportOpenFileModal) && <Overlay />}
+      {(showReportOpenFileModal) && <ReportModalPopUp callbackFunction={{ CloseReportModal, reportLink }} />}
 
       {showLog && (
         <LogModal
@@ -1717,46 +1708,46 @@ const Publication: React.FC = () => {
         <div>
           <section id="week">
             <button
-                  type="button"
-                  onClick={() => handleChangeFilterDate('1d')}
-                  style={{
-                    backgroundColor:
-                      `${filterPeriod}` === '1d' ? '#2C8ED6' : '#f7f7f8',
-                  }}
-              >Hoje
-              </button>
+              type="button"
+              onClick={() => handleChangeFilterDate('1d')}
+              style={{
+                backgroundColor:
+                  `${filterPeriod}` === '1d' ? '#2C8ED6' : '#f7f7f8',
+              }}
+            >Hoje
+            </button>
 
             <button
-                type="button"
-                onClick={() => handleChangeFilterDate('7d')}
-                style={{
-                      backgroundColor:
-                        `${filterPeriod}` === '7d' ? '#2C8ED6' : '#f7f7f8',
-                    }}
-              >7 Dias
+              type="button"
+              onClick={() => handleChangeFilterDate('7d')}
+              style={{
+                backgroundColor:
+                  `${filterPeriod}` === '7d' ? '#2C8ED6' : '#f7f7f8',
+              }}
+            >7 Dias
             </button>
 
             <button
               type="button"
               onClick={() => handleChangeFilterDate('30d')}
               style={{
-                    backgroundColor:
-                      `${filterPeriod}` === '30d' ? '#2C8ED6' : '#f7f7f8',
-                  }}
-              >30 Dias
+                backgroundColor:
+                  `${filterPeriod}` === '30d' ? '#2C8ED6' : '#f7f7f8',
+              }}
+            >30 Dias
             </button>
 
             <button
               type="button"
               onClick={() => handleChangeFilterDate('90d')}
               style={{
-                    backgroundColor:
-                      `${filterPeriod}` === '90d' ? '#2C8ED6' : '#f7f7f8',
-                  }}
-              > 90 Dias
-          </button>
+                backgroundColor:
+                  `${filterPeriod}` === '90d' ? '#2C8ED6' : '#f7f7f8',
+              }}
+            > 90 Dias
+            </button>
 
-          <button
+            <button
               type="button"
               onClick={() => handleChangeFilterDate('year')}
               style={{
@@ -1764,36 +1755,36 @@ const Publication: React.FC = () => {
                   `${filterPeriod}` === 'year' ? '#2C8ED6' : '#f7f7f8',
               }}
             >1 Ano
-          </button>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => handleChangeFilterDate('all')}
-            style={{
-                  backgroundColor:
-                    `${filterPeriod}` === 'all' ? '#2C8ED6' : '#f7f7f8',
-                }}
+            <button
+              type="button"
+              onClick={() => handleChangeFilterDate('all')}
+              style={{
+                backgroundColor:
+                  `${filterPeriod}` === 'all' ? '#2C8ED6' : '#f7f7f8',
+              }}
             >Todas
-          </button>
+            </button>
 
-        </section>
+          </section>
 
-        {(filterPeriod === 'all' && !loadingData && isInitialized) && <FcAbout className="tipMesssage" title={"Até 5 anos"} />}
+          {(filterPeriod === 'all' && !loadingData && isInitialized) && <FcAbout className="tipMesssage" title={"Até 5 anos"} />}
 
-        &nbsp;&nbsp;
-        <section id="dateSelect">
-          <button
-            className="buttonClick"
-            type='button'
-            onClick={()=> OpenDateModal()}
-            style={{width:'140px', height:'28px', marginTop:'5px'}}
-          >
-            Selecionar Período
-          </button>
-        </section>
+          &nbsp;&nbsp;
+          <section id="dateSelect">
+            <button
+              className="buttonClick"
+              type='button'
+              onClick={() => OpenDateModal()}
+              style={{ width: '140px', height: '28px', marginTop: '5px' }}
+            >
+              Selecionar Período
+            </button>
+          </section>
 
-        {(showDateModal) && <Overlay /> }
-        {(showDateModal) && <DateModal callbackFunction={{CloseDateModal, dtaCustomStart, setDtaCustomStart, dtaCustomEnd, setDtaCustomEnd, changeDates, setChangeDates, showCustomDates, setShowCustomDates }} /> }
+          {(showDateModal) && <Overlay />}
+          {(showDateModal) && <DateModal callbackFunction={{ CloseDateModal, dtaCustomStart, setDtaCustomStart, dtaCustomEnd, setDtaCustomEnd, changeDates, setChangeDates, showCustomDates, setShowCustomDates }} />}
 
           <section id="filters">
             <Multi
@@ -1818,33 +1809,33 @@ const Publication: React.FC = () => {
               onChange={handleChangeFilterName}
             >
 
-            <option value="filterNameFalse">Todos - geral</option>
-            <option value="pubNameResponsible">Processo responsável</option>
+              <option value="filterNameFalse">Todos - geral</option>
+              <option value="pubNameResponsible">Processo responsável</option>
 
-            {filterName === "pubNameAll" ? (
-              <option value="pubNameAll">
-                Todos - filtro por nome ativo
-              </option>
-                ) : null}
+              {filterName === "pubNameAll" ? (
+                <option value="pubNameAll">
+                  Todos - filtro por nome ativo
+                </option>
+              ) : null}
 
-            {profileFilterList.map(item => (
-              <option value={`pubName_${item.id}`} key={item.id}>
-                {item.value}
-              </option>
-            ))}
-          </select>
+              {profileFilterList.map(item => (
+                <option value={`pubName_${item.id}`} key={item.id}>
+                  {item.value}
+                </option>
+              ))}
+            </select>
 
-          {!hasItemCheckBoxSelected ? (
-            <button className="buttonClick" type="button" onClick={handleSelectAllPublication}>
-              <FiCheckSquare style={{width:'1rem', height: '2rem', color: 'var(--white)'}}/>
-              Selecionar Todas
-            </button>
-          ) :
-            <button className="buttonClick" type="button" onClick={handleUnSelectAllPublication}>
-              <FiCheckSquare style={{width:'1rem', height: '2rem', color: 'var(--white)'}}/>
-              Desmarcar Todas
-            </button>
-          }
+            {!hasItemCheckBoxSelected ? (
+              <button className="buttonClick" type="button" onClick={handleSelectAllPublication}>
+                <FiCheckSquare style={{ width: '1rem', height: '2rem', color: 'var(--white)' }} />
+                Selecionar Todas
+              </button>
+            ) :
+              <button className="buttonClick" type="button" onClick={handleUnSelectAllPublication}>
+                <FiCheckSquare style={{ width: '1rem', height: '2rem', color: 'var(--white)' }} />
+                Desmarcar Todas
+              </button>
+            }
 
             <button type="button" onClick={handleOpenMenu}>
               {isOpenMenu ? <ImMenu4 /> : <ImMenu3 />}
@@ -1876,7 +1867,7 @@ const Publication: React.FC = () => {
               <br />
             </h1>
           )}
-          
+
           {publication.length > 0 && !loadingData && (
             <h1>
               Total: &nbsp;
@@ -1886,7 +1877,7 @@ const Publication: React.FC = () => {
 
           {(filterName === 'pubNameAll' && !loadingData && isInitialized) && (
             <>
-              <p style={{color: '#13513', fontSize: (!isMobile? '0.7rem': '0.5rem'), zIndex:0}}>
+              <p style={{ color: '#13513', fontSize: (!isMobile ? '0.7rem' : '0.5rem'), zIndex: 0 }}>
                 Exibindo as publicações filtradas conforme configuração feitas em Filtro por Nome
               </p>
             </>
@@ -1897,13 +1888,13 @@ const Publication: React.FC = () => {
       <Wrapper onClick={() => {
         setIsOpenMenu(false)
         handleShowListSearch(false)
-        }}
+      }}
       >
         {publication.length === 0 && !loadingData && isInitialized && (
           <h6
             style={{
               flex: 1,
-              marginTop:'10rem',
+              marginTop: '10rem',
               fontFamily: 'Montserrat',
               fontWeight: 200,
               textAlign: 'center',
@@ -1926,11 +1917,11 @@ const Publication: React.FC = () => {
 
           item.TIPO === 'P' ? (
             <PublicationItem id='PublicationItem' key={item.id}>
-              <header style={{backgroundColor: `${item.matterId}` === '0' ? '#fafa86' : 'rgba(0, 0, 0, 0.1)'}}>
+              <header style={{ backgroundColor: `${item.matterId}` === '0' ? '#fafa86' : 'rgba(0, 0, 0, 0.1)' }}>
                 {item.publicationSelected === 0 ? (
-                  <input type="checkbox" name="select" id="select" onChange={() => PublicationSelectToReport(item.id)} style={{marginLeft:'5px'}} />
+                  <input type="checkbox" name="select" id="select" onChange={() => PublicationSelectToReport(item.id)} style={{ marginLeft: '5px' }} />
                 ) : (
-                  <input type="checkbox" name="select" id="select" checked onChange={() => PublicationUnselectToReport(item.id)} style={{marginLeft:'5px'}} />
+                  <input type="checkbox" name="select" id="select" checked onChange={() => PublicationUnselectToReport(item.id)} style={{ marginLeft: '5px' }} />
                 )}
                 <article>
                   <RiNewspaperFill title='Publicação capturada no diário oficial' />
@@ -1953,12 +1944,12 @@ const Publication: React.FC = () => {
               <div>
                 <ContentItem isRead={item.read}>
                   <div>
-                    <div style={{float:'left', width:'40%'}}>
+                    <div style={{ float: 'left', width: '40%' }}>
                       <p className='titleResponsible' id="title">Processo:&nbsp;</p>
                       <p className='contentResponsible'>{item.matterNumber}</p>
                     </div>
 
-                    <div style={{float:'left', width:'40%'}}>
+                    <div style={{ float: 'left', width: '40%' }}>
                       <p className='titleResponsible' id="title">Responsável:&nbsp;</p>
                       <p className='contentResponsible' title={item.matterResponsibleAll}>{item.matterResponsibleFirst}</p>
                     </div>
@@ -1968,7 +1959,7 @@ const Publication: React.FC = () => {
                     <p id="title">Partes:</p>
                     <p>{item.matterParts}</p>
                   </div>
-                  <div style={{marginBottom:'10px'}}>
+                  <div style={{ marginBottom: '10px' }}>
                     <p id="title">Ação:</p>
                     <p>{item.judicialAction}</p>
                   </div>
@@ -2025,7 +2016,7 @@ const Publication: React.FC = () => {
                         {item.matterId === 0 && (
                           <p
                             onClick={() => {
-                              localStorage.setItem('@GoJur:PublicationId',item.id.toString());
+                              localStorage.setItem('@GoJur:PublicationId', item.id.toString());
                               handlePublicationModal('Associated');
                             }}
                             title="Clique para associar um processo a publicação"
@@ -2035,9 +2026,9 @@ const Publication: React.FC = () => {
                           </p>
                         )}
 
-                        <p onClick={() => PublicationReadOrNot(item.id)} title={item.read? 'Clique para marcar a publicação como não lida': 'Clique para marcar a publicação como lida'}>
-                          {item.read? <VscFolderOpened /> : <VscFolder />}
-                          {item.read? 'Marcar como não lido': 'Marcar como lido'}
+                        <p onClick={() => PublicationReadOrNot(item.id)} title={item.read ? 'Clique para marcar a publicação como não lida' : 'Clique para marcar a publicação como lida'}>
+                          {item.read ? <VscFolderOpened /> : <VscFolder />}
+                          {item.read ? 'Marcar como não lido' : 'Marcar como lido'}
                         </p>
 
                         <p onClick={() => PrintPublications(item.id)} title="Clique para imprimir esta publicação">
@@ -2065,14 +2056,14 @@ const Publication: React.FC = () => {
 
                       <EventList>
                         {item.eventList.length > 0 && item.eventList.map((appointment) => {
-                            return <p style={{ textDecoration: (appointment.status === 'P'? 'none':'line-through')}}><a title={appointment.description}
+                          return <p style={{ textDecoration: (appointment.status === 'P' ? 'none' : 'line-through') }}><a title={appointment.description}
                             onClick={() => handleAppointmentModalEdit(item.id, item.withMatter, appointment)}>
-                                { format(new Date(appointment.startDate), 'dd/MM/yyyy HH:mm') + " - " + appointment.subject}
-                            </a></p>
-                          })
+                            {format(new Date(appointment.startDate), 'dd/MM/yyyy HH:mm') + " - " + appointment.subject}
+                          </a></p>
+                        })
                         }
 
-                        { item.eventList.length == 0 &&
+                        {item.eventList.length == 0 &&
                           <p className="emptyMessage">Nenhum compromisso encontrado.</p>
                         }
                       </EventList>
@@ -2087,14 +2078,14 @@ const Publication: React.FC = () => {
               </div>
             </PublicationItem>
 
-            ) : (
-            
+          ) : (
+
             <MatterEventItem id='MatterEventItem' key={item.meCod_ProcessoAcompanhamento}>
-              <header style={{backgroundColor: '#991909'}}>
+              <header style={{ backgroundColor: '#991909' }}>
                 {item.publicationSelected === 0 ? (
-                  <input type="checkbox" name="select" id="select" onChange={() => MatterSelectToReport(item.meCod_ProcessoAcompanhamento)} style={{marginLeft:'5px'}} />
+                  <input type="checkbox" name="select" id="select" onChange={() => MatterSelectToReport(item.meCod_ProcessoAcompanhamento)} style={{ marginLeft: '5px' }} />
                 ) : (
-                  <input type="checkbox" name="select" id="select" checked onChange={() => MatterUnselectToReport(item.meCod_ProcessoAcompanhamento)} style={{marginLeft:'5px'}} />
+                  <input type="checkbox" name="select" id="select" checked onChange={() => MatterUnselectToReport(item.meCod_ProcessoAcompanhamento)} style={{ marginLeft: '5px' }} />
                 )}
                 <article>
                   <ImHammer2 title='Andamento capturado no site do tribunal' />
@@ -2113,8 +2104,8 @@ const Publication: React.FC = () => {
                     {item.meFlg_PrimeiraCargaTribunal == 'S' ? 'Sim' : 'Não'}
                   </p>
 
-                  <p style={{marginLeft:'-10px', marginTop:'3px'}}>
-                    <FcAbout style={{height:'15px', width:'15px'}} title="Indica se o acompanhamento foi capturado na primeira carga do monitor de processos GOJUR." />
+                  <p style={{ marginLeft: '-10px', marginTop: '3px' }}>
+                    <FcAbout style={{ height: '15px', width: '15px' }} title="Indica se o acompanhamento foi capturado na primeira carga do monitor de processos GOJUR." />
                   </p>
 
                 </article>
@@ -2122,12 +2113,12 @@ const Publication: React.FC = () => {
               <div>
                 <ContentItemMatterEvent isRead={item.readMatterEvent}>
                   <div>
-                    <div style={{float:'left', width:'40%'}}>
+                    <div style={{ float: 'left', width: '40%' }}>
                       <p className='titleResponsible' id="title">Processo:&nbsp;</p>
                       <p className='contentResponsible'>{item.meNum_Processo}</p>
                     </div>
 
-                    <div style={{float:'left', width:'40%'}}>
+                    <div style={{ float: 'left', width: '40%' }}>
                       <p className='titleResponsible' id="title">Responsável:&nbsp;</p>
                       <p className='contentResponsible' title={item.matterResponsibleAll}>{item.matterResponsibleFirst}</p>
                     </div>
@@ -2137,7 +2128,7 @@ const Publication: React.FC = () => {
                     <p id="title">Partes:</p>
                     <p>{item.meMatterParts}</p>
                   </div>
-                  <div style={{marginBottom:'10px'}}>
+                  <div style={{ marginBottom: '10px' }}>
                     <p id="title">Ação:</p>
                     <p>{item.meDes_AcaoJudicial}</p>
                   </div>
@@ -2188,9 +2179,9 @@ const Publication: React.FC = () => {
                           Agendar Prazo
                         </p>
 
-                        <p onClick={() => MatterEventReadOrNot(item.meCod_ProcessoAcompanhamento)} title={item.readMatterEvent? 'Clique para marcar o acompanhamento como não lido': 'Clique para marcar o acompanhamento como não lido'}>
-                          {item.readMatterEvent? <VscFolderOpened /> : <VscFolder />}
-                          {item.readMatterEvent? 'Marcar como não lido': 'Marcar como lido'}
+                        <p onClick={() => MatterEventReadOrNot(item.meCod_ProcessoAcompanhamento)} title={item.readMatterEvent ? 'Clique para marcar o acompanhamento como não lido' : 'Clique para marcar o acompanhamento como não lido'}>
+                          {item.readMatterEvent ? <VscFolderOpened /> : <VscFolder />}
+                          {item.readMatterEvent ? 'Marcar como não lido' : 'Marcar como lido'}
                         </p>
 
                         <p onClick={() => PrintMatterEvent(item.meCod_ProcessoAcompanhamento)} title="Clique para imprimir este acompanhamento">
@@ -2218,14 +2209,14 @@ const Publication: React.FC = () => {
 
                       <EventList>
                         {item.eventList.length > 0 && item.eventList.map((appointment) => {
-                            return <p style={{ textDecoration: (appointment.status === 'P'? 'none':'line-through')}}><a title={appointment.description}
+                          return <p style={{ textDecoration: (appointment.status === 'P' ? 'none' : 'line-through') }}><a title={appointment.description}
                             onClick={() => handleAppointmentModalEdit(item.meCod_ProcessoAcompanhamento, true, appointment)}>
-                                { format(new Date(appointment.startDate), 'dd/MM/yyyy HH:mm') + " - " + appointment.subject}
-                            </a></p>
-                          })
+                            {format(new Date(appointment.startDate), 'dd/MM/yyyy HH:mm') + " - " + appointment.subject}
+                          </a></p>
+                        })
                         }
 
-                        { item.eventList.length == 0 &&
+                        {item.eventList.length == 0 &&
                           <p className="emptyMessage">Nenhum compromisso encontrado.</p>
                         }
                       </EventList>
@@ -2243,10 +2234,10 @@ const Publication: React.FC = () => {
 
         <div id="footer">
 
-          { (isPagination) && (
-            <p style={{ fontSize:14, marginLeft:'4%', color: '#f19000' }}>
-                Aguarde - carregando mais publicações  ... <span></span><span></span>
-                <Loader size={6} color="#f19000" />
+          {(isPagination) && (
+            <p style={{ fontSize: 14, marginLeft: '4%', color: '#f19000' }}>
+              Aguarde - carregando mais publicações  ... <span></span><span></span>
+              <Loader size={6} color="#f19000" />
             </p>
           )}
 

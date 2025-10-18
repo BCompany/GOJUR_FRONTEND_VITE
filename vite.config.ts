@@ -25,6 +25,9 @@ const resolvedAliases = Object.fromEntries(
 export default defineConfig({
   plugins: [react()],
   server: { port: 3000 },
+  build: {
+    sourcemap: true, // ✅ Gera source maps
+  },
   resolve: {
     alias: {
       ...resolvedAliases,

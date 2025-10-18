@@ -49,7 +49,7 @@ export function HeaderPage() {
   const [timerAutoComplete, setTimerAutoComplete] = useState<any>(null); // useState for keep timer delay	//HOOK QUE ARMAZENA O SETTIMEOUT
   const [hideSearchInput, setHideSearchInput] = useState<boolean>(false); // useState for keep timer delay	//HOOK QUE ARMAZENA O SETTIMEOUT
   const [loading, setLoading] = useState(false);
-  const {listOpen,  imageT, captureText, LoadingData,captureType, handleCaptureText, handleDispathCallback, handleLoadingData, handleShowListSearch, handleCaptureType } = useHeader();
+  const { listOpen, imageT, captureText, LoadingData, captureType, handleCaptureText, handleDispathCallback, handleLoadingData, handleShowListSearch, handleCaptureType } = useHeader();
   const { isMOBILE } = useDevice();
   const [options, setOptions] = useState<IComboData[]>([]);
   const optionsList: IComboData[] = [];
@@ -62,19 +62,17 @@ export function HeaderPage() {
 
 
   useEffect(() => {
-    if (pathname === '/People/List'){
+    if (pathname === '/People/List') {
       const accessCode = localStorage.getItem('@GoJur:accessCode')
 
-      if (accessCode == "adm")
-      {
+      if (accessCode == "adm") {
         optionsList.push({ value: '0', label: 'Todos' })
         optionsList.push({ value: 'L', label: 'Advogado' })
         optionsList.push({ value: 'O', label: 'Contrário' })
         optionsList.push({ value: 'E', label: 'Funcionário' })
         optionsList.push({ value: 'T', label: 'Terceiro' })
       }
-      else
-      {
+      else {
         optionsList.push({ value: '0', label: 'Todos' })
 
         if (accessCode?.toString().includes("CFGLAW"))
@@ -90,7 +88,7 @@ export function HeaderPage() {
       setOptions(optionsList)
     }
 
-    if (pathname === '/financeiro'){
+    if (pathname === '/financeiro') {
       financeOptionsList.push({ value: '1', label: 'Mês selecionado' })
       financeOptionsList.push({ value: '12', label: 'Últimos 12 meses' })
       financeOptionsList.push({ value: '2', label: 'Acordos' })
@@ -104,17 +102,15 @@ export function HeaderPage() {
   const handleSelectFinancial = (item) => {
     handleCaptureType(item)
 
-    if(item == '1')
-    {
+    if (item == '1') {
       setDefaultMonthValue('1')
       setDefaultMonthLabel('Mês selecionado')
     }
-    else if(item == '2')
-    {
+    else if (item == '2') {
       setDefaultMonthValue('2')
       setDefaultMonthLabel('Acordos')
     }
-    else{
+    else {
       setDefaultMonthValue('12')
       setDefaultMonthLabel('Últimos 12 meses')
     }
@@ -123,23 +119,21 @@ export function HeaderPage() {
 
   // reset values on first initialization
   useEffect(() => {
-    if(captureType == '1')
-    {
+    if (captureType == '1') {
       setDefaultMonthValue('1')
       setDefaultMonthLabel('Mês selecionado')
     }
-    else if(captureType == '2')
-    {
+    else if (captureType == '2') {
       setDefaultMonthValue('2')
       setDefaultMonthLabel('Acordos')
     }
-    else{
+    else {
       setDefaultMonthValue('12')
       setDefaultMonthLabel('Últimos 12 meses')
     }
   }, [captureType])
-  
-  
+
+
   // reset values on first initialization
   useEffect(() => {
     handleCaptureText('')
@@ -150,10 +144,10 @@ export function HeaderPage() {
   useEffect(() => {
     handleLoadingData(true)
 
-    if (captureText.length === 0){
+    if (captureText.length === 0) {
       setSearchTerm('')
     }
-    else{
+    else {
       setSearchTerm(captureText)
     }
   }, [captureText])
@@ -162,7 +156,7 @@ export function HeaderPage() {
   useEffect(() => {
     const imageStorage = localStorage.getItem("@GoJur:Avatar")
 
-    if(imageStorage != ''){
+    if (imageStorage != '') {
       const path = `${imageStorage}`
       setImagePath(path)
     }
@@ -177,135 +171,135 @@ export function HeaderPage() {
 
   useEffect(() => {
     // dashboard tooltip and placeholder
-    if(pathname === '/dashboard'){
+    if (pathname === '/dashboard') {
       setPlaceholder('Pesquise processos, agenda, clientes e documentos')
       setToolTipSearch("Pesquisa os resultados mais relevantes em Processos, Cliente, Agenda e Documentos anexos nos processos e clientes.")
 
-    // publication tooltip and placeholder
-    }else if (pathname === '/publication'){
+      // publication tooltip and placeholder
+    } else if (pathname === '/publication') {
       setPlaceholder('Pesquise publicações')
       setToolTipSearch("Pesquisa por advogado e texto da publicação")
 
-    // customer/list tooltip and placeholder
-    }else if (pathname === '/customer/list'){
+      // customer/list tooltip and placeholder
+    } else if (pathname === '/customer/list') {
       setPlaceholder('Pesquise clientes')
       setToolTipSearch("Pesquisa por nome, email, grupo ou documento (CPF e/ou CNPJ)")
 
       // customer/list tooltip and placeholder
-    }else if (pathname === '/CRM/salesFunnel'){
+    } else if (pathname === '/CRM/salesFunnel') {
       setPlaceholder('Pesquisar no funil de vendas')
       setToolTipSearch("Pesquisar oportunidades de negócio no funil de vendas")
 
-    // userlist tooltip and placeholder
-    }else if (pathname === '/userlist'){
+      // userlist tooltip and placeholder
+    } else if (pathname === '/userlist') {
       setPlaceholder('Pesquise usuários')
       setHideSearchInput(true)
 
-    }else if (pathname === '/matter/list'){
+    } else if (pathname === '/matter/list') {
       setPlaceholder('Pesquisar Processos')
       setToolTipSearch("Pesquisa em pasta, Nº do processo/Cnj, título, ação judicial, nome, CPF/CNPJ de clientes e contrário e também nos marcadores. Para pesquisa em campos específicos usar as palavras chaves: (#pst pasta / #pro processo /#tit titulo /#mrc marcadores) Ex. #pst 2572 (pesquisa pasta número 2572)")
 
-    }else if (pathname === '/calendar'){
+    } else if (pathname === '/calendar') {
       setPlaceholder('Pesquise compromissos')
       setHideSearchInput(true)
 
-    }else if (pathname === '/Subject'){
+    } else if (pathname === '/Subject') {
       setPlaceholder('Pesquise assuntos')
 
-    }else if (pathname === '/LegalNature'){
+    } else if (pathname === '/LegalNature') {
       setPlaceholder('Procurar Natureza Jurídica')
 
-    }else if (pathname === '/Rite'){
+    } else if (pathname === '/Rite') {
       setPlaceholder('Procurar Rito')
 
-    }else if (pathname === '/MatterPhase'){
+    } else if (pathname === '/MatterPhase') {
       setPlaceholder('Procurar Fase Processual')
 
-    }else if (pathname === '/MatterStatus'){
+    } else if (pathname === '/MatterStatus') {
       setPlaceholder('Procurar Status do Processo')
 
-    }else if (pathname === '/MatterProbability'){
+    } else if (pathname === '/MatterProbability') {
       setPlaceholder('Procurar Probabilidade do Processo')
 
-    }else if (pathname === '/MatterSolution'){
+    } else if (pathname === '/MatterSolution') {
       setPlaceholder('Procurar Solução do Processo')
 
-    }else if (pathname === '/CourtDept'){
+    } else if (pathname === '/CourtDept') {
       setPlaceholder('Procurar Vara')
 
-    }else if (pathname === '/CustomerGroup'){
+    } else if (pathname === '/CustomerGroup') {
       setPlaceholder('Procurar Grupo de Cliente')
 
-    }else if (pathname === '/MatterEventType'){
+    } else if (pathname === '/MatterEventType') {
       setPlaceholder('Procurar Tipo de Acompanhamento')
 
-    }else if (pathname === '/MatterDemandType'){
+    } else if (pathname === '/MatterDemandType') {
       setPlaceholder('Procurar Tipo de Pedidos do Processo')
 
-    }else if (pathname === '/LegalCause'){
+    } else if (pathname === '/LegalCause') {
       setPlaceholder('Procurar Ação Judícial')
 
-    }else if (pathname === '/AdvisoryType'){
+    } else if (pathname === '/AdvisoryType') {
       setPlaceholder('Procurar Assunto')
 
-    }else if (pathname === '/Court'){
+    } else if (pathname === '/Court') {
       setPlaceholder('Procurar Fórum')
 
-    }else if (pathname === '/ThirdPartyGroup'){
+    } else if (pathname === '/ThirdPartyGroup') {
       setPlaceholder('Procurar Grupo de Terceiro')
 
-    }else if (pathname === '/Position'){
+    } else if (pathname === '/Position') {
       setPlaceholder('Procurar Posição no Processo')
 
-    }else if (pathname === '/PaymentForm'){
+    } else if (pathname === '/PaymentForm') {
       setPlaceholder('Procurar Forma de Pagamento')
 
-    }else if (pathname === '/Category'){
+    } else if (pathname === '/Category') {
       setPlaceholder('Procurar Categoria')
 
-    }else if (pathname === '/FinancialStatus'){
+    } else if (pathname === '/FinancialStatus') {
       setPlaceholder('Procurar os Status Financeiros')
 
-    }else if (pathname === '/documentModel/list'){
+    } else if (pathname === '/documentModel/list') {
       setPlaceholder('Procurar Documentos')
 
-    }else if (pathname === '/Account'){
+    } else if (pathname === '/Account') {
       setPlaceholder('Procurar Conta')
 
-    }else if (pathname === '/ServiceType'){
+    } else if (pathname === '/ServiceType') {
       setPlaceholder('Procurar Tipo de Serviço')
 
-    }else if (pathname === '/Cities'){
+    } else if (pathname === '/Cities') {
       setPlaceholder('Procurar Cidade')
 
-    }else if (pathname === '/PaymentSlipContract/List'){
+    } else if (pathname === '/PaymentSlipContract/List') {
       setPlaceholder('Procurar Carteira de Cobrança')
 
-    }else if (pathname === '/People/List'){
+    } else if (pathname === '/People/List') {
       setPlaceholder('Procurar Pessoas')
 
-    }else if (pathname === '/EconomicIndexes/List'){
+    } else if (pathname === '/EconomicIndexes/List') {
       setPlaceholder('Procurar Indexador')
 
-    }else if (pathname === '/EconomicIndexes/edit/:id'){
+    } else if (pathname === '/EconomicIndexes/edit/:id') {
       setPlaceholder('Procurar Indexador')
 
-    }else if (pathname === '/financeiro'){
+    } else if (pathname === '/financeiro') {
       setPlaceholder('Procurar Movimentos')
 
-    }else if (pathname === '/Holiday'){
+    } else if (pathname === '/Holiday') {
       setPlaceholder('Procurar Feriado')
 
-    }else if (pathname === '/DocumentType'){
+    } else if (pathname === '/DocumentType') {
       setPlaceholder('Procurar Tipo de Documento')
 
-    }else if (pathname === '/financeiro/billingcontract/list'){
+    } else if (pathname === '/financeiro/billingcontract/list') {
       setPlaceholder('Procurar Contrato')
 
-    }else if (pathname === '/financeiro/billinginvoice/list'){
+    } else if (pathname === '/financeiro/billinginvoice/list') {
       setPlaceholder('Procurar Fatura')
 
-    }else{
+    } else {
       setPlaceholder('Pesquise processos, compromissos, clientes e documentos')
       setHideSearchInput(true)
     }
@@ -316,17 +310,17 @@ export function HeaderPage() {
 
   const handleFilterSaved = () => {
     // publication can save a filter when is redirect for another route, so here we get back this value for set in term
-    if (pathname === '/publication'){
+    if (pathname === '/publication') {
 
       const filterPublicationSaved = localStorage.getItem('@GoJur:PublicationFilter')
       if (filterPublicationSaved == null) {
-         return false;
+        return false;
       }
 
       const filterJSON = JSON.parse(filterPublicationSaved);
       setSearchTerm(filterJSON.term)
     }
-    else{
+    else {
       // handle anothers filter save in localstorage
     }
   }
@@ -335,7 +329,7 @@ export function HeaderPage() {
   const handleSearch = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
 
-    if (pathname === '/publication'){
+    if (pathname === '/publication') {
       handleCaptureText(event.target.value) // handle capture is used when only term will be executed by caller view
     }
   }, []);
@@ -358,7 +352,7 @@ export function HeaderPage() {
           RequestDashBoardList(searchTerm);
         }
 
-        if (searchTerm.length == 0){
+        if (searchTerm.length == 0) {
           handleShowListSearch(false);
         }
 
@@ -374,7 +368,7 @@ export function HeaderPage() {
         RequestDashBoardList(searchTerm);
       }
 
-      if (searchTerm.length < 3){
+      if (searchTerm.length < 3) {
         addToast({
           type: 'info',
           title: 'Pesquisa não realizada',
@@ -392,25 +386,25 @@ export function HeaderPage() {
         const userToken = localStorage.getItem('@GoJur:token');
 
         const response = await api.post(`/Dashboard/BuscasProcesso`, { token: userToken, term: searchTerm });
-        if(response.data.length > 0){
+        if (response.data.length > 0) {
           setSearchData(response.data);
           handleShowListSearch(true)
         }
 
         const responseCustomer = await api.post(`/Dashboard/BuscasClientes`, { token: userToken, term: searchTerm });
-        if(responseCustomer.data.length > 0){
+        if (responseCustomer.data.length > 0) {
           setSearchData(old => [...old, ...responseCustomer.data])
           handleShowListSearch(true)
         }
 
         const responseCalendar = await api.post(`/Dashboard/BuscasCompromissos`, { token: userToken, term: searchTerm });
-        if(responseCalendar.data.length > 0){
+        if (responseCalendar.data.length > 0) {
           setSearchData(old => [...old, ...responseCalendar.data])
           handleShowListSearch(true)
         }
 
         const responseDocument = await api.post(`/Dashboard/BuscasDocumentos`, { token: userToken, term: searchTerm });
-        if(responseDocument.data.length > 0){
+        if (responseDocument.data.length > 0) {
           setSearchData(old => [...old, ...responseDocument.data])
           handleShowListSearch(true)
         }
@@ -427,7 +421,7 @@ export function HeaderPage() {
           handleShowListSearch(false);
         }
       }
-      catch (err:any) {
+      catch (err: any) {
         setLoading(false)
         handleLoadingData(false)
         addToast({
@@ -483,7 +477,7 @@ export function HeaderPage() {
               src={imagePath}
               alt="avatar"
             />
-          ):(
+          ) : (
             <Avatar
               onError={() => hasError()}
               onClick={handleChangeAvatar}
@@ -499,18 +493,21 @@ export function HeaderPage() {
   }, [imagePathDefault, imagePath, defaultImage])
 
 
-  const handleClearText= () => {
+  const handleClearText = () => {
     setSearchTerm('');
+    if (pathname === '/publication') {
+      handleCaptureText('') // handle capture is used when only term will be executed by caller view
+    }
     handleShowListSearch(false);
   }
 
 
   return (
     <>
-      {!isMOBILE &&(
+      {!isMOBILE && (
         <Container>
           <Search
-            style={{opacity: (hideSearchInput? "0": "1")}}
+            style={{ opacity: (hideSearchInput ? "0" : "1") }}
             name="search"
             placeholder={placeholder}
             icon={FiSearch}
@@ -519,24 +516,25 @@ export function HeaderPage() {
             minLength={3}
             onChange={handleSearch}
             handleRequest={() => {
-              if(pathname === '/dashboard') {
+              if (pathname === '/dashboard') {
                 onSubmit();
               }
-              else if (pathname === '/customer/list' ||pathname === '/matter/list' || pathname === '/publication' || pathname == '/Subject' || pathname == '/LegalNature' || pathname == '/Rite' || pathname == '/MatterPhase' || pathname == '/MatterStatus' || pathname == 'MatterProbability' || pathname == '/MatterSolution' || pathname == '/CourtDept' || pathname == '/CustomerGroup' || pathname == '/MatterEventType' || pathname == '/MatterDemandType' || pathname == '/LegalCause' || pathname == '/AdvisoryType' || pathname == '/Court' || pathname == '/ThirdPartyGroup' || pathname == '/Position' || pathname == '/PaymentForm' || pathname == '/Category' || pathname == '/FinancialStatus' || pathname == '/Account' || pathname == '/ServiceType' || pathname == '/Cities' || pathname == '/PaymentSlipContract/List' || pathname == '/People/List' || pathname == '/EconomicIndexes/List' || pathname == '/EconomicIndexes/edit/:id' || pathname == '/financeiro' || pathname == '/Holiday' || pathname == '/financeiro/billingcontract/list' || pathname == '/financeiro/billinginvoice/list' || pathname == '/usuario'){
-                handleCaptureText(searchTerm) 
-              }          
-              else if (pathname === '/publication'){            
-                handleDispathCallback(true);
+              else if (pathname === '/customer/list' || pathname === '/matter/list' || pathname === '/publication' || pathname == '/Subject' || pathname == '/LegalNature' || pathname == '/Rite' || pathname == '/MatterPhase' || pathname == '/MatterStatus' || pathname == 'MatterProbability' || pathname == '/MatterSolution' || pathname == '/CourtDept' || pathname == '/CustomerGroup' || pathname == '/MatterEventType' || pathname == '/MatterDemandType' || pathname == '/LegalCause' || pathname == '/AdvisoryType' || pathname == '/Court' || pathname == '/ThirdPartyGroup' || pathname == '/Position' || pathname == '/PaymentForm' || pathname == '/Category' || pathname == '/FinancialStatus' || pathname == '/Account' || pathname == '/ServiceType' || pathname == '/Cities' || pathname == '/PaymentSlipContract/List' || pathname == '/People/List' || pathname == '/EconomicIndexes/List' || pathname == '/EconomicIndexes/edit/:id' || pathname == '/financeiro' || pathname == '/Holiday' || pathname == '/financeiro/billingcontract/list' || pathname == '/financeiro/billinginvoice/list' || pathname == '/usuario') {
+                handleCaptureText(searchTerm)
+                if (pathname === '/publication') {
+                  handleDispathCallback(true);
+                }
+
               }
               else {
                 handleDashBoardList();
               }
             }}
             onKeyUp={() => {
-              if(pathname === '/dashboard') {
+              if (pathname === '/dashboard') {
                 handleDashBoardList();
               }
-              else if(pathname === '/customer/list' || pathname === '/matter/list' || pathname === '/publication' || pathname == '/calendar' || pathname == '/Subject' || pathname == '/LegalNature' || pathname == '/Rite' || pathname == '/MatterPhase' || pathname == '/MatterStatus' || pathname == '/MatterProbability' || pathname == '/MatterSolution' || pathname == '/CourtDept' || pathname == '/CustomerGroup' || pathname == '/MatterEventType' || pathname == '/MatterDemandType' || pathname == '/LegalCause' || pathname == '/AdvisoryType' || pathname == '/Court' || pathname == '/ThirdPartyGroup' || pathname == '/Position' || pathname == '/PaymentForm' || pathname == '/Category' || pathname == '/FinancialStatus' || pathname == '/Account' || pathname == '/ServiceType' || pathname == '/Cities' || pathname == '/PaymentSlipContract/List' || pathname == '/People/List' || pathname == '/EconomicIndexes/List' || pathname == '/EconomicIndexes/edit/:id' || pathname == '/documentModel/list' || pathname == '/Holiday' || pathname == '/DocumentType' || pathname == '/financeiro' || pathname == '/financeiro/billingcontract/list' || pathname == '/financeiro/billinginvoice/list' || pathname == '/usuario'){
+              else if (pathname === '/customer/list' || pathname === '/matter/list' || pathname === '/publication' || pathname == '/calendar' || pathname == '/Subject' || pathname == '/LegalNature' || pathname == '/Rite' || pathname == '/MatterPhase' || pathname == '/MatterStatus' || pathname == '/MatterProbability' || pathname == '/MatterSolution' || pathname == '/CourtDept' || pathname == '/CustomerGroup' || pathname == '/MatterEventType' || pathname == '/MatterDemandType' || pathname == '/LegalCause' || pathname == '/AdvisoryType' || pathname == '/Court' || pathname == '/ThirdPartyGroup' || pathname == '/Position' || pathname == '/PaymentForm' || pathname == '/Category' || pathname == '/FinancialStatus' || pathname == '/Account' || pathname == '/ServiceType' || pathname == '/Cities' || pathname == '/PaymentSlipContract/List' || pathname == '/People/List' || pathname == '/EconomicIndexes/List' || pathname == '/EconomicIndexes/edit/:id' || pathname == '/documentModel/list' || pathname == '/Holiday' || pathname == '/DocumentType' || pathname == '/financeiro' || pathname == '/financeiro/billingcontract/list' || pathname == '/financeiro/billinginvoice/list' || pathname == '/usuario') {
                 // nothing to do
               }
               else {
@@ -547,144 +545,144 @@ export function HeaderPage() {
               if (e.key === 'Delete' || e.key === 'Backspace' || e.which === 8) {
                 e.preventDefault();
               }
-              if (e.key == 'Enter' && pathname === '/publication'){
-                  handleDispathCallback(true);
+              if (e.key == 'Enter' && pathname === '/publication') {
+                handleDispathCallback(true);
               }
-              if (e.key == 'Enter' && pathname === '/customer/list'){
+              if (e.key == 'Enter' && pathname === '/customer/list') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/matter/list'){
+              if (e.key == 'Enter' && pathname === '/matter/list') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/CRM/salesFunnel'){
+              if (e.key == 'Enter' && pathname === '/CRM/salesFunnel') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/LegalNature'){
+              if (e.key == 'Enter' && pathname === '/LegalNature') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/Subject'){
+              if (e.key == 'Enter' && pathname === '/Subject') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/Rite'){
+              if (e.key == 'Enter' && pathname === '/Rite') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/MatterPhase'){
+              if (e.key == 'Enter' && pathname === '/MatterPhase') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/MatterStatus'){
+              if (e.key == 'Enter' && pathname === '/MatterStatus') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/MatterProbability'){
+              if (e.key == 'Enter' && pathname === '/MatterProbability') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/MatterSolution'){
+              if (e.key == 'Enter' && pathname === '/MatterSolution') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/CourtDept'){
+              if (e.key == 'Enter' && pathname === '/CourtDept') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/CustomerGroup'){
+              if (e.key == 'Enter' && pathname === '/CustomerGroup') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/MatterEventType'){
+              if (e.key == 'Enter' && pathname === '/MatterEventType') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/MatterDemandType'){
+              if (e.key == 'Enter' && pathname === '/MatterDemandType') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/LegalCause'){
+              if (e.key == 'Enter' && pathname === '/LegalCause') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/AdvisoryType'){
+              if (e.key == 'Enter' && pathname === '/AdvisoryType') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/Court'){
+              if (e.key == 'Enter' && pathname === '/Court') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/ThirdPartyGroup'){
+              if (e.key == 'Enter' && pathname === '/ThirdPartyGroup') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/Position'){
+              if (e.key == 'Enter' && pathname === '/Position') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/PaymentForm'){
+              if (e.key == 'Enter' && pathname === '/PaymentForm') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/Category'){
+              if (e.key == 'Enter' && pathname === '/Category') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/FinancialStatus'){
+              if (e.key == 'Enter' && pathname === '/FinancialStatus') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/Account'){
+              if (e.key == 'Enter' && pathname === '/Account') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/ServiceType'){
+              if (e.key == 'Enter' && pathname === '/ServiceType') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/Cities'){
+              if (e.key == 'Enter' && pathname === '/Cities') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/PaymentSlipContract/List'){
+              if (e.key == 'Enter' && pathname === '/PaymentSlipContract/List') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/People/List'){
+              if (e.key == 'Enter' && pathname === '/People/List') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/EconomicIndexes/List'){
+              if (e.key == 'Enter' && pathname === '/EconomicIndexes/List') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/documentModel/list'){
-                handleCaptureText(searchTerm) 
-              }
-              if (e.key == 'Enter' && pathname === '/financeiro'){
+              if (e.key == 'Enter' && pathname === '/documentModel/list') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/Holiday'){
+              if (e.key == 'Enter' && pathname === '/financeiro') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/DocumentType'){
+              if (e.key == 'Enter' && pathname === '/Holiday') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/financeiro/billingcontract/list'){
+              if (e.key == 'Enter' && pathname === '/DocumentType') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/financeiro/billinginvoice/list'){
+              if (e.key == 'Enter' && pathname === '/financeiro/billingcontract/list') {
+                handleCaptureText(searchTerm)
+              }
+              if (e.key == 'Enter' && pathname === '/financeiro/billinginvoice/list') {
                 handleCaptureText(searchTerm)
               }
             }}
           >
-            {((LoadingData && pathname != '/dashboard') || loading)? <Loader color="#f19000" size={8} /> : null}
+            {((LoadingData && pathname != '/dashboard') || loading) ? <Loader color="#f19000" size={8} /> : null}
           </Search>
 
           {pathname === '/People/List' && (
-            <div id='PEOPLE_SELECT' style={{marginLeft:'10px', marginTop:'0px', width:'600px', fontSize:'14px'}}>
+            <div id='PEOPLE_SELECT' style={{ marginLeft: '10px', marginTop: '0px', width: '600px', fontSize: '14px' }}>
               <Select
                 autoComplete="off"
                 isClearable
                 styles={selectStyles}
                 name="Type"
-                onChange={(item) => handleCaptureType(item? item.value: '')}
+                onChange={(item) => handleCaptureType(item ? item.value : '')}
                 options={options}
               />
             </div>
           )}
 
           {pathname === '/financeiro' && (
-            <div id='FINANCE_SELECT' style={{marginLeft:'10px', marginTop:'0px', width:'700px', fontSize:'14px'}}>
-              <div style={{float:'left', width:'180px'}}>
+            <div id='FINANCE_SELECT' style={{ marginLeft: '10px', marginTop: '0px', width: '700px', fontSize: '14px' }}>
+              <div style={{ float: 'left', width: '180px' }}>
                 <Select
                   value={{ value: defaultMonthValue, label: defaultMonthLabel }}
                   autoComplete="off"
                   isClearable
                   styles={selectStyles}
                   name="Type"
-                  onChange={(item) => handleSelectFinancial(item? item.value: '')}
+                  onChange={(item) => handleSelectFinancial(item ? item.value : '')}
                   options={financeOptions}
                 />
               </div>
-              <div style={{float:'left', marginTop:'-25px', marginLeft:'181px', color:'#2c8ed6'}}>
-                <MdHelp style={{height:'1rem', width:'1rem'}} title="Pesquisa realizada nos campos: descrição, pessoas, categoria e nº da nota fiscal." />
+              <div style={{ float: 'left', marginTop: '-25px', marginLeft: '181px', color: '#2c8ed6' }}>
+                <MdHelp style={{ height: '1rem', width: '1rem' }} title="Pesquisa realizada nos campos: descrição, pessoas, categoria e nº da nota fiscal." />
               </div>
             </div>
           )}
@@ -693,52 +691,52 @@ export function HeaderPage() {
 
           <User>
             {companyPlan == 'GOJURFR' && (
-            <>
-              {accessCode == "adm" && (
-                <>
-                  {pathname != '/financeiro' && (
-                    <>
-                      {pathname != '/People/List' && (
-                        <>
-                          {pathname != "/changeplan" && (
-                            <div style={{marginRight:"10px", width:"100px"}}>
-                              <div className="btn"><button type='button' onClick={() => history.push('/changeplan')}>Trocar Plano</button></div>
-                              {/* <FaShoppingCart className='flash' title="Realize o Upgrade do seu Plano" style={{cursor:"pointer"}} onClick={() => history.push('/changeplan')} /> */}
-                            </div>     
-                          )}
-                        </>
-                      )}
-                    </>
-                  )}
-                </>
-              )}
-            </>
+              <>
+                {accessCode == "adm" && (
+                  <>
+                    {pathname != '/financeiro' && (
+                      <>
+                        {pathname != '/People/List' && (
+                          <>
+                            {pathname != "/changeplan" && (
+                              <div style={{ marginRight: "10px", width: "100px" }}>
+                                <div className="btn"><button type='button' onClick={() => history.push('/changeplan')}>Trocar Plano</button></div>
+                                {/* <FaShoppingCart className='flash' title="Realize o Upgrade do seu Plano" style={{cursor:"pointer"}} onClick={() => history.push('/changeplan')} /> */}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </>
+                    )}
+                  </>
+                )}
+              </>
             )}
 
             {LoadUserAvatar()}
 
             {companyPlan != "GOJURFR" && (
-            <>
-              <p>{companyId}</p>
-              <p> - </p>
-              <p title={name}>
-                {name}
-              </p>
-            </>          
+              <>
+                <p>{companyId}</p>
+                <p> - </p>
+                <p title={name}>
+                  {name}
+                </p>
+              </>
             )}
 
             {companyPlan === "GOJURFR" && (
-            <>
-              <p>{companyId}</p>
-              <p> - </p>
-              
-              <p title={name}>
-                {name.split(" ")[0]}
-                ...
-              </p>
+              <>
+                <p>{companyId}</p>
+                <p> - </p>
 
-            </>
-            
+                <p title={name}>
+                  {name.split(" ")[0]}
+                  ...
+                </p>
+
+              </>
+
             )}
           </User>
 
@@ -749,241 +747,241 @@ export function HeaderPage() {
         </Container>
       )}
 
-      {isMOBILE &&(
-      <div>
-        <div style={{display:"flex"}}>
-          {/* {toolTipSearch != "" && <FcAbout id="tipMesssage" title={toolTipSearch} />} */}
+      {isMOBILE && (
+        <div>
+          <div style={{ display: "flex" }}>
+            {/* {toolTipSearch != "" && <FcAbout id="tipMesssage" title={toolTipSearch} />} */}
 
-          <User style={{marginLeft: ((pathname.includes('/legal') || pathname.includes('advisory'))?'-8rem': '0')}}>
-            {LoadUserAvatar()}
-            <p>{companyId}</p>
-            <p> - </p>
-            <p>{name}</p>
-          </User>
+            <User style={{ marginLeft: ((pathname.includes('/legal') || pathname.includes('advisory')) ? '-8rem' : '0') }}>
+              {LoadUserAvatar()}
+              <p>{companyId}</p>
+              <p> - </p>
+              <p>{name}</p>
+            </User>
 
-          <div style={{marginTop:"auto", marginBottom:"auto"}}>
-            <TopNavBar />
+            <div style={{ marginTop: "auto", marginBottom: "auto" }}>
+              <TopNavBar />
+            </div>
+
+            {searchData.length > 0 && listOpen && <ListSearch data={searchData} />}
           </div>
-         
-          {searchData.length > 0 && listOpen && <ListSearch data={searchData} />}
+
+          <ContainerMobile>
+            <Search
+              style={{ opacity: (hideSearchInput ? "0" : "1") }}
+              name="search"
+              placeholder={placeholder}
+              icon={FiSearch}
+              handleClear={handleClearText}
+              handleRequest={() => {
+                if (pathname === '/dashboard') {
+                  onSubmit();
+                }
+
+                else if (pathname === '/customer/list' || pathname === '/matter/list' || pathname === '/publication' || pathname == '/Subject' || pathname == '/LegalNature' || pathname == '/Rite' || pathname == '/MatterPhase' || pathname == '/MatterStatus' || pathname == 'MatterProbability' || pathname == '/MatterSolution' || pathname == '/CourtDept' || pathname == '/CustomerGroup' || pathname == '/MatterEventType' || pathname == '/MatterDemandType' || pathname == '/LegalCause' || pathname == '/AdvisoryType' || pathname == '/Court' || pathname == '/ThirdPartyGroup' || pathname == '/Position' || pathname == '/PaymentForm' || pathname == '/Category' || pathname == '/FinancialStatus' || pathname == '/Account' || pathname == '/ServiceType' || pathname == '/Cities' || pathname == '/PaymentSlipContract/List' || pathname == '/People/List' || pathname == '/EconomicIndexes/List' || pathname == '/Holiday' || pathname == '/DocumentType' || pathname == '/financeiro/billingcontract/list' || pathname == '/financeiro/billinginvoice/list' || pathname == '/usuario') {
+                  handleCaptureText(searchTerm)
+                }
+                else if (pathname === '/publication') {
+                  handleDispathCallback(true);
+                } else {
+                  handleDashBoardList();
+                }
+              }}
+              onChange={handleSearch}
+              onKeyUp={() => {
+                if (pathname === '/dashboard') {
+                  handleDashBoardList();
+                }
+                else if (pathname === '/customer/list' || pathname === '/matter/list' || pathname === '/publication' || pathname == '/calendar' || pathname == '/Subject' || pathname == '/LegalNature' || pathname == '/Rite' || pathname == '/MatterPhase' || pathname == '/MatterStatus' || pathname == '/MatterProbability' || pathname == '/MatterSolution' || pathname == '/CourtDept' || pathname == '/CustomerGroup' || pathname == '/MatterEventType' || pathname == '/MatterDemandType' || pathname == '/LegalCause' || pathname == '/AdvisoryType' || pathname == '/Court' || pathname == '/ThirdPartyGroup' || pathname == '/Position' || pathname == '/PaymentForm' || pathname == '/Category' || pathname == '/FinancialStatus' || pathname == '/Account' || pathname == '/ServiceType' || pathname == '/Cities' || pathname == '/PaymentSlipContract/List' || pathname == '/People/List' || pathname == '/EconomicIndexes/List' || pathname == '/Holiday' || pathname == '/DocumentType' || pathname == '/financeiro/billingcontract/list' || pathname == '/financeiro/billinginvoice/list' || pathname == '/usuario') {
+                  // nothing to do
+                } else {
+                  handleDashBoardList();
+                }
+              }}
+              onKeyPress={(e: React.KeyboardEvent) => {
+                if (e.key === 'Delete' || e.key === 'Backspace' || e.which === 8) {
+                  e.preventDefault();
+                }
+
+                if (e.key == 'Enter' && pathname === '/publication') {
+                  handleDispathCallback(true);
+                }
+
+                if (e.key == 'Enter' && pathname === '/customer/list') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/matter/list') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/CRM/salesFunnel') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/LegalNature') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/Subject') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/Rite') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/MatterPhase') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/MatterStatus') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/MatterProbability') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/MatterSolution') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/CourtDept') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/CustomerGroup') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/MatterEventType') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/MatterDemandType') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/LegalCause') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/AdvisoryType') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/Court') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/ThirdPartyGroup') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/Position') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/PaymentForm') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/Category') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/FinancialStatus') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/documentModel/list') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/Account') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/ServiceType') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/Cities') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/PaymentSlipContract/List') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/People/List') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/EconomicIndexes/List') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/financeiro') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/Holiday') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/DocumentType') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/financeiro/billingcontract/list') {
+                  handleCaptureText(searchTerm)
+                }
+
+                if (e.key == 'Enter' && pathname === '/financeiro/billinginvoice/list') {
+                  handleCaptureText(searchTerm)
+                }
+              }}
+              value={searchTerm}
+              minLength={3}
+            >
+              {((LoadingData && pathname != '/dashboard') || loading) ? <Loader color="#f19000" size={8} /> : null}
+            </Search>
+
+          </ContainerMobile>
         </div>
-        
-        <ContainerMobile>
-          <Search
-            style={{opacity: (hideSearchInput? "0": "1")}}
-            name="search"
-            placeholder={placeholder}
-            icon={FiSearch}
-            handleClear={handleClearText}
-            handleRequest={() => {
-            if(pathname === '/dashboard') {
-              onSubmit();
-            }
-
-            else if (pathname === '/customer/list' ||pathname === '/matter/list' || pathname === '/publication' || pathname == '/Subject' || pathname == '/LegalNature' || pathname == '/Rite' || pathname == '/MatterPhase' || pathname == '/MatterStatus' || pathname == 'MatterProbability' || pathname == '/MatterSolution' || pathname == '/CourtDept' || pathname == '/CustomerGroup' || pathname == '/MatterEventType' || pathname == '/MatterDemandType' || pathname == '/LegalCause' || pathname == '/AdvisoryType' || pathname == '/Court' || pathname == '/ThirdPartyGroup' || pathname == '/Position' || pathname == '/PaymentForm' || pathname == '/Category' || pathname == '/FinancialStatus' || pathname == '/Account' || pathname == '/ServiceType' || pathname == '/Cities' || pathname == '/PaymentSlipContract/List' || pathname == '/People/List' || pathname == '/EconomicIndexes/List' || pathname == '/Holiday' || pathname == '/DocumentType' || pathname == '/financeiro/billingcontract/list' || pathname == '/financeiro/billinginvoice/list' || pathname == '/usuario'){
-              handleCaptureText(searchTerm)
-            }
-            else if (pathname === '/publication'){
-              handleDispathCallback(true);
-            }else {
-              handleDashBoardList();
-            }
-          }}
-            onChange={handleSearch}
-            onKeyUp={() => {
-              if(pathname === '/dashboard') {
-                handleDashBoardList();
-              }
-              else if(pathname === '/customer/list' || pathname === '/matter/list' || pathname === '/publication' || pathname == '/calendar' || pathname == '/Subject' || pathname == '/LegalNature' || pathname == '/Rite' || pathname == '/MatterPhase' || pathname == '/MatterStatus' || pathname == '/MatterProbability' || pathname == '/MatterSolution' || pathname == '/CourtDept' || pathname == '/CustomerGroup' || pathname == '/MatterEventType' || pathname == '/MatterDemandType' || pathname == '/LegalCause' || pathname == '/AdvisoryType' || pathname == '/Court' || pathname == '/ThirdPartyGroup' || pathname == '/Position' || pathname == '/PaymentForm' || pathname == '/Category' || pathname == '/FinancialStatus' || pathname == '/Account' || pathname == '/ServiceType' || pathname == '/Cities' || pathname == '/PaymentSlipContract/List' || pathname == '/People/List' || pathname == '/EconomicIndexes/List' || pathname == '/Holiday' || pathname == '/DocumentType' || pathname == '/financeiro/billingcontract/list' || pathname == '/financeiro/billinginvoice/list' || pathname == '/usuario'){
-                // nothing to do
-              }else {
-                handleDashBoardList();
-              }
-          }}
-            onKeyPress={(e: React.KeyboardEvent) => {
-            if (e.key === 'Delete' || e.key === 'Backspace' || e.which === 8) {
-              e.preventDefault();
-            }
-
-            if (e.key == 'Enter' && pathname === '/publication'){
-                handleDispathCallback(true);
-            }
-
-            if (e.key == 'Enter' && pathname === '/customer/list'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/matter/list'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/CRM/salesFunnel'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/LegalNature'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/Subject'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/Rite'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/MatterPhase'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/MatterStatus'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/MatterProbability'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/MatterSolution'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/CourtDept'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/CustomerGroup'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/MatterEventType'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/MatterDemandType'){
-              handleCaptureText(searchTerm)
-            }
-
-              if (e.key == 'Enter' && pathname === '/LegalCause'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/AdvisoryType'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/Court'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/ThirdPartyGroup'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/Position'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/PaymentForm'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/Category'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/FinancialStatus'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/documentModel/list'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/Account'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/ServiceType'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/Cities'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/PaymentSlipContract/List'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/People/List'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/EconomicIndexes/List'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/financeiro'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/Holiday'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/DocumentType'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/financeiro/billingcontract/list'){
-              handleCaptureText(searchTerm)
-            }
-
-            if (e.key == 'Enter' && pathname === '/financeiro/billinginvoice/list'){
-              handleCaptureText(searchTerm)
-            }
-          }}
-            value={searchTerm}
-            minLength={3}
-          >
-            {((LoadingData && pathname != '/dashboard') || loading)? <Loader color="#f19000" size={8} /> : null}
-          </Search>
-
-        </ContainerMobile>
-      </div>
 
       )}
 
-      {isMOBILE &&(
+      {isMOBILE && (
         <>
           <div>
             {pathname === '/People/List' && (
-            <div id='PEOPLE_SELECT' style={{marginLeft:'3%', marginTop:'0px', width:'93%', fontSize:'14px'}}>
-              <Select
-                autoComplete="off"
-                isClearable
-                styles={selectStyles}
-                name="Type"
-                onChange={(item) => handleCaptureType(item? item.value: '')}
-                options={options}
-              />
-            </div>
-          )}
+              <div id='PEOPLE_SELECT' style={{ marginLeft: '3%', marginTop: '0px', width: '93%', fontSize: '14px' }}>
+                <Select
+                  autoComplete="off"
+                  isClearable
+                  styles={selectStyles}
+                  name="Type"
+                  onChange={(item) => handleCaptureType(item ? item.value : '')}
+                  options={options}
+                />
+              </div>
+            )}
 
             {pathname === '/financeiro' && (
-            <div id='PEOPLE_SELECT' style={{marginLeft:'3%', marginTop:'0px', width:'93%', fontSize:'14px'}}>
-              <Select 
-                autoComplete="off"
-                isClearable
-                styles={selectStyles}
-                name="Type"
-                onChange={(item) => handleCaptureType(item? item.value: '')}
-                options={financeOptions}
-              />
-            </div>
-          )}
+              <div id='PEOPLE_SELECT' style={{ marginLeft: '3%', marginTop: '0px', width: '93%', fontSize: '14px' }}>
+                <Select
+                  autoComplete="off"
+                  isClearable
+                  styles={selectStyles}
+                  name="Type"
+                  onChange={(item) => handleCaptureType(item ? item.value : '')}
+                  options={financeOptions}
+                />
+              </div>
+            )}
           </div>
           <br />
         </>

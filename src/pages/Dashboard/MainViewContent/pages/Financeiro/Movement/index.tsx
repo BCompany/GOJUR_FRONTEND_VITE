@@ -24,9 +24,12 @@ import { CgFileDocument } from 'react-icons/cg';
 import { FaCheck, FaRegTimesCircle, FaRegCopy, FaFileAlt, FaFilePdf, FaWhatsapp } from 'react-icons/fa';
 import { FiTrash, FiEdit, FiX, FiDownloadCloud, FiMail } from 'react-icons/fi';
 import { HiDocumentText } from 'react-icons/hi';
+import { ImMenu3, ImMenu4 } from 'react-icons/im';
 import { MdHelp, MdAttachMoney } from 'react-icons/md';
 import { RiFolder2Fill, RiEraserLine } from 'react-icons/ri';
 import { SiMicrosoftexcel } from 'react-icons/si';
+import { useMenuHamburguer } from 'context/menuHamburguer'
+import MenuHamburguer from 'components/MenuHamburguer';
 import { useDevice } from "react-use-device";
 import { Overlay } from 'Shared/styles/GlobalStyle';
 import { useLocation } from 'react-router-dom'
@@ -45,9 +48,10 @@ import { IPayments } from '../Interfaces/IPayments';
 import FinancialPaymentModal from '../PaymentModal';
 import FinancialDocumentModal from '../DocumentModal';
 import { ModalDeleteOptions, OverlayFinancial } from '../styles';
-import { Container, Content, Process, GridSubContainer, ModalPaymentInformation } from './styles';
+import { Container, Content, Process, GridSubContainer, ModalPaymentInformation, HamburguerHeader } from './styles';
 
 const FinancialMovement: React.FC = () => {
+  const { isMenuOpen, handleIsMenuOpen, isOpenMenuDealDefaultCategory, handleIsOpenMenuDealDefaultCategory } = useMenuHamburguer();
   const {isConfirmMessage, isCancelMessage, handleCancelMessage, handleConfirmMessage, caller} = useConfirmBox();
   const { handleStateType }  = useStateContext();
   const token = localStorage.getItem('@GoJur:token');
@@ -1107,8 +1111,22 @@ const FinancialMovement: React.FC = () => {
   return (
 
     <Container>
-
       <HeaderPage />
+
+      <HamburguerHeader>
+        <div style={{float:'right'}} className='buttonHamburguer'>
+          <button
+            type="button"
+            onClick={() => handleIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? <ImMenu4 className='iconMenu' /> : <ImMenu3 className='iconMenu' />}
+          </button>
+
+          {isMenuOpen ? (
+            <MenuHamburguer name='financeOptions' />
+          ) : null}
+        </div>
+      </HamburguerHeader>
 
       {matterAttachedModal &&(<OverlayFinancial />)}
       {matterAttachedModal &&(<GridSelectProcess />)}

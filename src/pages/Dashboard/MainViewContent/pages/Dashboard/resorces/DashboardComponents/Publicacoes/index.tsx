@@ -246,7 +246,7 @@ const Publicacoes: React.FC<PublicacaoProps> = ({ title, idElement, visible, act
 
                         <section>
                           <article>
-                            <p>{item.description}</p>
+                            <p>{item.description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()}</p>
                           </article>
                         </section>
                       </div>
@@ -374,7 +374,8 @@ const Publicacoes: React.FC<PublicacaoProps> = ({ title, idElement, visible, act
 
                         <section>
                           <article>
-                            <p>{item.description}</p>
+                            {/* <div dangerouslySetInnerHTML={{ __html: item.description }} /> */}
+                            <p>{item.description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()}</p>
                           </article>
                         </section>
                       </div>
