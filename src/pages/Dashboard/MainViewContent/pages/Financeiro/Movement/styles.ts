@@ -488,3 +488,25 @@ export const ModalPaymentInformation = styled.div`
   }
 `;
 
+
+export const HamburguerHeader = styled.div`
+  width: 95vw;
+
+  .buttonHamburguer {
+    justify-content:end;  
+    text-align:center;
+    padding-right:1rem;
+    padding-top:0.5rem;
+    position:relative;
+    >div{
+      margin-right:-1rem;
+      margin-top:-4.5rem;
+      position:absolute;
+    }    
+    .iconMenu {
+      color: var(--blue);
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+  }
+`;

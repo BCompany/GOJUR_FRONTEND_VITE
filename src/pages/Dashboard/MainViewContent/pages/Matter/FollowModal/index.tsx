@@ -38,6 +38,7 @@ export default function FollowModal(props) {
   const [credentialsList, setCredentialsList] = useState<ISelectData[]>([])
   const [showNewCredentials, setShowNewCredentials] = useState<boolean>(false)
   const [isTJES, setIsTJES] = useState<boolean>(false)
+  const [isTJPI, setIsTJPI] = useState<boolean>(false)
   const hiddenButtonRef = useRef(null);
   const [checkMessage, setCheckMessage] = useState(false);
 
@@ -47,6 +48,10 @@ export default function FollowModal(props) {
 
     if(courtNumber == "808"){
       setIsTJES(true)
+    }
+
+    if(courtNumber == "818"){
+      setIsTJPI(true)
     }
 
     LoadCredentials();
@@ -138,7 +143,7 @@ export default function FollowModal(props) {
   const Confirm = async () => {
     try {
       
-      if(isTJES){
+      if(isTJES || isTJPI){
         const response = await api.get('/Credenciais/ValidarTribunal', {
           params: {
             token,

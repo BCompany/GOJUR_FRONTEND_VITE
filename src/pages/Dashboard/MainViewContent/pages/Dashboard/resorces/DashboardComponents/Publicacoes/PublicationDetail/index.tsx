@@ -84,7 +84,7 @@ const PublicationDetail: React.FC<ModalProps> = ({ handleDetails, handleCloseDet
           </Field>
           <Description>
             <h2>Descrição:</h2>
-            <p>{data.description}</p>
+            <p dangerouslySetInnerHTML={{ __html: data.description }} />
           </Description>
         </div>
       </ModalContent>
