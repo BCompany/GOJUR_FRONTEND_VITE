@@ -533,19 +533,19 @@ export function HeaderPage() {
             value={searchTerm}
             minLength={3}
             onChange={handleSearch}
-            handleRequest={() => {
-              if (pathname === '/dashboard') {
-                onSubmit();
-              }
-              else if (pathname === '/customer/list' ||pathname === '/matter/list' || pathname === '/publication' || pathname == '/Subject' || pathname == '/LegalNature' || pathname == '/Rite' || pathname == '/MatterPhase' || pathname == '/MatterStatus' || pathname == 'MatterProbability' || pathname == '/MatterSolution' || pathname == '/CourtDept' || pathname == '/CustomerGroup' || pathname == '/MatterEventType' || pathname == '/MatterDemandType' || pathname == '/LegalCause' || pathname == '/AdvisoryType' || pathname == '/Court' || pathname == '/ThirdPartyGroup' || pathname == '/workflowexec/list' || pathname == '/Position' || pathname == '/PaymentForm' || pathname == '/Category' || pathname == '/FinancialStatus' || pathname == '/Account' || pathname == '/ServiceType' || pathname == '/Cities' || pathname == '/PaymentSlipContract/List' || pathname == '/People/List' || pathname == '/EconomicIndexes/List' || pathname == '/EconomicIndexes/edit/:id' || pathname == '/financeiro' || pathname == '/Holiday' || pathname == '/financeiro/billingcontract/list' || pathname == '/financeiro/billinginvoice/list' || pathname == '/usuario'){
-                handleCaptureText(searchTerm) 
-              }          
-              else if (pathname === '/publication'){            
-                handleDispathCallback(true);
-              else {
-                handleDashBoardList();
-              }
-            }}
+              handleRequest={() => {
+                if (pathname === '/dashboard') {
+                  onSubmit();
+                }
+                else if (pathname === '/customer/list' ||pathname === '/matter/list' || pathname === '/publication' || pathname == '/Subject' || pathname == '/LegalNature' || pathname == '/Rite' || pathname == '/MatterPhase' || pathname == '/MatterStatus' || pathname == 'MatterProbability' || pathname == '/MatterSolution' || pathname == '/CourtDept' || pathname == '/CustomerGroup' || pathname == '/MatterEventType' || pathname == '/MatterDemandType' || pathname == '/LegalCause' || pathname == '/AdvisoryType' || pathname == '/Court' || pathname == '/ThirdPartyGroup' || pathname == '/workflowexec/list' || pathname == '/Position' || pathname == '/PaymentForm' || pathname == '/Category' || pathname == '/FinancialStatus' || pathname == '/Account' || pathname == '/ServiceType' || pathname == '/Cities' || pathname == '/PaymentSlipContract/List' || pathname == '/People/List' || pathname == '/EconomicIndexes/List' || pathname == '/EconomicIndexes/edit/:id' || pathname == '/financeiro' || pathname == '/Holiday' || pathname == '/financeiro/billingcontract/list' || pathname == '/financeiro/billinginvoice/list' || pathname == '/usuario') {
+                  handleCaptureText(searchTerm)
+                }
+                else if (pathname === '/publication') {
+                  handleDispathCallback(true);
+                } else {
+                  handleDashBoardList();
+                }
+              }}
             onKeyUp={() => {
               if (pathname === '/dashboard') {
                 handleDashBoardList();
