@@ -105,10 +105,10 @@ export function HeaderPage() {
       optionsList.push({ value: '', label: 'Todos' })
       optionsList.push({ value: 'CONCLUIDO', label: 'Concluído' })
 
-      const defaultOpt = optionsList.find(o => o.value === 'emandamento');
+      const defaultOpt = optionsList.find(o => o.value === 'EMANDAMENTO');
       setSelectedOption(defaultOpt);
 
-      handleCaptureType('emandamento')
+      handleCaptureType('EMANDAMENTO')
 
       setOptions(optionsList)
     }

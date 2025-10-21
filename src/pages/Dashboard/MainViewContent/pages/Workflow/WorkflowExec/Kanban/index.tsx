@@ -100,7 +100,7 @@ const PainelWorkflows: React.FC = () => {
                     </p>
 
                     <p>
-                      <label>Inclusão:</label>
+                      <label>Início:</label>
                       
                     </p>
 
@@ -137,7 +137,7 @@ const PainelWorkflows: React.FC = () => {
                     </p>
 
                     <p>
-                      <label>Inclusão:</label>
+                      <label>Início:</label>
                       
                     </p>
 
@@ -174,7 +174,7 @@ const PainelWorkflows: React.FC = () => {
                     </p>
 
                     <p>
-                      <label>Inclusão:</label>
+                      <label>Início:</label>
                       
                     </p>
 
