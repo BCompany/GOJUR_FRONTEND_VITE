@@ -1,7 +1,41 @@
-import React, { useState, useEffect } from "react";
+import React, { ChangeEvent, useCallback, useEffect, useRef, useState, UIEvent } from 'react'
 import { Container, Header, Grid, Sidebar, Main, Card, CardHeader, KanbanCard, BusinessCard } from './styles';
+import { AppointmentPropsSave, AppointmentPropsDelete, SelectValues, Data, dataProps, LembretesData, MatterData, ModalProps, ResponsibleDTO, Settings, ShareListDTO, userListData } from 'pages/Dashboard/MainViewContent/pages/Interfaces/ICalendar';
+import api from 'services/api';
+import Select from 'react-select'
 
-const PainelWorkflows: React.FC = () => {
+
+  
+export default function PainelWorkflows() {
+  
+const userToken = localStorage.getItem('@GoJur:token');
+const [userList, setUserList] = useState<userListData[]>([]);
+
+
+  useEffect(() => {
+    LoadUserList();
+
+  }, [])
+
+
+const LoadUserList = useCallback(async () => {
+    try {
+      const response = await api.post<userListData[]>(
+        `/Compromisso/ListarUsuariosETimes`,
+        {
+          userName: '',
+          token: userToken,
+        },
+      );
+
+      setUserList(response.data);
+
+    } catch (err: any) {
+      console.log(err.message);
+    }
+  }, []);
+
+
   return (
     <Container>
       <Header>
@@ -37,12 +71,43 @@ const PainelWorkflows: React.FC = () => {
 
           <div className="section">
             <label>Responsável</label>
+            {/*}
             <select>
               <option>Todos</option>
               <option>Mariana</option>
               <option>Rafael</option>
               <option>Luiza</option>
             </select>
+              */}
+
+                                            <Select
+                                              isMulti
+                                              name={`responsavel1`}
+                                              placeholder="Selecione"
+                                              options={userList.map((user) => ({
+                                                value: user.id,
+                                                label: user.value,
+                                              }))}
+                                              
+                                              styles={{
+                                                control: (base) => ({
+                                                  ...base,
+                                                  width: "215px",
+                                                  minWidth: "160px",
+                                                }),
+                                                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                                option: (base) => ({
+                                                  ...base,
+                                                  fontSize: "0.7rem",
+                                                }),
+                                                multiValueLabel: (base) => ({
+                                                  ...base,
+                                                  fontSize: "0.7rem",
+                                                }),
+                                              }}
+                                              menuPortalTarget={document.body}
+                                            />
+
           </div>
 
           <div className="section">
@@ -55,19 +120,8 @@ const PainelWorkflows: React.FC = () => {
             </select>
           </div>
 
-          <div className="section">
-            <label>Prioridade</label>
-            <div className="chips">
-              <button className="chip">Todas</button>
-              <button className="chip">Alta</button>
-              <button className="chip">Média</button>
-              <button className="chip">Baixa</button>
-            </div>
-          </div>
+       
 
-          <div className="text-note">
-            Dica: clique em múltiplos chips para combinar filtros.
-          </div>
         </Sidebar>
 
         <Main>
@@ -193,5 +247,3 @@ const PainelWorkflows: React.FC = () => {
     </Container>
   );
 };
-
-export default PainelWorkflows;

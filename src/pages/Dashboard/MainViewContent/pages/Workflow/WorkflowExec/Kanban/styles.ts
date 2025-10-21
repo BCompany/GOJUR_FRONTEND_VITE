@@ -347,3 +347,5 @@ export const BusinessCard = styled.div<colorProps>`
     }
   }
 `;
+
+

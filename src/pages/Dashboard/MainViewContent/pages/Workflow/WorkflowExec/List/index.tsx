@@ -267,13 +267,6 @@ useEffect(() => {
         //filters.push(`T.tpo_Status like '%${captureType}%'`);
       }
 
-      /*
-      if (matterFileId) { 
-        filters.push(`T.cod_Processo = ${matterFileId}`);
-      }else if (customerFileId) { 
-        filters.push(`T.cod_Cliente = ${customerFileId}`); 
-      }
-      */
      
       const filterClause = filters.join(", "); 
 
