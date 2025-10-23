@@ -2,19 +2,33 @@ import styled from "styled-components";
 
 // === ESTILOS ===
 export const Container = styled.div`
-  background-color:transparent; /* bg-slate-50 */
+
+  background-color: transparent;
   color: #1e293b; /* text-slate-800 */
+  height: 10vh;
   min-height: 100vh;
-  padding: 1.5rem;
-  max-width: 1280px;
+  width: 95vw;
   margin: 0 auto;
+  overflow-y: auto;
 `;
+
+
+export const Content = styled.div`
+  flex: 1;
+  padding: 0.4rem 4rem;
+  margin: 0.0rem 0.0rem;
+   height:100%;
+  //overflow: auto;
+  width: 80%;
+`;
+
 
 export const Header = styled.header`
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.5rem;
+   width: 1270px;
 
   h1 {
     font-size: 1.5rem;
@@ -61,6 +75,7 @@ export const Sidebar = styled.aside`
   border-radius: 1rem;
   box-shadow: 0 1px 3px rgba(2, 6, 23, 0.08);
   width: 250px;
+  height: 600px;
 
   h3 {
     font-weight: 500;
@@ -110,6 +125,11 @@ export const Sidebar = styled.aside`
       background: #f1f5f9;
     }
   }
+
+.chip.active {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+}
 
   .text-note {
     font-size: 0.675rem;
@@ -348,4 +368,105 @@ export const BusinessCard = styled.div<colorProps>`
   }
 `;
 
+export const Process = styled.div`
+  /* border: 1.5px solid black; */
+  width: calc(100% - 1rem);
+  background: transparent;
+  padding-top: 0.5rem;
+  padding-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 
+  transition: all 0.5s;
+  > label {
+    font-size: 0.75rem;
+    font-weight: 400;
+    padding-right: 0.25rem;
+    margin-right: 1rem;
+  }
+
+  > a {
+    width: 100%;
+    max-width: 560px;
+
+    text-decoration: none;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--secondary);
+    border-bottom: 1px solid var(--grey);
+    /* border: 1px solid black; */
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    > p {
+      flex: 1;
+    }
+
+    @media (min-width: 1366px) {
+      max-width: 858px;
+    }
+    @media (max-width: 1366px) {
+      max-width: 560px;
+    }
+
+    &:hover {
+      border-color: var(--orange);
+      color: var(--orange);
+    }
+  }
+  > button#associar {
+    width: 100%;
+    max-width: 560px;
+
+    text-decoration: none;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--secondary);
+    border-bottom: 1px solid var(--grey);
+    /* border: 1px solid black; */
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    > p {
+      flex: 1;
+    }
+
+    @media (min-width: 1366px) {
+      max-width: 858px;
+    }
+    @media (max-width: 1366px) {
+      max-width: 560px;
+    }
+
+    &:hover {
+      border-color: var(--orange);
+      color: var(--orange);
+    }
+  }
+
+  > button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    > svg {
+      width: 24px;
+      height: 24px;
+      color: var(--grey);
+    }
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+
+      > svg {
+        opacity: 1;
+        color: var(--orange);
+      }
+    }
+  }
+`;

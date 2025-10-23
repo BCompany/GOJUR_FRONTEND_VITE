@@ -447,26 +447,7 @@ export default function WorkflowPage() {
   };
 
 
-  /*
-  const handleSimularWorkflow = async () => {
-    
-    try{
-    setTriggerActionsMap({});
 
-    Object.keys(triggerDates).forEach(async (triggerIdStr) => {
-      const triggerId = Number(triggerIdStr);
-      const actions = await fetchTriggerActions(triggerId);
-      
-      if (actions.length === 0) 
-   
-      setTriggerActionsMap(prev => ({ ...prev, [triggerId]: actions }));
-    });
-    } catch (err) {
-      
-      return [];
-    }
-  };
-*/
 
   const handleSimularWorkflow = async () => {
     try {
@@ -515,14 +496,7 @@ export default function WorkflowPage() {
   }, [])
 
 
-  /*
-  const getSubjectLabel = (id?: number | string) => {
-    if (!id) return "";
-    console.log(optionsSubject);
-    const subject = optionsSubject.find(s => String(s.id) === String(id));
-    return subject ? subject.label : `ID ${id} não encontrado`;
-  };
-*/
+
 
   const getSubjectLabel = (id?: number | string, maxLength: number = 15) => {
     if (!id) return "";

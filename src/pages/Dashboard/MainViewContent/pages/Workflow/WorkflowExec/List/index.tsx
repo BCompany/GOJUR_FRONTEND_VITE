@@ -257,14 +257,10 @@ useEffect(() => {
 
       if (captureText) {
         filters.push(`searchBox=${captureText}`);
-        //filters.push(` ( T.nom_Workflow like '%${captureText}%' or T.processo like '%${captureText}%' or T.nom_pessoa like '%${captureText}%' or T.tpo_Status like '%${captureText}%' ) `);
       }
 
       if (captureType) {
         filters.push(`status=${captureType}`);
-
-        //filters.push(`userAssigned=4459`);
-        //filters.push(`T.tpo_Status like '%${captureType}%'`);
       }
 
      
@@ -280,8 +276,6 @@ useEffect(() => {
           token
         }
       })
-
- 
 
       const statusMap: Record<string, string> = {
         emandamento: "Em andamento",
