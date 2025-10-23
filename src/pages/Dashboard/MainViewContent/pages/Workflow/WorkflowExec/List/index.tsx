@@ -74,7 +74,8 @@ const WorkflowList = () => {
   const [matterRedirect, setMatterRedirect] = useState<boolean>(false)
   const [customerRedirect, setCustomerRedirect] = useState<boolean>(false)
   const [publicationRedirect, setPublicationRedirect] = useState<boolean>(false)
-   const [calendarRedirect, setCalendarRedirect] = useState<boolean>(false) 
+  const [workflowExecKanbanRedirectRedirect, setWorkflowExecKanbanRedirectRedirect] = useState<boolean>(false)
+  const [calendarRedirect, setCalendarRedirect] = useState<boolean>(false) 
 
 
   const columns = [
@@ -127,6 +128,12 @@ const WorkflowList = () => {
       localStorage.removeItem('@Gojur:publicationRedirect') 
     }
 
+    const redirectByWorkflowExecKanban = localStorage.getItem('@Gojur:workflowExecKanbanRedirect') 
+    if (redirectByWorkflowExecKanban == "S"){
+      setWorkflowExecKanbanRedirectRedirect(true)  
+      localStorage.removeItem('@Gojur:workflowExecKanbanRedirect') 
+    }
+ 
 
     //const redirectByCalendar = localStorage.getItem('@Gojur:calendarRedirect') 
     const redirectByCalendar = "S" 
@@ -485,7 +492,7 @@ const CustomCell = (props) => {
   const handleCancel = () => {
     
     console.log('MatterRedirect: ', matterRedirect)
-    
+   
     if (matterRedirect){
       history.push('../../../matter/list')
     }
@@ -494,10 +501,13 @@ const CustomCell = (props) => {
     }else if (publicationRedirect){ 
       history.push('../publication')
     }
+    else if (workflowExecKanbanRedirectRedirect){ 
+      history.push('../workflowexec/kanban')
+    }
     else if (calendarRedirect){ 
       history.push('../calendar')
     }
- 
+
   }
 
 
