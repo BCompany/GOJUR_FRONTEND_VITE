@@ -274,21 +274,6 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       }
     }
 
-
-      // When inclusion cames from deadline calculator, get result date and set in start and end date
-      const json = localStorage.getItem('@GoJur:DeadLineJson');
-      if (json){
-        try{
-          const deadLineResult = JSON.parse(json.toString())
-          setAppointmentDateBeggin(format(new Date(deadLineResult.dateResult), 'yyyy-MM-dd'));
-          setAppointmentDateEnd(format(new Date(deadLineResult.dateResult), 'yyyy-MM-dd'));
-        }
-        catch{
-          setAppointmentDateBeggin(date);
-          setAppointmentDateEnd(date);
-        }
-      }
-
       // When inclusion cames from deadline calculator, get result date and set in start and end date
       const legalResumeDataJSON = localStorage.getItem('@GoJur:LegalResumeIA');
       if (legalResumeDataJSON)
