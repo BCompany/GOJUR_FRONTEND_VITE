@@ -93,9 +93,8 @@ const Publication: React.FC = () => {
   const [currentLegalResumaActionId, setCurrentLegalResumeActionId] = useState<number>(null)
   const [daysDeadline, setDaysDeadline] = useState<number>()
   const [openModalDaysIA, setOpenModalDaysIA] = useState<boolean>(false);
-
-    const { permissionsSecurity, handleValidateSecurity } = useSecurity();
-   const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKFEX");
+  const { permissionsSecurity, handleValidateSecurity } = useSecurity();
+  const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKFEX");
 
   const options = [
     { value: 'itemSearch_withMatter', label: 'Com Processo' },
@@ -410,7 +409,6 @@ const Publication: React.FC = () => {
     }
     setActionType('none');
     if (!modalActive && publicationId > 0) {
-      RefreshEventList()
     }
   }, [modalActive])
 
@@ -1654,7 +1652,6 @@ const Publication: React.FC = () => {
 
     handlePublicationModal('Calc')
   }
-
 
   const MatterWorkflow = async () => {
     localStorage.setItem('@Gojur:publicationRedirect', 'S')
