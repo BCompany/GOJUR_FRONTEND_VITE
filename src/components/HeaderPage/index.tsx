@@ -98,7 +98,7 @@ export function HeaderPage() {
     }
 
 
-  if (pathname === '/workflowexec/list'){
+    if (pathname === '/workflowexec/list') {
       optionsList.push({ value: 'EMANDAMENTO', label: 'Em andamento' })
       optionsList.push({ value: '', label: 'Todos' })
       optionsList.push({ value: 'CONCLUIDO', label: 'Concluído' })
@@ -263,10 +263,10 @@ export function HeaderPage() {
 
     } else if (pathname === '/ThirdPartyGroup') {
       setPlaceholder('Procurar Grupo de Terceiro')
-    }else if (pathname === '/workflowexec/list'){
+    } else if (pathname === '/workflowexec/list') {
       setPlaceholder('Procurar Workflow')
 
-    } else if (pathname === '/Position'){
+    } else if (pathname === '/Position') {
       setPlaceholder('Procurar Posição no Processo')
 
     } else if (pathname === '/PaymentForm') {
@@ -533,24 +533,29 @@ export function HeaderPage() {
             value={searchTerm}
             minLength={3}
             onChange={handleSearch}
-              handleRequest={() => {
-                if (pathname === '/dashboard') {
-                  onSubmit();
-                }
-                else if (pathname === '/customer/list' ||pathname === '/matter/list' || pathname === '/publication' || pathname == '/Subject' || pathname == '/LegalNature' || pathname == '/Rite' || pathname == '/MatterPhase' || pathname == '/MatterStatus' || pathname == 'MatterProbability' || pathname == '/MatterSolution' || pathname == '/CourtDept' || pathname == '/CustomerGroup' || pathname == '/MatterEventType' || pathname == '/MatterDemandType' || pathname == '/LegalCause' || pathname == '/AdvisoryType' || pathname == '/Court' || pathname == '/ThirdPartyGroup' || pathname == '/workflowexec/list' || pathname == '/Position' || pathname == '/PaymentForm' || pathname == '/Category' || pathname == '/FinancialStatus' || pathname == '/Account' || pathname == '/ServiceType' || pathname == '/Cities' || pathname == '/PaymentSlipContract/List' || pathname == '/People/List' || pathname == '/EconomicIndexes/List' || pathname == '/EconomicIndexes/edit/:id' || pathname == '/financeiro' || pathname == '/Holiday' || pathname == '/financeiro/billingcontract/list' || pathname == '/financeiro/billinginvoice/list' || pathname == '/usuario') {
-                  handleCaptureText(searchTerm)
-                }
-                else if (pathname === '/publication') {
+            handleRequest={() => {
+              if (pathname === '/dashboard') {
+                onSubmit();
+              }
+              else if (pathname === '/customer/list' || pathname === '/matter/list' || pathname === '/publication' || pathname == '/Subject' || pathname == '/LegalNature' || pathname == '/Rite' || pathname == '/MatterPhase' || pathname == '/MatterStatus' || pathname == 'MatterProbability' || pathname == '/MatterSolution' || pathname == '/CourtDept' || pathname == '/CustomerGroup' || pathname == '/MatterEventType' || pathname == '/MatterDemandType' || pathname == '/LegalCause' || pathname == '/AdvisoryType' || pathname == '/Court' || pathname == '/ThirdPartyGroup' || pathname == '/workflowexec/list' || pathname == '/Position' || pathname == '/PaymentForm' || pathname == '/Category' || pathname == '/FinancialStatus' || pathname == '/Account' || pathname == '/ServiceType' || pathname == '/Cities' || pathname == '/PaymentSlipContract/List' || pathname == '/People/List' || pathname == '/EconomicIndexes/List' || pathname == '/EconomicIndexes/edit/:id' || pathname == '/financeiro' || pathname == '/Holiday' || pathname == '/financeiro/billingcontract/list' || pathname == '/financeiro/billinginvoice/list' || pathname == '/usuario') {
+                handleCaptureText(searchTerm)
+                if (pathname === '/publication') {
                   handleDispathCallback(true);
-                } else {
-                  handleDashBoardList();
                 }
-              }}
+
+              }
+              else if (pathname === '/publication') {
+                handleDispathCallback(true);
+              } else {
+                handleDashBoardList();
+              }
+            }}
+
             onKeyUp={() => {
               if (pathname === '/dashboard') {
                 handleDashBoardList();
               }
-              else if(pathname === '/customer/list' || pathname === '/matter/list' || pathname === '/publication' || pathname == '/calendar' || pathname == '/Subject' || pathname == '/LegalNature' || pathname == '/Rite' || pathname == '/MatterPhase' || pathname == '/MatterStatus' || pathname == '/MatterProbability' || pathname == '/MatterSolution' || pathname == '/CourtDept' || pathname == '/CustomerGroup' || pathname == '/MatterEventType' || pathname == '/MatterDemandType' || pathname == '/LegalCause' || pathname == '/AdvisoryType' || pathname == '/Court' || pathname == '/ThirdPartyGroup' || pathname == '/workflowexec/list' || pathname == '/Position' || pathname == '/PaymentForm' || pathname == '/Category' || pathname == '/FinancialStatus' || pathname == '/Account' || pathname == '/ServiceType' || pathname == '/Cities' || pathname == '/PaymentSlipContract/List' || pathname == '/People/List' || pathname == '/EconomicIndexes/List' || pathname == '/EconomicIndexes/edit/:id' || pathname == '/documentModel/list' || pathname == '/Holiday' || pathname == '/DocumentType' || pathname == '/financeiro' || pathname == '/financeiro/billingcontract/list' || pathname == '/financeiro/billinginvoice/list' || pathname == '/usuario'){
+              else if (pathname === '/customer/list' || pathname === '/matter/list' || pathname === '/publication' || pathname == '/calendar' || pathname == '/Subject' || pathname == '/LegalNature' || pathname == '/Rite' || pathname == '/MatterPhase' || pathname == '/MatterStatus' || pathname == '/MatterProbability' || pathname == '/MatterSolution' || pathname == '/CourtDept' || pathname == '/CustomerGroup' || pathname == '/MatterEventType' || pathname == '/MatterDemandType' || pathname == '/LegalCause' || pathname == '/AdvisoryType' || pathname == '/Court' || pathname == '/ThirdPartyGroup' || pathname == '/workflowexec/list' || pathname == '/Position' || pathname == '/PaymentForm' || pathname == '/Category' || pathname == '/FinancialStatus' || pathname == '/Account' || pathname == '/ServiceType' || pathname == '/Cities' || pathname == '/PaymentSlipContract/List' || pathname == '/People/List' || pathname == '/EconomicIndexes/List' || pathname == '/EconomicIndexes/edit/:id' || pathname == '/documentModel/list' || pathname == '/Holiday' || pathname == '/DocumentType' || pathname == '/financeiro' || pathname == '/financeiro/billingcontract/list' || pathname == '/financeiro/billinginvoice/list' || pathname == '/usuario') {
                 // nothing to do
               }
               else {
@@ -618,10 +623,10 @@ export function HeaderPage() {
               if (e.key == 'Enter' && pathname === '/ThirdPartyGroup') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/workflowexec/list'){
+              if (e.key == 'Enter' && pathname === '/workflowexec/list') {
                 handleCaptureText(searchTerm)
               }
-              if (e.key == 'Enter' && pathname === '/Position'){
+              if (e.key == 'Enter' && pathname === '/Position') {
                 handleCaptureText(searchTerm)
               }
               if (e.key == 'Enter' && pathname === '/PaymentForm') {
@@ -689,17 +694,17 @@ export function HeaderPage() {
 
 
           {pathname === '/workflowexec/list' && (
-            <div id='WORKFLOW_SELECT' style={{marginLeft:'10px', marginTop:'0px', width:'600px', fontSize:'14px'}}>
+            <div id='WORKFLOW_SELECT' style={{ marginLeft: '10px', marginTop: '0px', width: '600px', fontSize: '14px' }}>
               <Select
                 autoComplete="off"
                 isClearable
                 styles={selectStyles}
                 name="Type"
-                 value={selectedOption} 
-               onChange={(opt) => {
-        setSelectedOption(opt);
-        handleCaptureType(opt ? opt.value : ''); 
-      }}
+                value={selectedOption}
+                onChange={(opt) => {
+                  setSelectedOption(opt);
+                  handleCaptureType(opt ? opt.value : '');
+                }}
                 options={options}
               />
             </div>

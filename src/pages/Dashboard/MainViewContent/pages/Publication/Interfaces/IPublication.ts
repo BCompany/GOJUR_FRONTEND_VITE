@@ -4,6 +4,64 @@ export interface DefaultsProps {
   value: string;
 }
 
+export type PropsPublicationIA = {
+   publicationAI: PublicationAIAnalyserDTO; 
+}
+
+export type PropsPublicationDeadlineIA = {
+   publicationAI: PublicationAIDeadlinesDTO; 
+}
+
+
+export interface PublicationAIAnalyserDTO
+{
+  Id: Number,
+  Message: string;
+  Area: string;
+  Resumo: string;
+  AvaliacaoPositiva:string;
+  Partes: PublicationAIPartsDTO;  
+  Prazos: PublicationAIDeadlinesDTO[];
+  Audiencia:PublicationAIAudienceDTO;
+  Tipo: string;
+  legalResumeId: Number;
+}
+
+export interface PublicationAIPartsDTO{
+  Demandante: string;
+  Demandado: string;
+}
+
+export interface PublicationAIDeadlinesDTO{
+  LegalResumeActionId: number;
+  Prazo: string;
+  TipoAcao: string;
+  Destinatario: string;
+  Finalidade: string;
+  DeadlineDescription: string;
+  DataCalculadaFormatada: string;
+  DefinirDiasManualmente: boolean;
+  DiasManual: number;
+}
+
+export interface PublicationAICalculatorDTO
+{
+    Message: string;
+    FormatDate: string;
+    TextCalculation: string;
+    DateCalculate: Date;
+    SubjectName: string;
+    SubjectId: number;
+    MatterId: number;
+}
+
+export interface PublicationAIAudienceDTO{
+  Data: string;
+  Hora: string;
+  Tipo: string;
+  LegalResumeActionId: number;
+}
+
 export interface CompromissosData {
   eventId: string;
   startDate: Date;
@@ -69,6 +127,8 @@ export interface PublicationData {
   meCod_Pasta: string;
   meDes_AcaoJudicial: string;
   meMatterParts: string;
+  hasPublicationResumeAI: boolean;
+  publicationResumeAI: PublicationAIAnalyserDTO | null;
 }
 
 export interface PublicationDto extends PublicationData {

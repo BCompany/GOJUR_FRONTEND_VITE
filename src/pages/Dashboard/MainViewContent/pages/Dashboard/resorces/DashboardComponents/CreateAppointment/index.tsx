@@ -274,7 +274,62 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       }
     }
 
-    setIsLoading(false)
+
+      // When inclusion cames from deadline calculator, get result date and set in start and end date
+      const json = localStorage.getItem('@GoJur:DeadLineJson');
+      if (json){
+        try{
+          const deadLineResult = JSON.parse(json.toString())
+          setAppointmentDateBeggin(format(new Date(deadLineResult.dateResult), 'yyyy-MM-dd'));
+          setAppointmentDateEnd(format(new Date(deadLineResult.dateResult), 'yyyy-MM-dd'));
+        }
+        catch{
+          setAppointmentDateBeggin(date);
+          setAppointmentDateEnd(date);
+        }
+      }
+
+      // When inclusion cames from deadline calculator, get result date and set in start and end date
+      const legalResumeDataJSON = localStorage.getItem('@GoJur:LegalResumeIA');
+      if (legalResumeDataJSON)
+      {
+        localStorage.removeItem('@GoJur:LegalResumeIA')
+        const legalResumeJson = JSON.parse(legalResumeDataJSON.toString())
+       
+        setAppointmentDateBeggin(legalResumeJson.DataCalculadaFormatada);
+        setAppointmentDateEnd(legalResumeJson.DataCalculadaFormatada);
+
+
+        if (legalResumeJson.HoraFormatada != null && legalResumeJson.HoraFormatada != '')
+        {
+          setAppointmentHourBeggin(legalResumeJson.HoraFormatada);
+
+          const startTime = legalResumeJson.HoraFormatada.split(':');
+          const hour = parseInt(startTime[0].toString());
+          const minutes = parseInt(startTime[1].toString());
+
+          const hourEnd = new Date();
+          hourEnd.setHours(hour);
+          hourEnd.setMinutes(minutes + 30);
+
+          const nData = format(new Date(hourEnd), 'HH:mm');
+
+          setAppointmentHourEnd(nData);
+        }
+
+        // Filter and select subject came from back-end calculation
+        if (legalResumeJson.SubjectName != null && legalResumeJson.SubjectName != '')
+        {
+            await LoadSubject(false, legalResumeJson.SubjectNam);
+
+            setAppointmentSubject(legalResumeJson.SubjectName);
+            setAppointmentSubjectId(legalResumeJson.SubjectId);
+        }
+
+
+      }
+      
+      setIsLoading(false)
   }
 
 
