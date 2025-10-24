@@ -991,6 +991,7 @@ const Publication: React.FC = () => {
     }
     else {
       localStorage.setItem('@GoJur:MatterEventId', LegalResumeAI.legalResumeId.toString())
+      setCurrentPublicationId(Number(LegalResumeAI.legalResumeId.toString()))
     }
     
     localStorage.setItem('@GoJur:LegalResumeIA', JSON.stringify(filtersJSON));

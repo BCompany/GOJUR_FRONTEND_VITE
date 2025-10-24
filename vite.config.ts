@@ -22,18 +22,22 @@ const resolvedAliases = Object.fromEntries(
 );
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [react()],
-  server: { port: 3000 },
-  build: {
-    sourcemap: true, // ✅ Gera source maps
-  },
-  resolve: {
-    alias: {
-      ...resolvedAliases,
+export default defineConfig(({ mode }) => {
+
+  console.log(mode)
+  return {
+    plugins: [react()],
+    server: { port: 3000 },
+    build: {
+      sourcemap: mode === 'development' // generate just in dev mode 
     },
-  },
-  define: {
-    global: 'window',
-  },
+    resolve: {
+      alias: {
+        ...resolvedAliases,
+      },
+    },
+    define: {
+      global: 'window',
+    },
+  };
 });
