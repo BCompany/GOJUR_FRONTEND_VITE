@@ -47,6 +47,11 @@ import { Container, Content, TaskBar, ListCostumer, CostumerCard } from './style
 import { CustomerCustomInformation, CustomerCustomButtons } from './CustomerCustom';
 import { ICustomerData, ICustomInfos } from '../Interfaces/ICustomerList';
 
+export interface IDefaultsProps {
+  id: string;
+  value: string;
+}
+
 Modal.setAppElement('#root');
 
 const CustomerList: React.FC = () => {
@@ -78,6 +83,7 @@ const CustomerList: React.FC = () => {
   const [idReportGenerate, setIdReportGenerate] = useState<number>(0)
   const token = localStorage.getItem('@GoJur:token');
   const checkpermissionDocument = permissionsSecurity.find(item => item.name === "CFGDCMEM");
+  const [workflowView, setWorkflowView] = useState('')
 
   const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKFEX");
 
@@ -293,8 +299,10 @@ const CustomerList: React.FC = () => {
     localStorage.setItem('@Gojur:customerId', customerId.toString())
     localStorage.setItem('@Gojur:customer', customer)
 
-    history.push(`/workflowexec/list`)
-
+    if (workflowView == "LISTA")
+      history.push(`/workflowexec/list`)
+    else if (workflowView == "KANBAN")
+      history.push(`/workflowexec/kanban`)
   }
 
   const handleCheckBoxDeleteCustomer = (customerId: number) => {
@@ -489,6 +497,35 @@ const CustomerList: React.FC = () => {
       console.log(err);
     }
   }, []);
+
+   
+    useEffect(() => {
+      LoadDefaultProps();
+  
+    }, [workflowView]);
+
+
+  const LoadDefaultProps = async () => {
+    try {
+
+      const response = await api.post<IDefaultsProps[]>('/Defaults/Listar', {
+        token,
+      });
+
+      const workflowViewDefault = response.data.find(item => item.id === 'defaultWorkflowParameter' || item.id === 'adm')
+  
+      // // default view workflow
+      if (workflowViewDefault) {
+        setWorkflowView(workflowViewDefault.value)
+      } else {
+        setWorkflowView('KANBAN')
+      }
+
+
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
   // accessCodes Permissions
   const showSalesFunnelMenu = permissionsSecurity.find(item => item.name === "CFGSFUNI");

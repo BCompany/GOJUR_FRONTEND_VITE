@@ -15,6 +15,7 @@ import { useHistory, useLocation } from 'react-router-dom'
 import DatePicker from 'components/DatePicker';
 import { FormatCurrency, selectStyles, useDelay, FormatDate } from 'Shared/utils/commonFunctions';
 import { FcEditImage, FcSearch, FcAbout, FcCancel, FcPlus, FcDeleteDatabase } from 'react-icons/fc';
+import { FiEdit, FiTrash, FiArrowLeft } from 'react-icons/fi'
 
 export interface IWorkflowData {
   workflowId: number;
@@ -34,11 +35,10 @@ export default function PainelWorkflows() {
 
   const history = useHistory();
   const { addToast } = useToast();
-  const userToken = localStorage.getItem('@GoJur:token');
   const [userList, setUserList] = useState<userListData[]>([]);
   const [customerList, setCustomerList] = useState<ISelectData[]>([])
   const [customer, setCustomer] = useState(null);
-  const [processTitle, setProcessTitle] = useState('Associar Processo');
+  const [processTitle, setProcessTitle] = useState('Filtrar Processo');
   const { matterSelected, dateEnd, selectProcess, openSelectProcess, handleSelectProcess, jsonModalObjectResult, handleJsonModalObjectResult, deadLineText, publicationText, modalActiveId } = useModal();
   const [completeLink, setCompleteLink] = useState<boolean>(false);
   const [redirectLink, setRedirectLink] = useState('/####');
@@ -50,7 +50,14 @@ export default function PainelWorkflows() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [workflowExecStartDate, setWorkflowExecStartDate] = useState<string>(FormatDate(new Date(new Date().setFullYear(new Date().getFullYear() - 1)), 'yyyy-MM-dd'))
-//const [workflowExecStartDate, setWorkflowExecStartDate] = useState<Date | null>(null);
+  //const [workflowExecStartDate, setWorkflowExecStartDate] = useState<Date | null>(null);
+  const [matterRedirect, setMatterRedirect] = useState<boolean>(false)
+  const [customerRedirect, setCustomerRedirect] = useState<boolean>(false)
+  const [publicationRedirect, setPublicationRedirect] = useState<boolean>(false)
+  const [workflowExecKanbanRedirectRedirect, setWorkflowExecKanbanRedirectRedirect] = useState<boolean>(false)
+  const [calendarRedirect, setCalendarRedirect] = useState<boolean>(false)
+  const token = localStorage.getItem('@GoJur:token');
+
 
   const [filters, setFilters] = useState({
     status: 'Todos',
@@ -68,13 +75,55 @@ export default function PainelWorkflows() {
   }, [])
 
 
+  const Initialize = async () => {
+
+    //if(localStorage.getItem('@Gojur:matterRedirect') == null && localStorage.getItem('@Gojur:customerRedirect') == null && localStorage.getItem('@Gojur:calendarRedirect') == null ) return;
+
+    const redirectByMatter = localStorage.getItem('@Gojur:matterRedirect')
+    if (redirectByMatter == "S") {
+      setMatterRedirect(true)
+      //setMatterFileId(localStorage.getItem('@Gojur:matterId'))  
+      //localStorage.removeItem('@Gojur:matterId')
+      localStorage.removeItem('@Gojur:matterRedirect')
+
+    }
+
+    const redirectByCustomer = localStorage.getItem('@Gojur:customerRedirect')
+    if (redirectByCustomer == "S") {
+      setCustomerRedirect(true)
+      //setCustomerFileId(localStorage.getItem('@Gojur:customerId'))  
+      //localStorage.removeItem('@Gojur:customerId')  
+      localStorage.removeItem('@Gojur:customerRedirect')
+    }
+
+    const redirectByPublication = localStorage.getItem('@Gojur:publicationRedirect')
+    if (redirectByPublication == "S") {
+      setPublicationRedirect(true)
+      localStorage.removeItem('@Gojur:publicationRedirect')
+    }
+
+    const redirectByWorkflowExecKanban = localStorage.getItem('@Gojur:workflowExecKanbanRedirect')
+    if (redirectByWorkflowExecKanban == "S") {
+      setWorkflowExecKanbanRedirectRedirect(true)
+      localStorage.removeItem('@Gojur:workflowExecKanbanRedirect')
+    }
+
+    //const redirectByCalendar = localStorage.getItem('@Gojur:calendarRedirect') 
+    const redirectByCalendar = "S"
+    if (redirectByCalendar == "S") {
+      setCalendarRedirect(true);
+      //localStorage.removeItem('@Gojur:calendarRedirect')
+    }
+
+  }
+
   const LoadUserList = useCallback(async () => {
     try {
       const response = await api.post<userListData[]>(
         `/Compromisso/ListarUsuariosETimes`,
         {
           userName: '',
-          token: userToken,
+          token,
         },
       );
 
@@ -185,21 +234,27 @@ export default function PainelWorkflows() {
   };
 
   const handleGridSelectProcess = useCallback(() => {
-    if (processTitle === 'Associar Processo') {
+    if (processTitle === 'Filtrar Processo') {
       handleSelectProcess('Open');
       //setTriggerActionsMap({});
     }
   }, [handleSelectProcess, processTitle]);
 
 
+  const handleSelectWorkflow = useCallback((workflowExecId: Number, customer: String) => {
+    localStorage.setItem('@Gojur:customer', customer);
+    history.push('../workflowexec/edit/' + workflowExecId);
+
+  }, []);
+
   useEffect(() => {
-    if (matterSelected !== null && processTitle === 'Associar Processo') {
+    if (matterSelected !== null && processTitle === 'Filtrar Processo') {
 
       setProcessTitle(`${matterSelected.matterNumber} - ${(matterSelected.matterFolder != null ? "-" : "")} ${matterSelected.matterCustomerDesc} - ${matterSelected.matterOppossingDesc}`,);
 
       api.post<IMatterData>('/Processo/SelecionarProcesso', {
         matterId: matterSelected.matterId,
-        token: userToken,
+        token,
         companyId: localStorage.getItem('@GoJur:companyId'),
         apiKey: localStorage.getItem('@GoJur:apiKey')
       })
@@ -219,7 +274,7 @@ export default function PainelWorkflows() {
         })
     }
     else {
-      setProcessTitle('Associar Processo');
+      setProcessTitle('Filtrar Processo');
 
     }
   }, [matterSelected, dateEnd]);
@@ -233,6 +288,7 @@ export default function PainelWorkflows() {
   ];
 
 
+  /*
   useEffect(() => {
     const setup = async () => {
       await LoadWorkflow('initialize');
@@ -242,7 +298,7 @@ export default function PainelWorkflows() {
     setup();
 
   }, []);
-
+*/
 
 
   const LoadWorkflow = useCallback(
@@ -276,7 +332,7 @@ export default function PainelWorkflows() {
         const response = await api.get<IWorkflowData[]>('/WorkflowExec/ListarExec', {
           params: {
             page,
-            rows: 200,
+            rows: 9999,
             filterClause,
             token,
           },
@@ -352,16 +408,80 @@ export default function PainelWorkflows() {
   };
 
 
-  const handleList = () => {
-    selectProcess(null)
-    localStorage.setItem('@Gojur:workflowExecKanbanRedirect', 'S')
-    history.push('/workflowexec/list')
+  const handleList = async () => {
+    try {
+      await api.post('/Parametro/Salvar', {
+        parametersName: '#WORKFLOWVIEW',
+        parameterType: 'P',
+        parameterValue: 'LISTA',
+        token,
+      });
+
+      selectProcess(null)
+
+      if (matterRedirect == true) {
+        localStorage.setItem('@Gojur:matterRedirect', "S")
+      }
+      if (customerRedirect == true) {
+        localStorage.setItem('@Gojur:customerRedirect', "S")
+      }
+      if (publicationRedirect == true) {
+        localStorage.setItem('@Gojur:publicationRedirect', "S")
+      }
+
+      history.push('/workflowexec/list')
+
+    } catch (error) {
+      console.error('Erro ao salvar parâmetro:', error);
+    }
 
   };
 
   const handleWorkflowExecStartDate = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setWorkflowExecStartDate(event.target.value)
   }, [workflowExecStartDate])
+
+
+  useEffect(() => {
+    const setup = async () => {
+
+      const newFilters = { ...filters, inicio: workflowExecStartDate };
+
+      setFilters(newFilters);
+
+      console.log('Filtros atualizados:', newFilters);
+
+      await Initialize();
+
+      await LoadWorkflow('initialize', newFilters);
+
+    };
+
+    setup();
+
+  }, [workflowExecStartDate]);
+
+
+
+  const handleCancel = () => {
+    console.log('MatterRedirect: ', matterRedirect)
+
+    if (matterRedirect) {
+      history.push('../../../matter/list')
+    }
+    else if (customerRedirect) {
+      history.push('../customer/list')
+    } else if (publicationRedirect) {
+      history.push('../publication')
+    }
+    //else if (workflowExecKanbanRedirectRedirect){ 
+    //  history.push('../workflowexec/kanban')
+    //}
+    else if (calendarRedirect) {
+      history.push('../calendar')
+    }
+
+  }
 
 
   return (
@@ -383,10 +503,10 @@ export default function PainelWorkflows() {
               <DatePicker
                 title=""
                 onChange={(date: Date | null) => {
-              
+
                   handleWorkflowExecStartDate(date);
-                                   
-                  const newFilters = { ...filters, inicio: date.target.value  }; 
+
+                  const newFilters = { ...filters, inicio: date.target.value };
 
                   setFilters(newFilters);
 
@@ -394,7 +514,7 @@ export default function PainelWorkflows() {
 
                   LoadWorkflow('initialize', newFilters);
                 }}
-                selected={workflowExecStartDate}
+                value={workflowExecStartDate}
                 style={{ width: '170px' }}
               />
 
@@ -406,11 +526,18 @@ export default function PainelWorkflows() {
               />
             </div>
 
-
-
-
             <button type="button" className='buttonClick' onClick={() => handleList()}>
               Alternar: Kanban / Lista
+            </button>
+
+            <button
+              className="buttonClick"
+              title="Clique para retornar"
+              type="submit"
+              onClick={handleCancel}
+            >
+              <FiArrowLeft />
+              Retornar
             </button>
 
           </div>
@@ -469,27 +596,7 @@ export default function PainelWorkflows() {
 
             <div className="section">
               <label>Cliente</label>
-              {/*
-              <Select
-                isClearable
-                isSearchable
-                classNamePrefix="rs"
-                inputId="select-input"
-                placeholder="Selecione"
-                options={customerList}
-                value={customer}
-                onChange={(e) => setCustomer(e)}
-                onInputChange={(inputValue) => {
-                  RefreshPersonList(inputValue);
-                }}
-                filterOption={(option, inputValue) =>
-                  option.label.toLowerCase().includes(inputValue.toLowerCase())
-                }
-                styles={selectStyles}
-                menuPortalTarget={document.body}
-              />
-                  */}
-
+           
               <Select
                 isClearable
                 isSearchable
@@ -524,7 +631,7 @@ export default function PainelWorkflows() {
 
               <Process>
 
-                {processTitle === 'Associar Processo' && (
+                {processTitle === 'Filtrar Processo' && (
                   <button
                     type="button"
                     id="associar"
@@ -533,7 +640,7 @@ export default function PainelWorkflows() {
                     <p>{processTitle}</p>
                   </button>
                 )}
-                {processTitle !== 'Associar Processo' && (
+                {processTitle !== 'Filtrar Processo' && (
                   <>
                     {completeLink && (
                       <a href={redirectLink}>
@@ -542,7 +649,7 @@ export default function PainelWorkflows() {
                     )}
                   </>
                 )}
-                {processTitle === 'Associar Processo' && (
+                {processTitle === 'Filtrar Processo' && (
                   <button
                     type="button"
                     onClick={handleGridSelectProcess}
@@ -551,11 +658,11 @@ export default function PainelWorkflows() {
                   </button>
                 )}
 
-                {processTitle !== 'Associar Processo' && (
+                {processTitle !== 'Filtrar Processo' && (
                   <button
                     type="button"
                     onClick={() => {
-                      setProcessTitle('Associar Processo');
+                      setProcessTitle('Filtrar Processo');
                       const newFilters = { ...filters, processo: null };
                       setFilters(newFilters);
                       LoadWorkflow('initialize', newFilters);
@@ -592,7 +699,7 @@ export default function PainelWorkflows() {
                           {item.name}
                         </div>
 
-                        <BusinessCard key={item.workflowexecId}>
+                        <BusinessCard key={item.workflowexecId} onClick={() => handleSelectWorkflow(item.workflowexecId, item.customer )}>
 
                           <p>
                             <label>Processo:</label> {item.matter}
@@ -624,7 +731,7 @@ export default function PainelWorkflows() {
                           {item.name}
                         </div>
 
-                        <BusinessCard key={item.workflowexecId}>
+                        <BusinessCard key={item.workflowexecId} onClick={() => handleSelectWorkflow(item.workflowexecId, item.customer)}>
 
                           <p>
                             <label>Processo:</label> {item.matter}
@@ -656,7 +763,7 @@ export default function PainelWorkflows() {
                           {item.name}
                         </div>
 
-                        <BusinessCard key={item.workflowexecId}>
+                        <BusinessCard key={item.workflowexecId} onClick={() => handleSelectWorkflow(item.workflowexecId, item.customer)}>
 
                           <p>
                             <label>Processo:</label> {item.matter}

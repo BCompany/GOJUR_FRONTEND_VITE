@@ -39,6 +39,10 @@ import LogModal from 'components/LogModal';
 import { useSecurity } from 'context/securityContext';
 import { ContentLegalResumeRender, ContentLegalResumeDaysModal } from './LegalResumeIA'
 
+export interface IDefaultsProps {
+  id: string;
+  value: string;
+}
 
 const Publication: React.FC = () => {
   const { signOut } = useAuth();
@@ -95,6 +99,7 @@ const Publication: React.FC = () => {
   const [openModalDaysIA, setOpenModalDaysIA] = useState<boolean>(false);
   const { permissionsSecurity, handleValidateSecurity } = useSecurity();
   const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKFEX");
+  const [workflowView, setWorkflowView] = useState('')
 
   const options = [
     { value: 'itemSearch_withMatter', label: 'Com Processo' },
@@ -1655,8 +1660,42 @@ const Publication: React.FC = () => {
 
   const MatterWorkflow = async () => {
     localStorage.setItem('@Gojur:publicationRedirect', 'S')
-    history.push(`/workflowexec/list`)
+
+    if ( workflowView == "LISTA" )  
+      history.push(`/workflowexec/list`)
+    else if ( workflowView == "KANBAN" )
+      history.push(`/workflowexec/kanban`)
   }
+
+
+   useEffect(() => {
+      LoadDefaultProps();
+  
+    }, [workflowView]);
+    
+
+  const LoadDefaultProps = async () => {
+      try {
+  
+        const response = await api.post<IDefaultsProps[]>('/Defaults/Listar', {
+          token,
+        });
+  
+        const workflowViewDefault = response.data.find(item => item.id === 'defaultWorkflowParameter' || item.id === 'adm')
+    
+        // // default view workflow
+        if (workflowViewDefault) {
+          setWorkflowView(workflowViewDefault.value)
+        } else {
+          setWorkflowView('KANBAN')
+        }
+  
+  
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
 
   return (
     <Container style={{ pointerEvents: (loadingData ? 'none' : 'all'), opacity: (isMobile && isPagination ? '0.3' : '1') }} onScrollCapture={handleScroll}>
@@ -2051,7 +2090,7 @@ const Publication: React.FC = () => {
                             </p>
                           </>
                         )}
-
+                    
                         <p onClick={() => handleLog(item.id)} title="Clique para visualizar os logs de alteração desta publicação">
                           <CgDetailsMore />
                           Visualizar Log
@@ -2203,6 +2242,15 @@ const Publication: React.FC = () => {
                             <RiDeleteBinLine />
                             Excluir
                           </p>
+                        )}
+
+                        {(checkWorkflow) && (
+                          <>
+                            <p onClick={() => MatterWorkflow()}>
+                              <GoGitMerge />
+                              <span>Workflow</span>
+                            </p>
+                          </>
                         )}
 
                         <p onClick={() => MatterEventLog(item.meCod_ProcessoAcompanhamento)} title="Clique para visualizar os logs de alteração deste acompanhamento">

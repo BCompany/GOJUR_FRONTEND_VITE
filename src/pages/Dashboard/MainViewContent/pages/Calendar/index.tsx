@@ -94,6 +94,11 @@ import {
 import CalendarReport from './Report';
 import CalendarExportConfig from './Export';
 
+export interface IDefaultsProps {
+  id: string;
+  value: string;
+}
+
 const Calendar: React.FC = () => {
   const { signOut } = useAuth();
   const { alertData, openProcessModal } = useAlert();
@@ -228,7 +233,7 @@ const Calendar: React.FC = () => {
 
 const {permissionsSecurity, handleValidateSecurity } = useSecurity();
   const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKFEX");
-
+ const [workflowView, setWorkflowView] = useState('')
 
   // DATE SELECT
   const [openModalDateSelect, setOpenModalDateSelect] =
@@ -1244,7 +1249,13 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
 
   const handleWorkflow = () => {
     localStorage.setItem('@Gojur:calendarRedirect', 'S')
-    history.push(`/workflowexec/list`)
+
+
+    if (workflowView == "LISTA" )
+      history.push(`/workflowexec/list`)
+    else if (workflowView == "KANBAN" )
+      history.push(`/workflowexec/kanban`)
+
   };
 
    
@@ -1316,6 +1327,35 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
     },
     [selectDateStart],
   );
+
+
+    useEffect(() => {
+        LoadDefaultProps();
+    
+      }, [workflowView]);
+
+  const LoadDefaultProps = async () => {
+    try {
+
+      const response = await api.post<IDefaultsProps[]>('/Defaults/Listar', {
+        token,
+      });
+
+      const workflowViewDefault = response.data.find(item => item.id === 'defaultWorkflowParameter' || item.id === 'adm')
+  
+      // // default view workflow
+      if (workflowViewDefault) {
+        setWorkflowView(workflowViewDefault.value)
+      } else {
+        setWorkflowView('KANBAN')
+      }
+
+
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
 
   return (
     <>

@@ -95,6 +95,7 @@ const Matter: React.FC = () => {
   const [matterEventsTypeList, setMatterEventsTypeList] = useState<ISelectData[]>([])
   const [sortBy, setSortBy] = useState('dta_UltimoMovimento')
   const [status, setStatus] = useState('')
+  const [workflowView, setWorkflowView] = useState('')
   const [orderBy, setOrderBy] = useState<string>('desc')
   const [page, setPage] = useState<number>(1)
   const [lastPage, setLastPage] = useState<number>(1)
@@ -565,6 +566,7 @@ const Matter: React.FC = () => {
       const buttonDeleteMattterAdivisory = permissiosnModule.find(item => item === 'buttonDeleteMatterAdvisory' || item === 'adm')
       const buttonFollow = permissiosnModule.find(item => item === 'buttonFollowMatter' || item === 'adm')
       const matterStatusDefault = response.data.find(item => item.id === 'defaultMatterStatusParameter' || item.id === 'adm')
+      const workflowViewDefault = response.data.find(item => item.id === 'defaultWorkflowParameter' || item.id === 'adm')
       const buttonDocumentGenerate = permissiosnModule.find(item => item === 'matterDocumentGeneration' || item === 'adm')
       const videoTrainningConfig = response.data.find(item => item.id === 'defaultUserLogFirstAccess')
       if (videoTrainningConfig) {
@@ -597,6 +599,16 @@ const Matter: React.FC = () => {
       } else {
         setStatus('T')
       }
+
+
+      // // default view workflow
+      if (workflowViewDefault) {
+        setWorkflowView(workflowViewDefault.value)
+      } else {
+        setWorkflowView('KANBAN')
+      }
+
+
 
       // default permissions
       if (permissiosnModule[0] == "adm") {
@@ -2167,7 +2179,11 @@ const Matter: React.FC = () => {
 
     localStorage.setItem('@Gojur:matterRedirect', 'S')
     localStorage.setItem('@Gojur:matterId', matterId)
-    history.push(`/workflowexec/list`)
+
+    if (workflowView == "LISTA") 
+      history.push(`/workflowexec/list`)
+    else if (workflowView == "KANBAN") 
+      history.push(`/workflowexec/kanban`)
 
   }
 

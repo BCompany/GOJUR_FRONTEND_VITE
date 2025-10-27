@@ -128,12 +128,13 @@ const WorkflowList = () => {
       localStorage.removeItem('@Gojur:publicationRedirect') 
     }
 
+    /*
     const redirectByWorkflowExecKanban = localStorage.getItem('@Gojur:workflowExecKanbanRedirect') 
     if (redirectByWorkflowExecKanban == "S"){
       setWorkflowExecKanbanRedirectRedirect(true)  
       localStorage.removeItem('@Gojur:workflowExecKanbanRedirect') 
     }
- 
+    */
 
     //const redirectByCalendar = localStorage.getItem('@Gojur:calendarRedirect') 
     const redirectByCalendar = "S" 
@@ -142,7 +143,6 @@ const WorkflowList = () => {
       //localStorage.removeItem('@Gojur:calendarRedirect')
     }
   
- 
   } 
   
 
@@ -358,43 +358,12 @@ useEffect(() => {
 
 
 
-
-
   const handleCheckBoxDeleteWorkflow = (workflowId: number) => {
     setIsDeleting(true)
     setCurrentWorkflowExecId(workflowId);
   }
   
-  /*
-  const CustomCell = (props) => {
-
-    const { column } = props;
-
-    if (column.name === 'edit') {
-      return (
-        <Table.Cell onClick={(e) => handleClick(props)} {...props}>
-          &nbsp;&nbsp;
-          <FiEdit title="Clique para editar " />
-        </Table.Cell>
-      );
-    }
-
-    if (column.name === 'remove') {
-      return (
-
-        <Table.Cell onClick={() => handleCheckBoxDeleteWorkflow(props.row.workflowId)}>
-
-          &nbsp;&nbsp;
-          <FiTrash title="Clique para remover" />
-        </Table.Cell>
-
-      );
-    }
-
-    return <Table.Cell {...props} />;
-  };
-*/
-
+ 
 const CustomCell = (props) => {
   const { column, row } = props;
 
@@ -501,9 +470,9 @@ const CustomCell = (props) => {
     }else if (publicationRedirect){ 
       history.push('../publication')
     }
-    else if (workflowExecKanbanRedirectRedirect){ 
-      history.push('../workflowexec/kanban')
-    }
+    //else if (workflowExecKanbanRedirectRedirect){ 
+    //  history.push('../workflowexec/kanban')
+    //}
     else if (calendarRedirect){ 
       history.push('../calendar')
     }
@@ -557,6 +526,35 @@ const CustomCell = (props) => {
 
   };
 
+
+  
+const handleWorkflowKanban = async () => {
+  try {
+    await api.post('/Parametro/Salvar', {
+      parametersName: '#WORKFLOWVIEW',
+      parameterType: 'P',
+      parameterValue: 'KANBAN',
+      token,
+    });
+
+    if (matterRedirect === true) {
+      localStorage.setItem('@Gojur:matterRedirect', 'S');
+    }
+    if (customerRedirect === true) {
+      localStorage.setItem('@Gojur:customerRedirect', 'S');
+    }
+    if (publicationRedirect === true) {
+      localStorage.setItem('@Gojur:publicationRedirect', 'S');
+    }
+
+    history.push('/WorkflowExec/kanban');
+  } catch (error) {
+    console.error('Erro ao salvar parâmetro:', error);
+  }
+};
+
+
+
   // HTML CODE
   return (
     <>
@@ -575,6 +573,17 @@ const CustomCell = (props) => {
             </div>
 
             <div style={{ float: 'right', marginRight: '185px' }}>
+              <div style={{ float: 'left', marginRight: '10px' }}>
+                <button
+                  className="buttonClick"
+                  type="submit"
+                  onClick={() =>handleWorkflowKanban()}
+                >
+                   Alternar: Lista / Kanban
+                </button>
+
+              </div>
+              
               <div style={{ float: 'left', marginRight: '10px' }}>
 
                 <button

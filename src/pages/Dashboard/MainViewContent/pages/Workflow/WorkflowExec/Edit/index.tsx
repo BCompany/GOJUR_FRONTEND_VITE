@@ -48,6 +48,10 @@ interface IExecParameter {
   value: string;
 }
 
+export interface IDefaultsProps {
+  id: string;
+  value: string;
+}
 
 export default function WorkflowPage() {
 
@@ -88,7 +92,7 @@ export default function WorkflowPage() {
   const [blockUpdate, setBlockUpdate] = useState(false);
   const { isConfirmMessage, isCancelMessage, caller, handleCancelMessage, handleConfirmMessage, handleCheckConfirm, handleCaller } = useConfirmBox();
   const [isDeleting, setIsDeleting] = useState<boolean>(); // set trigger for show loader
-
+  const [workflowView, setWorkflowView] = useState('')
 
   const {
     isOpenModal,
@@ -1086,9 +1090,41 @@ export default function WorkflowPage() {
 
   const handleClose = () => {
     //localStorage.removeItem('@Gojur:customer');
-    history.push('/workflowexec/list')
-
+    
+    if(workflowView == "LISTA")
+      history.push('/workflowexec/list')
+    else if (workflowView == "KANBAN")
+      history.push('/workflowexec/kanban')
   };
+
+
+  useEffect(() => {
+    LoadDefaultProps();
+
+  }, [workflowView]);
+  
+  const LoadDefaultProps = async () => {
+    try {
+
+      const response = await api.post<IDefaultsProps[]>('/Defaults/Listar', {
+        token,
+      });
+
+      const workflowViewDefault = response.data.find(item => item.id === 'defaultWorkflowParameter' || item.id === 'adm')
+  
+      // // default view workflow
+      if (workflowViewDefault) {
+        setWorkflowView(workflowViewDefault.value)
+      } else {
+        setWorkflowView('KANBAN')
+      }
+
+
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
 
   return (
     <Container onScroll={handleScroolSeeMore} ref={scrollRef}>
