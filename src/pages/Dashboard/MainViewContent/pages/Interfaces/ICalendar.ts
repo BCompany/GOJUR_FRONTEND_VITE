@@ -159,6 +159,8 @@ export interface AppointmentPropsSave {
   recurrenceRuleJSON:any;
   serieRecurrenceChange?: any;
   isConfirmSave:any;
+  workflowActionsExecId?: any,
+  workflowExecId?:any 
 }
 
 export interface AppointmentPropsDelete {

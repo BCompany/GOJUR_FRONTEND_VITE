@@ -1339,6 +1339,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         businessId,
         isConfirmSave: confirmSave,
         recurrenceRuleJSON: JSON.stringify(dataRecurrence),
+        workflowActionsExecId: appointmentWorkflowActionsExecId,
+        workflowExecId:appointmentWorkflowExecId 
       }
 
       try {

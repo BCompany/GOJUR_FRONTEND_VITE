@@ -288,7 +288,7 @@ export default function PainelWorkflows() {
   ];
 
 
-  /*
+/*
   useEffect(() => {
     const setup = async () => {
       await LoadWorkflow('initialize');
