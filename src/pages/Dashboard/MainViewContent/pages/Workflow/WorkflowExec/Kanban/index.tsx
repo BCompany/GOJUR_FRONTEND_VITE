@@ -16,6 +16,7 @@ import DatePicker from 'components/DatePicker';
 import { FormatCurrency, selectStyles, useDelay, FormatDate } from 'Shared/utils/commonFunctions';
 import { FcEditImage, FcSearch, FcAbout, FcCancel, FcPlus, FcDeleteDatabase } from 'react-icons/fc';
 import { FiEdit, FiTrash, FiArrowLeft } from 'react-icons/fi'
+import { FaFileAlt, FaAngleLeft  } from 'react-icons/fa'
 
 export interface IWorkflowData {
   workflowId: number;
@@ -57,6 +58,8 @@ export default function PainelWorkflows() {
   const [workflowExecKanbanRedirectRedirect, setWorkflowExecKanbanRedirectRedirect] = useState<boolean>(false)
   const [calendarRedirect, setCalendarRedirect] = useState<boolean>(false)
   const token = localStorage.getItem('@GoJur:token');
+ const [matterFileId, setMatterFileId] = useState('');
+  const [customerFileId, setCustomerFileId] = useState('');
 
 
   const [filters, setFilters] = useState({
@@ -82,7 +85,7 @@ export default function PainelWorkflows() {
     const redirectByMatter = localStorage.getItem('@Gojur:matterRedirect')
     if (redirectByMatter == "S") {
       setMatterRedirect(true)
-      //setMatterFileId(localStorage.getItem('@Gojur:matterId'))  
+      setMatterFileId(localStorage.getItem('@Gojur:matterId'))  
       //localStorage.removeItem('@Gojur:matterId')
       localStorage.removeItem('@Gojur:matterRedirect')
 
@@ -91,7 +94,7 @@ export default function PainelWorkflows() {
     const redirectByCustomer = localStorage.getItem('@Gojur:customerRedirect')
     if (redirectByCustomer == "S") {
       setCustomerRedirect(true)
-      //setCustomerFileId(localStorage.getItem('@Gojur:customerId'))  
+      setCustomerFileId(localStorage.getItem('@Gojur:customerId'))  
       //localStorage.removeItem('@Gojur:customerId')  
       localStorage.removeItem('@Gojur:customerRedirect')
     }
@@ -483,6 +486,14 @@ export default function PainelWorkflows() {
 
   }
 
+  const handleWorkflow = () => {
+
+    localStorage.setItem('@Gojur:matterId', matterFileId ); 
+    localStorage.setItem('@Gojur:customerId', customerFileId ); 
+
+    history.push('/WorkflowExec/edit/0')
+
+  };
 
   return (
     <Container onScroll={handleScroolSeeMore} ref={scrollRef}>
@@ -528,6 +539,16 @@ export default function PainelWorkflows() {
 
             <button type="button" className='buttonClick' onClick={() => handleList()}>
               Alternar: Kanban / Lista
+            </button>
+
+            <button
+              className="buttonClick"
+              title="Clique para incluir um Workflow"
+              type="submit"
+              onClick={() =>handleWorkflow()}
+            >
+              <FaFileAlt />
+              Iniciar Novo Workflow
             </button>
 
             <button

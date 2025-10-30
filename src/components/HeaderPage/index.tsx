@@ -101,6 +101,7 @@ export function HeaderPage() {
     if (pathname === '/workflowexec/list') {
       optionsList.push({ value: 'EMANDAMENTO', label: 'Em andamento' })
       optionsList.push({ value: '', label: 'Todos' })
+      optionsList.push({ value: 'ATRASO', label: 'Atraso' })
       optionsList.push({ value: 'CONCLUIDO', label: 'Concluído' })
 
       const defaultOpt = optionsList.find(o => o.value === 'EMANDAMENTO');

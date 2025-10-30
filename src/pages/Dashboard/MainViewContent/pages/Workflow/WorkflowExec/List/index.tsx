@@ -287,6 +287,7 @@ useEffect(() => {
       const statusMap: Record<string, string> = {
         emandamento: "Em andamento",
         concluido: "Concluído",
+        atraso:"Atraso"
       };
 
 

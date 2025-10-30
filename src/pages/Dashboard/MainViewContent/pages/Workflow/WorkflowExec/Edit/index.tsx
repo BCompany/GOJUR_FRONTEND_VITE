@@ -1057,7 +1057,7 @@ export default function WorkflowPage() {
       })
 
       setIsDeleting(false)
-      history.push('/workflowExec/list')
+      history.push('/workflowexec/list')
 
       //setCurrentCustomerId(0)
       setConfirmDeleteModal(false)
