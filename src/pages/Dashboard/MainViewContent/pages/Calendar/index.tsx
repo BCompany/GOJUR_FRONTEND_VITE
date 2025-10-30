@@ -25,7 +25,6 @@ import Loader from 'react-spinners/ClipLoader';
 import { AiOutlineReload, AiOutlineCheckCircle } from 'react-icons/ai';
 import { BiCalendarCheck, BiCalendarEdit, BiLoader } from 'react-icons/bi';
 import { FaRegTimesCircle } from 'react-icons/fa';
-import { GoGitMerge  } from "react-icons/go"
 import { FiX } from 'react-icons/fi';
 import { useAlert } from 'context/alert';
 import ProcessModal from 'components/HeaderPage/TopNavBar/EnvelopeNotificationList/ProcessModal';
@@ -44,7 +43,7 @@ import { useDefaultSettings } from 'context/defaultSettings';
 import { useModal } from 'context/modal';
 import { useAuth } from 'context/AuthContext';
 import { FaCalculator } from 'react-icons/fa';
-import { FcAbout, FcSearch } from 'react-icons/fc';
+import { FcAbout, FcSearch, FcParallelTasks } from 'react-icons/fc';
 import { useMenuHamburguer } from 'context/menuHamburguer';
 import MenuHamburguer from 'components/MenuHamburguer';
 import Menu from '@material-ui/core/Menu';
@@ -1456,7 +1455,7 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
                 title="Clique para abrir o workflow"
                 type="submit"
               >
-                <GoGitMerge />
+                <FcParallelTasks />
                 Workflow
               </button>
               </>
