@@ -29,7 +29,7 @@ import { AutoCompleteSelect } from 'Shared/styles/GlobalStyle';
 import Select from 'react-select'
 import { Grid, Table, TableHeaderRow, PagingPanel } from '@devexpress/dx-react-grid-material-ui';
 import { useMenuHamburguer } from 'context/menuHamburguer'
-import { selectStyles, useDelay, FormatDate, FormatCurrency } from 'Shared/utils/commonFunctions';
+import { selectStyles, useDelay, FormatDate, FormatCurrency, currencyConfig } from 'Shared/utils/commonFunctions';
 import { PagingState, CustomPaging, IntegratedPaging, SortingState, IntegratedSorting } from '@devexpress/dx-react-grid';
 import { languageGridEmpty, languageGridPagination, languageGridLoading } from 'Shared/utils/commonConfig';
 import { loadingMessage, noOptionsMessage } from 'Shared/utils/commonConfig';
@@ -45,6 +45,7 @@ import CustomerCancelPlanModalEdit from './CancelPlanModal';
 import PublicationDateModal from './PublicationDateModal';
 import PublicationClassification from './PublicationClassification';
 import { Container, Content, Form, OverlayCustomerConfiguration, Box } from './styles';
+import IntlCurrencyInput from "react-intl-currency-input";
 
 export interface BusinessInformation {
   status: string;
@@ -656,7 +657,7 @@ const CustomerConfiguration: React.FC = () => {
     { name: 'matterNumber', title: 'Processo' },
     { name: 'customerName', title: 'Nome' },
     { name: 'releaseDate', title: 'Data Disponib.' },
-    { name: 'publicationDate', title: 'Data Pub./Lib.'},
+    { name: 'publicationDate', title: 'Data Pub./Lib.' },
     { name: 'description', title: 'Descrição' },
     { name: 'publicationId', title: 'ID' }
   ];
@@ -1113,7 +1114,7 @@ const CustomerConfiguration: React.FC = () => {
         setCustomerCaller("userList")
       }
 
-      if(response.data.tpo_StatusAcesso == "TG" || planReference != "GOJURFR") {
+      if (response.data.tpo_StatusAcesso == "TG" || planReference != "GOJURFR") {
         setShowTeste(true)
       }
 
@@ -2405,13 +2406,13 @@ const CustomerConfiguration: React.FC = () => {
         token,
       })
 
-      addToast({type: "success", title: "E-mail enviado com sucesso", description: "O e-mail de confirmação de assinatura foi enviado!"})
+      addToast({ type: "success", title: "E-mail enviado com sucesso", description: "O e-mail de confirmação de assinatura foi enviado!" })
     }
     catch (err: any) {
       setIsLoading(false)
-      addToast({type: "error", title: "Falha ao enviar o e-mail.", description: err.response.data.Message})
+      addToast({ type: "error", title: "Falha ao enviar o e-mail.", description: err.response.data.Message })
     }
-  },[]);
+  }, []);
 
   const ExtendTest = useCallback(async () => {
     try {
@@ -2427,7 +2428,7 @@ const CustomerConfiguration: React.FC = () => {
       });
 
       CustomerInformation();
-      
+
     } catch (err: any) {
       setIsLoading(false);
       addToast({
@@ -2817,27 +2818,27 @@ const CustomerConfiguration: React.FC = () => {
 
               {showTeste == true && (
                 <div className='headerButtons'>
-                <button
-                  className="buttonLinkClick buttonInclude"
-                  type="submit"
-                  onClick={handleClickTeste}
-                >
-                  {customerCaller == "businessInformation" && (
-                    <>
-                      <FaBusinessTime style={{ color: "orange" }} />
-                      <span style={{ color: "orange" }}>Periodo de Teste</span>
-                    </>
-                  )}
+                  <button
+                    className="buttonLinkClick buttonInclude"
+                    type="submit"
+                    onClick={handleClickTeste}
+                  >
+                    {customerCaller == "businessInformation" && (
+                      <>
+                        <FaBusinessTime style={{ color: "orange" }} />
+                        <span style={{ color: "orange" }}>Periodo de Teste</span>
+                      </>
+                    )}
 
-                  {customerCaller != "businessInformation" && (
-                    <>
-                      <FaBusinessTime />
-                      <span>Periodo de Teste</span>
-                    </>
-                  )}
+                    {customerCaller != "businessInformation" && (
+                      <>
+                        <FaBusinessTime />
+                        <span>Periodo de Teste</span>
+                      </>
+                    )}
 
-                </button>
-              </div>
+                  </button>
+                </div>
               )}
 
             </>
@@ -3311,9 +3312,9 @@ const CustomerConfiguration: React.FC = () => {
               <>
                 <div id='RAIO-X' style={{ marginLeft: '15%', width: '100%' }}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                    <br/>
+                    <br />
                     <span style={{ fontWeight: 600 }} className='xRayLabel'>Selecione o perído: </span>
-                    <br/>
+                    <br />
                     <div style={{ display: "flex", gap: "20px", justifyContent: "flex-start" }}>
                       <div>
                         <label htmlFor="data">
@@ -3338,7 +3339,7 @@ const CustomerConfiguration: React.FC = () => {
                         </label>
                       </div>
                     </div>
-                    
+
                     <button
                       className="buttonClick"
                       type='button'
@@ -3383,7 +3384,7 @@ const CustomerConfiguration: React.FC = () => {
               <>
                 <div style={{ display: 'flex', marginLeft: "10%" }}>
 
-                  <label htmlFor="dataCancelamento">
+                  <label htmlFor="dataInicio">
                     Data Inicio
                     <input
                       type="date"
@@ -3393,7 +3394,7 @@ const CustomerConfiguration: React.FC = () => {
                     />
                   </label>
 
-                  <label htmlFor="dataCancelamento" style={{ marginLeft: "2%" }}>
+                  <label htmlFor="dataFim" style={{ marginLeft: "2%" }}>
                     Data Final
                     <input
                       type="date"
@@ -3402,7 +3403,15 @@ const CustomerConfiguration: React.FC = () => {
                       onChange={(e: ChangeEvent<HTMLInputElement>) => setEndDate(e.target.value)}
                     />
                   </label>
-
+                  <label htmlFor="CACValue" className="required">
+                    Custo Arquisição
+                    <IntlCurrencyInput
+                      currency="BRL"
+                      config={currencyConfig}
+                      value={0}
+                    /*onChange={handleBusinessValue}*/
+                    />
+                  </label>
                   <button
                     className="buttonClick"
                     type='button'
@@ -3667,7 +3676,7 @@ const CustomerConfiguration: React.FC = () => {
                       Prorrogar Teste
                     </button>
                   </div>
-                  
+
                 </div>
               </>
             )}
