@@ -623,7 +623,7 @@ export default function PainelWorkflows() {
                 isSearchable
                 classNamePrefix="rs"
                 inputId="select-input"
-                placeholder="Selecione"
+                placeholder="&nbsp;&nbsp;Selecione"
                 options={customerList}
                 getOptionValue={(option) => option.id}
                 getOptionLabel={(option) => option.label}

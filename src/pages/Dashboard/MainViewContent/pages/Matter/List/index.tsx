@@ -24,7 +24,7 @@ import { AiOutlinePrinter, AiFillFolderOpen, AiOutlineFile } from 'react-icons/a
 import { useAuth } from 'context/AuthContext';
 import { VscTag } from 'react-icons/vsc';
 import { useHistory } from 'react-router-dom'
-import { FcAbout, FcSearch } from 'react-icons/fc';
+import { FcAbout, FcSearch, FcParallelTasks } from 'react-icons/fc';
 import { RiDeleteBinLine } from 'react-icons/ri';
 import { SiSonarsource } from 'react-icons/si';
 import { ImMenu3, ImMenu4 } from 'react-icons/im';
@@ -2921,7 +2921,7 @@ const Matter: React.FC = () => {
                               {(checkWorkflow) && (
                                 <>
                                   <p onClick={() => MatterWorkflow(item.matterId, "legal")}>
-                                    <GoGitMerge />
+                                    <FcParallelTasks />
                                     {!isMOBILE && <span>Workflow</span>}
                                   </p>
                                 </>
@@ -3456,7 +3456,7 @@ const Matter: React.FC = () => {
                               </p>
 
                               <p onClick={() => MatterWorkflow(item.matterId, "legal")}>
-                                <GoGitMerge />
+                                <FcParallelTasks />
                                 {!isMOBILE && <span>Workflow</span>}
                               </p>
 

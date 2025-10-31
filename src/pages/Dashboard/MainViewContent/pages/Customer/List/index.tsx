@@ -46,6 +46,7 @@ import { Overlay } from 'Shared/styles/GlobalStyle';
 import { Container, Content, TaskBar, ListCostumer, CostumerCard } from './styles';
 import { CustomerCustomInformation, CustomerCustomButtons } from './CustomerCustom';
 import { ICustomerData, ICustomInfos } from '../Interfaces/ICustomerList';
+import { FcAbout, FcSearch, FcParallelTasks } from 'react-icons/fc';
 
 export interface IDefaultsProps {
   id: string;
@@ -676,7 +677,7 @@ const CustomerList: React.FC = () => {
                         title="Workflow"
                         onClick={() => handleWorkflow(customer.cod_Cliente, customer.nom_Pessoa)}
                       >
-                        <GoGitMerge />
+                         <FcParallelTasks />
                       </button>
                     </>
                   )}

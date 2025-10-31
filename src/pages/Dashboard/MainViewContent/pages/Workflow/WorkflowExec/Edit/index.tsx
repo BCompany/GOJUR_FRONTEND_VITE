@@ -456,6 +456,18 @@ export default function WorkflowPage() {
   const handleSimularWorkflow = async () => {
     try {
       setTriggerActionsMap({});
+      
+      if(Object.keys(triggerDates).length == 0 )
+      {
+        addToast({
+                type: "info",
+                title: "Campos Obrigatórios",
+                description: "Selecione o workflow, e preencha todas as datas antes de continuar"
+              })
+        return;
+      }
+                
+
 
       for (const triggerIdStr of Object.keys(triggerDates)) {
         const triggerId = Number(triggerIdStr);
@@ -463,7 +475,7 @@ export default function WorkflowPage() {
 
         //if (!actions || actions.length === 0) {
         if (actions === "error") {
-
+     
           return;
         }
 
@@ -1533,14 +1545,26 @@ export default function WorkflowPage() {
                                   : "Pendente"}
                               </span>
 
-
+                             {/*
                               {action.eventId > 0 && (
                                 <p onClick={() => handleClickEdit(action.eventId)} style={{ cursor: "pointer" }}>
                                   <RiCalendarCheckFill />
                                   <span>Evento</span>
                                 </p>
                               )}
+                              */}
 
+                        {action.eventId > 0 ? (
+                          <p onClick={() => handleClickEdit(action.eventId)} style={{ cursor: "pointer" }}>
+                            <RiCalendarCheckFill />
+                            <span>Evento</span>
+                          </p>
+                        ) : (
+                          <p style={{ cursor: "not-allowed", opacity: 0.5 }}>
+                            <RiCalendarCheckFill />
+                            <span>Evento</span>
+                          </p>
+                        )}  
 
 
                             </div>

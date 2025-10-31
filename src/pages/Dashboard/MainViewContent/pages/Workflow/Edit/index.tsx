@@ -255,9 +255,9 @@ export default function Workflow() {
 
     if (!isValid) {
       addToast({
-        type: "error",
-        title: "Erro de validação",
-        description: "Gatilhos do tipo 'data' precisam ter um label preenchido."
+        type: "info",
+        title: "Campo Obrigatório",
+        description: "O workflow precisa de ao menos 1 gatilho configurado, preencha os campos ou inclua 1 gatilho no workflow"
       });
       return 0;
     }
@@ -332,9 +332,9 @@ export default function Workflow() {
 
     if (!isValid) {
       addToast({
-        type: "error",
-        title: "Erro de validação",
-        description: "Gatilhos do tipo 'data' precisam ter um label preenchido."
+        type: "info",
+        title: "Campos Obrigatórios",
+        description: "O workflow precisa de ao menos 1 gatilho configurado, preencha os campos ou inclua 1 gatilho no workflow"
       });
       return;
     }
@@ -624,7 +624,7 @@ export default function Workflow() {
   const handleDeleteTrigger = useCallback((triggerId) => {
     const address = workflowTrigger.filter(item => item.workflowTriggerId !== triggerId);
 
-    if (address.length >= 0) {
+    if (address.length >=0) {
       setWorkflowTrigger(address)
     } else {
       addToast({
@@ -720,6 +720,20 @@ export default function Workflow() {
 
   const handleDeleteWorkflowGatilho = async (workflowtriggerId: number) => {
     try {
+
+      const trigger = workflowTrigger.filter(item => item.workflowTriggerId !== workflowtriggerId);
+
+      if (trigger.length ==0) {
+
+          addToast({
+            type: "info",
+            title: "Operação invalida",
+            description: "Só é possivel excluir quando há mais de um gatilho cadastrado"
+          })
+          return
+
+      }
+  
       setIsDeletingTrigger(true)
 
       await api.delete('/Workflow/DeletarGatilho', {
@@ -2302,7 +2316,7 @@ export default function Workflow() {
         <ConfirmBoxModal
           title="Excluir Registro"
           caller="WorkflowList"
-          message="Confirma a exclusão deste workflow ?"
+          message="Confirma a exclusão deste gatilho ?"
         />
       )}
 

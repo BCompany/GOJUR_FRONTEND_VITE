@@ -8,7 +8,6 @@ import { useToast } from 'context/toast';
 import LabelTooggle from 'components/LabelTooggle'
 import { isMobile } from 'react-device-detect'
 import api from 'services/api';
-import { FcAbout } from 'react-icons/fc';
 import { FiCheckSquare, FiMenu, FiSave } from 'react-icons/fi';
 import { GoGitMerge } from "react-icons/go"
 import { useAuth } from 'context/AuthContext';
@@ -38,6 +37,7 @@ import { useHistory } from 'react-router-dom';
 import LogModal from 'components/LogModal';
 import { useSecurity } from 'context/securityContext';
 import { ContentLegalResumeRender, ContentLegalResumeDaysModal } from './LegalResumeIA'
+import { FcAbout, FcSearch, FcParallelTasks } from 'react-icons/fc';
 
 export interface IDefaultsProps {
   id: string;
@@ -2085,7 +2085,7 @@ const Publication: React.FC = () => {
                       {(checkWorkflow) && (
                           <>
                             <p onClick={() => MatterWorkflow()}>
-                              <GoGitMerge />
+                               <FcParallelTasks />
                               <span>Workflow</span>
                             </p>
                           </>
@@ -2247,7 +2247,7 @@ const Publication: React.FC = () => {
                         {(checkWorkflow) && (
                           <>
                             <p onClick={() => MatterWorkflow()}>
-                              <GoGitMerge />
+                              <FcParallelTasks />
                               <span>Workflow</span>
                             </p>
                           </>
