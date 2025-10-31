@@ -1345,7 +1345,7 @@ export default function Workflow() {
     }
 
     if (!trigger) {
-      alert("Trigger não encontrada.");
+      //alert("Trigger não encontrada.");
       return;
     }
 
@@ -1444,7 +1444,7 @@ export default function Workflow() {
         (trigger) => trigger.configuration?.label?.trim() === nameTrigger
       );
       if (!trigger) {
-        alert("Trigger não encontrada");
+        //alert("Trigger não encontrada");
         return false;
       }
 
@@ -1580,7 +1580,7 @@ export default function Workflow() {
         (trigger) => trigger.configuration?.label?.trim() === nameTrigger
       );
       if (!trigger) {
-        alert("Trigger não encontrada");
+        //alert("Trigger não encontrada");
         return;
       }
 
