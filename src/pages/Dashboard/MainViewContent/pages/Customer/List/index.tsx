@@ -300,6 +300,12 @@ const CustomerList: React.FC = () => {
     localStorage.setItem('@Gojur:customerId', customerId.toString())
     localStorage.setItem('@Gojur:customer', customer)
 
+    localStorage.setItem('@Gojur:filterCustomer', customer)
+
+    localStorage.removeItem('@Gojur:publicationId');
+    localStorage.removeItem('@Gojur:followUpId');
+    localStorage.removeItem('@Gojur:notificationTag');
+
     if (workflowView == "LISTA")
       history.push(`/workflowexec/list`)
     else if (workflowView == "KANBAN")

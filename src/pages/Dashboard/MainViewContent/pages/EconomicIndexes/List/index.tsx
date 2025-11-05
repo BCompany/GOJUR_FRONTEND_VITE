@@ -43,7 +43,7 @@ export interface IDefaultsProps {
   id: string;
   value: string;
 }
-
+      
 const EconomicIndexesList = () => {
   // STATES
   const { addToast } = useToast();

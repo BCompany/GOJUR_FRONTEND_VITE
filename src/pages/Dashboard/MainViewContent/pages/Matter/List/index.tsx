@@ -2180,6 +2180,10 @@ const Matter: React.FC = () => {
     localStorage.setItem('@Gojur:matterRedirect', 'S')
     localStorage.setItem('@Gojur:matterId', matterId)
 
+    localStorage.removeItem('@Gojur:publicationId');
+    localStorage.removeItem('@Gojur:followUpId');
+    localStorage.removeItem('@Gojur:notificationTag');
+
     if (workflowView == "LISTA") 
       history.push(`/workflowexec/list`)
     else if (workflowView == "KANBAN") 

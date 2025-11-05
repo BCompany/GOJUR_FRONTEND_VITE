@@ -93,6 +93,9 @@ export default function WorkflowPage() {
   const { isConfirmMessage, isCancelMessage, caller, handleCancelMessage, handleConfirmMessage, handleCheckConfirm, handleCaller } = useConfirmBox();
   const [isDeleting, setIsDeleting] = useState<boolean>(); // set trigger for show loader
   const [workflowView, setWorkflowView] = useState('')
+  const [notificationTag, setNotificationTag] = useState(null);
+  const [matterFileId, setMatterFileId] = useState('');
+  const [customerFileId, setCustomerFileId] = useState('');
 
   const {
     isOpenModal,
@@ -105,6 +108,15 @@ export default function WorkflowPage() {
   const [wasOpened, setWasOpened] = useState(false);
 
 
+
+useEffect(() => {
+  const tag = localStorage.getItem('@Gojur:notificationTag');
+  setNotificationTag(tag);
+
+  setMatterFileId(localStorage.getItem('@Gojur:filterMatterId'))
+  setCustomerFileId(localStorage.getItem('@Gojur:filterCustomerId'))
+
+}, []);
 
 
   useEffect(() => {
@@ -275,7 +287,7 @@ export default function WorkflowPage() {
     if (matterSelected !== null && processTitle === 'Associar Processo') {
 
       setProcessTitle(`${matterSelected.matterNumber} - ${(matterSelected.matterFolder != null ? "-" : "")} ${matterSelected.matterCustomerDesc} - ${matterSelected.matterOppossingDesc}`,);
-
+      
       api.post<IMatterData>('/Processo/SelecionarProcesso', {
         matterId: matterSelected.matterId,
         token: userToken,
@@ -600,12 +612,9 @@ export default function WorkflowPage() {
 
       const storedIdFromLocalStorage = localStorage.getItem('@Gojur:matterId');
 
-      //alert('PASSO 1 - localStorage:' + storedIdFromLocalStorage);
-
       if (storedIdFromLocalStorage.length == 0) {
 
         const storedMatterId = matterSelected?.matterId ?? null;
-        //alert('PASSO 2 - matterSelected:' + storedMatterId);
 
         if (storedMatterId !== null) {
           matterId = storedMatterId;
@@ -656,7 +665,7 @@ export default function WorkflowPage() {
         workflowactionsexecId: 0,
         companyId,
         workflowexecId: 0,
-        actionType: "criarcompromisso",
+        actionType: "CRIARCOMPROMISSO",
         des_ExecParameters: JSON.stringify(execParams),
         //sequence: index + 1,
         //relatedactionId: action.relatedactionId ?? null,
@@ -672,6 +681,8 @@ export default function WorkflowPage() {
       workflowId: workflow?.value ?? 0,
       matterId,
       customerId: selectCustomerId,
+      publicationId: localStorage.getItem('@Gojur:publicationId') ?? null,
+      followUpId: localStorage.getItem('@Gojur:followUpId') ?? null,
       des_ExecParameters: JSON.stringify(jsonTriggers),
       startDate: todayISO,
       endDate: null,
@@ -755,6 +766,8 @@ export default function WorkflowPage() {
       setWorkflowExecId(workflowExecIdParam);
       setWorkflowExec(response.data);
       setBlockUpdate(true);
+
+      setNotificationTag(response.data.notificationTag);
 
       const execParams: { label: string; value: string; workflowTriggerId: number }[] =
         response.data.des_ExecParameters
@@ -879,7 +892,9 @@ export default function WorkflowPage() {
 
   useEffect(() => {
 
-    if (localStorage.getItem('@Gojur:matterId')) {
+    const matterId = localStorage.getItem('@Gojur:matterId');
+
+    if (matterId && matterId !== "null" && matterId.trim() !== "") {
 
       const loadProcess = async () => {
         try {
@@ -1103,10 +1118,17 @@ export default function WorkflowPage() {
   const handleClose = () => {
     //localStorage.removeItem('@Gojur:customer');
     
+    localStorage.setItem('@Gojur:matterId',matterFileId)
+    localStorage.setItem('@Gojur:customerId',customerFileId)  
+
+    if (customer)
+      localStorage.setItem('@Gojur:customer',customer.label)  
+    
     if(workflowView == "LISTA")
       history.push('/workflowexec/list')
     else if (workflowView == "KANBAN")
       history.push('/workflowexec/kanban')
+
   };
 
 
@@ -1261,6 +1283,23 @@ export default function WorkflowPage() {
                   />
 
                 </div>
+
+
+               {notificationTag && (
+                  <div>
+                    <label>Notificação</label>
+                    <Input
+                      type="text"
+                      autoComplete="off"
+                      name="nome"
+                      required
+                      maxLength={100}
+                      disabled
+                      value={notificationTag}
+                    />
+                  </div>
+                )}
+
 
                 {workflowTrigger.map((trigger) => (
                   trigger.triggerType === "data" && (
@@ -1545,14 +1584,7 @@ export default function WorkflowPage() {
                                   : "Pendente"}
                               </span>
 
-                             {/*
-                              {action.eventId > 0 && (
-                                <p onClick={() => handleClickEdit(action.eventId)} style={{ cursor: "pointer" }}>
-                                  <RiCalendarCheckFill />
-                                  <span>Evento</span>
-                                </p>
-                              )}
-                              */}
+                      
 
                         {action.eventId > 0 ? (
                           <p onClick={() => handleClickEdit(action.eventId)} style={{ cursor: "pointer" }}>

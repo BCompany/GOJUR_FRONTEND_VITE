@@ -1658,21 +1658,47 @@ const Publication: React.FC = () => {
     handlePublicationModal('Calc')
   }
 
-  const MatterWorkflow = async () => {
+  const publicationWorkflow = async (id, publicationDate, matterNumber) => {
     localStorage.setItem('@Gojur:publicationRedirect', 'S')
 
+    localStorage.setItem('@Gojur:publicationId', id.toString());
+    localStorage.removeItem('@Gojur:followUpId');
+
+    localStorage.setItem('@Gojur:notificationTag', 'PUB.: ' + publicationDate + ' - ' + matterNumber);
+    
     if ( workflowView == "LISTA" )  
       history.push(`/workflowexec/list`)
     else if ( workflowView == "KANBAN" )
       history.push(`/workflowexec/kanban`)
   }
 
+   useEffect(() => {
+      LoadDefaultProps();
+  
+    }, [workflowView]);
+
+
+    const followUpWorkflow = async (id, publicationDate, matterNumber) => {
+    localStorage.setItem('@Gojur:publicationRedirect', 'S')
+
+    localStorage.setItem('@Gojur:followUpId', id.toString());
+    localStorage.removeItem('@Gojur:publicationId');
+
+    localStorage.setItem('@Gojur:notificationTag', 'ACOMP.: ' + publicationDate + ' - ' + matterNumber);
+  
+    if ( workflowView == "LISTA" )  
+      history.push(`/workflowexec/list`)
+    else if ( workflowView == "KANBAN" )
+      history.push(`/workflowexec/kanban`)
+  }
 
    useEffect(() => {
       LoadDefaultProps();
   
     }, [workflowView]);
     
+
+
 
   const LoadDefaultProps = async () => {
       try {
@@ -2084,7 +2110,7 @@ const Publication: React.FC = () => {
 
                       {(checkWorkflow) && (
                           <>
-                            <p onClick={() => MatterWorkflow()}>
+                            <p onClick={() => publicationWorkflow(item.id, format(new Date(item.publicationDate), 'dd/MM/yyyy'), item.matterNumber)}>
                                <FcParallelTasks />
                               <span>Workflow</span>
                             </p>
@@ -2246,11 +2272,11 @@ const Publication: React.FC = () => {
 
                         {(checkWorkflow) && (
                           <>
-                            <p onClick={() => MatterWorkflow()}>
+                            <p onClick={() => followUpWorkflow(item.meCod_ProcessoAcompanhamento, format(new Date(item.meDta_Acompanhamento), 'dd/MM/yyyy'),item.meNum_Processo)}>
                               <FcParallelTasks />
                               <span>Workflow</span>
                             </p>
-                          </>
+                          </> 
                         )}
 
                         <p onClick={() => MatterEventLog(item.meCod_ProcessoAcompanhamento)} title="Clique para visualizar os logs de alteração deste acompanhamento">

@@ -98,7 +98,7 @@ const HeaderPageOptionsMenu = () => {
     setShowConfig(false)
     setShowConfigOthers(false)
     handleIsMenuOpen(false)
-    handleRedirect(`/Workflow/List`)
+    handleRedirect(`/workflow/list`)
   }, []);
 
 

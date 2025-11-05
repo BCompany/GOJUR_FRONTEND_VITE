@@ -25,7 +25,7 @@ import { Container, Content, ContainerMobile } from './styles';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
 import { useConfirmBox } from 'context/confirmBox';
 import { format, parseISO } from "date-fns";
-
+import { ISelectData } from '../../../Interfaces/IMatter';
 
 export interface IDefaultsProps {
   id: string;
@@ -76,7 +76,9 @@ const WorkflowList = () => {
   const [publicationRedirect, setPublicationRedirect] = useState<boolean>(false)
   const [workflowExecKanbanRedirectRedirect, setWorkflowExecKanbanRedirectRedirect] = useState<boolean>(false)
   const [calendarRedirect, setCalendarRedirect] = useState<boolean>(false) 
-
+  const [displayFilter, setDisplayFilter] = useState('');
+  const [filterName, setFilterName] = useState('');
+  const [customerList, setCustomerList] = useState<ISelectData[]>([])
 
   const columns = [
     { name: 'name', title: 'Workflow' },
@@ -108,19 +110,32 @@ const WorkflowList = () => {
     const redirectByMatter = localStorage.getItem('@Gojur:matterRedirect') 
     if (redirectByMatter == "S"){
       setMatterRedirect(true)   
-      setMatterFileId(localStorage.getItem('@Gojur:matterId'))  
-      localStorage.removeItem('@Gojur:matterId')
+      //setMatterFileId(localStorage.getItem('@Gojur:matterId'))  
+      //localStorage.removeItem('@Gojur:matterId')
       localStorage.removeItem('@Gojur:matterRedirect')
                     
     }   
+
+    if(localStorage.getItem('@Gojur:matterId')){
+      setMatterFileId(localStorage.getItem('@Gojur:matterId'))  
+      localStorage.removeItem('@Gojur:matterId')
+    }
+
     
     const redirectByCustomer = localStorage.getItem('@Gojur:customerRedirect') 
     if (redirectByCustomer == "S"){
       setCustomerRedirect(true)   
-      setCustomerFileId(localStorage.getItem('@Gojur:customerId'))  
-      localStorage.removeItem('@Gojur:customerId')  
+      //setCustomerFileId(localStorage.getItem('@Gojur:customerId'))  
+      //localStorage.removeItem('@Gojur:customerId')  
       localStorage.removeItem('@Gojur:customerRedirect') 
     }
+ 
+    if(localStorage.getItem('@Gojur:customerId'))
+    {
+      setCustomerFileId(localStorage.getItem('@Gojur:customerId'))
+      localStorage.removeItem('@Gojur:customerId')
+    }
+      
 
     const redirectByPublication = localStorage.getItem('@Gojur:publicationRedirect') 
     if (redirectByPublication == "S"){
@@ -128,19 +143,9 @@ const WorkflowList = () => {
       localStorage.removeItem('@Gojur:publicationRedirect') 
     }
 
-    /*
-    const redirectByWorkflowExecKanban = localStorage.getItem('@Gojur:workflowExecKanbanRedirect') 
-    if (redirectByWorkflowExecKanban == "S"){
-      setWorkflowExecKanbanRedirectRedirect(true)  
-      localStorage.removeItem('@Gojur:workflowExecKanbanRedirect') 
-    }
-    */
-
-    //const redirectByCalendar = localStorage.getItem('@Gojur:calendarRedirect') 
     const redirectByCalendar = "S" 
     if (redirectByCalendar == "S"){
       setCalendarRedirect(true);   
-      //localStorage.removeItem('@Gojur:calendarRedirect')
     }
   
   } 
@@ -247,6 +252,100 @@ useEffect(() => {
   }
 
 
+   useEffect(() => {
+     
+      const matterId = matterFileId;
+   
+      if (matterId && matterId !== "null" && matterId.trim() !== "") {
+  
+        const loadProcess = async () => {
+          try {
+  
+            const responseMatter = await api.post('/Processo/SelecionarProcesso', {
+              matterId: matterId,
+              token: token,
+              companyId: localStorage.getItem('@GoJur:companyId'),
+              apiKey: localStorage.getItem('@GoJur:apiKey')
+            })
+              .then(response => {
+                const matterType = response.data.typeAdvisorId == null ? 'legal' : 'advisory'
+                const url = `/matter/edit/${matterType}/${matterId}`
+             
+  
+                const title = `${response.data.matterNumber} - ${response.data.matterFolder} - ${response.data.matterCustomerDesc} - ${response.data.matterOppossingDesc}`;
+     
+                if(displayFilter == 'processo')
+                {
+                  setFilterName('Processo: ' + title);
+                }
+                      
+              })
+  
+          } catch (err) {
+            console.error('Erro ao carregar processo:', err);
+          }
+        };
+  
+        loadProcess();
+      }
+      else {
+        
+      }
+  
+    }, [matterFileId, displayFilter]);
+
+
+  
+  useEffect(() => {
+    //alert('displayFilter:' + displayFilter);
+    if(displayFilter == 'cliente')
+    {
+      setFilterName('Cliente: ' + localStorage.getItem('@Gojur:filterCustomer'));
+    }
+
+    if(displayFilter == 'acompanhamento')
+    {
+      setFilterName(localStorage.getItem('@Gojur:notificationTag'));
+    }
+
+    if(displayFilter == 'publicacao')
+    {
+      setFilterName(localStorage.getItem('@Gojur:notificationTag'));
+    }
+
+}, [workflowList]);
+
+
+/*
+  const ListCustomerData = async (term: string) => {
+    const token = localStorage.getItem("@GoJur:token");
+    const customerListData: ISelectData[] = [];
+
+    const response = await api.post("/Clientes/ListarComboBox", {
+      token,
+      page: 0,
+      rows: 50,
+      filterClause: term,
+    });
+
+    response.data.forEach((item: any) => {
+      customerListData.push({
+        id: item.id,
+        label: item.value,
+      });
+    });
+
+    return customerListData;
+  };
+
+  const RefreshPersonList = useCallback(async (inputValue: string) => {
+    const list = await ListCustomerData(inputValue ?? "");
+    setCustomerList(list);
+  }, []);
+*/
+
+  
+
 
   // METHODS
  const LoadWorkflow = useCallback(
@@ -261,6 +360,26 @@ useEffect(() => {
       const page = state == 'initialize' ? 1 : pageNumber;
 
       const filters: string[] = [];
+
+      if (customerFileId) {
+        filters.push(`customer=${customerFileId}`);
+        setDisplayFilter('cliente')
+      }
+
+      if (matterFileId) {
+        filters.push(`matter=${matterFileId}`);
+        setDisplayFilter('processo')
+      }
+
+      if ( localStorage.getItem('@Gojur:followUpId') ){
+        filters.push(`followUpId=${localStorage.getItem('@Gojur:followUpId')}`);
+        setDisplayFilter('acompanhamento')
+      }
+     
+      if ( localStorage.getItem('@Gojur:publicationId') ){
+        filters.push(`publicationId=${localStorage.getItem('@Gojur:publicationId')}`);
+        setDisplayFilter('publicacao')
+      }
 
       if (captureText) {
         filters.push(`searchBox=${captureText}`);
@@ -413,6 +532,10 @@ const CustomCell = (props) => {
    
     if (props.column.name === 'edit') {
       localStorage.setItem('@Gojur:customer',props.row.customer);
+
+      localStorage.setItem('@Gojur:filterMatterId', matterFileId ); 
+      localStorage.setItem('@Gojur:filterCustomerId', customerFileId );
+
       handleEdit(props.row.workflowexecId)
     }
 
@@ -523,6 +646,9 @@ const CustomCell = (props) => {
     localStorage.setItem('@Gojur:matterId', matterFileId ); 
     localStorage.setItem('@Gojur:customerId', customerFileId ); 
 
+    localStorage.setItem('@Gojur:filterMatterId', matterFileId ); 
+    localStorage.setItem('@Gojur:filterCustomerId', customerFileId );
+
     history.push('/WorkflowExec/edit/0')
 
   };
@@ -537,6 +663,12 @@ const handleWorkflowKanban = async () => {
       parameterValue: 'KANBAN',
       token,
     });
+
+    localStorage.setItem('@Gojur:matterId', matterFileId ); 
+    localStorage.setItem('@Gojur:customerId', customerFileId ); 
+
+    localStorage.setItem('@Gojur:filterMatterId', matterFileId ); 
+    localStorage.setItem('@Gojur:filterCustomerId', customerFileId );
 
     if (matterRedirect === true) {
       localStorage.setItem('@Gojur:matterRedirect', 'S');
@@ -573,6 +705,7 @@ const handleWorkflowKanban = async () => {
               {totalPageCount}
             </div>
 
+            
             <div style={{ float: 'right', marginRight: '185px' }}>
               <div style={{ float: 'left', marginRight: '10px' }}>
                 <button
@@ -619,6 +752,9 @@ const handleWorkflowKanban = async () => {
             <h5>Workflows em Execução</h5>
           </div>
          
+             <div style={{ float: 'left', marginLeft: '150px', marginTop: '12px', fontSize: '13px' }}>
+             {filterName}
+            </div>
 
           <div style={{ width: '100%', height: '25px' }}><></></div>
 

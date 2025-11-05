@@ -1249,6 +1249,10 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
   const handleWorkflow = () => {
     localStorage.setItem('@Gojur:calendarRedirect', 'S')
 
+    localStorage.removeItem('@Gojur:publicationId');
+    localStorage.removeItem('@Gojur:followUpId');
+    localStorage.removeItem('@Gojur:notificationTag');
+    localStorage.removeItem('@Gojur:filterCustomer')
 
     if (workflowView == "LISTA" )
       history.push(`/workflowexec/list`)
