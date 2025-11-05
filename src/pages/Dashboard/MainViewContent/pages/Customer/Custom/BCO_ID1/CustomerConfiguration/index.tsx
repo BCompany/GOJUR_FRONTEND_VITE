@@ -260,6 +260,7 @@ const CustomerConfiguration: React.FC = () => {
   const [salesQty, setSalesQty] = useState<string>("0")
   const [conversionRate, setConversionRate] = useState<string>("0")
   const [startDate, setStartDate] = useState<string>("")
+  const [cacValue, setCacValue] = useState<number>(1750)
   const [endDate, setEndDate] = useState<string>("")
 
   useEffect(() => {
@@ -901,6 +902,7 @@ const CustomerConfiguration: React.FC = () => {
         params: {
           startDate,
           endDate,
+          cacValue,
           token
         }
       });
@@ -3404,12 +3406,12 @@ const CustomerConfiguration: React.FC = () => {
                     />
                   </label>
                   <label htmlFor="CACValue" className="required">
-                    Custo Arquisição
+                    Custo Aquisição
                     <IntlCurrencyInput
                       currency="BRL"
                       config={currencyConfig}
-                      value={0}
-                    /*onChange={handleBusinessValue}*/
+                      value={cacValue}
+                      onChange={(event, value, maskedValue) => setCacValue(value)}
                     />
                   </label>
                   <button
