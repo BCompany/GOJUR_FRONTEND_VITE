@@ -106,8 +106,8 @@ const CredentialModal = (props) => {
         case 'D':
           icon = (
             <div style={{ display: 'flex', marginBottom: "12px" }}>
-              <FaAddressCard style={{ color: 'red', height: '20px' }} title="Credencial negada pelo tribunal" />
-              <span style={{ color: 'red', marginLeft: '5px' }}>Recusada</span>
+              <FaAddressCard style={{ color: 'red', height: '20px' }} title="Houve falha no último uso da credencial, os dados de usuário, senha, qrcode podem estar incorretos ou ocorreu algum problema com o tribunal na autenticação" />
+              <span style={{ color: 'red', marginLeft: '5px' }}>Inválida</span>
             </div>
           );
           break;
