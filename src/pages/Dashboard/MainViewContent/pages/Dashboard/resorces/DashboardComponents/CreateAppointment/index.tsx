@@ -685,13 +685,36 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
 
     // Close modal
-  const handleWorkflowExec = () => {
+  const handleWorkflowExec = async() => {
    
+
+    try {
+      const response = await api.get('/WorkflowExec/SelecionarExec', {
+        params: {
+          id: Number(appointmentWorkflowExecId),
+          token: userToken,
+        },
+      });
+ 
+    
     history.push('/workflowexec/edit/' + appointmentWorkflowExecId);
 
     localStorage.setItem('@GoJur:appointmentClose', 'S');
     isClosed()
-  } // mudança de data final
+
+
+  } catch (err) {
+      
+      if (err.response.data.statusCode == 1002) {
+        addToast({
+          type: 'info',
+          title: 'Permissão negada',
+          description: 'Seu usuário não tem permissão para acessar esse módulo, contate o administrador do sistema',
+        });
+      }
+    }
+
+  } 
 
 
   const handleDragControllMouseOver = useCallback(() => {

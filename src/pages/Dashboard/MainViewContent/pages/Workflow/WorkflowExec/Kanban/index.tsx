@@ -16,7 +16,7 @@ import DatePicker from 'components/DatePicker';
 import { FormatCurrency, selectStyles, useDelay, FormatDate } from 'Shared/utils/commonFunctions';
 import { FcEditImage, FcSearch, FcAbout, FcCancel, FcPlus, FcDeleteDatabase } from 'react-icons/fc';
 import { FiEdit, FiTrash, FiArrowLeft } from 'react-icons/fi'
-import { FaFileAlt, FaAngleLeft  } from 'react-icons/fa'
+import { FaFileAlt, FaAngleLeft } from 'react-icons/fa'
 
 export interface IWorkflowData {
   workflowId: number;
@@ -79,21 +79,36 @@ export default function PainelWorkflows() {
   }, [])
 
 
+  function clearFiltersIfFollowUpOrPublicacao() {
+    const hasFollowUp = localStorage.getItem('@Gojur:followUpId');
+    const hasPublicacao = localStorage.getItem('@Gojur:publicacaoId');
+
+    if (hasFollowUp || hasPublicacao) {
+      const keysToRemove = [
+        '@Gojur:filterCustomerId',
+        '@Gojur:filterCustomer',
+        '@Gojur:customerId',
+        '@Gojur:filterMatterId',
+        '@Gojur:matterId',
+      ];
+
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+    }
+  }
+
   const Initialize = async () => {
 
     //if(localStorage.getItem('@Gojur:matterRedirect') == null && localStorage.getItem('@Gojur:customerRedirect') == null && localStorage.getItem('@Gojur:calendarRedirect') == null ) return;
 
+    clearFiltersIfFollowUpOrPublicacao();
+
     const redirectByMatter = localStorage.getItem('@Gojur:matterRedirect')
     if (redirectByMatter == "S") {
       setMatterRedirect(true)
-      //setMatterFileId(localStorage.getItem('@Gojur:matterId'))  
-      //localStorage.removeItem('@Gojur:matterId')
       localStorage.removeItem('@Gojur:matterRedirect')
-
     }
 
-    if (localStorage.getItem('@Gojur:matterId'))
-    {
+    if (localStorage.getItem('@Gojur:matterId')) {
       setMatterFileId(localStorage.getItem('@Gojur:matterId'))
       localStorage.removeItem('@Gojur:matterId')
     }
@@ -101,15 +116,11 @@ export default function PainelWorkflows() {
     const redirectByCustomer = localStorage.getItem('@Gojur:customerRedirect')
     if (redirectByCustomer == "S") {
       setCustomerRedirect(true)
-      //setCustomerFileId(localStorage.getItem('@Gojur:customerId'))  
-      //localStorage.removeItem('@Gojur:customerId')  
       localStorage.removeItem('@Gojur:customerRedirect')
     }
 
-    if (localStorage.getItem('@Gojur:customerId'))
-    {
-      setCustomerFileId(localStorage.getItem('@Gojur:customerId')) 
-      //localStorage.removeItem('@Gojur:customerId')  
+    if (localStorage.getItem('@Gojur:customerId')) {
+      setCustomerFileId(localStorage.getItem('@Gojur:customerId'))
     }
 
     const redirectByPublication = localStorage.getItem('@Gojur:publicationRedirect')
@@ -135,86 +146,86 @@ export default function PainelWorkflows() {
 
 
   useEffect(() => {
-       
-        const matterId = matterFileId;
-        
-        if (matterId && matterId !== "null" && matterId.trim() !== "") {
-    
-          const loadProcess = async () => {
-            try {
-    
-              const responseMatter = await api.post('/Processo/SelecionarProcesso', {
-                matterId: matterId,
-                token: token,
-                companyId: localStorage.getItem('@GoJur:companyId'),
-                apiKey: localStorage.getItem('@GoJur:apiKey')
-              })
-                .then(response => {
-                  const matterType = response.data.typeAdvisorId == null ? 'legal' : 'advisory'
-                  const url = `/matter/edit/${matterType}/${matterId}`
-                  setRedirectLink(url);
-                  setCompleteLink(true);
-        
-                  const title = `${response.data.matterNumber} - ${response.data.matterFolder} - ${response.data.matterCustomerDesc} - ${response.data.matterOppossingDesc}`;
-       
-                  setProcessTitle(title)
 
-                  const newFilters = { ...filters, processo: matterId };
-                  setFilters(newFilters);
-                  LoadWorkflow('initialize', newFilters);
-                        
-                })
-    
-            } catch (err) {
-              console.error('Erro ao carregar processo:', err);
-            }
-          };
-    
-          loadProcess();
-        }
-        else {
-          
-        }
-    
-      }, [matterFileId]);
-  
+    const matterId = matterFileId;
 
-   useEffect(() => {
-    
-    if(! localStorage.getItem('@Gojur:customerId')) return;
-      
+    if (matterId && matterId !== "null" && matterId.trim() !== "") {
+
+      const loadProcess = async () => {
+        try {
+
+          const responseMatter = await api.post('/Processo/SelecionarProcesso', {
+            matterId: matterId,
+            token: token,
+            companyId: localStorage.getItem('@GoJur:companyId'),
+            apiKey: localStorage.getItem('@GoJur:apiKey')
+          })
+            .then(response => {
+              const matterType = response.data.typeAdvisorId == null ? 'legal' : 'advisory'
+              const url = `/matter/edit/${matterType}/${matterId}`
+              setRedirectLink(url);
+              setCompleteLink(true);
+
+              const title = `${response.data.matterNumber} - ${response.data.matterFolder} - ${response.data.matterCustomerDesc} - ${response.data.matterOppossingDesc}`;
+
+              setProcessTitle(title)
+
+              const newFilters = { ...filters, processo: matterId };
+              setFilters(newFilters);
+              LoadWorkflow('initialize', newFilters);
+
+            })
+
+        } catch (err) {
+          console.error('Erro ao carregar processo:', err);
+        }
+      };
+
+      loadProcess();
+    }
+    else {
+
+    }
+
+  }, [matterFileId]);
+
+
+  useEffect(() => {
+
+    if (!localStorage.getItem('@Gojur:customerId')) return;
+
     if (customerList.length === 0) return;
 
-       RefreshPersonList(localStorage.getItem('@Gojur:filterCustomer')); 
+    RefreshPersonList(localStorage.getItem('@Gojur:filterCustomer'));
 
-      const storedCustomerId = localStorage.getItem('@Gojur:customerId');
-  
-      if (storedCustomerId) {
-        const selected = customerList.find(
-          (c) => String(c.id) === String(storedCustomerId)
-        );
-  
-        setCustomer(selected ? { value: selected.id, label: selected.label } : null);
-        
-        if (selected) {
-          //alert(localStorage.getItem('@Gojur:customerId'));
-          const newFilters = { ...filters, cliente: localStorage.getItem('@Gojur:customerId') };
-          setFilters(newFilters);
+    const storedCustomerId = localStorage.getItem('@Gojur:customerId');
 
-           LoadWorkflow('initialize', newFilters);
+    if (storedCustomerId) {
+      const selected = customerList.find(
+        (c) => String(c.id) === String(storedCustomerId)
+      );
 
-          localStorage.removeItem('@Gojur:customerId');
-    
-        }
+      setCustomer(selected ? { value: selected.id, label: selected.label } : null);
+
+      if (selected) {
+        //alert(localStorage.getItem('@Gojur:customerId'));
+        const newFilters = { ...filters, cliente: localStorage.getItem('@Gojur:customerId') };
+        setFilters(newFilters);
+
+        LoadWorkflow('initialize', newFilters);
+
+        localStorage.removeItem('@Gojur:customerId');
+
       }
-    }, [customerList]);
+    }
+  }, [customerList]);
 
 
-useEffect(() => {
-  const tag = localStorage.getItem('@Gojur:notificationTag');
-  setNotificationTag(tag);
+  useEffect(() => {
+    const tag = localStorage.getItem('@Gojur:notificationTag');
+    setNotificationTag(tag);
 
-}, []);
+  }, []);
 
 
   const LoadUserList = useCallback(async () => {
@@ -342,13 +353,21 @@ useEffect(() => {
 
 
   const handleSelectWorkflow = useCallback((workflowExecId: Number, customer: String) => {
+
     localStorage.setItem('@Gojur:customer', customer);
 
-    localStorage.setItem('@Gojur:matterId', matterFileId ); 
-    localStorage.setItem('@Gojur:customerId', customerFileId );
-    
-    localStorage.setItem('@Gojur:filterMatterId', matterFileId ); 
-    localStorage.setItem('@Gojur:filterCustomerId', customerFileId );
+    if (customerFileId && customerFileId.trim() !== '' && customerFileId !== 'null') {
+      localStorage.setItem('@Gojur:filterCustomerId', customerFileId);
+      localStorage.setItem('@Gojur:customerId', customerFileId);
+    }
+    else {
+      localStorage.removeItem('@Gojur:filterCustomerId');
+      localStorage.removeItem('@Gojur:customerId');
+    }
+
+    localStorage.setItem('@Gojur:matterId', matterFileId);
+    localStorage.setItem('@Gojur:filterMatterId', matterFileId);
+
 
     history.push('../workflowexec/edit/' + workflowExecId);
 
@@ -396,17 +415,17 @@ useEffect(() => {
   ];
 
 
-/*
-  useEffect(() => {
-    const setup = async () => {
-      await LoadWorkflow('initialize');
-
-    };
-
-    setup();
-
-  }, []);
-*/
+  /*
+    useEffect(() => {
+      const setup = async () => {
+        await LoadWorkflow('initialize');
+  
+      };
+  
+      setup();
+  
+    }, []);
+  */
 
 
   const LoadWorkflow = useCallback(
@@ -435,11 +454,11 @@ useEffect(() => {
         if (customFilters.inicio)
           filterParams.push(`startDate=${customFilters.inicio}`);
 
-        if ( localStorage.getItem('@Gojur:followUpId') ){
+        if (localStorage.getItem('@Gojur:followUpId')) {
           filterParams.push(`followUpId=${localStorage.getItem('@Gojur:followUpId')}`);
         }
-      
-        if ( localStorage.getItem('@Gojur:publicationId') ){
+
+        if (localStorage.getItem('@Gojur:publicationId')) {
           filterParams.push(`publicationId=${localStorage.getItem('@Gojur:publicationId')}`);
         }
 
@@ -524,6 +543,32 @@ useEffect(() => {
   };
 
 
+  function filterMatterAndCustomerToLocalStorage(
+    matterFileId: string,
+    customerFileId: string
+  ) {
+    // Verifica se o matterFileId é válido
+    if (matterFileId && matterFileId.trim() !== '' && matterFileId !== 'null') {
+      localStorage.setItem('@Gojur:matterId', matterFileId);
+      localStorage.setItem('@Gojur:filterMatterId', matterFileId);
+
+      localStorage.removeItem('@Gojur:customerId', customerFileId);
+      localStorage.removeItem('@Gojur:filterCustomerId', customerFileId);
+
+    }
+
+    // Verifica se o customerFileId é válido
+    if (customerFileId && customerFileId.trim() !== '' && customerFileId !== 'null') {
+      localStorage.setItem('@Gojur:customerId', customerFileId);
+      localStorage.setItem('@Gojur:filterCustomerId', customerFileId);
+
+      localStorage.removeItem('@Gojur:matterId', matterFileId);
+      localStorage.removeItem('@Gojur:filterMatterId', matterFileId);
+
+    }
+  }
+
+
   const handleList = async () => {
     try {
       await api.post('/Parametro/Salvar', {
@@ -534,13 +579,21 @@ useEffect(() => {
       });
 
       selectProcess(null)
-      
-      localStorage.setItem('@Gojur:matterId', matterFileId ); 
-      localStorage.setItem('@Gojur:customerId', customerFileId );
-      
-      localStorage.setItem('@Gojur:filterMatterId', matterFileId ); 
-      localStorage.setItem('@Gojur:filterCustomerId', customerFileId );
-      
+
+      /*
+      if(matterFileId.trim() !== '' && matterFileId !== 'null' ){
+       localStorage.setItem('@Gojur:matterId', matterFileId ); 
+       localStorage.setItem('@Gojur:filterMatterId', matterFileId ); 
+      }
+
+      if(customerFileId.trim() !== '' && customerFileId !== 'null'){
+        localStorage.setItem('@Gojur:customerId', customerFileId );
+        localStorage.setItem('@Gojur:filterCustomerId', customerFileId );
+      }
+      */
+
+      filterMatterAndCustomerToLocalStorage(matterFileId, customerFileId);
+
       if (matterRedirect == true) {
         localStorage.setItem('@Gojur:matterRedirect', "S")
       }
@@ -573,15 +626,29 @@ useEffect(() => {
 
       console.log('Filtros atualizados:', newFilters);
 
+      let carregar = false;
+
+      if ( ( !localStorage.getItem('@Gojur:matterId') || localStorage.getItem('@Gojur:matterId') === null ) &&
+        ( !localStorage.getItem('@Gojur:customerId') || localStorage.getItem('@Gojur:customerId') === null ) 
+        //( !localStorage.getItem('@Gojur:followUpId') || localStorage.getItem('@Gojur:followUpId') === null ) &&
+        //( !localStorage.getItem('@Gojur:publicationId') || localStorage.getItem('@Gojur:publicationId') === null ) 
+      )  
+      {
+        carregar = true;  
+      }
+
       await Initialize();
 
-      await LoadWorkflow('initialize', newFilters);
+      //alert(matterFileId==null);
 
-    };
+      if ( carregar )
+        await LoadWorkflow('initialize', newFilters);
+      };
 
     setup();
 
   }, [workflowExecStartDate]);
+
 
 
 
@@ -606,12 +673,8 @@ useEffect(() => {
   }
 
   const handleWorkflow = () => {
-    
-    localStorage.setItem('@Gojur:matterId', matterFileId ); 
-    localStorage.setItem('@Gojur:customerId', customerFileId );
-    
-    localStorage.setItem('@Gojur:filterMatterId', matterFileId ); 
-    localStorage.setItem('@Gojur:filterCustomerId', customerFileId );
+
+    filterMatterAndCustomerToLocalStorage(matterFileId, customerFileId);
 
     history.push('/WorkflowExec/edit/0')
 
@@ -667,7 +730,7 @@ useEffect(() => {
               className="buttonClick"
               title="Clique para incluir um Workflow"
               type="submit"
-              onClick={() =>handleWorkflow()}
+              onClick={() => handleWorkflow()}
             >
               <FaFileAlt />
               Iniciar Novo Workflow
@@ -739,7 +802,7 @@ useEffect(() => {
 
             <div className="section">
               <label>Cliente</label>
-           
+
               <Select
                 isClearable
                 isSearchable
@@ -821,16 +884,16 @@ useEffect(() => {
 
             </div>
 
-          {notificationTag && (
-            <div className="section">
-              <label>Notificação</label>
-             
-             <label>
-                <p>{notificationTag}</p>
-             </label>
-             
-            </div>
-          )}
+            {notificationTag && (
+              <div className="section">
+                <label>Notificação</label>
+
+                <label>
+                  <p>{notificationTag}</p>
+                </label>
+
+              </div>
+            )}
 
           </Sidebar>
 
@@ -852,7 +915,7 @@ useEffect(() => {
                           {item.name}
                         </div>
 
-                        <BusinessCard key={item.workflowexecId} onClick={() => handleSelectWorkflow(item.workflowexecId, item.customer )}>
+                        <BusinessCard key={item.workflowexecId} onClick={() => handleSelectWorkflow(item.workflowexecId, item.customer)}>
 
                           <p>
                             <label>Processo:</label> {item.matter}

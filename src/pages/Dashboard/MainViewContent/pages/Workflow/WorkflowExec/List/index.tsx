@@ -130,6 +130,7 @@ const WorkflowList = () => {
       localStorage.removeItem('@Gojur:customerRedirect') 
     }
  
+   
     if(localStorage.getItem('@Gojur:customerId'))
     {
       setCustomerFileId(localStorage.getItem('@Gojur:customerId'))
@@ -163,7 +164,6 @@ useEffect(() => {
     setIsEndPage(false);
 
     if (!matterRedirect && !customerRedirect && !calendarRedirect) return;
-    
     await LoadWorkflow('initialize');
   };
 
@@ -175,7 +175,10 @@ useEffect(() => {
    
     if (matterRedirect ==false && customerRedirect == false && calendarRedirect == false) return;
     else
-      LoadWorkflow();
+    {
+      //LoadWorkflow();
+    }
+
   }, [pageNumber, captureText, captureType])
 
 
@@ -533,8 +536,12 @@ const CustomCell = (props) => {
     if (props.column.name === 'edit') {
       localStorage.setItem('@Gojur:customer',props.row.customer);
 
+      /*
       localStorage.setItem('@Gojur:filterMatterId', matterFileId ); 
       localStorage.setItem('@Gojur:filterCustomerId', customerFileId );
+      */
+
+      filterMatterAndCustomerToLocalStorage(matterFileId, customerFileId);
 
       handleEdit(props.row.workflowexecId)
     }
@@ -641,14 +648,42 @@ const CustomCell = (props) => {
   }
 
 
+  function filterMatterAndCustomerToLocalStorage(
+  matterFileId: string,
+  customerFileId: string
+) {
+  // Verifica se o matterFileId é válido
+  if (matterFileId && matterFileId.trim() !== '' && matterFileId !== 'null') {
+    localStorage.setItem('@Gojur:matterId', matterFileId);
+    localStorage.setItem('@Gojur:filterMatterId', matterFileId);
+
+    localStorage.removeItem('@Gojur:customerId', customerFileId);
+    localStorage.removeItem('@Gojur:filterCustomerId', customerFileId);
+    
+  }
+
+  // Verifica se o customerFileId é válido
+  if (customerFileId && customerFileId.trim() !== '' && customerFileId !== 'null') {
+    localStorage.setItem('@Gojur:customerId', customerFileId);
+    localStorage.setItem('@Gojur:filterCustomerId', customerFileId);
+
+    localStorage.removeItem('@Gojur:matterId', matterFileId);
+    localStorage.removeItem('@Gojur:filterMatterId', matterFileId);
+
+  }
+}
+
   const handleWorkflow = () => {
 
+    /*
     localStorage.setItem('@Gojur:matterId', matterFileId ); 
     localStorage.setItem('@Gojur:customerId', customerFileId ); 
 
     localStorage.setItem('@Gojur:filterMatterId', matterFileId ); 
     localStorage.setItem('@Gojur:filterCustomerId', customerFileId );
+    */
 
+    filterMatterAndCustomerToLocalStorage(matterFileId, customerFileId);
     history.push('/WorkflowExec/edit/0')
 
   };
@@ -664,11 +699,15 @@ const handleWorkflowKanban = async () => {
       token,
     });
 
+    /*
     localStorage.setItem('@Gojur:matterId', matterFileId ); 
     localStorage.setItem('@Gojur:customerId', customerFileId ); 
 
     localStorage.setItem('@Gojur:filterMatterId', matterFileId ); 
     localStorage.setItem('@Gojur:filterCustomerId', customerFileId );
+    */
+
+    filterMatterAndCustomerToLocalStorage(matterFileId, customerFileId);
 
     if (matterRedirect === true) {
       localStorage.setItem('@Gojur:matterRedirect', 'S');
@@ -789,8 +828,9 @@ const handleWorkflowKanban = async () => {
 
         <ConfirmBoxModal
           title="Excluir Registro"
+          useCheckBoxConfirm
           caller="WorkflowList"
-          message="Confirma a exclusão deste workflow ?"
+          message="Confirma a exclusão deste workflow ? Todos os compromissos associados serão excluidos"
         />
 
       )}

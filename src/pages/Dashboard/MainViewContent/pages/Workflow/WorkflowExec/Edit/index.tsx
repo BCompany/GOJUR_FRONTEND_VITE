@@ -36,7 +36,7 @@ import GridSelectProcess from 'pages/Dashboard/MainViewContent/pages/Dashboard/r
 import { IMatterData } from 'pages/Dashboard/MainViewContent/pages/Interfaces/IMatter';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import { AutoCompleteSelect, Overlay } from 'Shared/styles/GlobalStyle';
-
+import { useAuth } from 'context/AuthContext';
 
 interface IOption {
   value: number;
@@ -55,7 +55,7 @@ export interface IDefaultsProps {
 
 export default function WorkflowPage() {
 
-
+  const { signOut } = useAuth();
   const history = useHistory();
   const { addToast } = useToast();
   const [confirmDeleteModal, setConfirmDeleteModal] = useState<boolean>(false);
@@ -330,7 +330,17 @@ useEffect(() => {
       return options;
 
     } catch (err) {
-      console.error(err);
+      //console.error(err);
+
+         if (err.response.data.statusCode == 1002) {
+        addToast({
+          type: 'info',
+          title: 'Permissão negada',
+          description: 'Seu usuário não tem permissão para acessar esse módulo, contate o administrador do sistema',
+        });
+        signOut()
+      }
+
     }
   }, []);
 
@@ -454,6 +464,15 @@ useEffect(() => {
           title: "Falha ao Executar Workflow",
           description: message
         })
+      }
+
+      if (err.response.data.statusCode == 1002) {
+        addToast({
+          type: 'info',
+          title: 'Permissão negada',
+          description: 'Seu usuário não tem permissão para acessar esse módulo, contate o administrador do sistema',
+        });
+        signOut()
       }
 
       //return [];
@@ -1117,13 +1136,19 @@ useEffect(() => {
 
   const handleClose = () => {
     //localStorage.removeItem('@Gojur:customer');
-    
-    localStorage.setItem('@Gojur:matterId',matterFileId)
-    localStorage.setItem('@Gojur:customerId',customerFileId)  
+
+    if(matterFileId)
+      localStorage.setItem('@Gojur:matterId',matterFileId)
+
+    if(customerFileId)
+      localStorage.setItem('@Gojur:customerId',customerFileId)  
+ 
 
     if (customer)
+    {
       localStorage.setItem('@Gojur:customer',customer.label)  
-    
+    }
+
     if(workflowView == "LISTA")
       history.push('/workflowexec/list')
     else if (workflowView == "KANBAN")
@@ -1566,6 +1591,8 @@ useEffect(() => {
 
                               <span
                                 style={{
+                                  width: "100px",
+                                  textAlign: "center",    
                                   fontSize: "0.75rem",
                                   padding: "0.25rem 0.5rem",
                                   borderRadius: "0px",
@@ -1661,8 +1688,9 @@ useEffect(() => {
       {confirmDeleteModal && (
         <ConfirmBoxModal
           title="Excluir Registro"
+           useCheckBoxConfirm
           caller="workflowDelete"
-          message="Confirma a exclusão deste workflow ?"
+          message="Confirma a exclusão deste workflow ? Todos os compromissos associados serão excluidos"
         />
       )}
 
