@@ -1252,7 +1252,11 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
     localStorage.removeItem('@Gojur:publicationId');
     localStorage.removeItem('@Gojur:followUpId');
     localStorage.removeItem('@Gojur:notificationTag');
+    localStorage.removeItem('@Gojur:filterCustomerId')
     localStorage.removeItem('@Gojur:filterCustomer')
+    localStorage.removeItem('@Gojur:customer')
+    localStorage.removeItem('@Gojur:filterMatterId')
+
 
     if (workflowView == "LISTA" )
       history.push(`/workflowexec/list`)

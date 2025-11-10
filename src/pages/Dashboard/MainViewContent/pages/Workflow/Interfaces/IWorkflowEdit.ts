@@ -84,7 +84,9 @@ export interface ITriggerAction {
   remindersList: IReminder[];
   responsibleList: IResponsible[];  
   sharedList: any[];
-  matter: any;             
+  matter:{
+    matterId: number;
+  };             
   serieRecurrenceChange: any;
   deadLineCalculatorJson: any;
   recurrentId: number;

@@ -5,7 +5,7 @@
 /* eslint-disable no-return-assign */
 /* eslint-disable no-alert */
 import React, { useCallback, useEffect, useState, UIEvent, useRef } from 'react';
-import { FiEdit, FiTrash } from 'react-icons/fi'
+import { FiEdit, FiTrash, FiArrowLeft } from 'react-icons/fi'
 import { FaFileAlt } from 'react-icons/fa'
 import { Grid, Table } from '@devexpress/dx-react-grid-material-ui';
 import { GridContainer } from 'Shared/styles/GlobalStyle';
@@ -366,6 +366,11 @@ const WorkflowList = () => {
     )
   }
 
+const handleCancel = () => {
+    
+    history.push('../calendar')
+
+}
 
   // HTML CODE
   return (
@@ -388,7 +393,7 @@ const WorkflowList = () => {
               <div style={{float:'left', marginRight:'10px'}}>
                 
                   <button 
-                    className="buttonLinkClick" 
+                    className="buttonClick" 
                     title="Clique para incluir um Workflow"
                     type="submit"
                    onClick={() => history.push('/Workflow/edit/0')}
@@ -398,6 +403,19 @@ const WorkflowList = () => {
                   </button>
             
               </div>
+
+              <div style={{ float: 'right'}}>
+                <button
+                  className="buttonClick"
+                  title="Clique para retornar"
+                  type="submit"
+                  onClick={handleCancel}
+                >
+                  <FiArrowLeft />
+                  Retornar
+                </button>
+            </div>
+            
             </div>  
           </div>
 

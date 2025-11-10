@@ -699,14 +699,6 @@ const handleWorkflowKanban = async () => {
       token,
     });
 
-    /*
-    localStorage.setItem('@Gojur:matterId', matterFileId ); 
-    localStorage.setItem('@Gojur:customerId', customerFileId ); 
-
-    localStorage.setItem('@Gojur:filterMatterId', matterFileId ); 
-    localStorage.setItem('@Gojur:filterCustomerId', customerFileId );
-    */
-
     filterMatterAndCustomerToLocalStorage(matterFileId, customerFileId);
 
     if (matterRedirect === true) {
@@ -725,7 +717,9 @@ const handleWorkflowKanban = async () => {
   }
 };
 
-
+  const handleConfigWorkflow = async () => {
+      history.push('/workflow/list')
+  };
 
   // HTML CODE
   return (
@@ -746,6 +740,14 @@ const handleWorkflowKanban = async () => {
 
             
             <div style={{ float: 'right', marginRight: '185px' }}>
+
+              <div style={{ float: 'left', marginRight: '10px' }}>
+                  <button type="button" className='buttonClick' onClick={() => handleConfigWorkflow()}>
+                    Config. Workflow
+                  </button>
+
+              </div>
+
               <div style={{ float: 'left', marginRight: '10px' }}>
                 <button
                   className="buttonClick"

@@ -580,18 +580,6 @@ export default function PainelWorkflows() {
 
       selectProcess(null)
 
-      /*
-      if(matterFileId.trim() !== '' && matterFileId !== 'null' ){
-       localStorage.setItem('@Gojur:matterId', matterFileId ); 
-       localStorage.setItem('@Gojur:filterMatterId', matterFileId ); 
-      }
-
-      if(customerFileId.trim() !== '' && customerFileId !== 'null'){
-        localStorage.setItem('@Gojur:customerId', customerFileId );
-        localStorage.setItem('@Gojur:filterCustomerId', customerFileId );
-      }
-      */
-
       filterMatterAndCustomerToLocalStorage(matterFileId, customerFileId);
 
       if (matterRedirect == true) {
@@ -610,6 +598,11 @@ export default function PainelWorkflows() {
       console.error('Erro ao salvar parâmetro:', error);
     }
 
+  };
+
+
+   const handleConfigWorkflow = async () => {
+      history.push('/workflow/list')
   };
 
   const handleWorkflowExecStartDate = useCallback((event: ChangeEvent<HTMLInputElement>) => {
@@ -690,7 +683,7 @@ export default function PainelWorkflows() {
 
         <Header>
           <div>
-            <h1>Painel de Workflows</h1>
+            <h3>Painel de Workflows</h3>
           </div>
           <div className="right">
 
@@ -721,6 +714,10 @@ export default function PainelWorkflows() {
                 style={{ cursor: 'pointer', fontSize: '20px' }}
               />
             </div>
+
+            <button type="button" className='buttonClick' onClick={() => handleConfigWorkflow()}>
+              Config. Workflow
+            </button>
 
             <button type="button" className='buttonClick' onClick={() => handleList()}>
               Alternar: Kanban / Lista

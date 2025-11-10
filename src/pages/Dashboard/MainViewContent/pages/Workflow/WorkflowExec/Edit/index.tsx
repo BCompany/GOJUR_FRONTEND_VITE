@@ -109,14 +109,14 @@ export default function WorkflowPage() {
 
 
 
-useEffect(() => {
-  const tag = localStorage.getItem('@Gojur:notificationTag');
-  setNotificationTag(tag);
+  useEffect(() => {
+    const tag = localStorage.getItem('@Gojur:notificationTag');
+    setNotificationTag(tag);
 
-  setMatterFileId(localStorage.getItem('@Gojur:filterMatterId'))
-  setCustomerFileId(localStorage.getItem('@Gojur:filterCustomerId'))
+    setMatterFileId(localStorage.getItem('@Gojur:filterMatterId'))
+    setCustomerFileId(localStorage.getItem('@Gojur:filterCustomerId'))
 
-}, []);
+  }, []);
 
 
   useEffect(() => {
@@ -129,7 +129,7 @@ useEffect(() => {
 
           let id;
 
-          if(workflowExecId)
+          if (workflowExecId)
             id = workflowExecId;
           else
             id = pathname.substr(19)
@@ -284,10 +284,11 @@ useEffect(() => {
 
 
   useEffect(() => {
+  
     if (matterSelected !== null && processTitle === 'Associar Processo') {
 
       setProcessTitle(`${matterSelected.matterNumber} - ${(matterSelected.matterFolder != null ? "-" : "")} ${matterSelected.matterCustomerDesc} - ${matterSelected.matterOppossingDesc}`,);
-      
+
       api.post<IMatterData>('/Processo/SelecionarProcesso', {
         matterId: matterSelected.matterId,
         token: userToken,
@@ -332,7 +333,7 @@ useEffect(() => {
     } catch (err) {
       //console.error(err);
 
-         if (err.response.data.statusCode == 1002) {
+      if (err.response.data.statusCode == 1002) {
         addToast({
           type: 'info',
           title: 'Permissão negada',
@@ -487,17 +488,16 @@ useEffect(() => {
   const handleSimularWorkflow = async () => {
     try {
       setTriggerActionsMap({});
-      
-      if(Object.keys(triggerDates).length == 0 )
-      {
+
+      if (Object.keys(triggerDates).length == 0) {
         addToast({
-                type: "info",
-                title: "Campos Obrigatórios",
-                description: "Selecione o workflow, e preencha todas as datas antes de continuar"
-              })
+          type: "info",
+          title: "Campos Obrigatórios",
+          description: "Selecione o workflow, e preencha todas as datas antes de continuar"
+        })
         return;
       }
-                
+
 
 
       for (const triggerIdStr of Object.keys(triggerDates)) {
@@ -506,7 +506,7 @@ useEffect(() => {
 
         //if (!actions || actions.length === 0) {
         if (actions === "error") {
-     
+
           return;
         }
 
@@ -629,7 +629,7 @@ useEffect(() => {
     let matterId;
     if (processTitle !== 'Associar Processo') {
 
-      const storedIdFromLocalStorage = localStorage.getItem('@Gojur:matterId');
+      const storedIdFromLocalStorage = localStorage.getItem('@Gojur:matterId') ?? '';
 
       if (storedIdFromLocalStorage.length == 0) {
 
@@ -662,7 +662,41 @@ useEffect(() => {
       }
     }
 
-    const allActions = Object.values(triggerActionsMap).flat();
+    //const allActions = Object.values(triggerActionsMap).flat();
+
+    const followUpIdFromStorage = localStorage.getItem('@Gojur:followUpId');
+    const publicationIdFromStorage = localStorage.getItem('@Gojur:publicationId');
+
+
+    const allActions = Object.values(triggerActionsMap)
+      .flat()
+      .map(action => {
+        const updatedAction = { ...action };
+
+        if (matterId != null && matterId !== "null") {
+          updatedAction.matter = {
+            ...action.matter,
+            matterId: Number(matterId),
+          };
+        }
+
+        if (notificationTag != null && notificationTag !== "null") {
+          updatedAction.matterEventId =
+            (followUpIdFromStorage != null && followUpIdFromStorage !== "null")
+              ? Number(followUpIdFromStorage)
+              : null;
+
+          updatedAction.publicationId =
+            (publicationIdFromStorage != null && publicationIdFromStorage !== "null")
+              ? Number(publicationIdFromStorage)
+              : null;
+        }
+
+        return updatedAction;
+      });
+
+
+
 
     const today = new Date();
     const todayISO = today.toISOString().split("T")[0];
@@ -955,7 +989,7 @@ useEffect(() => {
 
 
   useEffect(() => {
-
+  
     if (workflowExec?.matterId) {
       const loadProcess = async () => {
         try {
@@ -1103,7 +1137,12 @@ useEffect(() => {
       })
 
       setIsDeleting(false)
-      history.push('/workflowexec/list')
+      //history.push('/workflowexec/list')
+
+      if (workflowView == "LISTA")
+        history.push('/workflowexec/list')
+      else if (workflowView == "KANBAN")
+        history.push('/workflowexec/kanban')
 
       //setCurrentCustomerId(0)
       setConfirmDeleteModal(false)
@@ -1117,7 +1156,7 @@ useEffect(() => {
         description: err.response.data.Message
       })
     }
-  }, [addToast, history]);
+  }, [addToast, history, workflowView]);
 
 
 
@@ -1136,20 +1175,23 @@ useEffect(() => {
 
   const handleClose = () => {
     //localStorage.removeItem('@Gojur:customer');
+   selectProcess(null);
 
-    if(matterFileId)
-      localStorage.setItem('@Gojur:matterId',matterFileId)
-
-    if(customerFileId)
-      localStorage.setItem('@Gojur:customerId',customerFileId)  
- 
-
-    if (customer)
+    if (matterFileId)
+      localStorage.setItem('@Gojur:matterId', matterFileId)
+    
+    
+    if (customerFileId)
     {
-      localStorage.setItem('@Gojur:customer',customer.label)  
+      localStorage.setItem('@Gojur:customerId', customerFileId)
+    }
+    
+
+    if (customer) {
+      localStorage.setItem('@Gojur:customer', customer.label)
     }
 
-    if(workflowView == "LISTA")
+    if (workflowView == "LISTA")
       history.push('/workflowexec/list')
     else if (workflowView == "KANBAN")
       history.push('/workflowexec/kanban')
@@ -1161,7 +1203,7 @@ useEffect(() => {
     LoadDefaultProps();
 
   }, [workflowView]);
-  
+
   const LoadDefaultProps = async () => {
     try {
 
@@ -1170,7 +1212,7 @@ useEffect(() => {
       });
 
       const workflowViewDefault = response.data.find(item => item.id === 'defaultWorkflowParameter' || item.id === 'adm')
-  
+
       // // default view workflow
       if (workflowViewDefault) {
         setWorkflowView(workflowViewDefault.value)
@@ -1310,7 +1352,7 @@ useEffect(() => {
                 </div>
 
 
-               {notificationTag && (
+                {notificationTag && (
                   <div>
                     <label>Notificação</label>
                     <Input
@@ -1592,7 +1634,7 @@ useEffect(() => {
                               <span
                                 style={{
                                   width: "100px",
-                                  textAlign: "center",    
+                                  textAlign: "center",
                                   fontSize: "0.75rem",
                                   padding: "0.25rem 0.5rem",
                                   borderRadius: "0px",
@@ -1611,19 +1653,19 @@ useEffect(() => {
                                   : "Pendente"}
                               </span>
 
-                      
 
-                        {action.eventId > 0 ? (
-                          <p onClick={() => handleClickEdit(action.eventId)} style={{ cursor: "pointer" }}>
-                            <RiCalendarCheckFill />
-                            <span>Evento</span>
-                          </p>
-                        ) : (
-                          <p style={{ cursor: "not-allowed", opacity: 0.5 }}>
-                            <RiCalendarCheckFill />
-                            <span>Evento</span>
-                          </p>
-                        )}  
+
+                              {action.eventId > 0 ? (
+                                <p onClick={() => handleClickEdit(action.eventId)} style={{ cursor: "pointer" }}>
+                                  <RiCalendarCheckFill />
+                                  <span>Evento</span>
+                                </p>
+                              ) : (
+                                <p style={{ cursor: "not-allowed", opacity: 0.5 }}>
+                                  <RiCalendarCheckFill />
+                                  <span>Evento</span>
+                                </p>
+                              )}
 
 
                             </div>
@@ -1688,7 +1730,7 @@ useEffect(() => {
       {confirmDeleteModal && (
         <ConfirmBoxModal
           title="Excluir Registro"
-           useCheckBoxConfirm
+          useCheckBoxConfirm
           caller="workflowDelete"
           message="Confirma a exclusão deste workflow ? Todos os compromissos associados serão excluidos"
         />
