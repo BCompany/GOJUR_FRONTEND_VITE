@@ -669,7 +669,7 @@ const PeopleEdit: React.FC = () => {
 
   const handleClose = () => { 
     handleResetStates();
-    history.push(`/People/List`)
+    history.push(`/People`)
   }
 
 

@@ -44,7 +44,7 @@ const HeaderPageOptionsMenu = () => {
     handleIsOpenMenuConfig(true)
     setShowConfig(false)
     handleIsMenuOpen(false)
-    handleRedirect(`/People/List`)
+    handleRedirect(`/People`)
   }, []);
 
 
@@ -81,7 +81,7 @@ const HeaderPageOptionsMenu = () => {
     setShowConfig(false)
     setShowConfigOthers(false)
     handleIsMenuOpen(false)
-    handleRedirect(`/EconomicIndexes/List`)
+    handleRedirect(`/EconomicIndexes`)
   }, []);
 
 

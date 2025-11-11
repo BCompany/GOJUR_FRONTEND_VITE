@@ -271,7 +271,7 @@ const EconomicIndexessEdit: React.FC = () => {
 
   const handleClose = () => { 
     handleResetStates()
-    history.push(`/EconomicIndexes/List`)
+    history.push(`/EconomicIndexes`)
     localStorage.removeItem('@GoJur:IndiceEconomico')
   }
 

@@ -951,8 +951,6 @@ const CustomerConfiguration: React.FC = () => {
         token: localStorage.getItem('@GoJur:token')
       });
 
-      console.log(response.data)
-
       // fill data values
       const newData = response.data.map(
         publications =>
@@ -1819,9 +1817,8 @@ const CustomerConfiguration: React.FC = () => {
         <Table.Cell {...props}>
 
           {String(props.row.description).length >= 200 && (props.row.openMenu == false) && (props.row.tpo_Status == "A") && (
-
             <span title={props.row.description} style={{ color: 'black', fontWeight: 500 }}>
-              {String(props.row.description).substring(0, 199)}
+              <p dangerouslySetInnerHTML={{ __html: String(props.row.description).substring(0, 199) }} />
               ...
               <div>
                 <button
@@ -1834,13 +1831,11 @@ const CustomerConfiguration: React.FC = () => {
                 </button>
               </div>
             </span>
-
           )}
 
           {String(props.row.description).length >= 200 && (props.row.openMenu == false) && (props.row.tpo_Status == "D") && (
-
             <span title={props.row.description} style={{ color: '#a0a0a0' }}>
-              {String(props.row.description).substring(0, 199)}
+              <p dangerouslySetInnerHTML={{ __html: String(props.row.description).substring(0, 199) }} />
               ...
               <div>
                 <button
@@ -1853,13 +1848,11 @@ const CustomerConfiguration: React.FC = () => {
                 </button>
               </div>
             </span>
-
           )}
 
           {String(props.row.description).length >= 200 && (props.row.openMenu == true) && (props.row.tpo_Status == "A") && (
-
             <span style={{ color: 'black', fontWeight: 500 }}>
-              {props.row.description}
+              <p dangerouslySetInnerHTML={{ __html: props.row.description }} />
               <div>
                 <button
                   className="buttonLinkClick buttonInclude"
@@ -1871,13 +1864,11 @@ const CustomerConfiguration: React.FC = () => {
                 </button>
               </div>
             </span>
-
           )}
 
           {String(props.row.description).length >= 200 && (props.row.openMenu == true) && (props.row.tpo_Status == "D") && (
-
             <span style={{ color: '#a0a0a0' }}>
-              {props.row.description}
+              <p dangerouslySetInnerHTML={{ __html: props.row.description }} />
               <div>
                 <button
                   className="buttonLinkClick buttonInclude"
@@ -1889,23 +1880,18 @@ const CustomerConfiguration: React.FC = () => {
                 </button>
               </div>
             </span>
-
           )}
 
           {String(props.row.description).length < 200 && (props.row.tpo_Status == "A") && (
-
             <span style={{ color: 'black', fontWeight: 500 }}>
-              {props.row.description}
+              <p dangerouslySetInnerHTML={{ __html: props.row.description }} />
             </span>
-
           )}
 
           {String(props.row.description).length < 200 && (props.row.tpo_Status == "D") && (
-
             <span style={{ color: '#a0a0a0' }}>
-              {props.row.description}
+              <p dangerouslySetInnerHTML={{ __html: props.row.description }} />
             </span>
-
           )}
 
         </Table.Cell>
