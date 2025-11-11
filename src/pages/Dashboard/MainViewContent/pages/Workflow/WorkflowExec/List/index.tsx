@@ -12,6 +12,7 @@ import { GridContainer } from 'Shared/styles/GlobalStyle';
 import { useDevice } from "react-use-device";
 import { useAuth } from 'context/AuthContext';
 import api from 'services/api';
+import { useSecurity } from 'context/securityContext';
 import { useDefaultSettings } from 'context/defaultSettings';
 import { useModal } from 'context/modal';
 import { useHeader } from 'context/headerContext';
@@ -51,6 +52,7 @@ const WorkflowList = () => {
   const { signOut } = useAuth();
   const { addToast } = useToast();
   const history = useHistory();
+  const {permissionsSecurity, handleValidateSecurity } = useSecurity();
   const scrollRef = useRef<HTMLDivElement>(null);
   const { captureText, captureType, handleLoadingData } = useHeader();
   const { handleUserPermission } = useDefaultSettings();
@@ -79,6 +81,8 @@ const WorkflowList = () => {
   const [displayFilter, setDisplayFilter] = useState('');
   const [filterName, setFilterName] = useState('');
   const [customerList, setCustomerList] = useState<ISelectData[]>([])
+
+  const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKFCD");
 
   const columns = [
     { name: 'name', title: 'Workflow' },
@@ -741,12 +745,14 @@ const handleWorkflowKanban = async () => {
             
             <div style={{ float: 'right', marginRight: '185px' }}>
 
+              {(checkWorkflow) &&(
               <div style={{ float: 'left', marginRight: '10px' }}>
                   <button type="button" className='buttonClick' onClick={() => handleConfigWorkflow()}>
                     Config. Workflow
                   </button>
 
               </div>
+              )}
 
               <div style={{ float: 'left', marginRight: '10px' }}>
                 <button
@@ -832,7 +838,7 @@ const handleWorkflowKanban = async () => {
           title="Excluir Registro"
           useCheckBoxConfirm
           caller="WorkflowList"
-          message="Confirma a exclusão deste workflow ? Todos os compromissos associados serão excluidos"
+          message="Confirma a exclusão deste workflow ? Todos os compromissos associados com este workflow serão excluidos também, sem possibilidade de reversão."
         />
 
       )}

@@ -2,6 +2,8 @@ import React, { ChangeEvent, useCallback, useEffect, useRef, useState, UIEvent }
 import { Container, Header, Grid, Sidebar, Main, Card, CardHeader, KanbanCard, BusinessCard, Process, Content } from './styles';
 import { AppointmentPropsSave, AppointmentPropsDelete, SelectValues, Data, dataProps, LembretesData, MatterData, ModalProps, ResponsibleDTO, Settings, ShareListDTO, userListData } from 'pages/Dashboard/MainViewContent/pages/Interfaces/ICalendar';
 import api from 'services/api';
+import { useAuth } from 'context/AuthContext';
+import { useSecurity } from 'context/securityContext';
 import Select from 'react-select'
 import { ISelectData } from '../../../Interfaces/IMatter';
 import { RiFolder2Fill, RiEraserLine, RiCalendarCheckFill } from 'react-icons/ri';
@@ -34,8 +36,10 @@ export interface IWorkflowData {
 
 export default function PainelWorkflows() {
 
+  const { signOut } = useAuth();
   const history = useHistory();
   const { addToast } = useToast();
+   const {permissionsSecurity, handleValidateSecurity } = useSecurity();
   const [userList, setUserList] = useState<userListData[]>([]);
   const [customerList, setCustomerList] = useState<ISelectData[]>([])
   const [customer, setCustomer] = useState(null);
@@ -61,7 +65,7 @@ export default function PainelWorkflows() {
   const [matterFileId, setMatterFileId] = useState('');
   const [customerFileId, setCustomerFileId] = useState('');
   const [notificationTag, setNotificationTag] = useState(null);
-
+  const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKFCD");
 
   const [filters, setFilters] = useState({
     status: 'Todos',
@@ -504,6 +508,7 @@ export default function PainelWorkflows() {
             description:
               'Seu usuário não tem permissão para acessar esse módulo, contate o administrador do sistema',
           });
+          signOut()
         }
       }
     },
@@ -623,16 +628,12 @@ export default function PainelWorkflows() {
 
       if ( ( !localStorage.getItem('@Gojur:matterId') || localStorage.getItem('@Gojur:matterId') === null ) &&
         ( !localStorage.getItem('@Gojur:customerId') || localStorage.getItem('@Gojur:customerId') === null ) 
-        //( !localStorage.getItem('@Gojur:followUpId') || localStorage.getItem('@Gojur:followUpId') === null ) &&
-        //( !localStorage.getItem('@Gojur:publicationId') || localStorage.getItem('@Gojur:publicationId') === null ) 
       )  
       {
         carregar = true;  
       }
 
       await Initialize();
-
-      //alert(matterFileId==null);
 
       if ( carregar )
         await LoadWorkflow('initialize', newFilters);
@@ -715,9 +716,11 @@ export default function PainelWorkflows() {
               />
             </div>
 
+          {(checkWorkflow) &&(
             <button type="button" className='buttonClick' onClick={() => handleConfigWorkflow()}>
               Config. Workflow
             </button>
+          )}
 
             <button type="button" className='buttonClick' onClick={() => handleList()}>
               Alternar: Kanban / Lista

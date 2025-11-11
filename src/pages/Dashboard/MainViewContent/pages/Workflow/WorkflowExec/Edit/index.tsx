@@ -1732,7 +1732,7 @@ export default function WorkflowPage() {
           title="Excluir Registro"
           useCheckBoxConfirm
           caller="workflowDelete"
-          message="Confirma a exclusão deste workflow ? Todos os compromissos associados serão excluidos"
+          message="Confirma a exclusão deste workflow ? Todos os compromissos associados com este workflow serão excluidos também, sem possibilidade de reversão."
         />
       )}
 
