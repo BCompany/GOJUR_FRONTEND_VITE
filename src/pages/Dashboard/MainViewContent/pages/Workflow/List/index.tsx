@@ -108,7 +108,7 @@ const WorkflowList = () => {
     if (isConfirmMessage && caller=="WorkflowList"){
 
       if (!isDeleting){
-        window.open(`${envProvider.redirectUrl}ReactRequest/Redirect?token=${token}&route=workflow/list`)
+        window.open(`${envProvider.redirectUrl}ReactRequest/Redirect?token=${token}&route=workflow`)
       }
       else{
         handleDeleteWorkflow(currentWorkflowId)
@@ -155,7 +155,8 @@ const WorkflowList = () => {
         addToast({
           type: 'info',
           title: 'Falha ao apagar workflow',
-          description: err.response.data.Message
+          description: "Workflows em execução podem estar associados a esse workflow"
+          //description: err.response.data.Message
         });
   
         setIsDeletingCustomer(false)

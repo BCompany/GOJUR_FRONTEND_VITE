@@ -200,7 +200,7 @@ useEffect(() => {
     if (isConfirmMessage && caller == "WorkflowList") {
  
       if (!isDeleting) {
-        window.open(`${envProvider.redirectUrl}ReactRequest/Redirect?token=${token}&route=workflow/list`)
+        window.open(`${envProvider.redirectUrl}ReactRequest/Redirect?token=${token}&route=workflow`)
       }
       else {
         handleDeleteWorkflow(currentWorkflowExecId)
@@ -722,7 +722,7 @@ const handleWorkflowKanban = async () => {
 };
 
   const handleConfigWorkflow = async () => {
-      history.push('/workflow/list')
+      history.push('/workflow')
   };
 
   // HTML CODE

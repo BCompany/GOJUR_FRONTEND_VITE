@@ -483,8 +483,52 @@ export default function WorkflowPage() {
   };
 
 
+const handleSimularWorkflow = async () => {
+  try {
+    setTriggerActionsMap({});
 
+    if (Object.keys(triggerDates).length === 0) {
+      addToast({
+        type: "info",
+        title: "Campos Obrigatórios",
+        description: "Selecione o workflow, e preencha todas as datas antes de continuar"
+      });
+      return;
+    }
 
+    for (const triggerIdStr of Object.keys(triggerDates)) {
+      const triggerId = Number(triggerIdStr);
+      const actions = await fetchTriggerActions(triggerId);
+
+      if (actions === "error") return;
+
+  
+      const invalidSubjects: number[] = [];
+      actions.forEach((action: ITriggerAction) => {
+        const label = getSubjectLabel(action.subjectId);
+        if (label.startsWith("ID") && label.includes("não encontrado")) {
+          invalidSubjects.push(action.subjectId);
+        }
+      });
+
+      if (invalidSubjects.length > 0) {
+        addToast({
+          type: "info",
+          title: "Assunto não encontrado",
+          description: `Os seguinte Assunto não foram encontrados: ${invalidSubjects.join(", ")}. Entre em configuração de Workflow e atribua um assunto para a ação`
+        });
+      }
+
+      setTriggerActionsMap((prev) => ({ ...prev, [triggerId]: actions }));
+    }
+
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+};
+
+/*
   const handleSimularWorkflow = async () => {
     try {
       setTriggerActionsMap({});
@@ -519,6 +563,8 @@ export default function WorkflowPage() {
     }
   };
 
+*/
+
   const LoadSubject = useCallback(async () => {
     try {
 
@@ -549,8 +595,9 @@ export default function WorkflowPage() {
     if (!id) return "";
     const subject = optionsSubject.find(s => String(s.id) === String(id));
 
-    if (!subject) return `ID ${id} não encontrado`;
-
+    if (!subject) {
+      return `ID ${id} não encontrado`;
+    }
     const label = subject.label;
     return label.length > maxLength
       ? label.substring(0, maxLength) + "..."

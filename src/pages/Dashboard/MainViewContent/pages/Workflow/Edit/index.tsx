@@ -237,7 +237,7 @@ export default function Workflow() {
 
     } catch (err) {
       setIsLoading(false)
-      history.push('/workflow/list')
+      history.push('/workflowt')
       console.log(err)
     }
   }, [workflowId]);
@@ -563,7 +563,7 @@ export default function Workflow() {
       //setIsInitialize(false);
     } catch (err) {
       setIsLoading(false);
-      history.push('/workflow/list');
+      history.push('/workflow');
       console.log(err);
     }
   }, []);
@@ -697,7 +697,7 @@ export default function Workflow() {
     if (isConfirmMessage && caller == "WorkflowList") {
 
       if (!isDeleting) {
-        window.open(`${envProvider.redirectUrl}ReactRequest/Redirect?token=${token}&route=workflow/list`)
+        window.open(`${envProvider.redirectUrl}ReactRequest/Redirect?token=${token}&route=workflow`)
       }
       else {
         handleDeleteWorkflowGatilho(currentWorkflowId)
@@ -1756,7 +1756,7 @@ export default function Workflow() {
       })
 
       setIsDeleting(false)
-      history.push('/workflow/list')
+      history.push('/workflow')
 
       setCurrentCustomerId(0)
       setConfirmDeleteModal(false)
@@ -1767,7 +1767,8 @@ export default function Workflow() {
       addToast({
         type: "info",
         title: "Falha ao apagar cliente",
-        description: err.response.data.Message
+        description: "Workflows em execução podem estar associados a esse workflow"
+        //description: err.response.data.Message
       })
     }
   }, [addToast, history]);
@@ -1784,7 +1785,7 @@ export default function Workflow() {
 
             <button
               type='button'
-              onClick={() => history.push('/workflow/list')}
+              onClick={() => history.push('/workflow')}
             >
               <RiCloseLine />
               Fechar
@@ -2291,7 +2292,7 @@ export default function Workflow() {
                   </button>
 
 
-                  <button className="buttonClick" type="button" onClick={() => history.push('/workflow/list')}>
+                  <button className="buttonClick" type="button" onClick={() => history.push('/workflow')}>
                     <MdBlock />
                     Fechar
                   </button>

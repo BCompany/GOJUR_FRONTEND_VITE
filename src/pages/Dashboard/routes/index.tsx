@@ -125,7 +125,7 @@ const Routes: React.FC = () => {
       <Route path="/user/:id" component={CreateUser} isPrivate />
       <Route path="/customer/list" exact component={Cliente} isPrivate />
       
-      <Route path="/workflow/list" exact component={Workflow} isPrivate />
+      <Route path="/workflow" exact component={Workflow} isPrivate />
       <Route path="/workflow/edit/:id" component={CreateWorkflow} isPrivate />
       <Route path="/workflowexec/list" exact component={WorkflowExec} isPrivate />
       <Route path="/workflowexec/edit/:id" component={CreateWorkflowExec} isPrivate />

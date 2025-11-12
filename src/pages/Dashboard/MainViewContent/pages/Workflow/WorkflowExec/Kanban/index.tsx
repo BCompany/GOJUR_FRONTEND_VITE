@@ -607,7 +607,7 @@ export default function PainelWorkflows() {
 
 
    const handleConfigWorkflow = async () => {
-      history.push('/workflow/list')
+      history.push('/workflow')
   };
 
   const handleWorkflowExecStartDate = useCallback((event: ChangeEvent<HTMLInputElement>) => {
