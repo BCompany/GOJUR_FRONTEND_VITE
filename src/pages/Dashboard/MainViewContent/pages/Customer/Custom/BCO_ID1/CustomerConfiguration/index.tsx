@@ -1818,7 +1818,7 @@ const CustomerConfiguration: React.FC = () => {
 
           {String(props.row.description).length >= 200 && (props.row.openMenu == false) && (props.row.tpo_Status == "A") && (
             <span title={props.row.description} style={{ color: 'black', fontWeight: 500 }}>
-              <p dangerouslySetInnerHTML={{ __html: String(props.row.description).substring(0, 199) }} />
+              <p dangerouslySetInnerHTML={{ __html: String(props.row.description).replaceAll('style="font-size:1', 'style="color:black;font-size:12px;').substring(0, 199)}} />
               ...
               <div>
                 <button
@@ -1835,7 +1835,7 @@ const CustomerConfiguration: React.FC = () => {
 
           {String(props.row.description).length >= 200 && (props.row.openMenu == false) && (props.row.tpo_Status == "D") && (
             <span title={props.row.description} style={{ color: '#a0a0a0' }}>
-              <p dangerouslySetInnerHTML={{ __html: String(props.row.description).substring(0, 199) }} />
+              <p dangerouslySetInnerHTML={{ __html: String(props.row.description).replaceAll('style="font-size:1', 'style="color:#a0a0a0;font-size:12px;').substring(0, 199)}} />
               ...
               <div>
                 <button
@@ -1852,7 +1852,7 @@ const CustomerConfiguration: React.FC = () => {
 
           {String(props.row.description).length >= 200 && (props.row.openMenu == true) && (props.row.tpo_Status == "A") && (
             <span style={{ color: 'black', fontWeight: 500 }}>
-              <p dangerouslySetInnerHTML={{ __html: props.row.description }} />
+              <p dangerouslySetInnerHTML={{ __html: props.row.description.replaceAll('style="font-size:1', 'style="color:black;font-size:12px;')}} />
               <div>
                 <button
                   className="buttonLinkClick buttonInclude"
@@ -1868,7 +1868,7 @@ const CustomerConfiguration: React.FC = () => {
 
           {String(props.row.description).length >= 200 && (props.row.openMenu == true) && (props.row.tpo_Status == "D") && (
             <span style={{ color: '#a0a0a0' }}>
-              <p dangerouslySetInnerHTML={{ __html: props.row.description }} />
+              <p dangerouslySetInnerHTML={{ __html: props.row.description.replaceAll('style="font-size:1', 'style="color:#a0a0a0;font-size:12px;')}} />
               <div>
                 <button
                   className="buttonLinkClick buttonInclude"
@@ -1884,13 +1884,13 @@ const CustomerConfiguration: React.FC = () => {
 
           {String(props.row.description).length < 200 && (props.row.tpo_Status == "A") && (
             <span style={{ color: 'black', fontWeight: 500 }}>
-              <p dangerouslySetInnerHTML={{ __html: props.row.description }} />
+              <p dangerouslySetInnerHTML={{ __html: props.row.description.replaceAll('style="font-size:1', 'style="color:black;font-size:12px;')}} />
             </span>
           )}
 
           {String(props.row.description).length < 200 && (props.row.tpo_Status == "D") && (
             <span style={{ color: '#a0a0a0' }}>
-              <p dangerouslySetInnerHTML={{ __html: props.row.description }} />
+              <p dangerouslySetInnerHTML={{ __html: props.row.description.replaceAll('style="font-size:1', 'style="color:#a0a0a0;font-size:12px;')}} />
             </span>
           )}
 
