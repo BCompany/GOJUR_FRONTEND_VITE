@@ -1,5 +1,5 @@
     export const workflowTriggerTypes = [
-      { label: 'Data', id: 'data'},
+      { label: 'Data', id: 'DATA'},
       { label: 'Ação concluída', id: 'acaoconcluida'}
     ]
 

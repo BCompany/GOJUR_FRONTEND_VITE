@@ -210,7 +210,7 @@ export default function Workflow() {
           workflowActionId: Math.random(),
           companyId,
           workflowTriggerId: id,
-          actionType: 'criarcompromisso',
+          actionType: 'CRIARCOMPROMISSO',
           daysbeforeandafter: 0
         };
 
@@ -218,7 +218,7 @@ export default function Workflow() {
           workflowTriggerId: id,
           companyId,
           workflowId: 0,
-          triggerType: 'data',
+          triggerType: 'DATA',
           configuration: { label: "" },
           actions: [firstAction]
         };
@@ -247,7 +247,7 @@ export default function Workflow() {
   async function handleSalvarWorkflow() {
 
     const isValid = workflowTrigger.every(t => {
-      if (t.triggerType === "data") {
+      if (t.triggerType === "DATA") {
         return Boolean(t.configuration?.label?.trim());
       }
       return 0; 
@@ -324,7 +324,7 @@ export default function Workflow() {
 
     // Valida apenas gatilhos do tipo "data"
     const isValid = workflowTrigger.every(t => {
-      if (t.triggerType === "data") {
+      if (t.triggerType === "DATA") {
         return Boolean(t.configuration?.label?.trim());
       }
       return true; 
@@ -533,7 +533,7 @@ export default function Workflow() {
           workflowActionId: Math.random(),
           companyId,
           workflowTriggerId: id,
-          actionType: 'criarcompromisso',
+          actionType: 'CRIARCOMPROMISSO',
           daysbeforeandafter: 0,
           configuration: {
             when: "depois", 
@@ -546,7 +546,7 @@ export default function Workflow() {
           workflowTriggerId: id,
           companyId,
           workflowId: 0,
-          triggerType: 'data',
+          triggerType: 'DATA',
           configuration: { label: '' },
           actions: [firstAction],
         };
@@ -578,7 +578,7 @@ export default function Workflow() {
       workflowTriggerId: id,
       companyId,
       workflowId: 0,
-      triggerType: 'data',
+      triggerType: 'DATA',
       configuration: { label: "" },
       actions: []
       //actions: [firstAction] 
@@ -599,7 +599,7 @@ export default function Workflow() {
       workflowactionId: id,
       companyId,
       workflowTriggerId: triggerId,
-      actionType: 'criarcompromisso',
+      actionType: 'CRIARCOMPROMISSO',
       daysbeforeandafter: 0,
       configuration: {
         when: "depois",
@@ -1414,7 +1414,7 @@ export default function Workflow() {
             workflowactionId: Math.random(),
             companyId,
             workflowTriggerId: triggerId,
-            actionType: "criarcompromisso",
+            actionType: "CRIARCOMPROMISSO",
             daysbeforeandafter: 0,
             configuration: { when: "depois", starttime:"09:00",  reminders: [] }
           }
@@ -1530,7 +1530,7 @@ export default function Workflow() {
         workflowactionId: action.workflowactionId ?? 0,
         companyId,
         workflowtriggerId: trigger.workflowTriggerId,
-        actiontype: "criarcompromisso",
+        actiontype: "CRIARCOMPROMISSO",
         daysbeforeandafter:
           action.configuration?.when === "antes"
             ? -Math.abs(action.daysbeforeandafter ?? 1)
@@ -1663,7 +1663,7 @@ export default function Workflow() {
         workflowactionId: action.workflowactionId ?? 0,
         companyId,
         workflowtriggerId: trigger.workflowTriggerId,
-        actiontype: "criarcompromisso",
+        actiontype: "CRIARCOMPROMISSO",
         daysbeforeandafter:
           action.configuration?.when === "antes"
             ? -Math.abs(action.daysbeforeandafter ?? 1)

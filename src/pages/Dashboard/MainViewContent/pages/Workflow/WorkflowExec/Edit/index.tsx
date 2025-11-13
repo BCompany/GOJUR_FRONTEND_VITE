@@ -378,7 +378,7 @@ export default function WorkflowPage() {
           workflowactionId: Math.random(),
           companyId,
           workflowtriggerId: id,
-          actionType: 'criarcompromisso',
+          actionType: 'CRIARCOMPROMISSO',
           daysbeforeandafter: 0
         };
 
@@ -386,7 +386,7 @@ export default function WorkflowPage() {
           workflowTriggerId: id,
           companyId,
           workflowId: 0,
-          triggerType: 'data',
+          triggerType: 'DATA',
           configuration: { label: "" },
           actions: [firstAction]
         };
@@ -436,7 +436,7 @@ export default function WorkflowPage() {
       const response = await api.post(`/WorkflowExec/ListarAcoesSimulacao`, {
         workflowTriggerId: triggerId,
         value: selectedDate,
-        triggerType: "data",
+        triggerType: "DATA",
         matterId,
         token
       });
@@ -664,7 +664,7 @@ const handleSimularWorkflow = async () => {
 
 
     const jsonTriggers = workflowTrigger
-      .filter(trigger => trigger.triggerType === "data")
+      .filter(trigger => trigger.triggerType === "DATA")
       .map(trigger => ({
         label: trigger.configuration?.label || "Trigger sem nome",
         value: triggerDates[trigger.workflowTriggerId] || "",
@@ -881,7 +881,7 @@ const handleSimularWorkflow = async () => {
           workflowactionId: Math.random(),
           companyId,
           workflowtriggerId: triggerId,
-          actionType: "criarcompromisso",
+          actionType: "CRIARCOMPROMISSO",
           daysbeforeandafter: 0,
         };
 
@@ -889,7 +889,7 @@ const handleSimularWorkflow = async () => {
           workflowTriggerId: triggerId,
           companyId,
           workflowId: response.data.workflowId,
-          triggerType: "data",
+          triggerType: "DATA",
           configuration: { label: param.label },
           actions: [firstAction],
         };
@@ -1416,7 +1416,7 @@ const handleSimularWorkflow = async () => {
 
 
                 {workflowTrigger.map((trigger) => (
-                  trigger.triggerType === "data" && (
+                  trigger.triggerType === "DATA" && (
                     <div key={trigger.workflowTriggerId}>
                       <label>{trigger.configuration?.label}</label>
                       {/*
