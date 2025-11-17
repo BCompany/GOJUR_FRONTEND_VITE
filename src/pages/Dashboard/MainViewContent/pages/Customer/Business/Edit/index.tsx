@@ -286,7 +286,7 @@ export default function BusinessCardEdit( ) {
     if(response.data.matterId != '0')
       {
         setMatterId(response.data.matterId)
-        setProcessTitle(`${response.data.num_Processo} - ${response.data.matterCustomerDesc} x ${response.data.matterOpposingDesc}`)
+        setProcessTitle(`${response.data.matterNumber} - ${response.data.matterCustomerDesc} x ${response.data.matterOpposingDesc}`)
       }
 
     setBusinessObservation(response.data.observation)
