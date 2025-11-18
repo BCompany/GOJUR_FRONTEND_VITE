@@ -126,11 +126,18 @@ export const Center = styled.div`
 
   .title
   {
-      text-align:center;
-      padding:10px;
-      font-size:0.85rem;
-      font-weigth:800;
-      color: #0177C0;
+    text-align:center;
+    padding:10px;
+    font-size:0.85rem;
+    color: #0177C0;
+  }
+
+  .info
+  {
+    margin-top: -15px;
+    text-align: center;
+    padding: 10px;
+    font-size: 0.650rem;
   }
 
   .content-box {

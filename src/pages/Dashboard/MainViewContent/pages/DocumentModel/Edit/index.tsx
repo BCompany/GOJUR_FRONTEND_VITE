@@ -797,6 +797,7 @@ const DocumentModelEdit: React.FC = () => {
                       <option value="#ctpsCliente">CTPS</option>
                       <option value="#serieCtpsCliente">Serie CTPS</option>
                       <option value="#pisCliente">PIS</option>
+                      <option value="#beneficioINSS">Benefício INSS</option>
                       <option value="#salarioCliente">Último Salário</option>
                       <option value="#nomeMaeCliente">Nome Mãe</option>
                       <option value="#nomePaiCliente">Nome Pai</option>

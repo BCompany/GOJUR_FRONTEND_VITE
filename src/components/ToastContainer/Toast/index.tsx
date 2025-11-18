@@ -37,7 +37,7 @@ const Toast: React.FC<ToastProps> = ({ message, style }) => {
 
       <div>
         <strong>{message.title}</strong>
-        {message.description && <p>{message.description}</p>}
+        {message.description && <p dangerouslySetInnerHTML={{ __html: message.description }} />}
       </div>
 
       <button onClick={() => removeToast(message.id)} type="button">

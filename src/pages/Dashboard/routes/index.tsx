@@ -168,9 +168,9 @@ const Routes: React.FC = () => {
       <Route path="/Cities" exact component={CitiesList} isPrivate />
       <Route path="/PaymentSlipContract/list" exact component={PaymentSlipContractList} isPrivate />
       <Route path="/PaymentSlipContract/edit/:id" component={PaymentSlipContractEdit} isPrivate />
-      <Route path="/People/List" exact component={PeoplesList} isPrivate />
+      <Route path="/People" exact component={PeoplesList} isPrivate />
       <Route path="/People/edit/:type/:id" exact component={PeopleEdit} isPrivate />
-      <Route path="/EconomicIndexes/List" exact component={EconomicIndexesList} isPrivate />
+      <Route path="/EconomicIndexes" exact component={EconomicIndexesList} isPrivate />
       <Route path="/EconomicIndexes/edit/:id" component={EconomicIndexessEdit} isPrivate />
       <Route path="/Matter/report/simple" exact component={MatterReportSimple} isPrivate />
       <Route path="/Matter/report/MatterDemand" exact component={MatterDemandReport} isPrivate />
