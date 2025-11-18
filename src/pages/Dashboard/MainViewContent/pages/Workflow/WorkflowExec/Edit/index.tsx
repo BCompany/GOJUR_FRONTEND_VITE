@@ -428,10 +428,31 @@ export default function WorkflowPage() {
     try {
       const token = localStorage.getItem('@GoJur:token');
       const selectedDate = triggerDates[triggerId];
-
+      /*
       let matterId;
       if (processTitle !== 'Associar Processo')
         matterId = matterSelected?.matterId ?? null;
+      */
+
+    let matterId;
+    if (processTitle !== 'Associar Processo') {
+
+      const storedIdFromLocalStorage = localStorage.getItem('@Gojur:matterId') ?? '';
+
+      if (storedIdFromLocalStorage.length == 0) {
+
+        const storedMatterId = matterSelected?.matterId ?? null;
+
+        if (storedMatterId !== null) {
+          matterId = storedMatterId;
+        } else {
+          matterId = null;
+        }
+      }
+      else
+        matterId = storedIdFromLocalStorage;
+
+    }
 
       const response = await api.post(`/WorkflowExec/ListarAcoesSimulacao`, {
         workflowTriggerId: triggerId,
