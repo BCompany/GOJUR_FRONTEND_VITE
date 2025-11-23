@@ -102,11 +102,23 @@ const SearchCNJBatch: React.FC = () => {
 
     } catch (err: any) {
       setIsLoading(false)
-      addToast({
-        title: "Operação não Realizada",
-        type: "error",
-        description: err.response.data.Message
-      })
+      
+      if (!err.response.data.typeError.warning){
+        addToast({
+          type: "error",
+          title: "Falha ao salvar usuário",
+          description: err.response.data.Message
+        })
+      }
+      
+      else if (err.response.data.typeError.warning == "awareness"){
+        addToast({
+          type: 'info',
+          title: 'Operação NÃO realizada',
+          description: err.response.data.Message
+        });
+      }
+      
     }
   }
 
@@ -220,11 +232,14 @@ const SearchCNJBatch: React.FC = () => {
               {validCount > 0 && (
                 <>
                   <div style={{ color: "green", fontSize: "15px" }}>
-                    Arquivo processado com sucesso. Foram incluídos
+                    Arquivo processado com sucesso. Serão importados 
                     {"  "}
                     {validCount}
                     {"  "}
-                    processos para busca automática, o cadastramento do processo pode levar algumas horas dependendo da disponibilidade dos tribunais.
+                    processos através da busca automática, a criação das pesquisas e efetivo cadastramento dos processos pode levar
+                    desde alguns instantes até algumas horas dependendo da disponibilidade dos tribunais
+                    e também da quantidade de processos no arquivo. Você pode acompanhar a importação no módulo de processos
+                    filtrando por "processos em pesquisa".
                   </div>
 
                   <div className='buttonsAction'>
