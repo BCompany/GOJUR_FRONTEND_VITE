@@ -17,6 +17,8 @@ import React, {
   useRef,
 } from 'react';
 import '@fullcalendar/react/dist/vdom';
+import { useHistory } from 'react-router-dom';
+import { useSecurity } from 'context/securityContext';
 import FullCalendar from '@fullcalendar/react';
 import { ImMenu3, ImMenu4 } from 'react-icons/im';
 import Loader from 'react-spinners/ClipLoader';
@@ -41,7 +43,7 @@ import { useDefaultSettings } from 'context/defaultSettings';
 import { useModal } from 'context/modal';
 import { useAuth } from 'context/AuthContext';
 import { FaCalculator } from 'react-icons/fa';
-import { FcAbout, FcSearch } from 'react-icons/fc';
+import { FcAbout, FcSearch, FcParallelTasks } from 'react-icons/fc';
 import { useMenuHamburguer } from 'context/menuHamburguer';
 import MenuHamburguer from 'components/MenuHamburguer';
 import Menu from '@material-ui/core/Menu';
@@ -91,6 +93,11 @@ import {
 import CalendarReport from './Report';
 import CalendarExportConfig from './Export';
 
+export interface IDefaultsProps {
+  id: string;
+  value: string;
+}
+
 const Calendar: React.FC = () => {
   const { signOut } = useAuth();
   const { alertData, openProcessModal } = useAlert();
@@ -131,6 +138,7 @@ const Calendar: React.FC = () => {
   const [openModalCalendarReport, setOpenModalCalendarReport] =
     useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+   const history = useHistory();
   const [isLoadingSearch, setIsLoadingSearch] = useState<boolean>(false);
   const [isEndPage, setIsEndPage] = useState(false);
   const [isPagination, setIsPagination] = useState(false);
@@ -221,6 +229,10 @@ const Calendar: React.FC = () => {
   const [subjectDescription, setSubjectDescription] = useState<string>();
   const [subjectType, setSubjectType] = useState<string>('A');
   const [principalColor, setPrincipalColor] = useState<string>('#51B749');
+
+const {permissionsSecurity, handleValidateSecurity } = useSecurity();
+  const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKFEX");
+ const [workflowView, setWorkflowView] = useState('')
 
   // DATE SELECT
   const [openModalDateSelect, setOpenModalDateSelect] =
@@ -1234,6 +1246,27 @@ const Calendar: React.FC = () => {
     handlePublicationModal('Calc');
   };
 
+  const handleWorkflow = () => {
+    localStorage.setItem('@Gojur:calendarRedirect', 'S')
+
+    localStorage.removeItem('@Gojur:publicationId');
+    localStorage.removeItem('@Gojur:followUpId');
+    localStorage.removeItem('@Gojur:notificationTag');
+    localStorage.removeItem('@Gojur:filterCustomerId')
+    localStorage.removeItem('@Gojur:filterCustomer')
+    localStorage.removeItem('@Gojur:customer')
+    localStorage.removeItem('@Gojur:filterMatterId')
+
+
+    if (workflowView == "LISTA" )
+      history.push(`/workflowexec/list`)
+    else if (workflowView == "KANBAN" )
+      history.push(`/workflowexec/kanban`)
+
+  };
+
+   
+
   const buttonsCalendarLabel = {
     dayGridMonth: 'Mês',
     timeGridWeek: 'Semana',
@@ -1301,6 +1334,35 @@ const Calendar: React.FC = () => {
     },
     [selectDateStart],
   );
+
+
+    useEffect(() => {
+        LoadDefaultProps();
+    
+      }, [workflowView]);
+
+  const LoadDefaultProps = async () => {
+    try {
+
+      const response = await api.post<IDefaultsProps[]>('/Defaults/Listar', {
+        token,
+      });
+
+      const workflowViewDefault = response.data.find(item => item.id === 'defaultWorkflowParameter' || item.id === 'adm')
+  
+      // // default view workflow
+      if (workflowViewDefault) {
+        setWorkflowView(workflowViewDefault.value)
+      } else {
+        setWorkflowView('KANBAN')
+      }
+
+
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
 
   return (
     <>
@@ -1392,6 +1454,21 @@ const Calendar: React.FC = () => {
                 <FaCalculator />
                 Calculadora de Prazos
               </button>
+
+  {(checkWorkflow ) && (
+     <>
+              <button
+                className="buttonLinkClick"
+                onClick={() => handleWorkflow()}
+                title="Clique para abrir o workflow"
+                type="submit"
+              >
+                <FcParallelTasks />
+                Workflow
+              </button>
+              </>
+ )}
+
             </div>
 
             <div className="buttonHamburguer">

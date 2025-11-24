@@ -5,7 +5,7 @@
 /* eslint-disable no-return-assign */
 /* eslint-disable no-alert */
 import React, { useCallback, useEffect, useState, UIEvent, useRef } from 'react';
-import { FiEdit, FiTrash } from 'react-icons/fi'
+import { FiEdit, FiTrash, FiArrowLeft } from 'react-icons/fi'
 import { FaFileAlt } from 'react-icons/fa'
 import { Grid, Table } from '@devexpress/dx-react-grid-material-ui';
 import { GridContainer } from 'Shared/styles/GlobalStyle';
@@ -13,14 +13,15 @@ import { useDevice } from "react-use-device";
 import { useAuth } from 'context/AuthContext';
 import api from 'services/api';
 import { useDefaultSettings } from 'context/defaultSettings';
+import { Overlay } from 'Shared/styles/GlobalStyle';
 import { useModal } from 'context/modal';
+import { envProvider } from 'services/hooks/useEnv';
 import { useHeader } from 'context/headerContext';
 import { useHistory } from 'react-router-dom';
 import { useToast } from 'context/toast';
 import { languageGridEmpty } from 'Shared/utils/commonConfig';
 import { HeaderPage } from 'components/HeaderPage';
 import LoaderWaiting from 'react-spinners/ClipLoader';
-import { Overlay } from 'Shared/styles/GlobalStyle';
 import { Container, Content , ContainerMobile } from './styles';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
 import { useConfirmBox } from 'context/confirmBox';
@@ -59,7 +60,7 @@ const WorkflowList = () => {
   const [currentWorkflowId, setCurrentWorkflowId] = useState<number>(0);
   const {isConfirmMessage, isCancelMessage, caller, handleCancelMessage,handleConfirmMessage,handleCheckConfirm, handleCaller } = useConfirmBox();
   const [isDeletingCustomer, setIsDeletingCustomer] = useState(false);
-
+ 
   
   const columns = [
     { name: 'name', title: ' '},
@@ -68,11 +69,16 @@ const WorkflowList = () => {
   ];
 
   const [tableColumnExtensions] = useState([
-    { columnName: 'name', width: '75%' },
+    { columnName: 'name', width: '70%' },
     { columnName: 'btnEditar', width: '5%' },
     { columnName: 'btnRemover',width: '5%' },
   ]);
 
+    useEffect(() => {
+      LoadDefaultProps()
+    }, [])
+
+    
   useEffect(() => {
     setWorkflowList([])
     setIsLoadingSearch(true);
@@ -102,7 +108,7 @@ const WorkflowList = () => {
     if (isConfirmMessage && caller=="WorkflowList"){
 
       if (!isDeleting){
-        window.open(`${envProvider.redirectUrl}ReactRequest/Redirect?token=${token}&route=workflow/list`)
+        window.open(`${envProvider.redirectUrl}ReactRequest/Redirect?token=${token}&route=workflow`)
       }
       else{
         handleDeleteWorkflow(currentWorkflowId)
@@ -149,7 +155,8 @@ const WorkflowList = () => {
         addToast({
           type: 'info',
           title: 'Falha ao apagar workflow',
-          description: err.response.data.Message
+          description: "Workflows em execução podem estar associados a esse workflow"
+          //description: err.response.data.Message
         });
   
         setIsDeletingCustomer(false)
@@ -158,6 +165,24 @@ const WorkflowList = () => {
       }
     }
   
+
+  const LoadDefaultProps = async() => {
+
+    try {
+
+      const response = await api.post<IDefaultsProps[]>('/Defaults/Listar', { token });
+
+      const permissionAccessCode = response.data.find(item => item.id === 'accessCode')
+      if (permissionAccessCode)
+        localStorage.setItem('@GoJur:accessCode', permissionAccessCode.value)
+      
+      const userPermissions = response.data.filter(item => item.id === 'defaultModulePermissions')
+      handleUserPermission(userPermissions[0].value.split('|'));
+
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
 
   // METHODS
@@ -170,15 +195,17 @@ const WorkflowList = () => {
       const token = localStorage.getItem('@GoJur:token');
       const page = state == 'initialize'? 1: pageNumber;
 
+     
        const response = await api.get<IWorkflowData[]>('/Workflow/Listar', { 
             params:{
               page,
               rows:20,
-              filterClause:'',
+              filterClause:captureText,
               token
               }
           })
       
+          
       if(response.data.length > 0 && state == 'initialize')
         setTotalPageCount(response.data.length)
         //setTotalPageCount(response.data[0].totalRows)
@@ -340,6 +367,11 @@ const WorkflowList = () => {
     )
   }
 
+const handleCancel = () => {
+    
+    history.push('../calendar')
+
+}
 
   // HTML CODE
   return (
@@ -349,7 +381,7 @@ const WorkflowList = () => {
 
           <HeaderPage />
 
-
+          
         
           <div style={{width:'100%', marginTop:'20px'}}>
 
@@ -362,7 +394,7 @@ const WorkflowList = () => {
               <div style={{float:'left', marginRight:'10px'}}>
                 
                   <button 
-                    className="buttonLinkClick" 
+                    className="buttonClick" 
                     title="Clique para incluir um Workflow"
                     type="submit"
                    onClick={() => history.push('/Workflow/edit/0')}
@@ -372,7 +404,24 @@ const WorkflowList = () => {
                   </button>
             
               </div>
+
+              <div style={{ float: 'right'}}>
+                <button
+                  className="buttonClick"
+                  title="Clique para retornar"
+                  type="submit"
+                  onClick={handleCancel}
+                >
+                  <FiArrowLeft />
+                  Retornar
+                </button>
+            </div>
+            
             </div>  
+          </div>
+
+          <div style={{ float: 'left', marginLeft: '150px', marginTop: '12px' }}>
+            <h5>Configurações de Workflows</h5>
           </div>
 
           <div style={{width:'100%', height:'25px'}}><></></div> 

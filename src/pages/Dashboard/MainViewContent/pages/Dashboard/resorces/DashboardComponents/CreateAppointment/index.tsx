@@ -14,11 +14,12 @@
 /* eslint-disable react/jsx-one-expression-per-line */
 
 // IMPORTACOES
-import React, {ChangeEvent,useCallback,useEffect,useState } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Responsive as ResponsiveGridLayout } from 'react-grid-layout';
 import { RiFolder2Fill, RiEraserLine } from 'react-icons/ri';
 import { IoIosPaper } from 'react-icons/io';
 import { FiClock, FiTrash, FiSave, FiMail } from 'react-icons/fi';
+import { GoGitMerge } from "react-icons/go"
 import { FaRegTimesCircle, FaWhatsapp } from 'react-icons/fa';
 import { BsCheckBox } from 'react-icons/bs';
 import { TiCancel } from 'react-icons/ti';
@@ -39,7 +40,7 @@ import TextArea from 'components/TextArea';
 import DatePicker from 'components/DatePicker';
 import TimePicker from 'components/TimePicker';
 import Loader from 'react-spinners/ClipLoader';
-import { useLocation } from 'react-router-dom';
+//import { useLocation } from 'react-router-dom';
 import { AppointmentPropsSave, AppointmentPropsDelete, SelectValues, Data, dataProps, LembretesData, MatterData, ModalProps, ResponsibleDTO, Settings, ShareListDTO, userListData } from 'pages/Dashboard/MainViewContent/pages/Interfaces/ICalendar';
 import { IMatterData } from 'pages/Dashboard/MainViewContent/pages/Interfaces/IMatter';
 import LogModal from '../../../../../../../../components/LogModal';
@@ -50,8 +51,8 @@ import DeleteModal from './DeleteModal';
 import { selectedDayProps, selectedWeekProps } from './Interfaces/ICalendar';
 import { dayRecurrence, optionsLembrete, weekRecurrence } from './ListValues/List';
 import CalendarReminderModal from './CustomizeCalendarReminderModal';
-import { Container2, Container, ModalContent, ModalDateSettings, Wrapper, WrapperResp, Process, DropArea, Footer, Lembrete, Responsavel, ResponsibleList, ReminderList, ShareList, Privacidade, Share, ModalRecurrence, Multi, ConfirmOverlay, ModalConfirm} from './styles';
-
+import { Container2, Container, ModalContent, ModalDateSettings, Wrapper, WrapperResp, Process, DropArea, Footer, Lembrete, Responsavel, ResponsibleList, ReminderList, ShareList, Privacidade, Share, ModalRecurrence, Multi, ConfirmOverlay, ModalConfirm } from './styles';
+import { useHistory, useLocation } from 'react-router-dom'
 
 
 
@@ -67,18 +68,18 @@ const layout = [{
   name: 'Modal',
   // positions: { i: '1', x: (window.innerWidth >= 1080 ? 2.2 : 0), y: (window.innerWidth >= 1080 ? 4 : 0), w: 7, h: (isMobile ? 12 : 17) },
   // positions: { i: '1', x: 2.2, y: 4, w: 7, h: (isMobile?12:17) },
-  positions: { i: '1', x: 0, y: 0, w: 7, h: (isMobile?12:17) },
+  positions: { i: '1', x: 0, y: 0, w: 7, h: (isMobile ? 12 : 17) },
 }];
 
 const layoutBig = [{
   idElement: 1,
   name: 'Modal',
-  positions: { i: '1', x: 2.2, y: 4, w: 7, h: (isMobile?12:17) },
+  positions: { i: '1', x: 2.2, y: 4, w: 7, h: (isMobile ? 12 : 17) },
 }];
 
 const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
-  const {matterSelected, dateEnd, handleModalActiveId, selectProcess,handleModalActive,openSelectProcess,handleSelectProcess,jsonModalObjectResult,handleJsonModalObjectResult,deadLineText,publicationText, modalActiveId, caller } = useModal();
-  const { addToast} = useToast();
+  const { matterSelected, dateEnd, handleModalActiveId, selectProcess, handleModalActive, openSelectProcess, handleSelectProcess, jsonModalObjectResult, handleJsonModalObjectResult, deadLineText, publicationText, modalActiveId, caller } = useModal();
+  const { addToast } = useToast();
   const [appointmentAllowEdit, setAppointmentAllowEdit] = useState<string>('N'); // Pode editar
   const [appointmentBlockUpdate, setAppointmentBlockUpdate] = useState(true);
   const [screenWitdh, setScreenWitdh] = useState(window.innerWidth);
@@ -134,8 +135,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   const [userIdCurrentDrag, setUserIdCurrentDrag] = useState<string>('');
   const [numWhatsApp, setNumWhatsApp] = useState<string>('');
   const [customerNameWhatsApp, setCustomerNameWhatsApp] = useState<string>('');  // RECURRENCE
-  const [openModalRecurrence, setLoadEventRecurrence]= useState<boolean>(false)
-  const [isRecurrence , setIsRecurrence] = useState<string>('N');
+  const [openModalRecurrence, setLoadEventRecurrence] = useState<boolean>(false)
+  const [isRecurrence, setIsRecurrence] = useState<string>('N');
   const [recurrenceStartDate, setRecurrenceStartDate] = useState<string>(''); // Iniciar em
   const [recurrenceSelectRepete, setRecurrenceSelectRepete] = useState<string>(''); // Repetir a cada
   const [selectDay, setSelectDay] = useState<string>(''); // Diária
@@ -145,8 +146,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   const [selectDayYear, setSelectDayYear] = useState<selectedDayProps[]>([]); // Dias
   const [sharedParameterEnd, setSharedParameterEnd] = useState<string>('1'); // Termina em
   const [recurrenceEndDate, setRecurrenceEndDate] = useState<string>(FormatDate(new Date(new Date().setFullYear(new Date().getFullYear() + 1)), 'yyyy-MM-dd'))
-  const [recurrenceQtd , setRecurrenceQtd] = useState<string>(''); // Quantidade
-  const [hideRecurrenceButton , setHideRecurrenceButton] = useState<boolean>(false);
+  const [recurrenceQtd, setRecurrenceQtd] = useState<string>(''); // Quantidade
+  const [hideRecurrenceButton, setHideRecurrenceButton] = useState<boolean>(false);
   const userToken = localStorage.getItem('@GoJur:token');
   const [openReminderModal, setOpenReminderModal] = useState<boolean>(false)
   const [big, setBig] = useState<boolean>(false);
@@ -156,6 +157,9 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   const [confirmDeleteCalendarEvent, setConfirmDeleteCalendarEvent] = useState<boolean>(false)
   const { handleCancelMessage, handleConfirmMessage, isCancelMessage, isConfirmMessage } = useConfirmBox();
   const [completeLink, setCompleteLink] = useState<boolean>(false);
+  const [appointmentWorkflowActionsExecId, setAppointmentWorkflowActionsExecId] = useState(0);
+  const [appointmentWorkflowExecId, setAppointmentWorkflowExecId] = useState(0);
+  const history = useHistory();
 
   useEffect(() => {
     if (isCancelMessage) {
@@ -175,18 +179,16 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
 
   useEffect(() => {
-    if(pathname != '/publication'){
+    if (pathname != '/publication') {
       localStorage.removeItem('@GoJur:PublicationId')
       localStorage.removeItem('@GoJur:MatterEventId')
     }
 
-    if(window.innerWidth >= 1080)
-    {
+    if (window.innerWidth >= 1080) {
       setBig(true)
       setSmall(false)
     }
-    else
-    {
+    else {
       setSmall(true)
       setBig(false)
     }
@@ -194,7 +196,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
 
   useEffect(() => {
-    if (confirmSave){
+    if (confirmSave) {
       handleSaveModal()
     }
   }, [confirmSave])
@@ -202,75 +204,75 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
   useEffect(() => {
     // New event - Open modal with defaults
-    if (caller === 'calendarModalInclude'){
+    if (caller === 'calendarModalInclude') {
       NewEvent()
     }
 
     // Edit event - Open modal with values
-    if (modalActiveId > 0 && caller === 'calendarModal'){
+    if (modalActiveId > 0 && caller === 'calendarModal') {
       LoadEvent()
     }
   }, [caller, modalActiveId])
 
 
-  const NewEvent = async() => {
-      // Load Lists
-      await LoadSubject();
-      await LoadUserList()
-      await LoadDefaults()
+  const NewEvent = async () => {
+    // Load Lists
+    await LoadSubject();
+    await LoadUserList()
+    await LoadDefaults()
 
-      setAppointmentBlockUpdate(false)
-      setScreenWitdh(window.innerWidth);
-      ValidateRecurrenceButton();
+    setAppointmentBlockUpdate(false)
+    setScreenWitdh(window.innerWidth);
+    ValidateRecurrenceButton();
 
-      const userNameResp = localStorage.getItem('@GoJur:name');
-      const userIdResp = localStorage.getItem('@GoJur:userCompanyId');
-      if (userIdResp && userNameResp){
-        setAppointmentResponsibleList([
-          {
-            userCompanyId: userIdResp,
-            userName: userNameResp,
-            userType: 'R',
-            allowEdit: 'S',
-            accessType: 'U'
-          },
-        ]);
+    const userNameResp = localStorage.getItem('@GoJur:name');
+    const userIdResp = localStorage.getItem('@GoJur:userCompanyId');
+    if (userIdResp && userNameResp) {
+      setAppointmentResponsibleList([
+        {
+          userCompanyId: userIdResp,
+          userName: userNameResp,
+          userType: 'R',
+          allowEdit: 'S',
+          accessType: 'U'
+        },
+      ]);
+    }
+
+    setAppointmentStatus('P');
+    setAppointmentAllDay('N');
+    setAppointmentRecurrent('N');
+    setAppointmentHourBeggin('00:00');
+    setAppointmentHourEnd('00:30');
+    // setAppointmentDescription('');
+
+    // when user click on fullcalendar
+    const date = format(new Date(), 'yyyy-MM-dd');
+    const fullCalendarDate = localStorage.getItem('@fullCalendarDate')
+
+    if (fullCalendarDate && pathname === '/calendar') {
+      setAppointmentDateBeggin(fullCalendarDate);
+      setAppointmentDateEnd(fullCalendarDate);
+      setRecurrenceStartDate(fullCalendarDate);
+    }
+    else {
+      setAppointmentDateBeggin(date);
+      setAppointmentDateEnd(date);
+    }
+
+    // When inclusion cames from deadline calculator, get result date and set in start and end date
+    const json = localStorage.getItem('@GoJur:DeadLineJson');
+    if (json) {
+      try {
+        const deadLineResult = JSON.parse(json.toString())
+        setAppointmentDateBeggin(format(new Date(deadLineResult.dateResult), 'yyyy-MM-dd'));
+        setAppointmentDateEnd(format(new Date(deadLineResult.dateResult), 'yyyy-MM-dd'));
       }
-
-      setAppointmentStatus('P');
-      setAppointmentAllDay('N');
-      setAppointmentRecurrent('N');
-      setAppointmentHourBeggin('00:00');
-      setAppointmentHourEnd('00:30');
-      // setAppointmentDescription('');
-
-      // when user click on fullcalendar
-      const date = format(new Date(), 'yyyy-MM-dd');
-      const fullCalendarDate = localStorage.getItem('@fullCalendarDate')
-
-      if (fullCalendarDate && pathname === '/calendar'){
-        setAppointmentDateBeggin(fullCalendarDate);
-        setAppointmentDateEnd(fullCalendarDate);
-        setRecurrenceStartDate(fullCalendarDate);
-      }
-      else{
+      catch {
         setAppointmentDateBeggin(date);
         setAppointmentDateEnd(date);
       }
-
-      // When inclusion cames from deadline calculator, get result date and set in start and end date
-      const json = localStorage.getItem('@GoJur:DeadLineJson');
-      if (json){
-        try{
-          const deadLineResult = JSON.parse(json.toString())
-          setAppointmentDateBeggin(format(new Date(deadLineResult.dateResult), 'yyyy-MM-dd'));
-          setAppointmentDateEnd(format(new Date(deadLineResult.dateResult), 'yyyy-MM-dd'));
-        }
-        catch{
-          setAppointmentDateBeggin(date);
-          setAppointmentDateEnd(date);
-        }
-      }
+    }
 
       // When inclusion cames from deadline calculator, get result date and set in start and end date
       const legalResumeDataJSON = localStorage.getItem('@GoJur:LegalResumeIA');
@@ -334,6 +336,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
 
   const SelectAppointment = useCallback(async () => {
+
     const appointmentId = modalActiveId
     const recurrenceDate = localStorage.getItem('@GoJur:RecurrenceDate');
 
@@ -363,6 +366,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       setAppointmentSharedList(data.sharedList); // lista de compartilhados
       setAppointmentNotifyMatterCustomer('N'); // notifica o responsavel
       setAppointmentUser(data.userCreator); // criador do compromisso
+      setAppointmentWorkflowActionsExecId(data.workflowActionsExecId); //Workflow actions Exec relacionado
+      setAppointmentWorkflowExecId(data.workflowExecId); //Workflow Exec relacionado
 
       setIsLoading(false)
       setAppointmentId(Number(appointmentId))
@@ -379,12 +384,12 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
           companyId: localStorage.getItem('@GoJur:companyId'),
           apiKey: localStorage.getItem('@GoJur:apiKey')
         })
-        .then(response => {
-          const matterType = response.data.typeAdvisorId == null? 'legal': 'advisory'
-          const url = `/matter/edit/${matterType}/${data.matter.matterId}`
-          setRedirectLink(url);
-          setCompleteLink(true)
-        })
+          .then(response => {
+            const matterType = response.data.typeAdvisorId == null ? 'legal' : 'advisory'
+            const url = `/matter/edit/${matterType}/${data.matter.matterId}`
+            setRedirectLink(url);
+            setCompleteLink(true)
+          })
 
         setProcessTitle(
           `${data.matter.matterNumber} - ${data.matter.matterFolder} - ${data.matter.matterCustomerDesc} - ${data.matter.matterOppossingDesc}`,
@@ -402,8 +407,10 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         if (data.blockUpdate === true) {
           setPrivacyChange(!privacyChange);
         }
+
+        //setAppointmentBlockUpdate(false);
         setAppointmentBlockUpdate(data.blockUpdate);
-      } 
+      }
       else {
         setAppointmentPrivateEvent(data.privateEvent);
         setPrivacyChange(!privacyChange);
@@ -415,7 +422,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       if (data.status === 'P') {
         setTextButton('Concluir');
         setStatusEvent(data.status);
-      } 
+      }
       else {
         setTextButton('Reabrir');
         setStatusEvent(data.status);
@@ -426,7 +433,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         setAppointmentRecurrent(data.recurrent);
         setRecurrentController(!recurrentController);
 
-      } 
+      }
       else {
         setAppointmentRecurrent(data.recurrent);
       }
@@ -439,20 +446,19 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       setRecurrenceQtd(dataRecurrence.num_Quantity)
       setRecurrenceSelectRepete(dataRecurrence.recurrenceType)
 
-      if(dataRecurrence.endDate != null){
+      if (dataRecurrence.endDate != null) {
         setRecurrenceEndDate(format(new Date(dataRecurrence.endDate), 'yyyy-MM-dd'))
       }
 
-      if(dataRecurrence.recurrenceType == 'W')
-      {
-        const arrayDaysWeek:selectedWeekProps[] = []
+      if (dataRecurrence.recurrenceType == 'W') {
+        const arrayDaysWeek: selectedWeekProps[] = []
 
         dataRecurrence.recurrenceWeekDays.split(',').map(day => {
-          if(day.length == 0) return
+          if (day.length == 0) return
 
           const daySelected = weekRecurrence.find(item => item.value == day);
           let dayDescription = '';
-          if (daySelected){
+          if (daySelected) {
             dayDescription = daySelected.label
           }
 
@@ -465,17 +471,16 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         setSelectWeek(arrayDaysWeek)
       }
 
-      if(dataRecurrence.recurrenceType == 'M')
-      {
-        const arrayDaysMonth:selectedWeekProps[] = []
+      if (dataRecurrence.recurrenceType == 'M') {
+        const arrayDaysMonth: selectedWeekProps[] = []
 
         dataRecurrence.recurrenceDaysMonth.split(',').map(day => {
 
-          if(day.length == 0) return
+          if (day.length == 0) return
 
           const daySelected = dayRecurrence.find(item => item.value == day);
           let dayDescription = '';
-          if (daySelected){
+          if (daySelected) {
             dayDescription = daySelected.label
           }
 
@@ -488,29 +493,28 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         setSelectDayMonth(arrayDaysMonth)
       }
 
-      if(dataRecurrence.recurrenceType == 'Y')
-      {
+      if (dataRecurrence.recurrenceType == 'Y') {
         if (dataRecurrence.recurrenceMonth)
           setSelectMonthYear(dataRecurrence.recurrenceMonth)
 
-          const arrayDaysMonth:selectedWeekProps[] = []
+        const arrayDaysMonth: selectedWeekProps[] = []
 
-          dataRecurrence.recurrenceDaysMonth.split(',').map(day => {
-            if(day.length == 0) return
+        dataRecurrence.recurrenceDaysMonth.split(',').map(day => {
+          if (day.length == 0) return
 
-            const daySelected = dayRecurrence.find(item => item.value == day);
-            let dayDescription = '';
-            if (daySelected){
-              dayDescription = daySelected.label
-            }
+          const daySelected = dayRecurrence.find(item => item.value == day);
+          let dayDescription = '';
+          if (daySelected) {
+            dayDescription = daySelected.label
+          }
 
-            return arrayDaysMonth.push({
-              label: dayDescription,
-              value: day
-            })
+          return arrayDaysMonth.push({
+            label: dayDescription,
+            value: day
           })
+        })
 
-          setSelectDayYear(arrayDaysMonth)
+        setSelectDayYear(arrayDaysMonth)
       }
 
       setIsLoading(false)
@@ -526,19 +530,19 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     let businessId = 0;
     try {
       const objectJsonTrasfer = JSON.parse(jsonModalObjectResult)
-      if (objectJsonTrasfer.businessId){
+      if (objectJsonTrasfer.businessId) {
         businessId = objectJsonTrasfer.businessId
       }
     }
-    catch{
+    catch {
       businessId = 0;
     }
-    setHideRecurrenceButton(businessId>0)
+    setHideRecurrenceButton(businessId > 0)
   }
 
 
   useEffect(() => {
-    if (openModalRecurrence && recurrenceStartDate === ''){
+    if (openModalRecurrence && recurrenceStartDate === '') {
       setRecurrenceStartDate(appointmentDateBeggin)
     }
   }, [appointmentDateBeggin, openModalRecurrence, recurrenceStartDate])
@@ -563,7 +567,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
           },
         ]);
       }
-    } 
+    }
     else {
       setIsCreate(!isCreate);
     }
@@ -575,7 +579,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     let matterDescription = '';
 
     // fill details about matter select if exists
-    if (matterSelected !== null){
+    if (matterSelected !== null) {
       setAppointmentMatter({
         matterId: matterSelected.matterId,
         matterCustomerDesc: matterSelected.matterCustomerDesc,
@@ -588,17 +592,17 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         num_WhatsApp: ""
       });
 
-      matterDescription = `Pasta: ${matterSelected.matterFolder} - Proc.: ${matterSelected.matterNumber} ${matterSelected.matterFolder} \n${matterSelected.matterCustomerDesc} x ${matterSelected.matterOppossingDesc}\n${matterSelected.forumName??""}\n${matterSelected.currentInstance??""} ${matterSelected.currentCourt??""}`;
+      matterDescription = `Pasta: ${matterSelected.matterFolder} - Proc.: ${matterSelected.matterNumber} ${matterSelected.matterFolder} \n${matterSelected.matterCustomerDesc} x ${matterSelected.matterOppossingDesc}\n${matterSelected.forumName ?? ""}\n${matterSelected.currentInstance ?? ""} ${matterSelected.currentCourt ?? ""}`;
     }
 
     // 1 - if exists a deadline text priorit0y that
-    if (deadLineText){
+    if (deadLineText) {
       setAppointmentDescription(deadLineText)
 
-      if (matterSelected !== null && appointmentDescription.length > 0){
+      if (matterSelected !== null && appointmentDescription.length > 0) {
         setAppointmentDescription(`${matterDescription} \n\n ${appointmentDescription} `);
       }
-      else{
+      else {
         setAppointmentDescription(`${deadLineText}`);
       }
 
@@ -608,29 +612,29 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     // 2 - if exists a matter selected complements
     if (matterSelected !== null) {
 
-      if (matterSelected.matterFolder == null){
+      if (matterSelected.matterFolder == null) {
         matterSelected.matterFolder = "";
       }
 
-      if (publicationText == undefined || publicationText == ""){                     // without text publication set only description + matter if exists
-        if (appointmentDescription.length > 0){
+      if (publicationText == undefined || publicationText == "") {                     // without text publication set only description + matter if exists
+        if (appointmentDescription.length > 0) {
           setAppointmentDescription(`${appointmentDescription}\n${matterDescription} `);
         }
-        else{
+        else {
           setAppointmentDescription(`${matterDescription} `);
         }
       }
-      else if (hasMatterFromPublication == 'S'){                                    // create by publication append all text publication here
+      else if (hasMatterFromPublication == 'S') {                                    // create by publication append all text publication here
         setAppointmentDescription(`${publicationText} `);
         setBlockAssociateMatter(true)
       }
-      else{
+      else {
         setAppointmentDescription(`${matterDescription} \n\n ${appointmentDescription} `);
         setBlockAssociateMatter(false)
       }
 
       const eventByFollow = localStorage.getItem('@GoJur.eventByFollow')
-      if (eventByFollow === 'S'){
+      if (eventByFollow === 'S') {
         setAppointmentDescription(`${publicationText} `);
         setBlockAssociateMatter(true)
         localStorage.removeItem('@GoJur.eventByFollow')
@@ -639,11 +643,11 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       return;
     }
 
-    if (publicationText != null){
-        // setPublicationTextSaved(publicationText);
-        setAppointmentDescription(publicationText)
+    if (publicationText != null) {
+      // setPublicationTextSaved(publicationText);
+      setAppointmentDescription(publicationText)
 
-        return;
+      return;
     }
   }, [matterSelected, publicationText]); // valida se é uma criação de appointment
 
@@ -651,7 +655,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   useEffect(() => {
     if (matterSelected !== null && processTitle === 'Associar Processo') {
 
-      setProcessTitle(`${matterSelected.matterNumber} - ${(matterSelected.matterFolder != null? "-": "")} ${matterSelected.matterCustomerDesc} - ${matterSelected.matterOppossingDesc}`,);
+      setProcessTitle(`${matterSelected.matterNumber} - ${(matterSelected.matterFolder != null ? "-" : "")} ${matterSelected.matterCustomerDesc} - ${matterSelected.matterOppossingDesc}`,);
 
       api.post<IMatterData>('/Processo/SelecionarProcesso', {
         matterId: matterSelected.matterId,
@@ -659,13 +663,13 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         companyId: localStorage.getItem('@GoJur:companyId'),
         apiKey: localStorage.getItem('@GoJur:apiKey')
       })
-      .then(response => {
-        const matterType = response.data.typeAdvisorId == null? 'legal': 'advisory'
-        const url = `/matter/edit/${matterType}/${matterSelected.matterId}`
-        setRedirectLink(url)
-        setCompleteLink(true)
-      })
-    } 
+        .then(response => {
+          const matterType = response.data.typeAdvisorId == null ? 'legal' : 'advisory'
+          const url = `/matter/edit/${matterType}/${matterSelected.matterId}`
+          setRedirectLink(url)
+          setCompleteLink(true)
+        })
+    }
     else {
       setProcessTitle('Associar Processo');
     }
@@ -677,6 +681,40 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     localStorage.setItem('@GoJur:appointmentClose', 'S');
     isClosed()
   } // mudança de data final
+
+
+
+    // Close modal
+  const handleWorkflowExec = async() => {
+   
+
+    try {
+      const response = await api.get('/WorkflowExec/SelecionarExec', {
+        params: {
+          id: Number(appointmentWorkflowExecId),
+          token: userToken,
+        },
+      });
+ 
+    
+    history.push('/workflowexec/edit/' + appointmentWorkflowExecId);
+
+    localStorage.setItem('@GoJur:appointmentClose', 'S');
+    isClosed()
+
+
+  } catch (err) {
+      
+      if (err.response.data.statusCode == 1002) {
+        addToast({
+          type: 'info',
+          title: 'Permissão negada',
+          description: 'Seu usuário não tem permissão para acessar esse módulo, contate o administrador do sistema',
+        });
+      }
+    }
+
+  } 
 
 
   const handleDragControllMouseOver = useCallback(() => {
@@ -742,7 +780,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     (event: ChangeEvent<HTMLInputElement>) => {
       if (appointmentAllDay === 'S') {
         setAppointmentAllDay('N');
-      } 
+      }
       else {
         setAppointmentAllDay('S');
       }
@@ -773,7 +811,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
       if (allowEditController !== true) {
         setAppointmentAllowEdit('S');
-      } 
+      }
       else {
         setAppointmentAllowEdit('N');
       }
@@ -814,11 +852,11 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       const appendLembretes = event.target.value;
       setAppointmentNotifyMatterCustomer('N');
 
-      if (event.target.value === '00'){
+      if (event.target.value === '00') {
         return;
       };
 
-      if (event.target.value === 'PE'){
+      if (event.target.value === 'PE') {
         setOpenReminderModal(true)
 
         event.target.value = "00"
@@ -891,53 +929,53 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
 
   const HandleResponsibleUser = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-      const user = event.target.value;
+    const user = event.target.value;
 
-      setUserResponsibleValue(user);
+    setUserResponsibleValue(user);
 
-      const userRespId = userList.filter(i => i.value === user).map(n => n.id).toString();
+    const userRespId = userList.filter(i => i.value === user).map(n => n.id).toString();
 
-      const userAccessType = userList.filter(i => i.value === user).map(n => n.accessType).toString();
+    const userAccessType = userList.filter(i => i.value === user).map(n => n.accessType).toString();
 
-      let edit = '';
+    let edit = '';
 
-      defaultSettings?.value === 'restricted' ? (edit = 'N') : (edit = 'S');
+    defaultSettings?.value === 'restricted' ? (edit = 'N') : (edit = 'S');
 
-      if (user !== '' && user !== ' ' && user.length > 3 && userList.findIndex(i => i.value === user) !== -1) {
-        setAppointmentResponsibleList([
-          ...appointmentResponsibleList,
-          {
-            userCompanyId: userRespId,
-            userName: user,
-            userType: 'R',
-            allowEdit: edit,
-            accessType:userAccessType,
-          },
-        ]);
+    if (user !== '' && user !== ' ' && user.length > 3 && userList.findIndex(i => i.value === user) !== -1) {
+      setAppointmentResponsibleList([
+        ...appointmentResponsibleList,
+        {
+          userCompanyId: userRespId,
+          userName: user,
+          userType: 'R',
+          allowEdit: edit,
+          accessType: userAccessType,
+        },
+      ]);
 
-        setUserResponsibleValue('');
-      }
+      setUserResponsibleValue('');
+    }
 
-      if (
-        appointmentSharedList.findIndex(i => i.userName === user) != -1 ||
-        appointmentResponsibleList.findIndex(i => i.userName === user) != -1
-      ) {
-        const newdata = Array.from(appointmentResponsibleList);
-        const key = newdata.findIndex(item => item.userName === user);
-        newdata.slice(key, 1);
+    if (
+      appointmentSharedList.findIndex(i => i.userName === user) != -1 ||
+      appointmentResponsibleList.findIndex(i => i.userName === user) != -1
+    ) {
+      const newdata = Array.from(appointmentResponsibleList);
+      const key = newdata.findIndex(item => item.userName === user);
+      newdata.slice(key, 1);
 
-        setAppointmentResponsibleList(newdata);
-        setUserResponsibleValue(user)
+      setAppointmentResponsibleList(newdata);
+      setUserResponsibleValue(user)
 
-        addToast({
-          type: 'info',
-          title: 'Usuário não adicionado',
-          description: `${user} já foi adicionado neste compromisso`
-        });
+      addToast({
+        type: 'info',
+        title: 'Usuário não adicionado',
+        description: `${user} já foi adicionado neste compromisso`
+      });
 
-        setUserResponsibleValue('');
-      }
-    },
+      setUserResponsibleValue('');
+    }
+  },
     [
       appointmentResponsibleList,
       appointmentSharedList,
@@ -968,7 +1006,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
           userName: user,
           userType: 'C',
           allowEdit: edit,
-          accessType:userAccessType,
+          accessType: userAccessType,
         },
       ]);
 
@@ -995,36 +1033,36 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       setUserSharedValue('')
     }
   },
-  [addToast, appointmentResponsibleList, appointmentSharedList, defaultSettings?.value, userList],
-); // adiciona um compartilhado a lista
+    [addToast, appointmentResponsibleList, appointmentSharedList, defaultSettings?.value, userList],
+  ); // adiciona um compartilhado a lista
 
 
   const LoadDefaults = async () => {
-    const response = await api.post<Settings[]>(`/Defaults/Listar`, {token: userToken });
+    const response = await api.post<Settings[]>(`/Defaults/Listar`, { token: userToken });
 
-      // private default
-      const privateDefault = response.data.find(item => item.id == "defaultPrivateEvent")
-      if (privateDefault){
-        setAppointmentPrivateEvent(privateDefault.value == "R"? "S": "N");
-        setPrivacyChange(privateDefault.value === 'U')
+    // private default
+    const privateDefault = response.data.find(item => item.id == "defaultPrivateEvent")
+    if (privateDefault) {
+      setAppointmentPrivateEvent(privateDefault.value == "R" ? "S" : "N");
+      setPrivacyChange(privateDefault.value === 'U')
+    }
+
+    const allowEditEvent = response.data.find(item => item.id == "defaultAllowEditEvent")
+    if (allowEditEvent) {
+      setAppointmentAllowEdit(allowEditEvent.value == "allowed" ? "S" : "N")
+      setDefaultSettings(allowEditEvent);
+      setAllowEditController(allowEditEvent.value == "allowed")
+    }
+
+    // default subject only when applyed deadline calculator
+    if (modalActiveId.toString() === '0') {
+      const subjectDefault = response.data.find(item => item.id == "defaultSubject")
+      if (subjectDefault && deadLineText != null && deadLineText != '') {
+
+        setAppointmentSubjectId(subjectDefault.value.split('|')[0])
+        setAppointmentSubject(subjectDefault.value.split('|')[1])
       }
-
-      const allowEditEvent = response.data.find(item => item.id == "defaultAllowEditEvent")
-      if (allowEditEvent){
-        setAppointmentAllowEdit(allowEditEvent.value == "allowed"? "S": "N")
-        setDefaultSettings(allowEditEvent);
-        setAllowEditController(allowEditEvent.value == "allowed")
-      }
-
-      // default subject only when applyed deadline calculator
-      if (modalActiveId.toString() === '0'){
-        const subjectDefault = response.data.find(item => item.id == "defaultSubject")
-        if (subjectDefault && deadLineText != null && deadLineText != ''){
-
-          setAppointmentSubjectId(subjectDefault.value.split('|')[0])
-          setAppointmentSubject(subjectDefault.value.split('|')[1])
-        }
-      }
+    }
   }
 
 
@@ -1160,7 +1198,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
             'Não foi possivel concluir seu comprimisso, tente novamente!',
         });
       }
-    } 
+    }
     else {
       try {
         const appointment = modalActiveId
@@ -1203,19 +1241,19 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     const startDateN = `${appointmentDateBeggin}T${appointmentHourBeggin}`;
     const endDateN = `${appointmentDateEnd}T${appointmentHourEnd}`;
 
-    const newStartDate= new Date(startDateN);
-    const newEndDate=new Date();
+    const newStartDate = new Date(startDateN);
+    const newEndDate = new Date();
 
     const diference = Math.floor(
-      (Date.UTC(newEndDate.getFullYear(), newEndDate.getMonth(), newEndDate.getDate()) 
-       - 
-       Date.UTC(newStartDate.getFullYear(), newStartDate.getMonth(), newStartDate.getDate())
-      ) 
+      (Date.UTC(newEndDate.getFullYear(), newEndDate.getMonth(), newEndDate.getDate())
+        -
+        Date.UTC(newStartDate.getFullYear(), newStartDate.getMonth(), newStartDate.getDate())
+      )
       /
       (1000 * 60 * 60 * 24)
     )
 
-    if(!confirmSave && (diference > 0)){
+    if (!confirmSave && (diference > 0)) {
       setCheckMessage(true)
       return;
     }
@@ -1224,28 +1262,26 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
     let daysMonthDesc = ''
     selectDayMonth.map((item) => {
-      daysMonthDesc += `${item.value },`
+      daysMonthDesc += `${item.value},`
       return false;
     })
 
     let daysYearDesc = ''
     selectDayYear.map((item) => {
-      daysYearDesc += `${item.value },`
+      daysYearDesc += `${item.value},`
       return false;
     })
 
     let daysWeekDesc = ''
     selectWeek.map((item) => {
-      daysWeekDesc += `${item.value },`
+      daysWeekDesc += `${item.value},`
       return false;
     })
 
     let dataRecurrence = {}
 
-    if (isRecurrence)
-    {
-      if(recurrenceSelectRepete == "Y")
-      {
+    if (isRecurrence) {
+      if (recurrenceSelectRepete == "Y") {
         dataRecurrence = {
           dta_startDate: recurrenceStartDate,
           dta_endDate: recurrenceEndDate,
@@ -1258,8 +1294,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
           recurrenceDaysMonth: daysYearDesc
         }
       }
-      else
-      {
+      else {
         dataRecurrence = {
           dta_startDate: recurrenceStartDate,
           dta_endDate: recurrenceEndDate,
@@ -1276,7 +1311,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
     if (appointmentRecurrent === 'N') {
 
-      if (appointmentResponsibleList.length == 0){
+      if (appointmentResponsibleList.length == 0) {
         addToast({
           type: 'info',
           title: 'Falha ao salvar o compromisso',
@@ -1292,18 +1327,18 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       let businessId = 0;
       try {
         const objectJsonTrasfer = JSON.parse(jsonModalObjectResult)
-        if (objectJsonTrasfer.businessId){
+        if (objectJsonTrasfer.businessId) {
           businessId = objectJsonTrasfer.businessId
         }
       }
-      catch{
+      catch {
         businessId = 0;
       }
 
       const data = {
         eventId: appointmentId,
-        publicationId: publicationId == null? 0: publicationId,
-        matterEventId: matterEventId == null? 0: matterEventId,
+        publicationId: publicationId == null ? 0 : publicationId,
+        matterEventId: matterEventId == null ? 0 : matterEventId,
         description: appointmentDescription,
         eventNote: appointmentObs,
         startDate: startDateN, // v
@@ -1327,23 +1362,25 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         businessId,
         isConfirmSave: confirmSave,
         recurrenceRuleJSON: JSON.stringify(dataRecurrence),
+        workflowActionsExecId: appointmentWorkflowActionsExecId,
+        workflowExecId:appointmentWorkflowExecId 
       }
 
       try {
         await api.put<AppointmentPropsSave>(`/Compromisso/Salvar`, data)
 
         selectProcess(null)
-        addToast({type: 'success', title: 'Compromisso Salvo', description: 'Seu compromisso foi salvo com sucesso'});
+        addToast({ type: 'success', title: 'Compromisso Salvo', description: 'Seu compromisso foi salvo com sucesso' });
         isClosed()
         handleModalActive(false)
         handleJsonModalObjectResult('')
       }
-      catch (err:any) {
-        if (err.response.data.typeError.warning == "awareness"){
+      catch (err: any) {
+        if (err.response.data.typeError.warning == "awareness") {
           setCheckMessage(true)
         }
-        else{
-          addToast({type: 'info', title: 'Falha ao salvar o compromisso', description: err.response.data.Message});
+        else {
+          addToast({ type: 'info', title: 'Falha ao salvar o compromisso', description: err.response.data.Message });
         }
       }
     }
@@ -1353,7 +1390,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
     const data: AppointmentPropsSave = {
       eventId: appointmentId,
-      publicationId: publicationId == null? 0: publicationId,
+      publicationId: publicationId == null ? 0 : publicationId,
       description: appointmentDescription,
       eventNote: appointmentObs,
       startDate: startDateN, // v
@@ -1390,12 +1427,11 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       const userToken = localStorage.getItem('@GoJur:token');
       const appointment = modalActiveId
       const recurrenceDate = localStorage.getItem('@GoJur:RecurrenceDate');
-      
+
       if (appointmentRecurrent === 'N') {
 
 
-        if (confirmDeleteCalendarEvent == false)
-        {
+        if (confirmDeleteCalendarEvent == false) {
           setConfirmDeleteCalendarEvent(true);
           return;
         }
@@ -1419,7 +1455,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         handleModalActive(false)
         setConfirmDeleteCalendarEvent(false);
       }
-      else{
+      else {
         const data: AppointmentPropsDelete = {
           eventId: appointmentId,
           token: userToken,
@@ -1449,12 +1485,12 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
       // validate if exists in current list to avoid duplication
       const userExistent = appointmentSharedList.find(item => item.userCompanyId == userIdCurrentDrag);
-      if (userExistent){
+      if (userExistent) {
         return;
       }
 
       // if is a public don't allow drop
-      if (privacyChange){
+      if (privacyChange) {
         return;
       }
 
@@ -1464,12 +1500,11 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
       // get current user and your configuration edit
       const userShared = appointmentResponsibleList.find(item => item.userCompanyId == userIdCurrentDrag)
-      if (userShared){
+      if (userShared) {
         edit = userShared.allowEdit;
       }
 
-      if (user)
-      {
+      if (user) {
         setAppointmentSharedList([
           ...appointmentSharedList,
           {
@@ -1477,7 +1512,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
             userName: user.value,
             userType: 'C',
             allowEdit: edit,
-            accessType:user.accessType
+            accessType: user.accessType
           },
         ]);
 
@@ -1489,45 +1524,44 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     // copy user from origin responsible to target shared
     const dragSharedUser = () => {
 
-        // validate if exists in current list to avoid duplication
-        const userExistent = appointmentResponsibleList.find(item => item.userCompanyId == userIdCurrentDrag);
-        if (userExistent){
-          return;
-        }
+      // validate if exists in current list to avoid duplication
+      const userExistent = appointmentResponsibleList.find(item => item.userCompanyId == userIdCurrentDrag);
+      if (userExistent) {
+        return;
+      }
 
-        // default configuration user permission
-        const user = userList.find(item => item.id == userIdCurrentDrag);
-        defaultSettings?.value === 'restricted' ? (edit = 'N') : (edit = 'S');
+      // default configuration user permission
+      const user = userList.find(item => item.id == userIdCurrentDrag);
+      defaultSettings?.value === 'restricted' ? (edit = 'N') : (edit = 'S');
 
-        // get current user and your configuration edit
-        const userResp = appointmentSharedList.find(item => item.userCompanyId == userIdCurrentDrag)
-        if (userResp){
-          edit = userResp.allowEdit;
-        }
+      // get current user and your configuration edit
+      const userResp = appointmentSharedList.find(item => item.userCompanyId == userIdCurrentDrag)
+      if (userResp) {
+        edit = userResp.allowEdit;
+      }
 
-        if (user)
-        {
-          setAppointmentResponsibleList([
-            ...appointmentResponsibleList,
-            {
-              userCompanyId: user.id,
-              userName: user.value,
-              userType: 'R',
-              allowEdit: edit,
-              accessType: user.accessType
-            },
-          ]);
+      if (user) {
+        setAppointmentResponsibleList([
+          ...appointmentResponsibleList,
+          {
+            userCompanyId: user.id,
+            userName: user.value,
+            userType: 'R',
+            allowEdit: edit,
+            accessType: user.accessType
+          },
+        ]);
 
-          handleCancelShare(user.value);
-          setUserIdCurrentDrag('')
-        }
+        handleCancelShare(user.value);
+        setUserIdCurrentDrag('')
+      }
     }
 
-    if (origin == 'responsible'){
+    if (origin == 'responsible') {
       dragResponsibleUser();
     }
 
-    if (origin == 'shared'){
+    if (origin == 'shared') {
       dragSharedUser();
     }
   }
@@ -1558,8 +1592,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
   const handleSaveRecurrence = () => {
     // Validation
-    if(recurrenceSelectRepete == "")
-    {
+    if (recurrenceSelectRepete == "") {
       addToast({
         type: 'info',
         title: 'Aviso',
@@ -1569,10 +1602,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       return;
     }
 
-    if(recurrenceSelectRepete == "W")
-    {
-      if(selectWeek.length == 0)
-      {
+    if (recurrenceSelectRepete == "W") {
+      if (selectWeek.length == 0) {
         addToast({
           type: 'info',
           title: 'Aviso',
@@ -1583,10 +1614,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       }
     }
 
-    if(recurrenceSelectRepete == "M")
-    {
-      if(selectDayMonth.length == 0)
-      {
+    if (recurrenceSelectRepete == "M") {
+      if (selectDayMonth.length == 0) {
         addToast({
           type: 'info',
           title: 'Aviso',
@@ -1597,10 +1626,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       }
     }
 
-    if(recurrenceSelectRepete == "Y")
-    {
-      if(selectMonthYear.length == 0)
-      {
+    if (recurrenceSelectRepete == "Y") {
+      if (selectMonthYear.length == 0) {
         addToast({
           type: 'info',
           title: 'Aviso',
@@ -1610,8 +1637,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         return;
       }
 
-      if(selectDayYear.length == 0)
-      {
+      if (selectDayYear.length == 0) {
         addToast({
           type: 'info',
           title: 'Aviso',
@@ -1622,10 +1648,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       }
     }
 
-    if(sharedParameterEnd == "1")
-    {
-      if(recurrenceEndDate == "")
-      {
+    if (sharedParameterEnd == "1") {
+      if (recurrenceEndDate == "") {
         addToast({
           type: 'info',
           title: 'Aviso',
@@ -1636,10 +1660,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       }
     }
 
-    if(sharedParameterEnd == "2")
-    {
-      if(recurrenceQtd == "" || recurrenceQtd == "0")
-      {
+    if (sharedParameterEnd == "2") {
+      if (recurrenceQtd == "" || recurrenceQtd == "0") {
         addToast({
           type: 'info',
           title: 'Aviso',
@@ -1674,14 +1696,14 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   const handleChangeRepete = (item) => {
     setRecurrenceSelectRepete(item)
 
-    if(item == "D"){
+    if (item == "D") {
       setSelectDay(item)
     }
   }
 
 
   useDelay(() => {
-    if (appointmentSubject.length > 0 && !isLoading){
+    if (appointmentSubject.length > 0 && !isLoading) {
       LoadSubject()
     }
   }, [appointmentSubject], 1000)
@@ -1689,21 +1711,21 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
   const LoadSubject = useCallback(async (reload = false, termSearch = '') => {
     try {
-      if (termSearch  === ''){
+      if (termSearch === '') {
         termSearch = appointmentSubject;
       }
 
-      if (reload){
+      if (reload) {
         termSearch = '';
       }
 
-      const response = await api.post(`/Assunto/Listar`,{
-          description: termSearch,
-          token: userToken
+      const response = await api.post(`/Assunto/Listar`, {
+        description: termSearch,
+        token: userToken
       });
 
       const subjectList: SelectValues[] = [];
-      response.data.map(item =>{
+      response.data.map(item => {
         return subjectList.push({
           id: item.id,
           label: item.value
@@ -1729,11 +1751,10 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
 
   const handleWhatsAppLink = async () => {
-    
-    if (numWhatsApp != '')
-    {
-      let cleanNumber = numWhatsApp.replace(/\D/g, ''); 
-      let whatsAppText = 
+
+    if (numWhatsApp != '') {
+      let cleanNumber = numWhatsApp.replace(/\D/g, '');
+      let whatsAppText =
         `Olá ${customerNameWhatsApp}\n\n` +
         `Você tem um compromisso agendado:\n` +
         `*Data:* ${format(new Date(`${appointmentDateBeggin}T00:00:00`), 'dd-MM-yyyy')} às ${appointmentHourBeggin}\n` +
@@ -1743,14 +1764,12 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       const whatsAppLink = `https://web.whatsapp.com/send?phone=55${cleanNumber}&text=${encodeURIComponent(whatsAppText)}`;
       window.open(whatsAppLink);
     }
-    else 
-    {
-      const response = await api.get('/Clientes/ObterWhatsAppPorProcesso', { params:{ matterId: Number(appointmentMatter?.matterId), token: userToken }})
+    else {
+      const response = await api.get('/Clientes/ObterWhatsAppPorProcesso', { params: { matterId: Number(appointmentMatter?.matterId), token: userToken } })
 
-      if(response.data)
-      {
-        let cleanNumber = response.data.replace(/\D/g, ''); 
-        let whatsAppText = 
+      if (response.data) {
+        let cleanNumber = response.data.replace(/\D/g, '');
+        let whatsAppText =
           `Olá ${customerNameWhatsApp}\n\n` +
           `Você tem um compromisso agendado:\n` +
           `*Data:* ${format(new Date(`${appointmentDateBeggin}T00:00:00`), 'dd-MM-yyyy')} às ${appointmentHourBeggin}\n` +
@@ -1760,20 +1779,19 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         const whatsAppLink = `https://web.whatsapp.com/send?phone=55${cleanNumber}&text=${encodeURIComponent(whatsAppText)}`;
         window.open(whatsAppLink);
       }
-      else
-      {
-        addToast({type: 'info', title: 'Aviso', description: 'Processo sem cliente associado, ou cliente com número de whatsapp inválido'});
+      else {
+        addToast({ type: 'info', title: 'Aviso', description: 'Processo sem cliente associado, ou cliente com número de whatsapp inválido' });
       }
     }
   }
 
 
   const handleSubjectChange = (item) => {
-    if (item){
+    if (item) {
       setAppointmentSubject(item.label)
       setAppointmentSubjectId(item.id)
     }
-    else{
+    else {
       setAppointmentSubject('')
       setAppointmentSubjectId('')
       LoadSubject(true)
@@ -1787,42 +1805,42 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   }
 
 
-  const CustomerNotification =  useCallback(async key => {
-    try{
+  const CustomerNotification = useCallback(async key => {
+    try {
       const response = await api.post<IParameterData[]>('/Parametro/Selecionar', { token: userToken, allowNull: true, parametersName: '#WPNOTIFICATION' })
 
       if (response.data.length > 0) {
-        if(response.data[0].parameterValue == 'EM') {
+        if (response.data[0].parameterValue == 'EM') {
           const newList = Array.from(appointmentRemindersList);
           const chave = newList.findIndex(i => i.qtdReminder === key);
           newList[chave].emailNotification = 'S'
         }
-        if(response.data[0].parameterValue == 'WA') {
+        if (response.data[0].parameterValue == 'WA') {
           const newList = Array.from(appointmentRemindersList);
           const chave = newList.findIndex(i => i.qtdReminder === key);
           newList[chave].whatsAppNotification = 'S'
         }
-        if(response.data[0].parameterValue == 'AM') {
+        if (response.data[0].parameterValue == 'AM') {
           const newList = Array.from(appointmentRemindersList);
           const chave = newList.findIndex(i => i.qtdReminder === key);
           newList[chave].emailNotification = 'S'
           newList[chave].whatsAppNotification = 'S'
         }
       }
-      else{
+      else {
         const newList = Array.from(appointmentRemindersList);
-          const chave = newList.findIndex(i => i.qtdReminder === key);
-          newList[chave].emailNotification = 'N'
-          newList[chave].whatsAppNotification = 'N'
+        const chave = newList.findIndex(i => i.qtdReminder === key);
+        newList[chave].emailNotification = 'N'
+        newList[chave].whatsAppNotification = 'N'
       }
-      
+
       const newList = Array.from(appointmentRemindersList);
       const chave = newList.findIndex(i => i.qtdReminder === key);
-  
+
       newList[chave].notifyMatterCustomer = 'S';
       setAppointmentRemindersList(newList);
     }
-    catch (err:any){
+    catch (err: any) {
       console.log(err.response.data.Message)
     }
   }, [appointmentRemindersList])
@@ -1837,7 +1855,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     else
       newList[chave].emailNotification = 'N'
 
-      setAppointmentRemindersList(newList)
+    setAppointmentRemindersList(newList)
   }, [appointmentRemindersList])
 
 
@@ -1850,11 +1868,11 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     else
       newList[chave].whatsAppNotification = 'N'
 
-      setAppointmentRemindersList(newList);
+    setAppointmentRemindersList(newList);
   }, [appointmentRemindersList])
 
 
-  if (isLoading){
+  if (isLoading) {
     return (
       <>
         <Overlay />
@@ -1874,6 +1892,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
   const handleCloseConfirmDelete = () => {
     setConfirmDeleteCalendarEvent(false);
+    setLoadingDelete(false)
   }
 
 
@@ -1914,7 +1933,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
               <ModalConfirm id='ModalConfirm' show={checkMessage}>
                 <header>Aviso</header>
-                <div style={{marginLeft:'15px', marginTop:'10px', marginRight:'10px'}}>
+                <div style={{ marginLeft: '15px', marginTop: '10px', marginRight: '10px' }}>
                   <br />
                   A data inicial do compromisso é menor que a data atual.
                   <br />
@@ -1944,9 +1963,9 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                 </div>
                 <br />
               </ModalConfirm>
-              
+
               <ModalRecurrence id='ModalRecurrence' show={openModalRecurrence}>
-                <div style={{marginLeft:'15px', marginTop:'10px', marginRight:'10px'}}>
+                <div style={{ marginLeft: '15px', marginTop: '10px', marginRight: '10px' }}>
                   Regras de Recorrência
                   <br />
                   <br />
@@ -2120,13 +2139,13 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                     <button
                       className="buttonClick"
                       type='button'
-                      onClick={()=> handleSaveRecurrence()}
+                      onClick={() => handleSaveRecurrence()}
                     >
                       <FiSave />
                       Salvar
                     </button>
 
-                    {appointmentRecurrent  === 'S' && (
+                    {appointmentRecurrent === 'S' && (
                       <button
                         type='button'
                         className="buttonClick"
@@ -2166,8 +2185,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
               <ModalContent id='ModalContent' isDrag={onDrag}>
 
-                {(openReminderModal) && <Overlay /> }
-                {(openReminderModal) && <CalendarReminderModal callbackFunction={{ handleCloseReminderModal, setAppointmentNotifyMatterCustomer, setAppointmentRemindersList, appointmentRemindersList, appointmentNotifyMatterCustomer }} /> }
+                {(openReminderModal) && <Overlay />}
+                {(openReminderModal) && <CalendarReminderModal callbackFunction={{ handleCloseReminderModal, setAppointmentNotifyMatterCustomer, setAppointmentRemindersList, appointmentRemindersList, appointmentNotifyMatterCustomer }} />}
 
                 <div className='autoComplete'>
                   <p>Assunto</p>
@@ -2251,8 +2270,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                           disabled={appointmentBlockUpdate}
                         >
                           &nbsp;
-                          { appointmentRecurrent =='S' && <span style={{fontSize:'0.55rem'}}>Ver Recorrência</span>}
-                          { appointmentRecurrent == 'N' && <span style={{fontSize:'0.55rem'}}>Recorrência</span>}
+                          {appointmentRecurrent == 'S' && <span style={{ fontSize: '0.55rem' }}>Ver Recorrência</span>}
+                          {appointmentRecurrent == 'N' && <span style={{ fontSize: '0.55rem' }}>Recorrência</span>}
                         </button>
                       </>
                     )}
@@ -2265,14 +2284,14 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                   value={appointmentDescription}
                   onChange={handleNewDescription}
                   disabled={appointmentBlockUpdate}
-                  style={{overflow:'auto'}}
+                  style={{ overflow: 'auto' }}
                 />
 
                 <TextArea
                   name="Observação"
                   value={appointmentObs}
                   onChange={handleNewObs}
-                  style={{overflow:'auto'}}
+                  style={{ overflow: 'auto' }}
                   maxLength={1000}
                 />
 
@@ -2330,7 +2349,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                         setNumWhatsApp("")
                       }}
                     >
-                      {!blockAssociateMatter &&  <RiEraserLine /> }
+                      {!blockAssociateMatter && <RiEraserLine />}
                     </button>
                   )}
                 </Process>
@@ -2354,11 +2373,11 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                       </select>
                     </div>
 
-                    <div id="divTable" style={{width:'100%'}}>
-                      <table id='Table' style={{float:'right', marginRight:'20px'}}>
+                    <div id="divTable" style={{ width: '100%' }}>
+                      <table id='Table' style={{ float: 'right', marginRight: '20px' }}>
                         {appointmentRemindersList.map(item => (
                           <tr id='Tr'>
-                            <td id='tdLabel' style={{width:'80px', textAlign:'left', height:'20px', fontSize:'12px'}}>
+                            <td id='tdLabel' style={{ width: '80px', textAlign: 'left', height: '20px', fontSize: '12px' }}>
                               {item.qtdReminder === '0M' && <p>No Horário</p>}
                               {item.qtdReminder === '12H' && <p>Meio Dia</p>}
                               {item.qtdReminder != '12H' && item.qtdReminder != '0M' && item.qtdReminder.includes("M") && <p>{item.qtdReminder.split('M')[0]} Minuto(s)</p>}
@@ -2367,40 +2386,40 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                               {item.qtdReminder != '12H' && item.qtdReminder != '0M' && item.qtdReminder.includes("S") && <p>{item.qtdReminder.split('S')[0]} Semana(s)</p>}
                               {item.qtdReminder != '12H' && item.qtdReminder != '0M' && item.qtdReminder.includes("E") && <p>{item.qtdReminder.split('E')[0]} Mês(es)</p>}
                             </td>
-                            <td id='tdNotButtons' style={{width:'115px', textAlign:'right', height:'20px', fontSize:'12px'}}>
+                            <td id='tdNotButtons' style={{ width: '115px', textAlign: 'right', height: '20px', fontSize: '12px' }}>
                               {item.notifyMatterCustomer === 'S' ? (
                                 <>
                                   {item.emailNotification === 'S' ? (
-                                    <button type="button" onClick={() => {CustomerEmailNotification(item.qtdReminder)}} title='Clique para desativar o envio de lembrete email ao cliente'>
-                                      <FiMail style={{color:'blue', height:'16px', width:'16px'}} />
+                                    <button type="button" onClick={() => { CustomerEmailNotification(item.qtdReminder) }} title='Clique para desativar o envio de lembrete email ao cliente'>
+                                      <FiMail style={{ color: 'blue', height: '16px', width: '16px' }} />
                                     </button>
                                   ) : (
-                                    <button type="button" onClick={() => {CustomerEmailNotification(item.qtdReminder)}} title='Clique para ativar o envio de lembrete email ao cliente'>
-                                      <FiMail style={{color:'var(--grey)', height:'16px', width:'16px'}} />
+                                    <button type="button" onClick={() => { CustomerEmailNotification(item.qtdReminder) }} title='Clique para ativar o envio de lembrete email ao cliente'>
+                                      <FiMail style={{ color: 'var(--grey)', height: '16px', width: '16px' }} />
                                     </button>
                                   )}
                                   &nbsp;&nbsp;
                                   {item.whatsAppNotification === 'S' ? (
-                                    <button type="button" onClick={() => {CustomerWhatsNotification(item.qtdReminder)}} title='Clique para desativar o envio de lembrete whatsapp ao cliente'>
-                                      <FaWhatsapp style={{color:'green', height:'16px', width:'16px'}} />
+                                    <button type="button" onClick={() => { CustomerWhatsNotification(item.qtdReminder) }} title='Clique para desativar o envio de lembrete whatsapp ao cliente'>
+                                      <FaWhatsapp style={{ color: 'green', height: '16px', width: '16px' }} />
                                     </button>
                                   ) : (
-                                    <button type="button" onClick={() => {CustomerWhatsNotification(item.qtdReminder)}} title='Clique para ativar o envio de lembrete whatsapp ao cliente'>
-                                      <FaWhatsapp style={{color:'var(--grey)', height:'16px', width:'16px'}} />
+                                    <button type="button" onClick={() => { CustomerWhatsNotification(item.qtdReminder) }} title='Clique para ativar o envio de lembrete whatsapp ao cliente'>
+                                      <FaWhatsapp style={{ color: 'var(--grey)', height: '16px', width: '16px' }} />
                                     </button>
                                   )}
                                 </>
                               ) : (
                                 <>
-                                  <button type="button" id="NotificationCustomerButton" onClick={() => {CustomerNotification(item.qtdReminder)}} style={{color:'blue'}} title='Após clicar no botão selecione as opções de notificação por E-Mail ou WhatsApp'>
+                                  <button type="button" id="NotificationCustomerButton" onClick={() => { CustomerNotification(item.qtdReminder) }} style={{ color: 'blue' }} title='Após clicar no botão selecione as opções de notificação por E-Mail ou WhatsApp'>
                                     <p>Notifica Cliente</p>
                                   </button>
                                 </>
                               )}
                             </td>
-                            <td id='Trash' style={{width:'20px', textAlign:'left', height:'20px', fontSize:'12px'}}>
-                              <button type="button" onClick={() => {handleDisableNotification(item.qtdReminder)}}>
-                                &nbsp;<FiTrash title="Excluir o lembrete" style={{color:'var(--grey)', height:'16px', width:'16px'}} />
+                            <td id='Trash' style={{ width: '20px', textAlign: 'left', height: '20px', fontSize: '12px' }}>
+                              <button type="button" onClick={() => { handleDisableNotification(item.qtdReminder) }}>
+                                &nbsp;<FiTrash title="Excluir o lembrete" style={{ color: 'var(--grey)', height: '16px', width: '16px' }} />
                               </button>
                             </td>
                           </tr>
@@ -2473,15 +2492,15 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                             id={item.userCompanyId}
                             draggable
                             onDrag={() => setUserIdCurrentDrag(item.userCompanyId)}
-                            style={{cursor: 'move'}}
+                            style={{ cursor: 'move' }}
                           >
                             <p>{item.userName}</p>
-                            <p style={{display:'none'}}>{item.accessType}</p>
+                            <p style={{ display: 'none' }}>{item.accessType}</p>
                           </div>
                           <button
                             type="button"
                             disabled={appointmentBlockUpdate}
-                            onClick={() => { handleCancelResponsible(item.userName);}}
+                            onClick={() => { handleCancelResponsible(item.userName); }}
                           >
                             <FiTrash title="Excluir" />
                           </button>
@@ -2561,10 +2580,10 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                             id={item.userCompanyId}
                             draggable
                             onDrag={() => setUserIdCurrentDrag(item.userCompanyId)}
-                            style={{ cursor: 'move'}}
+                            style={{ cursor: 'move' }}
                           >
                             <p>{item.userName}</p>
-                            <p style={{display:'none'}}>{item.accessType}</p>
+                            <p style={{ display: 'none' }}>{item.accessType}</p>
                           </div>
                           <button
                             type="button"
@@ -2619,17 +2638,38 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
               </ModalContent>
 
               <Footer id='Footer' showButtons={isCreate}>
-                <section>
+
+
+
+                <section style={{
+                  display: "grid",
+                  gridTemplateColumns: "auto 1fr",
+                  alignItems: "center",
+                  gap: "0px",
+                }}>
                   <button type="button" id="log" onClick={handleLogOnDisplay}>
                     <IoIosPaper title="Ver Historico" />
                     <p>Ver Histórico</p>
                   </button>
-
+                  {appointmentWorkflowActionsExecId !== 0 ? (
+                    
+                      <button type="button" id="workflow" title="Esse compromisso está associado a um Workflow" onClick={() =>handleWorkflowExec()}>
+                      <GoGitMerge />
+                      </button>
+                    
+                  ) : (
+                    <div>
+                      &nbsp;
+                    </div>
+                  )}
                   <p>
                     Criado Por:&nbsp;
                     {appointmentUser}
                   </p>
                 </section>
+
+
+
                 <div>
                   <button type="button" onClick={handleSaveModal}>
                     Salvar
@@ -2647,7 +2687,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                     Excluir
                     {loadingDelete ? <Loader size={20} color="#f19000" /> : null}
                   </button>
-         
+
                   <button type="button" id="done" onClick={handleDoneOrReopen}>
                     {textButton}
                     {loadingDone ? <Loader size={20} color="#f19000" /> : null}
@@ -2664,7 +2704,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
         </ResponsiveGridLayout>
       )}
-      
+
 
       {small && (
         <ResponsiveGridLayout
@@ -2692,7 +2732,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
               <ModalConfirm id='ModalConfirm' show={checkMessage}>
                 <header>Aviso</header>
-                <div style={{marginLeft:'15px', marginTop:'10px', marginRight:'10px'}}>
+                <div style={{ marginLeft: '15px', marginTop: '10px', marginRight: '10px' }}>
                   <br />
                   A data inicial do compromisso é menor que a data atual.
                   <br />
@@ -2724,7 +2764,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
               </ModalConfirm>
 
               <ModalRecurrence id='ModalRecurrence' show={openModalRecurrence}>
-                <div style={{marginLeft:'15px', marginTop:'10px', marginRight:'10px'}}>
+                <div style={{ marginLeft: '15px', marginTop: '10px', marginRight: '10px' }}>
                   Regras de Recorrência
                   <br />
                   <br />
@@ -2898,13 +2938,13 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                     <button
                       className="buttonClick"
                       type='button'
-                      onClick={()=> handleSaveRecurrence()}
+                      onClick={() => handleSaveRecurrence()}
                     >
                       <FiSave />
                       Salvar
                     </button>
 
-                    {appointmentRecurrent  === 'S' && (
+                    {appointmentRecurrent === 'S' && (
                       <button
                         type='button'
                         className="buttonClick"
@@ -3025,8 +3065,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                           disabled={appointmentBlockUpdate}
                         >
                           &nbsp;
-                          { appointmentRecurrent =='S' && <span style={{fontSize:'0.55rem'}}>Ver Recorrência</span>}
-                          { appointmentRecurrent == 'N' && <span style={{fontSize:'0.55rem'}}>Recorrência</span>}
+                          {appointmentRecurrent == 'S' && <span style={{ fontSize: '0.55rem' }}>Ver Recorrência</span>}
+                          {appointmentRecurrent == 'N' && <span style={{ fontSize: '0.55rem' }}>Recorrência</span>}
                         </button>
                       </>
                     )}
@@ -3039,14 +3079,14 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                   value={appointmentDescription}
                   onChange={handleNewDescription}
                   disabled={appointmentBlockUpdate}
-                  style={{overflow:'auto'}}
+                  style={{ overflow: 'auto' }}
                 />
 
                 <TextArea
                   name="Observação"
                   value={appointmentObs}
                   onChange={handleNewObs}
-                  style={{overflow:'auto'}}
+                  style={{ overflow: 'auto' }}
                   maxLength={1000}
                 />
 
@@ -3105,7 +3145,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                         setNumWhatsApp("")
                       }}
                     >
-                      {!blockAssociateMatter &&  <RiEraserLine /> }
+                      {!blockAssociateMatter && <RiEraserLine />}
                     </button>
                   )}
                 </Process>
@@ -3153,28 +3193,28 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                           {item.notifyMatterCustomer === 'S' ? (
                             <>
                               {item.emailNotification === 'S' ? (
-                                <button type="button" onClick={() => {CustomerEmailNotification(item.qtdReminder)}} title='Clique para desativar o envio de lembrete email ao cliente'>
-                                  <FiMail style={{color:'blue'}} />
+                                <button type="button" onClick={() => { CustomerEmailNotification(item.qtdReminder) }} title='Clique para desativar o envio de lembrete email ao cliente'>
+                                  <FiMail style={{ color: 'blue' }} />
                                 </button>
                               ) : (
-                                <button type="button" onClick={() => {CustomerEmailNotification(item.qtdReminder)}} title='Clique para ativar o envio de lembrete email ao cliente'>
-                                  <FiMail style={{color:'var(--grey)'}} />
+                                <button type="button" onClick={() => { CustomerEmailNotification(item.qtdReminder) }} title='Clique para ativar o envio de lembrete email ao cliente'>
+                                  <FiMail style={{ color: 'var(--grey)' }} />
                                 </button>
                               )}
                               &nbsp;
                               {item.whatsAppNotification === 'S' ? (
-                                <button type="button" onClick={() => {CustomerWhatsNotification(item.qtdReminder)}} title='Clique para desativar o envio de lembrete whatsapp ao cliente'>
-                                  <FaWhatsapp style={{color:'green'}} />
+                                <button type="button" onClick={() => { CustomerWhatsNotification(item.qtdReminder) }} title='Clique para desativar o envio de lembrete whatsapp ao cliente'>
+                                  <FaWhatsapp style={{ color: 'green' }} />
                                 </button>
                               ) : (
-                                <button type="button" onClick={() => {CustomerWhatsNotification(item.qtdReminder)}} title='Clique para ativar o envio de lembrete whatsapp ao cliente'>
-                                  <FaWhatsapp style={{color:'var(--grey)'}} />
+                                <button type="button" onClick={() => { CustomerWhatsNotification(item.qtdReminder) }} title='Clique para ativar o envio de lembrete whatsapp ao cliente'>
+                                  <FaWhatsapp style={{ color: 'var(--grey)' }} />
                                 </button>
                               )}
                             </>
                           ) : (
                             <>
-                              <button type="button" id="NotificationCustomerButton" onClick={() => {CustomerNotification(item.qtdReminder)}} style={{color:'blue'}} title='Após clicar no botão selecione as opções de notificação por E-Mail ou WhatsApp'>
+                              <button type="button" id="NotificationCustomerButton" onClick={() => { CustomerNotification(item.qtdReminder) }} style={{ color: 'blue' }} title='Após clicar no botão selecione as opções de notificação por E-Mail ou WhatsApp'>
                                 <p>Notif. Cliente</p>
                               </button>
                             </>
@@ -3182,7 +3222,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
                           &nbsp;
 
-                          <button type="button" onClick={() => {handleDisableNotification(item.qtdReminder)}}>
+                          <button type="button" onClick={() => { handleDisableNotification(item.qtdReminder) }}>
                             <FiTrash title="Excluir" />
                           </button>
 
@@ -3256,15 +3296,15 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                             id={item.userCompanyId}
                             draggable
                             onDrag={() => setUserIdCurrentDrag(item.userCompanyId)}
-                            style={{cursor: 'move'}}
+                            style={{ cursor: 'move' }}
                           >
                             <p>{item.userName}</p>
-                            <p style={{display:'none'}}>{item.accessType}</p>
+                            <p style={{ display: 'none' }}>{item.accessType}</p>
                           </div>
                           <button
                             type="button"
                             disabled={appointmentBlockUpdate}
-                            onClick={() => { handleCancelResponsible(item.userName);}}
+                            onClick={() => { handleCancelResponsible(item.userName); }}
                           >
                             <FiTrash title="Excluir" />
                           </button>
@@ -3344,10 +3384,10 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                             id={item.userCompanyId}
                             draggable
                             onDrag={() => setUserIdCurrentDrag(item.userCompanyId)}
-                            style={{ cursor: 'move'}}
+                            style={{ cursor: 'move' }}
                           >
                             <p>{item.userName}</p>
-                            <p style={{display:'none'}}>{item.accessType}</p>
+                            <p style={{ display: 'none' }}>{item.accessType}</p>
                           </div>
                           <button
                             type="button"
@@ -3442,7 +3482,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
             </Container2>
           ))}
-        
+
 
         </ResponsiveGridLayout>
       )}
@@ -3484,13 +3524,15 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
             Aguarde um instante...
             <Loader size={4} color="var(--blue-twitter)" />
           </div>
-          
+
         </>
       )}
 
-      {(confirmDeleteCalendarEvent) && <Overlay /> }
+      {(confirmDeleteCalendarEvent) && <Overlay />}
       {confirmDeleteCalendarEvent && (
-        <ConfirmDeleteModal callbackFunction={{handleCloseConfirmDelete, handleConfirmDelete}} />
+        <ConfirmDeleteModal
+          appointmentWorkflowActionsExecId={appointmentWorkflowActionsExecId}
+          callbackFunction={{ handleCloseConfirmDelete, handleConfirmDelete }} />
       )}
 
 

@@ -69,6 +69,8 @@ export interface Data {
   privacityOptions: [];
   userCreator: string;
   recurrenceRule: string;
+  workflowActionsExecId:number; 
+  workflowExecId:number; 
 }
 
 export interface SelectValues {
@@ -157,6 +159,8 @@ export interface AppointmentPropsSave {
   recurrenceRuleJSON:any;
   serieRecurrenceChange?: any;
   isConfirmSave:any;
+  workflowActionsExecId?: any,
+  workflowExecId?:any 
 }
 
 export interface AppointmentPropsDelete {

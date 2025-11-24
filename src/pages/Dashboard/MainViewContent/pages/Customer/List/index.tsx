@@ -14,7 +14,8 @@ import { HeaderPage } from 'components/HeaderPage';
 import { useCustomer } from 'context/customer';
 import Modal from 'react-modal';
 import api from 'services/api';
-import { GiReceiveMoney } from 'react-icons/gi';
+import { GiReceiveMoney, GiPathDistance } from 'react-icons/gi';
+import { GoGitMerge } from "react-icons/go"
 import Loader from 'react-spinners/PulseLoader';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import { ImMenu3, ImMenu4 } from 'react-icons/im';
@@ -45,6 +46,12 @@ import { Overlay } from 'Shared/styles/GlobalStyle';
 import { Container, Content, TaskBar, ListCostumer, CostumerCard } from './styles';
 import { CustomerCustomInformation, CustomerCustomButtons } from './CustomerCustom';
 import { ICustomerData, ICustomInfos } from '../Interfaces/ICustomerList';
+import { FcAbout, FcSearch, FcParallelTasks } from 'react-icons/fc';
+
+export interface IDefaultsProps {
+  id: string;
+  value: string;
+}
 
 Modal.setAppElement('#root');
 
@@ -52,13 +59,13 @@ const CustomerList: React.FC = () => {
   const { signOut } = useAuth();
   const scrollRef = useRef<HTMLDivElement>(null);
   const history = useHistory();
-  const {addToast } = useToast();
-  const {handleLoadInitialPropsFromDocument } = useDocument();
-  const {isMenuOpen, handleIsMenuOpen } = useMenuHamburguer();
-  const {handleOpenCustomerDocumentModal, isCustomerListModalOpen, isBirthdayModalOpen, isReportModalOpen, isCustomerMergeModalOpen, isCustomerDocumentModalOpen} = useCustomer();
-  const {isConfirmMessage, isCancelMessage, caller, handleCancelMessage,handleConfirmMessage,handleCheckConfirm, handleCaller } = useConfirmBox();
-  const {captureText, handleCaptureText, handleLoadingData } = useHeader()
-  const {permissionsSecurity, handleValidateSecurity } = useSecurity();
+  const { addToast } = useToast();
+  const { handleLoadInitialPropsFromDocument } = useDocument();
+  const { isMenuOpen, handleIsMenuOpen } = useMenuHamburguer();
+  const { handleOpenCustomerDocumentModal, isCustomerListModalOpen, isBirthdayModalOpen, isReportModalOpen, isCustomerMergeModalOpen, isCustomerDocumentModalOpen } = useCustomer();
+  const { isConfirmMessage, isCancelMessage, caller, handleCancelMessage, handleConfirmMessage, handleCheckConfirm, handleCaller } = useConfirmBox();
+  const { captureText, handleCaptureText, handleLoadingData } = useHeader()
+  const { permissionsSecurity, handleValidateSecurity } = useSecurity();
   const [isEndPage, setIsEndPage] = useState<boolean>(false);
   const [isPagination, setIsPagination] = useState(false);
   const [page, setPage] = useState(1);
@@ -71,12 +78,15 @@ const CustomerList: React.FC = () => {
   const [isDeletingCustomer, setIsDeletingCustomer] = useState(false);
   const [isInitialize, setIsInitialize] = useState(false)
   const [totalPage, setTotalPage] = useState(0)
-  const {handleOpenCardBox, handleMatterReferenceId } = useMatter();
+  const { handleOpenCardBox, handleMatterReferenceId } = useMatter();
   const [hasCustomization, setHasCustomization] = useState<boolean>(false)
   const [isGeneratingReport, setIsGeneratingReport] = useState<boolean>(false)
   const [idReportGenerate, setIdReportGenerate] = useState<number>(0)
   const token = localStorage.getItem('@GoJur:token');
   const checkpermissionDocument = permissionsSecurity.find(item => item.name === "CFGDCMEM");
+  const [workflowView, setWorkflowView] = useState('')
+
+  const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKFEX");
 
   // Call security permission - passing module
   useEffect(() => {
@@ -89,60 +99,57 @@ const CustomerList: React.FC = () => {
     handleLoadingData(false)
   }
 
-  const LoadCustomer =  async(initialize = false)  => {
+  const LoadCustomer = async (initialize = false) => {
     try {
       // api request list customer as Gpjweb does
       const response = await api.get<ICustomerData[]>('/Clientes/Listar', {
-        params:{
-          page: initialize? 1:page,
+        params: {
+          page: initialize ? 1 : page,
           rows: 20,
           filterClause: captureText,
           token,
-        }      
+        }
       });
 
       // when is initialize page force pagination = 1
-      setPage(initialize? 1: page)
+      setPage(initialize ? 1 : page)
 
       // total page by main request
-      if (!isPagination){
-        setTotalPage(response.data.length > 0? response.data[0].count: 0)
+      if (!isPagination) {
+        setTotalPage(response.data.length > 0 ? response.data[0].count : 0)
       }
 
       // create new collection with no custom values defined
-      const listCustomer = response.data.map(item  =>  {
+      const listCustomer = response.data.map(item => {
         return {
           ...item,
           hasCustomValues: false,
         }
       })
 
-      if (!isPagination)
-      {
+      if (!isPagination) {
         // verify if exists customer just saved or include
         const customerId = localStorage.getItem('@GoJur:NC');
 
-        if (customerId)
-        {
+        if (customerId) {
           // remove customer saved from list and append in front of all itens
           const customerSaved = await GetCustomerById(customerId)
-          if (customerSaved.length > 0){
+          if (customerSaved.length > 0) {
             const customerListRefresh = listCustomer.filter(cust => cust.cod_Pessoa !== customerSaved[0].cod_Pessoa);
             setCustomerList([...customerSaved, ...customerListRefresh])
           }
         }
-        else{
+        else {
           setCustomerList(listCustomer);    // append first initialization list normally
         }
       }
-      else
-      {
+      else {
         // set customer list paginate append on current list
         const nData = [...customerList, ...response.data]
         setCustomerList(nData)
 
         // if is a pagination and there is no item finish
-        if (listCustomer.length == 0){
+        if (listCustomer.length == 0) {
           setIsEndPage(true)
           setIsLoadingData(false)
           setIsPagination(false)
@@ -158,9 +165,9 @@ const CustomerList: React.FC = () => {
 
       // verify custom component module -> today used by bcompany base 1
       const hasCustomerCustomization = await VerifyCustomizationCompany()
-      if (hasCustomerCustomization){
-          const customerIds = response.data.map(i => i.cod_Cliente)
-          await LoadPlanInformation(customerIds, initialize)
+      if (hasCustomerCustomization) {
+        const customerIds = response.data.map(i => i.cod_Cliente)
+        await LoadPlanInformation(customerIds, initialize)
       }
 
       // remove localstorage filtre and new customer
@@ -179,7 +186,7 @@ const CustomerList: React.FC = () => {
       handleLoadingData(false)
 
       console.log(err)
-      if (err.response.data.statusCode == 1002){
+      if (err.response.data.statusCode == 1002) {
         addToast({
           type: 'info',
           title: 'Permissão negada',
@@ -212,7 +219,7 @@ const CustomerList: React.FC = () => {
   const LoadPlanInformation = async (customerIds: number[], initialize = false) => {
     try {
 
-      if (customerIds.length === 0){
+      if (customerIds.length === 0) {
         return;
       }
 
@@ -230,9 +237,9 @@ const CustomerList: React.FC = () => {
 
       // customer information
       let infoCustom: ICustomInfos[] = []
-      if (!initialize){
+      if (!initialize) {
         infoCustom = [...response.data, ...customerCustomInfos]
-      }else{
+      } else {
         infoCustom = response.data
       }
 
@@ -249,12 +256,12 @@ const CustomerList: React.FC = () => {
   const GetCustomerById = async (customerId: string) => {
 
     const response = await api.get<ICustomerData[]>('/Clientes/Listar', {
-      params:{
+      params: {
         page: 1,
         rows: 1,
         filterClause: `customerId${customerId}`,
         token,
-      }   
+      }
     });
 
     return response.data;
@@ -287,6 +294,24 @@ const CustomerList: React.FC = () => {
     history.push(href)
   }
 
+  const handleWorkflow = async (customerId, customer) => {
+
+    localStorage.setItem('@Gojur:customerRedirect', 'S')
+    localStorage.setItem('@Gojur:customerId', customerId.toString())
+    localStorage.setItem('@Gojur:customer', customer)
+
+    localStorage.setItem('@Gojur:filterCustomer', customer)
+
+    localStorage.removeItem('@Gojur:publicationId');
+    localStorage.removeItem('@Gojur:followUpId');
+    localStorage.removeItem('@Gojur:notificationTag');
+
+    if (workflowView == "LISTA")
+      history.push(`/workflowexec/list`)
+    else if (workflowView == "KANBAN")
+      history.push(`/workflowexec/kanban`)
+  }
+
   const handleCheckBoxDeleteCustomer = (customerId: number) => {
     setIsDeleting(true)
     setCurrentCustomerId(customerId);
@@ -304,7 +329,7 @@ const CustomerList: React.FC = () => {
       });
 
       const customer = customerList.find(cust => cust.cod_Cliente === customerId);
-      if (customer){
+      if (customer) {
         const customerListRefresh = customerList.filter(cust => cust.cod_Cliente !== customerId);
         // customerListRefresh = customerList.filter(cust => cust.nom_Pessoa.toLowerCase() !== customer.nom_Pessoa.toLowerCase());
         setCustomerList(customerListRefresh);
@@ -339,7 +364,7 @@ const CustomerList: React.FC = () => {
 
     if (isEndPage || customerList.length == 0) return;
 
-    const isEndScrool = ((element.scrollHeight - element.scrollTop)-50) <= element.clientHeight
+    const isEndScrool = ((element.scrollHeight - element.scrollTop) - 50) <= element.clientHeight
 
     if (isEndScrool && !isLoadingData) {
       setIsLoadingData(true);
@@ -350,7 +375,7 @@ const CustomerList: React.FC = () => {
   // When is pagination increments page number
   useEffect(() => {
 
-    if (isLoadingData && isPagination){
+    if (isLoadingData && isPagination) {
       setPage(page + 1)
     }
 
@@ -372,12 +397,12 @@ const CustomerList: React.FC = () => {
     setIsInitialize(true)
     LoadCustomer(true)
 
-  },[captureText])
+  }, [captureText])
 
   // when page number is than 1 load customer as pagination
   useEffect(() => {
 
-    if (page > 1 && !isInitialize){
+    if (page > 1 && !isInitialize) {
       LoadCustomer();
     }
 
@@ -385,19 +410,19 @@ const CustomerList: React.FC = () => {
 
   useEffect(() => {
 
-    if (isCancelMessage){
+    if (isCancelMessage) {
       setIsDeleting(false)
       handleCancelMessage(false)
     }
   }, [isCancelMessage])
 
   useEffect(() => {
-    if (isConfirmMessage && caller=="customerList"){
+    if (isConfirmMessage && caller == "customerList") {
 
-      if (!isDeleting){
+      if (!isDeleting) {
         window.open(`${envProvider.redirectUrl}ReactRequest/Redirect?token=${token}&route=customer/list`)
       }
-      else{
+      else {
         handleDeleteCustomer(currentCustomerId)
       }
 
@@ -411,44 +436,44 @@ const CustomerList: React.FC = () => {
 
   // when exists report id verify if is avalaliable every 2 seconds
   useEffect(() => {
-    if (idReportGenerate > 0){
+    if (idReportGenerate > 0) {
       const checkInterval = setInterval(() => {
         CheckReportPending(checkInterval)
       }, 2000);
     }
-  },[idReportGenerate])
+  }, [idReportGenerate])
 
   // Check is report is already
   const CheckReportPending = useCallback(async (checkInterval) => {
-    if (isGeneratingReport){
-  
+    if (isGeneratingReport) {
+
       const response = await api.post(`/ProcessosGOJUR/VerificarStatus`, {
         id: idReportGenerate,
         token: localStorage.getItem('@GoJur:token')
       })
-  
-      if (response.data == "F" && isGeneratingReport){
+
+      if (response.data == "F" && isGeneratingReport) {
         clearInterval(checkInterval);
         setIsGeneratingReport(false)
         OpenReportAmazon()
       }
-  
-      if (response.data == "E"){
+
+      if (response.data == "E") {
         clearInterval(checkInterval);
         setIsGeneratingReport(false)
-  
+
         addToast({
           type: "error",
           title: "Operação não realizada",
           description: "Não foi possível gerar o relatório."
         })
-  
+
       }
     }
-  },[isGeneratingReport, idReportGenerate])
+  }, [isGeneratingReport, idReportGenerate])
 
   // Open link with report
-  const OpenReportAmazon = async() => {
+  const OpenReportAmazon = async () => {
 
     const response = await api.post(`/ProcessosGOJUR/Editar`, {
       id: idReportGenerate,
@@ -480,6 +505,35 @@ const CustomerList: React.FC = () => {
     }
   }, []);
 
+   
+    useEffect(() => {
+      LoadDefaultProps();
+  
+    }, [workflowView]);
+
+
+  const LoadDefaultProps = async () => {
+    try {
+
+      const response = await api.post<IDefaultsProps[]>('/Defaults/Listar', {
+        token,
+      });
+
+      const workflowViewDefault = response.data.find(item => item.id === 'defaultWorkflowParameter' || item.id === 'adm')
+  
+      // // default view workflow
+      if (workflowViewDefault) {
+        setWorkflowView(workflowViewDefault.value)
+      } else {
+        setWorkflowView('KANBAN')
+      }
+
+
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   // accessCodes Permissions
   const showSalesFunnelMenu = permissionsSecurity.find(item => item.name === "CFGSFUNI");
   const showBusinessDashboard = permissionsSecurity.find(item => item.name === "CFGSDASH");
@@ -508,7 +562,7 @@ const CustomerList: React.FC = () => {
                 type="submit"
               >
                 <BsFunnel />
-                 Funil de Vendas
+                Funil de Vendas
               </button>
             )}
 
@@ -520,7 +574,7 @@ const CustomerList: React.FC = () => {
                 type="submit"
               >
                 <RiDashboardLine />
-                 DashBoard
+                DashBoard
               </button>
             )}
 
@@ -553,7 +607,7 @@ const CustomerList: React.FC = () => {
 
           <ListCostumer onClick={() => handleIsMenuOpen(false)}>
 
-            { customerList.map(customer => (
+            {customerList.map(customer => (
 
               <CostumerCard key={customer.cod_Cliente}>
 
@@ -608,6 +662,7 @@ const CustomerList: React.FC = () => {
                     <FiFile />
                   </button>
 
+
                   {checkpermissionDocument && (
                     <button
                       type="button"
@@ -621,6 +676,18 @@ const CustomerList: React.FC = () => {
                     </button>
                   )}
 
+                  {(checkWorkflow) && (
+                    <>
+                      <button
+                        type="button"
+                        title="Workflow"
+                        onClick={() => handleWorkflow(customer.cod_Cliente, customer.nom_Pessoa)}
+                      >
+                         <FcParallelTasks />
+                      </button>
+                    </>
+                  )}
+
                   <button
                     type="button"
                     title="Excluir"
@@ -631,11 +698,11 @@ const CustomerList: React.FC = () => {
 
                   {/* Render buttons custom */}
                   {hasCustomization && (
-                  <CustomerCustomButtons
-                    customer={customer}
-                    customObject={customerCustomInfos}
-                  />
-                )}
+                    <CustomerCustomButtons
+                      customer={customer}
+                      customObject={customerCustomInfos}
+                    />
+                  )}
                 </header>
 
                 {/* customer common information */}
@@ -654,8 +721,8 @@ const CustomerList: React.FC = () => {
                             )
                             {' '}
                           </span>
-                          {customer.flg_Status == 'A' && <span>Ativo</span> }
-                          {customer.flg_Status == 'I' && <span style={{color:'var(--red)'}}>Inativo</span> }
+                          {customer.flg_Status == 'A' && <span>Ativo</span>}
+                          {customer.flg_Status == 'I' && <span style={{ color: 'var(--red)' }}>Inativo</span>}
                         </b>
                       </>
                       <p>
@@ -692,11 +759,11 @@ const CustomerList: React.FC = () => {
 
                     <article>
                       {customer.cod_Senha !== null && (
-                      <p>
-                        <b>Senha:</b>
-                        {customer.cod_Senha}
-                      </p>
-                            )}
+                        <p>
+                          <b>Senha:</b>
+                          {customer.cod_Senha}
+                        </p>
+                      )}
                     </article>
 
                     <article id="whats">
@@ -705,15 +772,15 @@ const CustomerList: React.FC = () => {
                         {customer.num_WhatsApp}
                       </p>
                       {customer.num_WhatsApp !== null && (
-                      <button
-                        type="button"
-                        style={{cursor: "pointer"}}
-                        onClick={() => handleOpenWhatsApp(customer.num_WhatsApp)}
-                        title="Clique aqui para enviar mensagem para o WhatsApp do seu cliente"
-                      >
-                        <FaWhatsapp />
-                      </button>
-                            )}
+                        <button
+                          type="button"
+                          style={{ cursor: "pointer" }}
+                          onClick={() => handleOpenWhatsApp(customer.num_WhatsApp)}
+                          title="Clique aqui para enviar mensagem para o WhatsApp do seu cliente"
+                        >
+                          <FaWhatsapp />
+                        </button>
+                      )}
                     </article>
 
                   </section>
@@ -736,7 +803,7 @@ const CustomerList: React.FC = () => {
           </ListCostumer>
 
           {/* show message whem there is no customer find */}
-          { (customerList.length == 0 && !isLoadingData && captureText.length > 0 && !isInitialize) && (
+          {(customerList.length == 0 && !isLoadingData && captureText.length > 0 && !isInitialize) && (
             <div className='messageEmpty'>
               <FaUserCircle />
               {' '}
@@ -748,7 +815,7 @@ const CustomerList: React.FC = () => {
           )}
 
           {/* show message when is loading more customer by pagination */}
-          { (isPagination) && (
+          {(isPagination) && (
             <div className='paginationPage'>
               {/* Aguarde - carregando mais clientes */}
               <Loader size="0.5rem" color="var(--blue-twitter)" />

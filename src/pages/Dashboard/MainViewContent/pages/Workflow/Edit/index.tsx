@@ -35,6 +35,7 @@ import { loadingMessage, noOptionsMessage } from 'Shared/utils/commonConfig';
 import { AppointmentPropsSave, AppointmentPropsDelete, SelectValues, Data, dataProps, LembretesData, MatterData, ModalProps, ResponsibleDTO, Settings, ShareListDTO, userListData } from 'pages/Dashboard/MainViewContent/pages/Interfaces/ICalendar';
 import { dayRecurrence, optionsLembrete, weekRecurrence } from 'pages/Dashboard/MainViewContent/pages/Dashboard/resorces/DashboardComponents/CreateAppointment/ListValues/List'
 import TimePicker from 'components/TimePicker';
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 export default function Workflow() {
 
@@ -74,6 +75,8 @@ export default function Workflow() {
   const [customerWhatsapp, setCustomerWhatsapp] = useState(''); // field whatsapp
   const [customerGroupValue, setCustomerGroupValue] = useState(''); // group field value
   const [workflowId, setWorkflowId] = useState<number>(0);
+  const [totalTriggers, setTotalTriggers] = useState<number>(0);
+  
   const [workflowtriggerId, setWorkflowTriggerId] = useState<number>(0);
   const [customerSalesChannelId, setCustomerSalesChannelId] = useState(''); // group field id
   const [customerType, setCustomerType] = useState('F'); //  field type
@@ -209,7 +212,7 @@ export default function Workflow() {
           workflowActionId: Math.random(),
           companyId,
           workflowTriggerId: id,
-          actionType: 'criarcompromisso',
+          actionType: 'CRIARCOMPROMISSO',
           daysbeforeandafter: 0
         };
 
@@ -217,7 +220,7 @@ export default function Workflow() {
           workflowTriggerId: id,
           companyId,
           workflowId: 0,
-          triggerType: 'data',
+          triggerType: 'DATA',
           configuration: { label: "" },
           actions: [firstAction]
         };
@@ -226,6 +229,8 @@ export default function Workflow() {
 
       }
       else {
+
+        setTotalTriggers(response.data.triggers.length);
         setWorkflowTrigger(response.data.triggers)
       }
 
@@ -236,7 +241,7 @@ export default function Workflow() {
 
     } catch (err) {
       setIsLoading(false)
-      history.push('/workflow/list')
+      history.push('/workflowt')
       console.log(err)
     }
   }, [workflowId]);
@@ -246,7 +251,7 @@ export default function Workflow() {
   async function handleSalvarWorkflow() {
 
     const isValid = workflowTrigger.every(t => {
-      if (t.triggerType === "data") {
+      if (t.triggerType === "DATA") {
         return Boolean(t.configuration?.label?.trim());
       }
       return 0; 
@@ -254,9 +259,9 @@ export default function Workflow() {
 
     if (!isValid) {
       addToast({
-        type: "error",
-        title: "Erro de validação",
-        description: "Gatilhos do tipo 'data' precisam ter um label preenchido."
+        type: "info",
+        title: "Campo Obrigatório",
+        description: "O workflow precisa de ao menos 1 gatilho configurado, preencha os campos ou inclua 1 gatilho no workflow"
       });
       return 0;
     }
@@ -320,9 +325,10 @@ export default function Workflow() {
 
 
   const handleSubmitWorkflow = useCallback(async () => {
+
     // Valida apenas gatilhos do tipo "data"
     const isValid = workflowTrigger.every(t => {
-      if (t.triggerType === "data") {
+      if (t.triggerType === "DATA") {
         return Boolean(t.configuration?.label?.trim());
       }
       return true; 
@@ -330,9 +336,9 @@ export default function Workflow() {
 
     if (!isValid) {
       addToast({
-        type: "error",
-        title: "Erro de validação",
-        description: "Gatilhos do tipo 'data' precisam ter um label preenchido."
+        type: "info",
+        title: "Campos Obrigatórios",
+        description: "O workflow precisa de ao menos 1 gatilho configurado, preencha os campos ou inclua 1 gatilho no workflow"
       });
       return;
     }
@@ -352,7 +358,7 @@ export default function Workflow() {
         triggers: triggerList 
       })
 
-
+   
       const id = Number(response.data);
       setWorkflowId(id);
 
@@ -379,10 +385,28 @@ export default function Workflow() {
 
       }
       else
-        reloadWorkflow(id)
-      //handleSalvarCompromisso()
+      {
+     
+        //const currentOrder = [...workflowTrigger];
+        
+        await reloadWorkflow(id)
 
+        /*
+        setWorkflowTrigger(prev => {
+        const updated = [...prev];
+     
+          updated.sort((a, b) => {
+            const orderA = currentOrder.findIndex(t => t.workflowTriggerId === a.workflowTriggerId);
+            const orderB = currentOrder.findIndex(t => t.workflowTriggerId === b.workflowTriggerId);
+            return orderA - orderB;
+          });
+          return updated;
+        });
+        */
 
+      }
+
+     
       addToast({
         type: "success",
         title: "Workflow salvo",
@@ -513,7 +537,7 @@ export default function Workflow() {
           workflowActionId: Math.random(),
           companyId,
           workflowTriggerId: id,
-          actionType: 'criarcompromisso',
+          actionType: 'CRIARCOMPROMISSO',
           daysbeforeandafter: 0,
           configuration: {
             when: "depois", 
@@ -526,13 +550,15 @@ export default function Workflow() {
           workflowTriggerId: id,
           companyId,
           workflowId: 0,
-          triggerType: 'data',
+          triggerType: 'DATA',
           configuration: { label: '' },
           actions: [firstAction],
         };
 
         setWorkflowTrigger((oldState) => [...oldState, newTrigger]);
       } else {
+
+        setTotalTriggers(response.data.triggers.length);
         setWorkflowTrigger(response.data.triggers);
 
         console.log(response.data.triggers.configuration);
@@ -543,7 +569,7 @@ export default function Workflow() {
       //setIsInitialize(false);
     } catch (err) {
       setIsLoading(false);
-      history.push('/workflow/list');
+      history.push('/workflow');
       console.log(err);
     }
   }, []);
@@ -558,7 +584,7 @@ export default function Workflow() {
       workflowTriggerId: id,
       companyId,
       workflowId: 0,
-      triggerType: 'data',
+      triggerType: 'DATA',
       configuration: { label: "" },
       actions: []
       //actions: [firstAction] 
@@ -579,7 +605,7 @@ export default function Workflow() {
       workflowactionId: id,
       companyId,
       workflowTriggerId: triggerId,
-      actionType: 'criarcompromisso',
+      actionType: 'CRIARCOMPROMISSO',
       daysbeforeandafter: 0,
       configuration: {
         when: "depois",
@@ -604,7 +630,7 @@ export default function Workflow() {
   const handleDeleteTrigger = useCallback((triggerId) => {
     const address = workflowTrigger.filter(item => item.workflowTriggerId !== triggerId);
 
-    if (address.length >= 0) {
+    if (address.length >=0) {
       setWorkflowTrigger(address)
     } else {
       addToast({
@@ -677,7 +703,7 @@ export default function Workflow() {
     if (isConfirmMessage && caller == "WorkflowList") {
 
       if (!isDeleting) {
-        window.open(`${envProvider.redirectUrl}ReactRequest/Redirect?token=${token}&route=workflow/list`)
+        window.open(`${envProvider.redirectUrl}ReactRequest/Redirect?token=${token}&route=workflow`)
       }
       else {
         handleDeleteWorkflowGatilho(currentWorkflowId)
@@ -700,6 +726,22 @@ export default function Workflow() {
 
   const handleDeleteWorkflowGatilho = async (workflowtriggerId: number) => {
     try {
+
+      const trigger = workflowTrigger.filter(item => item.workflowTriggerId !== workflowtriggerId);
+
+      
+      //if (trigger.length ==0) {
+      if (totalTriggers <=1 && workflowtriggerId.toString().length <= 10) {
+
+          addToast({
+            type: "info",
+            title: "Operação invalida",
+            description: "Só é possivel excluir quando há mais de um gatilho cadastrado"
+          })
+          return
+
+      }
+  
       setIsDeletingTrigger(true)
 
       await api.delete('/Workflow/DeletarGatilho', {
@@ -721,13 +763,16 @@ export default function Workflow() {
       setIsDeletingTrigger(false)
       setCurrentWorkflowId(0)
 
+      setTotalTriggers(totalTriggers - 1)
+
     } catch (err) {
+      /*
       addToast({
         type: 'info',
         title: 'Falha ao apagar Gatilho',
         description: err.response.data.Message
       });
-
+      */
       handleDeleteTrigger(workflowtriggerId)
 
       setIsDeletingTrigger(false)
@@ -761,12 +806,24 @@ export default function Workflow() {
       setIsDeletingTrigger(false)
       //setCurrentWorkflowId(0)
 
+        const currentOrder = [...workflowTrigger];
       await reloadWorkflow(workflowId);
-
 
       setPainelAberto(workflowtriggerId);
       fetchTriggerActions(workflowtriggerId);
       handleNewAction(workflowtriggerId);
+
+       setWorkflowTrigger(prev => {
+      const updated = [...prev];
+    
+      updated.sort((a, b) => {
+        const orderA = currentOrder.findIndex(t => t.workflowTriggerId === a.workflowTriggerId);
+        const orderB = currentOrder.findIndex(t => t.workflowTriggerId === b.workflowTriggerId);
+        return orderA - orderB;
+      });
+      return updated;
+    });
+
 
 
     } catch (err) {
@@ -1299,22 +1356,34 @@ export default function Workflow() {
     }
 
     if (!trigger) {
-      alert("Trigger não encontrada.");
+      //alert("Trigger não encontrada.");
       return;
     }
 
-
+    //const currentOrder = [...workflowTrigger];
     const id = await handleSalvarWorkflow();
 
     if (id > 0) {
 
       await fetchTriggerActions(triggerId);
+
+    /*
+    setWorkflowTrigger(prev => {
+      const updated = [...prev];
+     
+      updated.sort((a, b) => {
+        const orderA = currentOrder.findIndex(t => t.workflowTriggerId === a.workflowTriggerId);
+        const orderB = currentOrder.findIndex(t => t.workflowTriggerId === b.workflowTriggerId);
+        return orderA - orderB;
+      });
+      return updated;
+    });
+    */  
+      setPainelAberto(triggerId);
       setConfigureEvent(true);
       setNameTrigger(trigger.configuration?.label);
 
-
     }
-
 
   };
 
@@ -1323,9 +1392,10 @@ export default function Workflow() {
     try {
 
       const response = await api.get<IWorkflowActions[]>('/Workflow/ListarAcoes', {
-        params: { filterTerm: triggerId, token }
+        params: { filterTerm: "gatilho="+triggerId, token }
       });
 
+      
       let data: IWorkflowActions[] = response.data.map((action: any) => {
         let configuration = null; 
         if (action.configDescription) {
@@ -1348,26 +1418,27 @@ export default function Workflow() {
         };
       });
 
-      
+
       if (data.length === 0) {
         data = [
           {
             workflowactionId: Math.random(),
             companyId,
             workflowTriggerId: triggerId,
-            actionType: "criarcompromisso",
+            actionType: "CRIARCOMPROMISSO",
             daysbeforeandafter: 0,
             configuration: { when: "depois", starttime:"09:00",  reminders: [] }
           }
         ];
       }
 
+      
       setWorkflowTrigger(prev =>
         prev.map(tr =>
           tr.workflowTriggerId === triggerId ? { ...tr, actions: data } : tr
         )
       );
-
+      
 
     } catch (error) {
       //console.error(error);
@@ -1384,7 +1455,7 @@ export default function Workflow() {
         (trigger) => trigger.configuration?.label?.trim() === nameTrigger
       );
       if (!trigger) {
-        alert("Trigger não encontrada");
+        //alert("Trigger não encontrada");
         return false;
       }
 
@@ -1470,7 +1541,7 @@ export default function Workflow() {
         workflowactionId: action.workflowactionId ?? 0,
         companyId,
         workflowtriggerId: trigger.workflowTriggerId,
-        actiontype: "criarcompromisso",
+        actiontype: "CRIARCOMPROMISSO",
         daysbeforeandafter:
           action.configuration?.when === "antes"
             ? -Math.abs(action.daysbeforeandafter ?? 1)
@@ -1520,7 +1591,7 @@ export default function Workflow() {
         (trigger) => trigger.configuration?.label?.trim() === nameTrigger
       );
       if (!trigger) {
-        alert("Trigger não encontrada");
+        //alert("Trigger não encontrada");
         return;
       }
 
@@ -1603,7 +1674,7 @@ export default function Workflow() {
         workflowactionId: action.workflowactionId ?? 0,
         companyId,
         workflowtriggerId: trigger.workflowTriggerId,
-        actiontype: "criarcompromisso",
+        actiontype: "CRIARCOMPROMISSO",
         daysbeforeandafter:
           action.configuration?.when === "antes"
             ? -Math.abs(action.daysbeforeandafter ?? 1)
@@ -1623,10 +1694,26 @@ export default function Workflow() {
       })
 
 
+      const currentOrder = [...workflowTrigger];
+
       await reloadWorkflow(workflowId);
       setPainelAberto(triggerId);
       fetchTriggerActions(triggerId);
       handleNewAction(triggerId);
+
+
+    setWorkflowTrigger(prev => {
+      const updated = [...prev];
+
+      updated.sort((a, b) => {
+        const orderA = currentOrder.findIndex(t => t.workflowTriggerId === a.workflowTriggerId);
+        const orderB = currentOrder.findIndex(t => t.workflowTriggerId === b.workflowTriggerId);
+        return orderA - orderB;
+      });
+      return updated;
+    });
+
+
 
     } catch (err: any) {
       const status = err.response?.data?.statusCode;  
@@ -1680,7 +1767,7 @@ export default function Workflow() {
       })
 
       setIsDeleting(false)
-      history.push('/workflow/list')
+      history.push('/workflow')
 
       setCurrentCustomerId(0)
       setConfirmDeleteModal(false)
@@ -1691,7 +1778,8 @@ export default function Workflow() {
       addToast({
         type: "info",
         title: "Falha ao apagar cliente",
-        description: err.response.data.Message
+        description: "Workflows em execução podem estar associados a esse workflow"
+        //description: err.response.data.Message
       })
     }
   }, [addToast, history]);
@@ -1708,7 +1796,7 @@ export default function Workflow() {
 
             <button
               type='button'
-              onClick={() => history.push('/workflow/list')}
+              onClick={() => history.push('/workflow')}
             >
               <RiCloseLine />
               Fechar
@@ -1741,11 +1829,45 @@ export default function Workflow() {
               <br /><br /><br /> <br />
 
               <label htmlFor="endereco" style={{ marginTop: '-55px' }}>
-                <p>Informe abaixo as datas que serão gatilhos para iniciar o workflow</p>
-                {workflowTrigger.map(trigger => (
+                <p>Informe abaixo as datas que serão gatilhos para iniciar o workflow - arraste para reordenar as datas</p>
+                
+                <DragDropContext
+    onDragEnd={(result) => {
+      if (!result.destination) return;
 
-                  <section id="endereco" key={trigger.workflowTriggerId}>
+      const reordered = Array.from(workflowTrigger);
+      const [removed] = reordered.splice(result.source.index, 1);
+      reordered.splice(result.destination.index, 0, removed);
 
+      // Atualiza a ordem
+      setWorkflowTrigger(reordered);
+    }}
+  >
+    <Droppable droppableId="workflowTriggers">
+      {(provided) => (
+        <div ref={provided.innerRef} {...provided.droppableProps}>
+          {workflowTrigger.map((trigger, index) => (
+            <Draggable
+              key={trigger.workflowTriggerId}
+              draggableId={String(trigger.workflowTriggerId)}
+              index={index}
+            >
+              {(provided) => (
+                <section
+                  id="endereco"
+                  ref={provided.innerRef}
+                  {...provided.draggableProps}
+                  {...provided.dragHandleProps}
+                  style={{
+                    background: "#fff",
+                    border: "1px solid #ccc",
+                    borderRadius: "8px",
+                    padding: "16px",
+                    marginBottom: "16px",
+                    ...provided.draggableProps.style,
+                  }}
+                >
+                   
                     <label style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                       Tipo gatilho
                       <Select
@@ -1809,6 +1931,7 @@ export default function Workflow() {
                       </button>
 
                     </label>
+                    
                     <label htmlFor="telefone" id="trigger">
 
 
@@ -2145,12 +2268,16 @@ export default function Workflow() {
                     )}
 
 
-                  </section>
-
-
-                ))}
-
-              </label>
+                </section>
+              )}
+            </Draggable>
+          ))}
+          {provided.placeholder}
+        </div>
+      )}
+    </Droppable>
+  </DragDropContext>
+</label>
 
 
               <br />
@@ -2176,7 +2303,7 @@ export default function Workflow() {
                   </button>
 
 
-                  <button className="buttonClick" type="button" onClick={() => history.push('/workflow/list')}>
+                  <button className="buttonClick" type="button" onClick={() => history.push('/workflow')}>
                     <MdBlock />
                     Fechar
                   </button>
@@ -2201,7 +2328,7 @@ export default function Workflow() {
         <ConfirmBoxModal
           title="Excluir Registro"
           caller="WorkflowList"
-          message="Confirma a exclusão deste workflow ?"
+          message="Confirma a exclusão deste gatilho ?"
         />
       )}
 

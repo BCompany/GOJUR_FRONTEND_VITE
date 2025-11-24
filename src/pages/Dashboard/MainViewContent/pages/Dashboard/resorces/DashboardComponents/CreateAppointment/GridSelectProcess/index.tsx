@@ -334,7 +334,7 @@ const GridSelectProcess: React.FC = () => {
       <Footer>
         <div>
           <button type="button" onClick={() => {handleSelectProcessGrid(keyData)}}>
-            Associar
+            Selecionar
           </button>
           <button type="button" onClick={handleClose}>
             Cancelar

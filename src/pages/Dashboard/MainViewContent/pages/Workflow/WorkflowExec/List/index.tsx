@@ -1,0 +1,865 @@
+/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
+/* eslint-disable no-console */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable no-return-assign */
+/* eslint-disable no-alert */
+import React, { useCallback, useEffect, useState, UIEvent, useRef } from 'react';
+import { FiEdit, FiTrash, FiArrowLeft } from 'react-icons/fi'
+import { FaFileAlt, FaAngleLeft  } from 'react-icons/fa'
+import { Grid, Table, TableHeaderRow } from '@devexpress/dx-react-grid-material-ui';
+import { GridContainer } from 'Shared/styles/GlobalStyle';
+import { useDevice } from "react-use-device";
+import { useAuth } from 'context/AuthContext';
+import api from 'services/api';
+import { useSecurity } from 'context/securityContext';
+import { useDefaultSettings } from 'context/defaultSettings';
+import { useModal } from 'context/modal';
+import { useHeader } from 'context/headerContext';
+import { useHistory } from 'react-router-dom';
+import { useToast } from 'context/toast';
+import { languageGridEmpty } from 'Shared/utils/commonConfig';
+import { HeaderPage } from 'components/HeaderPage';
+import LoaderWaiting from 'react-spinners/ClipLoader';
+import { Overlay } from 'Shared/styles/GlobalStyle';
+import { Container, Content, ContainerMobile } from './styles';
+import ConfirmBoxModal from 'components/ConfirmBoxModal';
+import { useConfirmBox } from 'context/confirmBox';
+import { format, parseISO } from "date-fns";
+import { ISelectData } from '../../../Interfaces/IMatter';
+
+export interface IDefaultsProps {
+  id: string;
+  value: string;
+}
+
+export interface IWorkflowData {
+  workflowId: number;
+  name: string;
+  workflowexecId: number;
+  startDate: string;
+  endDate: string;
+  statusType: string;
+  matterId: number;
+  matter: string;   
+  customerId: number;
+  customer: string;  
+  count: number;
+}
+
+const WorkflowList = () => {
+  // STATES
+  const { signOut } = useAuth();
+  const { addToast } = useToast();
+  const history = useHistory();
+  const {permissionsSecurity, handleValidateSecurity } = useSecurity();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { captureText, captureType, handleLoadingData } = useHeader();
+  const { handleUserPermission } = useDefaultSettings();
+  const [workflowList, setWorkflowList] = useState<IWorkflowData[]>([]);
+  const token = localStorage.getItem('@GoJur:token');
+  //const { isOpenModal, handleCaller, handleModalActive, handleModalActiveId, caller, modalActive } = useModal();
+  const [totalPageCount, setTotalPageCount] = useState<number>(0);
+  const [isLoadingSearch, setIsLoadingSearch] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [isEndPage, setIsEndPage] = useState(false);
+  const [isPagination, setIsPagination] = useState(false);
+  const { isMOBILE } = useDevice();
+  const [hasAccess, setHasAccess] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [currentWorkflowExecId, setCurrentWorkflowExecId] = useState<number>(0);
+  const { isConfirmMessage, isCancelMessage, caller, handleCancelMessage, handleConfirmMessage, handleCheckConfirm, handleCaller } = useConfirmBox();
+  const [isDeletingCustomer, setIsDeletingCustomer] = useState(false);
+  const [matterFileId, setMatterFileId] = useState('');
+  const [customerFileId, setCustomerFileId] = useState('');
+  const [matterRedirect, setMatterRedirect] = useState<boolean>(false)
+  const [customerRedirect, setCustomerRedirect] = useState<boolean>(false)
+  const [publicationRedirect, setPublicationRedirect] = useState<boolean>(false)
+  const [workflowExecKanbanRedirectRedirect, setWorkflowExecKanbanRedirectRedirect] = useState<boolean>(false)
+  const [calendarRedirect, setCalendarRedirect] = useState<boolean>(false) 
+  const [displayFilter, setDisplayFilter] = useState('');
+  const [filterName, setFilterName] = useState('');
+  const [customerList, setCustomerList] = useState<ISelectData[]>([])
+
+  const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKFCD");
+
+  const columns = [
+    { name: 'name', title: 'Workflow' },
+    { name: 'startDate', title: 'Início' },
+    { name: 'endDate', title: 'Fim' },
+    { name: 'statusType', title: 'Status' },
+    { name: 'matter', title: 'Processo' },
+    { name: 'customer', title: 'Cliente' },
+    { name: 'edit', title: ' ' },
+    { name: 'remove', title: ' ' }
+  ];
+
+  const [tableColumnExtensions] = useState([
+    { columnName: 'name', width: '10%' },
+    { columnName: 'startDate', width: '10%' }, 
+    { columnName: 'endDate', width: '10%' },
+    { columnName: 'statusType', width: '10%', wordWrapEnabled: true },
+    { columnName: 'matter', width: '20%', wordWrapEnabled: true },
+    { columnName: 'customer', width: '19%', wordWrapEnabled: true },
+    { columnName: 'btnEditar', width: '2%' },
+    { columnName: 'btnRemover', width: '2%' },
+  ]);
+
+
+   const Initialize = async () => {
+
+    //if(localStorage.getItem('@Gojur:matterRedirect') == null && localStorage.getItem('@Gojur:customerRedirect') == null && localStorage.getItem('@Gojur:calendarRedirect') == null ) return;
+  
+    const redirectByMatter = localStorage.getItem('@Gojur:matterRedirect') 
+    if (redirectByMatter == "S"){
+      setMatterRedirect(true)   
+      //setMatterFileId(localStorage.getItem('@Gojur:matterId'))  
+      //localStorage.removeItem('@Gojur:matterId')
+      localStorage.removeItem('@Gojur:matterRedirect')
+                    
+    }   
+
+    if(localStorage.getItem('@Gojur:matterId')){
+      setMatterFileId(localStorage.getItem('@Gojur:matterId'))  
+      localStorage.removeItem('@Gojur:matterId')
+    }
+
+    
+    const redirectByCustomer = localStorage.getItem('@Gojur:customerRedirect') 
+    if (redirectByCustomer == "S"){
+      setCustomerRedirect(true)   
+      //setCustomerFileId(localStorage.getItem('@Gojur:customerId'))  
+      //localStorage.removeItem('@Gojur:customerId')  
+      localStorage.removeItem('@Gojur:customerRedirect') 
+    }
+ 
+   
+    if(localStorage.getItem('@Gojur:customerId'))
+    {
+      setCustomerFileId(localStorage.getItem('@Gojur:customerId'))
+      localStorage.removeItem('@Gojur:customerId')
+    }
+      
+
+    const redirectByPublication = localStorage.getItem('@Gojur:publicationRedirect') 
+    if (redirectByPublication == "S"){
+      setPublicationRedirect(true)  
+      localStorage.removeItem('@Gojur:publicationRedirect') 
+    }
+
+    const redirectByCalendar = "S" 
+    if (redirectByCalendar == "S"){
+      setCalendarRedirect(true);   
+    }
+  
+  } 
+  
+
+useEffect(() => {
+  const setup = async () => {
+
+    await Initialize();
+
+    setWorkflowList([]);
+    setIsLoadingSearch(true);
+    setIsLoading(true);
+    setPageNumber(1);
+    setIsEndPage(false);
+
+    if (!matterRedirect && !customerRedirect && !calendarRedirect) return;
+    await LoadWorkflow('initialize');
+  };
+
+  setup(); // Executa a função async
+}, [captureText, captureType, matterFileId, customerFileId, calendarRedirect]);
+ 
+
+  useEffect(() => {
+   
+    if (matterRedirect ==false && customerRedirect == false && calendarRedirect == false) return;
+    else
+    {
+      //LoadWorkflow();
+    }
+
+  }, [pageNumber, captureText, captureType])
+
+
+  useEffect(() => {
+
+    if (isCancelMessage) {
+      setIsDeleting(false)
+      handleCancelMessage(false)
+    }
+  }, [isCancelMessage])
+
+
+  useEffect(() => {
+
+    if (isConfirmMessage && caller == "WorkflowList") {
+ 
+      if (!isDeleting) {
+        window.open(`${envProvider.redirectUrl}ReactRequest/Redirect?token=${token}&route=workflow`)
+      }
+      else {
+        handleDeleteWorkflow(currentWorkflowExecId)
+      }
+
+      setIsDeleting(false)
+      handleConfirmMessage(false)
+      handleCaller('')
+      handleCheckConfirm(false)
+    }
+
+  }, [isConfirmMessage])
+
+
+
+  const handleDeleteWorkflow = async (workflowExecId: number) => {
+    try {
+      setIsDeletingCustomer(true)
+
+      await api.delete('/WorkflowExec/Deletar', {
+        params: {
+          filterClause: 'cod_WorkflowExec=' + workflowExecId,
+          token
+        }
+      })
+
+
+      const workflow = workflowList.find(wk => wk.workflowexecId === workflowExecId);
+      if (workflow) {
+        const workflowListRefresh = workflowList.filter(wk => wk.workflowexecId !== workflowExecId);
+      
+        setWorkflowList(workflowListRefresh);
+      }
+
+      addToast({ 
+        type: 'success',
+        title: 'Workflow Deletado',
+        description: 'O workflow selecionado foi deletado',
+      });
+
+      setIsDeleting(false)
+      setIsDeletingCustomer(false)
+      setCurrentWorkflowExecId(0)
+
+    } catch (err) {
+      addToast({
+        type: 'info',
+        title: 'Falha ao apagar workflow',
+        description: err.response.data.Message
+      });
+
+      setIsDeletingCustomer(false)
+      setIsDeleting(false)
+      setCurrentWorkflowExecId(0)
+    }
+  }
+
+
+   useEffect(() => {
+     
+      const matterId = matterFileId;
+   
+      if (matterId && matterId !== "null" && matterId.trim() !== "") {
+  
+        const loadProcess = async () => {
+          try {
+  
+            const responseMatter = await api.post('/Processo/SelecionarProcesso', {
+              matterId: matterId,
+              token: token,
+              companyId: localStorage.getItem('@GoJur:companyId'),
+              apiKey: localStorage.getItem('@GoJur:apiKey')
+            })
+              .then(response => {
+                const matterType = response.data.typeAdvisorId == null ? 'legal' : 'advisory'
+                const url = `/matter/edit/${matterType}/${matterId}`
+             
+  
+                const title = `${response.data.matterNumber} - ${response.data.matterFolder} - ${response.data.matterCustomerDesc} - ${response.data.matterOppossingDesc}`;
+     
+                if(displayFilter == 'processo')
+                {
+                  setFilterName('Processo: ' + title);
+                }
+                      
+              })
+  
+          } catch (err) {
+            console.error('Erro ao carregar processo:', err);
+          }
+        };
+  
+        loadProcess();
+      }
+      else {
+        
+      }
+  
+    }, [matterFileId, displayFilter]);
+
+
+  
+  useEffect(() => {
+    //alert('displayFilter:' + displayFilter);
+    if(displayFilter == 'cliente')
+    {
+      setFilterName('Cliente: ' + localStorage.getItem('@Gojur:filterCustomer'));
+    }
+
+    if(displayFilter == 'acompanhamento')
+    {
+      setFilterName(localStorage.getItem('@Gojur:notificationTag'));
+    }
+
+    if(displayFilter == 'publicacao')
+    {
+      setFilterName(localStorage.getItem('@Gojur:notificationTag'));
+    }
+
+}, [workflowList]);
+
+
+/*
+  const ListCustomerData = async (term: string) => {
+    const token = localStorage.getItem("@GoJur:token");
+    const customerListData: ISelectData[] = [];
+
+    const response = await api.post("/Clientes/ListarComboBox", {
+      token,
+      page: 0,
+      rows: 50,
+      filterClause: term,
+    });
+
+    response.data.forEach((item: any) => {
+      customerListData.push({
+        id: item.id,
+        label: item.value,
+      });
+    });
+
+    return customerListData;
+  };
+
+  const RefreshPersonList = useCallback(async (inputValue: string) => {
+    const list = await ListCustomerData(inputValue ?? "");
+    setCustomerList(list);
+  }, []);
+*/
+
+  
+
+
+  // METHODS
+ const LoadWorkflow = useCallback(
+  async (state = '') => {
+    
+    try {
+      
+      if (isEndPage && state != 'initialize')
+        return;
+
+      const token = localStorage.getItem('@GoJur:token');
+      const page = state == 'initialize' ? 1 : pageNumber;
+
+      const filters: string[] = [];
+
+      if (customerFileId) {
+        filters.push(`customer=${customerFileId}`);
+        setDisplayFilter('cliente')
+      }
+
+      if (matterFileId) {
+        filters.push(`matter=${matterFileId}`);
+        setDisplayFilter('processo')
+      }
+
+      if ( localStorage.getItem('@Gojur:followUpId') ){
+        filters.push(`followUpId=${localStorage.getItem('@Gojur:followUpId')}`);
+        setDisplayFilter('acompanhamento')
+      }
+     
+      if ( localStorage.getItem('@Gojur:publicationId') ){
+        filters.push(`publicationId=${localStorage.getItem('@Gojur:publicationId')}`);
+        setDisplayFilter('publicacao')
+      }
+
+      if (captureText) {
+        filters.push(`searchBox=${captureText}`);
+      }
+
+      if (captureType) {
+        filters.push(`status=${captureType}`);
+      }
+
+     
+      const filterClause = filters.join(", "); 
+
+
+      const response = await api.get<IWorkflowData[]>('/WorkflowExec/ListarExec', {
+        params: {
+          page,
+          rows: 20,
+          filterClause,
+          //filterClause: "wf.nom_Workflow like '%" + captureText + "%', wfe.tpo_Status like '%" + captureType + "%', wfe.cod_Processo = " + matterFileId,
+          token
+        }
+      })
+
+      const statusMap: Record<string, string> = {
+        emandamento: "Em andamento",
+        concluido: "Concluído",
+        atraso:"Atraso"
+      };
+
+
+      const formattedData = response.data.map(item => ({
+        ...item,
+        startDate: item.startDate ? format(new Date(item.startDate), "dd/MM/yyyy") : "",
+        endDate: item.endDate ? format(new Date(item.endDate), "dd/MM/yyyy") : "",
+       statusType: statusMap[item.statusType?.toLowerCase()] || item.statusType, 
+      }));
+
+      //if (response.data.length > 0 && state == 'initialize')
+        //setTotalPageCount(response.data.length)
+        
+      if(response.data.length > 0 && state == 'initialize')
+        setTotalPageCount(response.data[0].count)
+
+
+      if (response.data.length == 0 || state === 'initialize') {
+        setIsLoadingSearch(false)
+        setIsEndPage(true)
+        setIsLoading(false)
+        setPageNumber(1)
+        handleLoadingData(false)
+        if (state != 'initialize') return;
+      }
+
+      if (!isPagination || state === 'initialize') {
+        setIsEndPage(false)
+        setWorkflowList(formattedData);
+      }
+      else {
+        //response.data.map((item) => workflowList.push(item))
+        response.data.map(item =>
+          workflowList.push({
+            ...item,
+            startDate: item.startDate
+              ? format(new Date(item.startDate), "dd/MM/yyyy")
+              : "",
+            endDate: item.endDate
+              ? format(new Date(item.endDate), "dd/MM/yyyy")
+              : "",
+            statusType: statusMap[item.statusType?.toLowerCase()] || item.statusType,
+          })
+        );
+
+        setWorkflowList(workflowList)
+      }
+
+      handleLoadingData(false)
+      setIsLoadingSearch(false)
+      setIsLoading(false)
+      handleCaller('')
+
+    } catch (err: any) {
+      setHasAccess(false)
+      setIsLoading(false)
+      handleLoadingData(false)
+      console.log(err)
+      if (err.response.data.statusCode == 1002) {
+        addToast({
+          type: 'info',
+          title: 'Permissão negada',
+          description: 'Seu usuário não tem permissão para acessar esse módulo, contate o administrador do sistema',
+        });
+        signOut()
+      }
+    }
+  }, [pageNumber, captureText, captureType, matterFileId, customerFileId, isPagination, isEndPage])
+
+
+
+  const handleCheckBoxDeleteWorkflow = (workflowId: number) => {
+    setIsDeleting(true)
+    setCurrentWorkflowExecId(workflowId);
+  }
+  
+ 
+const CustomCell = (props) => {
+  const { column, row } = props;
+
+  if (column.name === "edit") {
+    return (
+      <Table.Cell onClick={(e) => handleClick(props)} {...props}>
+        &nbsp;&nbsp;
+        <FiEdit title="Clique para editar " />
+      </Table.Cell>
+    );
+  }
+
+  if (column.name === "remove") {
+    return (
+      <Table.Cell
+        onClick={() =>
+          handleCheckBoxDeleteWorkflow(row.workflowexecId)
+        }
+      >
+        &nbsp;&nbsp;
+        <FiTrash title="Clique para remover" />
+      </Table.Cell>
+    );
+  }
+
+
+  if (["matter", "customer"].includes(column.name)) {
+    return (
+      <Table.Cell
+        {...props}
+        style={{
+          whiteSpace: "pre-wrap",
+          wordBreak: "break-word",
+        }}
+      />
+    );
+  }
+
+  return <Table.Cell {...props} />;
+};
+
+  // CELL CLICK
+  const handleClick = (props: any) => {
+
+    console.log(props.row);
+   
+    if (props.column.name === 'edit') {
+      localStorage.setItem('@Gojur:customer',props.row.customer);
+
+      /*
+      localStorage.setItem('@Gojur:filterMatterId', matterFileId ); 
+      localStorage.setItem('@Gojur:filterCustomerId', customerFileId );
+      */
+
+      filterMatterAndCustomerToLocalStorage(matterFileId, customerFileId);
+
+      handleEdit(props.row.workflowexecId)
+    }
+
+    if (props.column.name === 'remove') {
+      deleteWorkflow(props.row.workflowexecId)
+    }
+  }
+
+  // EDIT
+  const handleEdit = async (id: number) => {
+    history.push(`/workflowexec/edit/${id}`)
+  };
+
+  // DELETE
+  const deleteWorkflow = async (id: number) => {
+
+    try {
+      const token = localStorage.getItem('@GoJur:token');
+
+      await api.delete('/Workflow/Deletar', {
+        params: {
+          id: id,
+          token
+        }
+      })
+
+      addToast({
+        type: "success",
+        title: "Workflow excluído",
+        description: "O Workflow foi excluído no sistema."
+      })
+
+      LoadWorkflow('initialize')
+
+    } catch (err: any) {
+
+      console.log(err)
+
+      addToast({
+        type: "error",
+        title: "Falha ao excluir o Workflow.",
+        description: err.response.data.Message
+      })
+    }
+  };
+
+  const handleCancel = () => {
+    
+    console.log('MatterRedirect: ', matterRedirect)
+   
+    if (matterRedirect){
+      history.push('../../../matter/list')
+    }
+    else if (customerRedirect){ 
+      history.push('../customer/list')
+    }else if (publicationRedirect){ 
+      history.push('../publication')
+    }
+    //else if (workflowExecKanbanRedirectRedirect){ 
+    //  history.push('../workflowexec/kanban')
+    //}
+    else if (calendarRedirect){ 
+      history.push('../calendar')
+    }
+
+  }
+
+
+  // PAGE SCROOL
+  function handleScroll(e: UIEvent<HTMLDivElement>) {
+    const element = e.target as HTMLTextAreaElement;
+
+    if (isEndPage || workflowList.length == 0) return;
+
+    const isEndScrool = ((element.scrollHeight - element.scrollTop) - 20) <= element.clientHeight
+
+    // calculate if achieve end of scrool page
+    if (isEndScrool) {
+
+      if (!isLoadingSearch) {
+        setPageNumber(pageNumber + 1)
+      }
+
+      setIsLoadingSearch(true)
+      setIsPagination(true)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <Container>
+        <HeaderPage />
+
+        <Overlay />
+        <div className='waitingMessage'>
+          <LoaderWaiting size={15} color="var(--blue-twitter)" />
+          &nbsp;&nbsp; Aguarde...
+        </div>
+
+      </Container>
+
+    )
+  }
+
+
+  function filterMatterAndCustomerToLocalStorage(
+  matterFileId: string,
+  customerFileId: string
+) {
+  // Verifica se o matterFileId é válido
+  if (matterFileId && matterFileId.trim() !== '' && matterFileId !== 'null') {
+    localStorage.setItem('@Gojur:matterId', matterFileId);
+    localStorage.setItem('@Gojur:filterMatterId', matterFileId);
+
+    localStorage.removeItem('@Gojur:customerId', customerFileId);
+    localStorage.removeItem('@Gojur:filterCustomerId', customerFileId);
+    
+  }
+
+  // Verifica se o customerFileId é válido
+  if (customerFileId && customerFileId.trim() !== '' && customerFileId !== 'null') {
+    localStorage.setItem('@Gojur:customerId', customerFileId);
+    localStorage.setItem('@Gojur:filterCustomerId', customerFileId);
+
+    localStorage.removeItem('@Gojur:matterId', matterFileId);
+    localStorage.removeItem('@Gojur:filterMatterId', matterFileId);
+
+  }
+}
+
+  const handleWorkflow = () => {
+
+    /*
+    localStorage.setItem('@Gojur:matterId', matterFileId ); 
+    localStorage.setItem('@Gojur:customerId', customerFileId ); 
+
+    localStorage.setItem('@Gojur:filterMatterId', matterFileId ); 
+    localStorage.setItem('@Gojur:filterCustomerId', customerFileId );
+    */
+
+    filterMatterAndCustomerToLocalStorage(matterFileId, customerFileId);
+    history.push('/WorkflowExec/edit/0')
+
+  };
+
+
+  
+const handleWorkflowKanban = async () => {
+  try {
+    await api.post('/Parametro/Salvar', {
+      parametersName: '#WORKFLOWVIEW',
+      parameterType: 'P',
+      parameterValue: 'KANBAN',
+      token,
+    });
+
+    filterMatterAndCustomerToLocalStorage(matterFileId, customerFileId);
+
+    if (matterRedirect === true) {
+      localStorage.setItem('@Gojur:matterRedirect', 'S');
+    }
+    if (customerRedirect === true) {
+      localStorage.setItem('@Gojur:customerRedirect', 'S');
+    }
+    if (publicationRedirect === true) {
+      localStorage.setItem('@Gojur:publicationRedirect', 'S');
+    }
+
+    history.push('/WorkflowExec/kanban');
+  } catch (error) {
+    console.error('Erro ao salvar parâmetro:', error);
+  }
+};
+
+  const handleConfigWorkflow = async () => {
+      history.push('/workflow')
+  };
+
+  // HTML CODE
+  return (
+    <>
+      {!isMOBILE && (
+        <Container>
+
+          <HeaderPage />
+
+
+
+          <div style={{ width: '100%', marginTop: '20px' }}>
+
+            <div style={{ float: 'left', marginLeft: '150px', marginTop: '12px', fontSize: '13px' }}>
+              Número de Workflow:&nbsp;
+              {totalPageCount}
+            </div>
+
+            
+            <div style={{ float: 'right', marginRight: '185px' }}>
+
+              {(checkWorkflow) &&(
+              <div style={{ float: 'left', marginRight: '10px' }}>
+                  <button type="button" className='buttonClick' onClick={() => handleConfigWorkflow()}>
+                    Config. Workflow
+                  </button>
+
+              </div>
+              )}
+
+              <div style={{ float: 'left', marginRight: '10px' }}>
+                <button
+                  className="buttonClick"
+                  type="submit"
+                  onClick={() =>handleWorkflowKanban()}
+                >
+                   Alternar: Lista / Kanban
+                </button>
+
+              </div>
+              
+              <div style={{ float: 'left', marginRight: '10px' }}>
+
+                <button
+                  className="buttonClick"
+                  title="Clique para incluir um Workflow"
+                  type="submit"
+                  onClick={() =>handleWorkflow()}
+                >
+                  <FaFileAlt />
+                  Iniciar Novo Workflow
+                </button>
+              </div>
+
+              <div style={{ float: 'right'}}>
+                 
+                <button
+                  className="buttonClick"
+                  title="Clique para retornar"
+                  type="submit"
+                  onClick={handleCancel}
+                >
+                 <FiArrowLeft />
+                  Retornar
+                </button>
+
+
+              </div>
+            </div>
+             
+          </div>
+          <div style={{ float: 'left', marginLeft: '150px', marginTop: '12px' }}>
+            <h5>Workflows em Execução</h5>
+          </div>
+         
+             <div style={{ float: 'left', marginLeft: '150px', marginTop: '12px', fontSize: '13px' }}>
+             {filterName}
+            </div>
+
+          <div style={{ width: '100%', height: '25px' }}><></></div>
+
+          <Content onScroll={handleScroll} ref={scrollRef}>
+
+            <GridContainer>
+              <Grid
+                rows={workflowList}
+                columns={columns}
+              >
+                <Table
+                  cellComponent={CustomCell}
+                  columnExtensions={tableColumnExtensions}
+                  messages={languageGridEmpty}
+                />
+                <TableHeaderRow />
+           
+              </Grid>
+            </GridContainer>
+
+          </Content>
+
+        </Container>
+
+
+      )}
+
+
+
+
+      {isDeleting && (
+
+        <ConfirmBoxModal
+          title="Excluir Registro"
+          useCheckBoxConfirm
+          caller="WorkflowList"
+          message="Confirma a exclusão deste workflow ? Todos os compromissos associados com este workflow serão excluidos também, sem possibilidade de reversão."
+        />
+
+      )}
+
+
+      {isMOBILE && (
+        <ContainerMobile>
+          <div id='information' style={{ marginTop: '30%', border: 'solid 1px', backgroundColor: 'white', height: '78px', borderRadius: '10px', color: '#2c8ed6' }}>
+            <div style={{ marginLeft: '8%' }}>
+              <br />
+              Este módulo não esta disponível na versão mobile.
+              <br />
+              <br />
+              Para utilizar é necessário estar em um computador ou notebook.
+            </div>
+          </div>
+        </ContainerMobile>
+      )}
+
+    </>
+  )
+
+}
+export default WorkflowList;

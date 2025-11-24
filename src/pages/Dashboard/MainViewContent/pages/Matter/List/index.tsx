@@ -14,6 +14,7 @@ import React, { useEffect, useState, UIEvent, useRef, useCallback, ChangeEvent, 
 import { HeaderPage } from 'components/HeaderPage';
 import { useDefaultSettings } from 'context/defaultSettings';
 import { RiCalendarCheckFill } from 'react-icons/ri';
+import { GoGitMerge } from "react-icons/go"
 import { useAlert } from 'context/alert';
 import Loader from 'react-spinners/PulseLoader';
 import LoaderWaiting from 'react-spinners/ClipLoader';
@@ -23,12 +24,12 @@ import { AiOutlinePrinter, AiFillFolderOpen, AiOutlineFile } from 'react-icons/a
 import { useAuth } from 'context/AuthContext';
 import { VscTag } from 'react-icons/vsc';
 import { useHistory } from 'react-router-dom'
-import { FcAbout, FcSearch } from 'react-icons/fc';
+import { FcAbout, FcSearch, FcParallelTasks } from 'react-icons/fc';
 import { RiDeleteBinLine } from 'react-icons/ri';
 import { SiSonarsource } from 'react-icons/si';
 import { ImMenu3, ImMenu4 } from 'react-icons/im';
 import { BiUpArrowAlt, BiDownArrowAlt, BiEditAlt, BiSave, BiLoader } from 'react-icons/bi';
-import { GiNewspaper, GiReceiveMoney } from 'react-icons/gi';
+import { GiNewspaper, GiReceiveMoney, GiGears, GiPathDistance } from 'react-icons/gi';
 import { MdBlock } from 'react-icons/md';
 import { format } from 'date-fns';
 import Select from 'react-select'
@@ -70,9 +71,9 @@ import CredentialModal from '../Credentials/index';
 import FollowModal from '../FollowModal';
 import AwarenessModal from 'components/AwarenessModal';
 import MatterCRMModal from '../../Customer/CRM/Modal';
+import { useSecurity } from 'context/securityContext';
 
-
-export interface CRMData{
+export interface CRMData {
   id: string;
 }
 
@@ -94,6 +95,7 @@ const Matter: React.FC = () => {
   const [matterEventsTypeList, setMatterEventsTypeList] = useState<ISelectData[]>([])
   const [sortBy, setSortBy] = useState('dta_UltimoMovimento')
   const [status, setStatus] = useState('')
+  const [workflowView, setWorkflowView] = useState('')
   const [orderBy, setOrderBy] = useState<string>('desc')
   const [page, setPage] = useState<number>(1)
   const [lastPage, setLastPage] = useState<number>(1)
@@ -161,6 +163,8 @@ const Matter: React.FC = () => {
 
   const [showMatterCRMModal, setShowMatterCRMModal] = useState<boolean>(false)
 
+  const { permissionsSecurity, handleValidateSecurity } = useSecurity();
+  const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKFEX");
 
   useEffect(() => {
     handleIsOpenMenuConfig(false)
@@ -493,7 +497,7 @@ const Matter: React.FC = () => {
       const rows = matter.followRows === 0 ? 1 : matter.followList.length;
 
       const response = await api.get<IMatterFollowData[]>('/ProcessoAcompanhamento/ListarAcompanhamentos', {
-        params:{ matterId, count: rows, filter: 'all', token }
+        params: { matterId, count: rows, filter: 'all', token }
       });
 
       if (response.data.length == 0) {
@@ -562,6 +566,7 @@ const Matter: React.FC = () => {
       const buttonDeleteMattterAdivisory = permissiosnModule.find(item => item === 'buttonDeleteMatterAdvisory' || item === 'adm')
       const buttonFollow = permissiosnModule.find(item => item === 'buttonFollowMatter' || item === 'adm')
       const matterStatusDefault = response.data.find(item => item.id === 'defaultMatterStatusParameter' || item.id === 'adm')
+      const workflowViewDefault = response.data.find(item => item.id === 'defaultWorkflowParameter' || item.id === 'adm')
       const buttonDocumentGenerate = permissiosnModule.find(item => item === 'matterDocumentGeneration' || item === 'adm')
       const videoTrainningConfig = response.data.find(item => item.id === 'defaultUserLogFirstAccess')
       if (videoTrainningConfig) {
@@ -594,6 +599,16 @@ const Matter: React.FC = () => {
       } else {
         setStatus('T')
       }
+
+
+      // // default view workflow
+      if (workflowViewDefault) {
+        setWorkflowView(workflowViewDefault.value)
+      } else {
+        setWorkflowView('KANBAN')
+      }
+
+
 
       // default permissions
       if (permissiosnModule[0] == "adm") {
@@ -2113,7 +2128,7 @@ const Matter: React.FC = () => {
     handleFollowButton(matterSelectedId)
   }
 
-  
+
   const handleSelectCredentialId = (id) => {
     setSelectedCredentialid(id)
   }
@@ -2140,22 +2155,41 @@ const Matter: React.FC = () => {
       params: { matterId, token }
     });
 
-    if(response.data.length == 0){
+    if (response.data.length == 0) {
       OpenMatterCRMModal(0)
       return
     }
 
-    if(response.data.length == 1){
+    if (response.data.length == 1) {
       localStorage.setItem('@Gojur:matterRedirect', 'S')
       history.push(`/customer/business/edit/${response.data[0].id}`)
     }
 
-    if(response.data.length > 1){
+    if (response.data.length > 1) {
       OpenMatterCRMModal(matterId)
       return
     }
   }
 
+
+
+  const MatterWorkflow = async (matterId, matteFilePlace) => {
+    setMatterFileId(matterId)
+    setMatterFilePlace(matteFilePlace)
+
+    localStorage.setItem('@Gojur:matterRedirect', 'S')
+    localStorage.setItem('@Gojur:matterId', matterId)
+
+    localStorage.removeItem('@Gojur:publicationId');
+    localStorage.removeItem('@Gojur:followUpId');
+    localStorage.removeItem('@Gojur:notificationTag');
+
+    if (workflowView == "LISTA") 
+      history.push(`/workflowexec/list`)
+    else if (workflowView == "KANBAN") 
+      history.push(`/workflowexec/kanban`)
+
+  }
 
   const OpenMatterCRMModal = async (matterId) => {
     setShowMatterCRMModal(true)
@@ -2379,7 +2413,7 @@ const Matter: React.FC = () => {
 
         )}
 
-      {showAwarenessModal && <AwarenessModal callbackFunction={{ awarenessModalTitle, awarenessModalMessage, awarenessButtonOkText, handleCloseAwarenessModal, handleConfirmAwarenessButton }}  />}
+        {showAwarenessModal && <AwarenessModal callbackFunction={{ awarenessModalTitle, awarenessModalMessage, awarenessButtonOkText, handleCloseAwarenessModal, handleConfirmAwarenessButton }} />}
 
         {isDeletingTemp && (
 
@@ -2887,6 +2921,16 @@ const Matter: React.FC = () => {
                                 {!isMOBILE && <span>CRM</span>}
                               </p>
 
+
+                              {(checkWorkflow) && (
+                                <>
+                                  <p onClick={() => MatterWorkflow(item.matterId, "legal")}>
+                                    <FcParallelTasks />
+                                    {!isMOBILE && <span>Workflow</span>}
+                                  </p>
+                                </>
+                              )}
+
                               {hasButtonDeleteMatterLegal && (
                                 <p
                                   onClick={() => handleDeleteMatter(item.matterId)}
@@ -2908,7 +2952,7 @@ const Matter: React.FC = () => {
                                         <Switch
                                           onChange={() => {
                                             if (item.isFollowing) {
-                                              handleFollowButton(item.matterId);                                            
+                                              handleFollowButton(item.matterId);
                                             } else {
                                               handleOpenFollowModal(item);
                                             }
@@ -3413,6 +3457,11 @@ const Matter: React.FC = () => {
                               <p onClick={() => MatterCRM(item.matterId, "advisory")}>
                                 <GiReceiveMoney />
                                 {!isMOBILE && <span>CRM</span>}
+                              </p>
+
+                              <p onClick={() => MatterWorkflow(item.matterId, "legal")}>
+                                <FcParallelTasks />
+                                {!isMOBILE && <span>Workflow</span>}
                               </p>
 
                               {hasButtonDeletematterAdvisory && (

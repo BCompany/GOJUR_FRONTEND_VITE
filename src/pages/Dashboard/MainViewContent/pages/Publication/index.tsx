@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback, ChangeEvent, UIEvent, useRef, useMemo } from 'react';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import { usePublication } from 'context/publication';
@@ -9,8 +8,8 @@ import { useToast } from 'context/toast';
 import LabelTooggle from 'components/LabelTooggle'
 import { isMobile } from 'react-device-detect'
 import api from 'services/api';
-import { FcAbout } from 'react-icons/fc';
 import { FiCheckSquare, FiMenu, FiSave } from 'react-icons/fi';
+import { GoGitMerge } from "react-icons/go"
 import { useAuth } from 'context/AuthContext';
 import { ImMenu3, ImMenu4 } from 'react-icons/im';
 import { FaCalculator, FaFileAlt, FaRegEdit, FaRegTimesCircle } from 'react-icons/fa';
@@ -36,7 +35,14 @@ import { Overlay } from 'Shared/styles/GlobalStyle';
 import PublicationOptionsMenu from 'components/MenuHamburguer/publicationOptions';
 import { useHistory } from 'react-router-dom';
 import LogModal from 'components/LogModal';
+import { useSecurity } from 'context/securityContext';
 import { ContentLegalResumeRender, ContentLegalResumeDaysModal } from './LegalResumeIA'
+import { FcAbout, FcSearch, FcParallelTasks } from 'react-icons/fc';
+
+export interface IDefaultsProps {
+  id: string;
+  value: string;
+}
 
 const Publication: React.FC = () => {
   const { signOut } = useAuth();
@@ -91,6 +97,9 @@ const Publication: React.FC = () => {
   const [currentLegalResumaActionId, setCurrentLegalResumeActionId] = useState<number>(null)
   const [daysDeadline, setDaysDeadline] = useState<number>()
   const [openModalDaysIA, setOpenModalDaysIA] = useState<boolean>(false);
+  const { permissionsSecurity, handleValidateSecurity } = useSecurity();
+  const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKFEX");
+  const [workflowView, setWorkflowView] = useState('')
 
   const options = [
     { value: 'itemSearch_withMatter', label: 'Com Processo' },
@@ -405,8 +414,6 @@ const Publication: React.FC = () => {
     }
     setActionType('none');
     if (!modalActive && publicationId > 0) {
-      RefreshEventList()
-
     }
   }, [modalActive])
 
@@ -1651,6 +1658,71 @@ const Publication: React.FC = () => {
     handlePublicationModal('Calc')
   }
 
+  const publicationWorkflow = async (id, publicationDate, matterNumber) => {
+    localStorage.setItem('@Gojur:publicationRedirect', 'S')
+
+    localStorage.setItem('@Gojur:publicationId', id.toString());
+    localStorage.removeItem('@Gojur:followUpId');
+
+    localStorage.setItem('@Gojur:notificationTag', 'PUB.: ' + publicationDate + ' - ' + matterNumber);
+    
+    if ( workflowView == "LISTA" )  
+      history.push(`/workflowexec/list`)
+    else if ( workflowView == "KANBAN" )
+      history.push(`/workflowexec/kanban`)
+  }
+
+   useEffect(() => {
+      LoadDefaultProps();
+  
+    }, [workflowView]);
+
+
+    const followUpWorkflow = async (id, publicationDate, matterNumber) => {
+    localStorage.setItem('@Gojur:publicationRedirect', 'S')
+
+    localStorage.setItem('@Gojur:followUpId', id.toString());
+    localStorage.removeItem('@Gojur:publicationId');
+
+    localStorage.setItem('@Gojur:notificationTag', 'ACOMP.: ' + publicationDate + ' - ' + matterNumber);
+  
+    if ( workflowView == "LISTA" )  
+      history.push(`/workflowexec/list`)
+    else if ( workflowView == "KANBAN" )
+      history.push(`/workflowexec/kanban`)
+  }
+
+   useEffect(() => {
+      LoadDefaultProps();
+  
+    }, [workflowView]);
+    
+
+
+
+  const LoadDefaultProps = async () => {
+      try {
+  
+        const response = await api.post<IDefaultsProps[]>('/Defaults/Listar', {
+          token,
+        });
+  
+        const workflowViewDefault = response.data.find(item => item.id === 'defaultWorkflowParameter' || item.id === 'adm')
+    
+        // // default view workflow
+        if (workflowViewDefault) {
+          setWorkflowView(workflowViewDefault.value)
+        } else {
+          setWorkflowView('KANBAN')
+        }
+  
+  
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
+
   return (
     <Container style={{ pointerEvents: (loadingData ? 'none' : 'all'), opacity: (isMobile && isPagination ? '0.3' : '1') }} onScrollCapture={handleScroll}>
       <HeaderPage />
@@ -2035,6 +2107,16 @@ const Publication: React.FC = () => {
                           Excluir
                         </p>
 
+
+                      {(checkWorkflow) && (
+                          <>
+                            <p onClick={() => publicationWorkflow(item.id, format(new Date(item.publicationDate), 'dd/MM/yyyy'), item.matterNumber)}>
+                               <FcParallelTasks />
+                              <span>Workflow</span>
+                            </p>
+                          </>
+                        )}
+                    
                         <p onClick={() => handleLog(item.id)} title="Clique para visualizar os logs de alteração desta publicação">
                           <CgDetailsMore />
                           Visualizar Log
@@ -2186,6 +2268,15 @@ const Publication: React.FC = () => {
                             <RiDeleteBinLine />
                             Excluir
                           </p>
+                        )}
+
+                        {(checkWorkflow) && (
+                          <>
+                            <p onClick={() => followUpWorkflow(item.meCod_ProcessoAcompanhamento, format(new Date(item.meDta_Acompanhamento), 'dd/MM/yyyy'),item.meNum_Processo)}>
+                              <FcParallelTasks />
+                              <span>Workflow</span>
+                            </p>
+                          </> 
                         )}
 
                         <p onClick={() => MatterEventLog(item.meCod_ProcessoAcompanhamento)} title="Clique para visualizar os logs de alteração deste acompanhamento">
