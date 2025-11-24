@@ -75,6 +75,8 @@ export default function Workflow() {
   const [customerWhatsapp, setCustomerWhatsapp] = useState(''); // field whatsapp
   const [customerGroupValue, setCustomerGroupValue] = useState(''); // group field value
   const [workflowId, setWorkflowId] = useState<number>(0);
+  const [totalTriggers, setTotalTriggers] = useState<number>(0);
+  
   const [workflowtriggerId, setWorkflowTriggerId] = useState<number>(0);
   const [customerSalesChannelId, setCustomerSalesChannelId] = useState(''); // group field id
   const [customerType, setCustomerType] = useState('F'); //  field type
@@ -227,6 +229,8 @@ export default function Workflow() {
 
       }
       else {
+
+        setTotalTriggers(response.data.triggers.length);
         setWorkflowTrigger(response.data.triggers)
       }
 
@@ -553,6 +557,8 @@ export default function Workflow() {
 
         setWorkflowTrigger((oldState) => [...oldState, newTrigger]);
       } else {
+
+        setTotalTriggers(response.data.triggers.length);
         setWorkflowTrigger(response.data.triggers);
 
         console.log(response.data.triggers.configuration);
@@ -723,7 +729,9 @@ export default function Workflow() {
 
       const trigger = workflowTrigger.filter(item => item.workflowTriggerId !== workflowtriggerId);
 
-      if (trigger.length ==0) {
+      
+      //if (trigger.length ==0) {
+      if (totalTriggers <=1 && workflowtriggerId.toString().length <= 10) {
 
           addToast({
             type: "info",
@@ -755,13 +763,16 @@ export default function Workflow() {
       setIsDeletingTrigger(false)
       setCurrentWorkflowId(0)
 
+      setTotalTriggers(totalTriggers - 1)
+
     } catch (err) {
+      /*
       addToast({
         type: 'info',
         title: 'Falha ao apagar Gatilho',
         description: err.response.data.Message
       });
-
+      */
       handleDeleteTrigger(workflowtriggerId)
 
       setIsDeletingTrigger(false)
