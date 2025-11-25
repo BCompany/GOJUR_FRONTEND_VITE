@@ -19,11 +19,11 @@ import { Responsive as ResponsiveGridLayout } from 'react-grid-layout';
 import { RiFolder2Fill, RiEraserLine } from 'react-icons/ri';
 import { IoIosPaper } from 'react-icons/io';
 import { FiClock, FiTrash, FiSave, FiMail } from 'react-icons/fi';
+import { FcAbout, FcSearch, FcParallelTasks } from 'react-icons/fc';
 import { GoGitMerge } from "react-icons/go"
 import { FaRegTimesCircle, FaWhatsapp } from 'react-icons/fa';
 import { BsCheckBox } from 'react-icons/bs';
 import { TiCancel } from 'react-icons/ti';
-import { FcSearch } from 'react-icons/fc';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
 import { useConfirmBox } from 'context/confirmBox';
 import { format } from 'date-fns';
@@ -2654,7 +2654,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                   {appointmentWorkflowActionsExecId !== 0 ? (
                     
                       <button type="button" id="workflow" title="Esse compromisso está associado a um Workflow" onClick={() =>handleWorkflowExec()}>
-                      <GoGitMerge />
+                      <FcParallelTasks />
                       </button>
                     
                   ) : (
