@@ -682,21 +682,16 @@ const HeaderFooterModal = (props) => {
             </div>
 
             {hasDefaultHeader && (
-              <div id='CreateDefaultHeader' style={{width:'100%', height:'50px', textAlign:'center'}}>
-                <button type='button' className="buttonClick" style={{width:'450px', height:'37px'}} onClick={()=> CreateDefaultHeader()}>
+              <div id='CreateDefaultHeader' style={{width:'100%', height:'50px', textAlign:'center', display:'flex'}}>
+                <button type='button' className="buttonClick" style={{width:'450px', height:'37px', margin: '0 auto'}} onClick={()=> CreateDefaultHeader()}>
                   Você ainda não criou um cabeçalho padrão - Clique aqui para criar um
                 </button>
               </div>
             )}
 
             {buttonChangeHeader && (
-              <div id='ChangeDefaultHeader' style={{width:'100%', height:'50px', textAlign:'center'}}>
-                <button 
-                  className="buttonClick"
-                  type='button'
-                  onClick={()=> ChangeDefaultHeaderWarning()}
-                  style={{width:'300px', height:'37px'}}
-                >
+              <div id='ChangeDefaultHeader' style={{width:'100%', height:'50px', textAlign:'center', display:'flex'}}>
+                <button className="buttonClick" type='button' style={{width:'300px', height:'37px', margin: '0 auto'}} onClick={()=> ChangeDefaultHeaderWarning()}>
                   Clique aqui para alterar o cabeçalho padrão
                 </button>
               </div>
@@ -705,13 +700,15 @@ const HeaderFooterModal = (props) => {
             {checkChangeHeader && (
               <>
                 {!buttonChangeHeader &&(
+                  
                   <div id='HeaderArea' className='HeaderArea'>
                     <div className='headerFooter'>
                       CABEÇALHO
                     </div>
 
                     <Editor>
-                      <div className="main-container">
+                      <br /><br />
+                      <div id='Main-Container' className="main-container">
                         <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
                           <div className="editor-container__editor">
                             <div>
@@ -781,21 +778,16 @@ const HeaderFooterModal = (props) => {
             <div style={{width:'100%', height:'50px'}}><></></div>
 
             {hasDefaultFooter && (
-              <div id='CreateDefaultFooter' style={{width:'100%', height:'50px', textAlign:'center'}}>
-                <button type='button' className="buttonClick" style={{width:'450px', height:'37px'}} onClick={()=> CreateDefaultFooter()}>
+              <div id='CreateDefaultFooter' style={{width:'100%', height:'50px', textAlign:'center', display:'flex'}}>
+                <button type='button' className="buttonClick" style={{width:'450px', height:'37px', margin:'0 auto'}} onClick={()=> CreateDefaultFooter()}>
                   Você ainda não criou um rodapé padrão - Clique aqui para criar um
                 </button>
               </div>
             )}
 
             {buttonChangeFooter && (
-              <div id='ChangeDefaultFooter' style={{width:'100%', height:'50px', textAlign:'center'}}>
-                <button 
-                  className="buttonClick"
-                  type='button'
-                  onClick={()=> ChangeDefaultFooterWarning()}
-                  style={{width:'300px', height:'37px'}}
-                >
+              <div id='ChangeDefaultFooter' style={{width:'100%', height:'50px', textAlign:'center', display:'flex'}}>
+                <button className="buttonClick" type='button' style={{width:'300px', height:'37px', margin:'0 auto'}} onClick={()=> ChangeDefaultFooterWarning()}>
                   Clique aqui para alterar o rodapé padrão
                 </button>
               </div>
@@ -810,6 +802,7 @@ const HeaderFooterModal = (props) => {
                     </div>
 
                     <Editor>
+                      <br /><br />
                       <div className="main-container">
                         <div className="editor-container editor-container_classic-editor" ref={editorContainerRef}>
                           <div className="editor-container__editor">
