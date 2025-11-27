@@ -895,6 +895,50 @@ export default function PainelWorkflows() {
               </div>
             )}
 
+
+<div className="section" style={{ marginTop: "20px" }}>
+              <button
+                type="button"
+                className='buttonClick'
+                onClick={() => {
+                  const filtrosLimpados = {
+                    status: '',
+                    responsavel: '',
+                    cliente: '',
+                    processo: null
+                  };
+
+                  setSelected('');
+                  setFilters(filtrosLimpados);
+                  setCustomer(null);
+                  setProcessTitle('Filtrar Processo');
+                  selectProcess(null);
+                  setAppointmentMatter(undefined);
+
+                  localStorage.removeItem('@Gojur:publicationId');
+                  localStorage.removeItem('@Gojur:followUpId');
+                  localStorage.removeItem('@Gojur:notificationTag');
+                  localStorage.removeItem('@Gojur:filterCustomerId')
+                  localStorage.removeItem('@Gojur:filterCustomer')
+                  localStorage.removeItem('@Gojur:customer')
+                  localStorage.removeItem('@Gojur:filterMatterId')
+
+                  setNotificationTag('');
+
+                  LoadWorkflow('initialize', filtrosLimpados);
+
+                }}
+                style={{
+                  width: "100%",
+                 
+                }}
+              >
+                Limpar filtros
+              </button>
+            </div>
+
+
+
           </Sidebar>
 
           <Main>
