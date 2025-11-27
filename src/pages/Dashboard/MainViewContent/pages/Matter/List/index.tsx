@@ -2203,6 +2203,10 @@ const Matter: React.FC = () => {
   }
 
 
+  const [open, setOpen] = useState(false);
+  const [selectedColor, setSelectedColor] = useState("#1e90ff");
+
+
   return (
     <Container onScroll={handleScrool} ref={scrollRef}>
       <HeaderPage />
@@ -2516,7 +2520,127 @@ const Matter: React.FC = () => {
                       &nbsp; Pasta:
                       {' '}
                       {item.matterFolder}
+
+                       &nbsp; &nbsp; &nbsp;
+                      <button
+                      type="button"
+                      onClick={() => setOpen(!open)}
+                    >
+                      <VscTag />
+                      Etiquetas
+                    </button>
+
                     </header>
+
+
+ {open && (
+        <div
+          style={{
+            position: "absolute",
+            top: "5%",
+            left: 0,
+            background: "#fff",
+            padding: "10px",
+            marginTop: "4px",
+            border: "1px solid #ccc",
+            borderRadius: "6px",
+            width: "300px",
+
+            display: "flex",
+            flexDirection: "column",
+
+            boxShadow: "0px 2px 6px rgba(0,0,0,0.15)",
+            zIndex: 9999999
+          }}
+        >
+          <h4 style={{ margin: "0 0 10px 0" }}>Nova etiqueta</h4>
+
+          <input
+            type="text"
+            placeholder="Nome da tag"
+            style={{
+              width: "100%",
+              padding: "4px",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+              marginBottom: "10px"
+            }}
+          />
+
+         
+{/* PALETA DE CORES (grid 12x) */}
+<div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(9, 22px)",
+    gap: "6px",
+    marginBottom: "12px"
+  }}
+>
+  {[
+    "#3c9df7", "#7ed957", "#a259ff", "#00d2d3", "#808080", "#ff6f91",
+    "#ff8a5b", "#ffb84d", "#c0392b", "#27ae60", "#2ecc71", "#f1c40f",
+    "#8e44ad", "#16a085", "#d35400", "#34495e", "#bdc3c7", "#e74c3c"
+  ].map((c) => (
+    <div
+      key={c}
+      onClick={() => setSelectedColor(c)}
+      style={{
+        width: "22px",
+        height: "22px",
+        background: c,
+        cursor: "pointer",
+        borderRadius: "4px",
+        border: selectedColor === c ? "2px solid black" : "1px solid #aaa",
+        boxSizing: "border-box"
+      }}
+    />
+  ))}
+</div>
+
+{/* LABEL + INPUT COLOR */}
+<div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "15px" }}>
+  <label style={{ fontSize: "14px", minWidth: "120px" }}>Personalizar cor:</label>
+
+
+
+  {/* input color sincronizado */}
+  <input
+    type="color"
+    value={selectedColor}
+    onChange={(e) => setSelectedColor(e.target.value)}
+    style={{
+      width: "40px",
+      height: "32px",
+      border: "none",
+      padding: 0,
+      cursor: "pointer",
+      background: "transparent"
+    }}
+  />
+</div>
+
+{/* BOTÃO SALVAR */}
+<button
+  onClick={() => setOpen(false)}
+  style={{
+    width: "100%",
+    padding: "6px",
+    background: "#007bff",
+    color: "#fff",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer"
+  }}
+>
+  Salvar
+</button>
+
+        </div>
+      )}
+
+
+
 
                     <ReactTags
                       handleDelete={(i) => handleDeleteMarker(i, item)}
