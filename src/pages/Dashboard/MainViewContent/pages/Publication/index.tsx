@@ -414,6 +414,7 @@ const Publication: React.FC = () => {
     }
     setActionType('none');
     if (!modalActive && publicationId > 0) {
+      RefreshEventList()
     }
   }, [modalActive])
 
