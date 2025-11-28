@@ -73,6 +73,7 @@ import AwarenessModal from 'components/AwarenessModal';
 import MatterCRMModal from '../../Customer/CRM/Modal';
 import { useSecurity } from 'context/securityContext';
 
+
 export interface CRMData {
   id: string;
 }
@@ -1299,6 +1300,7 @@ const Matter: React.FC = () => {
   };
 
 
+  /*
   const handleAddition = (tag, item: IMatterData) => {
 
     // allow only 5 markers by folder
@@ -1317,6 +1319,29 @@ const Matter: React.FC = () => {
 
       setMatterList(updateMatterList)
       SaveMarkers(item.matterId, item.markersList)
+    }
+  };
+*/
+
+
+  const handleAddition = (tag, item: IMatterData) => {
+
+    // allow only 5 markers by folder
+    if (item.markersList.length < 5) {
+
+      item.markersList.push(tag)
+      const updateMatterList = matterList.map(matter =>
+
+        matter.matterId === item.matterId ?
+          {
+            ...matter,
+            markersList: item.markersList
+          } :
+          matter
+      );
+
+      setMatterList(updateMatterList)
+      //SaveMarkers(item.matterId, item.markersList)
     }
   };
 
@@ -2203,8 +2228,91 @@ const Matter: React.FC = () => {
   }
 
 
-  const [open, setOpen] = useState(false);
+
   const [selectedColor, setSelectedColor] = useState("#1e90ff");
+
+  const [openId, setOpenId] = useState(null);
+  const [tagName, setTagName] = useState("");
+
+
+  const handleCreateTag = (item: IMatterData) => {
+
+    if (!tagName.trim()) return;
+
+    const newTag = {
+      id: Math.random().toString(36).substring(2),
+      text: tagName,
+      color: selectedColor
+    };
+
+    const updatedList = matterList.map(m =>
+      m.matterId === item.matterId
+        ? { ...m, markersList: [...m.markersList, newTag] }
+        : m
+    );
+
+    setMatterList(updatedList);
+
+    const updatedMarkers = updatedList.find(m => m.matterId === item.matterId)?.markersList ?? [];
+
+    SaveMarkers(item.matterId, updatedMarkers);
+
+
+    setOpenId(null);
+
+
+    setTagName("");
+    setSelectedColor("#3c9df7");
+  };
+
+
+
+
+  const TagComponent = ({ tag, onDelete, className, index }) => {
+  // tag é o objeto que você passou em `tags` (ex: { id, text, color })
+  const bg = tag?.color ?? "#999";
+
+  return (
+    <span
+      className={className + " custom-react-tag"} // mantém a classe original + uma custom
+      style={{
+        backgroundColor: bg,   // inline style garante sobrescrita
+        color: "#fff",
+        padding: "4px 8px",
+        borderRadius: "6px",
+        display: "inline-flex",
+        alignItems: "center",
+        marginRight: "6px",
+        fontSize: "12px",
+        lineHeight: "1"
+      }}
+    >
+      <span style={{ marginRight: 6 }}>{tag.text}</span>
+
+      {/* botão X para deletar */}
+      <button
+        type="button"
+        onClick={() => {
+          // onDelete normalmente recebe o índice — a lib passa index como 3º ou 4º prop,
+          // mas aqui garantimos chamando onDelete(index) (react-tag-input provê index).
+          if (typeof onDelete === "function") onDelete(index);
+        }}
+        style={{
+          background: "transparent",
+          border: "none",
+          color: "rgba(255,255,255,0.9)",
+          cursor: "pointer",
+          padding: 0,
+          fontSize: 14,
+          lineHeight: 1
+        }}
+        aria-label={`Remover ${tag.text}`}
+      >
+        ×
+      </button>
+    </span>
+  );
+};
 
 
   return (
@@ -2524,7 +2632,7 @@ const Matter: React.FC = () => {
                       &nbsp; &nbsp; &nbsp;
                       <button
                         type="button"
-                        onClick={() => setOpen(!open)}
+                        onClick={() => setOpenId(openId === item.matterId ? null : item.matterId)}
                       >
                         <VscTag />
                         Etiquetas
@@ -2533,7 +2641,7 @@ const Matter: React.FC = () => {
                     </header>
 
 
-                    {open && (
+                    {openId === item.matterId && (
                       <div
                         style={{
                           position: "absolute",
@@ -2558,6 +2666,8 @@ const Matter: React.FC = () => {
                         <input
                           type="text"
                           placeholder="Nome da tag"
+                          value={tagName}
+                          onChange={(e) => setTagName(e.target.value)}
                           style={{
                             width: "100%",
                             padding: "4px",
@@ -2620,50 +2730,53 @@ const Matter: React.FC = () => {
                           />
                         </div>
 
-                      {/* BOTÕES SALVAR + FECHAR */}
-<div style={{ display: "flex", gap: "10px", marginTop: "5px" }}>
-  <button
-    onClick={() => setOpen(false)}
-    style={{
-      flex: 1,
-      padding: "6px",
-      background: "#007bff",
-      color: "#fff",
-      border: "none",
-      borderRadius: "4px",
-      cursor: "pointer"
-    }}
-  >
-    Salvar
-  </button>
+                        {/* BOTÕES SALVAR + FECHAR */}
+                        <div style={{ display: "flex", gap: "10px", marginTop: "5px" }}>
+                          <button
+                            onClick={() => handleCreateTag(item)}
+                            style={{
+                              flex: 1,
+                              padding: "6px",
+                              background: "#007bff",
+                              color: "#fff",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer"
+                            }}
+                          >
+                            Salvar
+                          </button>
 
-  <button
-    onClick={() => setOpen(false)}
-    style={{
-      flex: 1,
-      padding: "6px",
-      background: "#6c757d",
-      color: "#fff",
-      border: "none",
-      borderRadius: "4px",
-      cursor: "pointer"
-    }}
-  >
-    Fechar
-  </button>
-</div>
+                          <button
+                            onClick={() => setOpenId(null)}
+                            style={{
+                              flex: 1,
+                              padding: "6px",
+                              background: "#6c757d",
+                              color: "#fff",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer"
+                            }}
+                          >
+                            Fechar
+                          </button>
+                        </div>
 
                       </div>
                     )}
 
 
-
-
+      
                     <ReactTags
                       handleDelete={(i) => handleDeleteMarker(i, item)}
                       handleAddition={(i) => handleAddition(i, item)}
                       handleDrag={(tag, currPos, newPos) => handleDrag(tag, currPos, newPos, item)}
-                      tags={item.markersList}
+                      tags={item.markersList.map(t => ({
+    id: t.id,
+    text: t.text,
+    className: "tag-" + t.id  // classe única por tag
+  }))}
                       autofocus={false}
                       readOnly={false}
                       minQueryLength={5}
@@ -2673,7 +2786,19 @@ const Matter: React.FC = () => {
                       allowDragDrop
                       allowAdditionFromPaste
                       placeholder={(item.markersList.length == 0 ? 'Inserir Marcador' : '')}
+                        tagComponent={TagComponent} 
                     />
+
+{item.markersList.map(t => (
+  <style key={t.id}>{`
+    .tag-${t.id} {
+      background: ${t.color} !important;
+      color: #fff !important;
+      border-radius: 6px !important;
+      padding: 4px 8px !important;
+    }
+  `}</style>
+))}
 
                     <div>
                       <div className='matterDetails'>
