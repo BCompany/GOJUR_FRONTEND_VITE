@@ -1,8 +1,10 @@
 import styled from 'styled-components';
 
+
 interface SearchProps {
   show:boolean
 }
+
 
 export const ModalHeaderFooter = styled.div<SearchProps>`
   border: 1px solid var(--blue-twitter);
@@ -102,9 +104,9 @@ export const ModalHeaderFooter = styled.div<SearchProps>`
   }
 `;
 
+
 export const Editor = styled.div`
   flex: 1;
-  overflow: auto;
   height: auto;
   margin-left: 5%;
   width: 90%;
@@ -115,10 +117,11 @@ export const Editor = styled.div`
   }
   
   .ck-rounded-corners .ck.ck-editor__main>.ck-editor__editable, .ck.ck-editor__main>.ck-editor__editable.ck-rounded-corners {
-  ol, ul {
+    ol, ul {
       margin-left: 18px;
     }
-}
+  }
+
   .ck.ck-editor__main>.ck-editor__editable:not(.ck-focused){
     ol, ul {
       margin-left: 18px;
@@ -138,6 +141,7 @@ export const Editor = styled.div`
   }
 
 `;
+
 
 export const ModalInformation = styled.div`
   border: 1px solid var(--blue-twitter);
@@ -192,6 +196,7 @@ export const ModalInformation = styled.div`
 
 `;
 
+
 export const OverlayDocument = styled.div `
     background-color: rgba(0, 0, 0, 0.4);
     position: absolute;
@@ -218,28 +223,6 @@ export const OverlayDocument = styled.div `
 `;
 
 
-// export const OverlayHeader = styled.div `
-//     background-color: rgba(0, 0, 0, 0.4);
-//     position: absolute;
-//     z-index:3;
-
-//     /* text inside overlay */
-//     >div{
-//       background: var(--white-card);
-//       height:3rem;
-//       color:var(--blue-twitter);
-//       font-size:0.765rem;
-//       text-align:center;
-//       padding:1rem;
-//       margin-left:30vw;
-//       margin-right:25vw;
-//       margin-top:20%;
-//       border-radius: 0.25rem;
-//       box-shadow: 1px 1px 4px 0.5px rgba(0,0,0,0.15);
-//     }
-// `;
-
-
 export const OverlayHeader = styled.div `
     margin-Left:1.5%;
     border-Radius:10px;
@@ -250,6 +233,7 @@ export const OverlayHeader = styled.div `
     z-index:4;
 `;
 
+
 export const OverlayFooter = styled.div `
     margin-Left:1.5%;
     width: 1010px;
@@ -259,4 +243,3 @@ export const OverlayFooter = styled.div `
     height:250px;
     z-index:4;
 `;
-

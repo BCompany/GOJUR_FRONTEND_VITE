@@ -75,7 +75,7 @@ export const Sidebar = styled.aside`
   border-radius: 1rem;
   box-shadow: 0 1px 3px rgba(2, 6, 23, 0.08);
   width: 250px;
-  height: 600px;
+  height: 650px;
 
   h3 {
     font-weight: 500;
