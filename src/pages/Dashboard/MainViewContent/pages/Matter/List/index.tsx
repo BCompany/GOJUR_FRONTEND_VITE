@@ -72,11 +72,15 @@ import FollowModal from '../FollowModal';
 import AwarenessModal from 'components/AwarenessModal';
 import MatterCRMModal from '../../Customer/CRM/Modal';
 import { useSecurity } from 'context/securityContext';
+import { HexColorPicker } from "react-colorful";
+import ReactDOM from "react-dom";
 
 
 export interface CRMData {
   id: string;
 }
+
+
 
 
 const Matter: React.FC = () => {
@@ -2228,6 +2232,7 @@ const Matter: React.FC = () => {
   }
 
 
+<<<<<<< Updated upstream
 
   const [selectedColor, setSelectedColor] = useState("#1e90ff");
 
@@ -2313,6 +2318,12 @@ const Matter: React.FC = () => {
     </span>
   );
 };
+=======
+  const [open, setOpen] = useState(false);
+  const [selectedColor, setSelectedColor] = useState("#1e90ff");
+
+  const [openModalId, setOpenModalId] = useState(null);
+>>>>>>> Stashed changes
 
 
   return (
@@ -2631,17 +2642,30 @@ const Matter: React.FC = () => {
 
                       &nbsp; &nbsp; &nbsp;
                       <button
+<<<<<<< Updated upstream
                         type="button"
                         onClick={() => setOpenId(openId === item.matterId ? null : item.matterId)}
                       >
                         <VscTag />
                         Etiquetas
+=======
+                        type='button'
+                        style={{ marginLeft: '10px' }}
+                        onClick={() => setOpenModalId(item.matterId)}
+                      >
+                        <VscTag />
+                        <span style={{ marginLeft: '5px' }}>Etiquetas</span>
+>>>>>>> Stashed changes
                       </button>
 
                     </header>
 
+<<<<<<< Updated upstream
 
                     {openId === item.matterId && (
+=======
+                    {openModalId === item.matterId  && (
+>>>>>>> Stashed changes
                       <div
                         style={{
                           position: "absolute",
@@ -2653,7 +2677,10 @@ const Matter: React.FC = () => {
                           border: "1px solid #ccc",
                           borderRadius: "6px",
                           width: "300px",
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
                           display: "flex",
                           flexDirection: "column",
 
@@ -2666,8 +2693,11 @@ const Matter: React.FC = () => {
                         <input
                           type="text"
                           placeholder="Nome da tag"
+<<<<<<< Updated upstream
                           value={tagName}
                           onChange={(e) => setTagName(e.target.value)}
+=======
+>>>>>>> Stashed changes
                           style={{
                             width: "100%",
                             padding: "4px",
@@ -2677,6 +2707,7 @@ const Matter: React.FC = () => {
                           }}
                         />
 
+<<<<<<< Updated upstream
 
                         {/* PALETA DE CORES (grid 12x) */}
                         <div
@@ -2706,6 +2737,38 @@ const Matter: React.FC = () => {
                               }}
                             />
                           ))}
+=======
+                        <div>
+                          <div
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns: "repeat(9, 22px)",
+                              gap: "6px",
+                              marginBottom: "12px"
+                            }}
+                          >
+                            {[
+                              "#3c9df7", "#7ed957", "#a259ff", "#00d2d3", "#808080", "#ff6f91",
+                              "#ff8a5b", "#ffb84d", "#c0392b", "#27ae60", "#2ecc71", "#f1c40f",
+                              "#8e44ad", "#16a085", "#d35400", "#34495e", "#bdc3c7", "#e74c3c"
+                            ].map((c) => (
+                              <div
+                                key={c}
+                                onClick={() => setSelectedColor(c)}
+                                style={{
+                                  width: "22px",
+                                  height: "22px",
+                                  background: c,
+                                  cursor: "pointer",
+                                  borderRadius: "4px",
+                                  border: selectedColor === c ? "2px solid black" : "1px solid #aaa",
+                                  boxSizing: "border-box"
+                                }}
+                              />
+                            ))}
+                          </div>
+
+>>>>>>> Stashed changes
                         </div>
 
                         {/* LABEL + INPUT COLOR */}
@@ -2713,7 +2776,10 @@ const Matter: React.FC = () => {
                           <label style={{ fontSize: "14px", minWidth: "120px" }}>Personalizar cor:</label>
 
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
                           {/* input color sincronizado */}
                           <input
                             type="color"
@@ -2730,6 +2796,7 @@ const Matter: React.FC = () => {
                           />
                         </div>
 
+<<<<<<< Updated upstream
                         {/* BOTÕES SALVAR + FECHAR */}
                         <div style={{ display: "flex", gap: "10px", marginTop: "5px" }}>
                           <button
@@ -2762,12 +2829,32 @@ const Matter: React.FC = () => {
                             Fechar
                           </button>
                         </div>
+=======
+                        {/* BOTÃO SALVAR */}
+                        <button
+                          onClick={() => setOpen(false)}
+                          style={{
+                            width: "100%",
+                            padding: "6px",
+                            background: "#007bff",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer"
+                          }}
+                        >
+                          Salvar
+                        </button>
+>>>>>>> Stashed changes
 
                       </div>
                     )}
 
 
+<<<<<<< Updated upstream
       
+=======
+>>>>>>> Stashed changes
                     <ReactTags
                       handleDelete={(i) => handleDeleteMarker(i, item)}
                       handleAddition={(i) => handleAddition(i, item)}
