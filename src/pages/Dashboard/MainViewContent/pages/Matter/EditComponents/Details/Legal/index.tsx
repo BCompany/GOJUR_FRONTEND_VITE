@@ -5,7 +5,7 @@
 /* eslint-disable array-callback-return */
 /* eslint-disable react/jsx-indent */
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState, useImperativeHandle, forwardRef  } from 'react';
 import { WithContext as ReactTags } from 'react-tag-input';
 import { FiSave, FiRefreshCcw, FiPrinter } from 'react-icons/fi';
 import { MdBlock, MdHelp } from 'react-icons/md';
@@ -38,10 +38,11 @@ import MatterValues from '../Values';
 import MatterValuesReport from '../Report';
 import MatterAttach from '../../Attach/Index';
 import UnfoldingModal from '../../../Unfolding';
+import { VscTag } from 'react-icons/vsc';
 
 const Matter = (props) => {
 
-  const { handleLoadingPage, handleMatterNumberCallback } = props.callbackList;
+  const { handleLoadingPage, handleMatterNumberCallback,  registerAPI } = props.callbackList;
   const { addToast } = useToast();
   const { handleCaller, handleConfirmMessage, caller, isCancelMessage, isConfirmMessage } = useConfirmBox();
   const useModalContext = useModal();
@@ -386,16 +387,29 @@ const Matter = (props) => {
 
     try
     {
+ 
       setMarkerList(markersList)
 
+ console.log(markersList);
       // transform marker list in unique string
+      /*
       let marker = '';
       markersList.map((item) => {
         marker += `${item.text  },`
       })
+      */
 
+      // transform marker list in unique string
+      const markersJsonText = JSON.stringify(
+          markersList.map(m => ({
+            id: m.text,
+            text: m.text,
+            color: m.color
+          }))
+        );
+  
       // save matter endpoint call
-      await SaveMatterMarkers(Number(id), marker, 'matterLegal')
+      await SaveMatterMarkers(Number(id), markersJsonText, 'matterLegal')
     }
     catch(err:any){
 
@@ -1192,6 +1206,66 @@ const Matter = (props) => {
     }
   }
 
+
+
+
+
+  const [selectedColor, setSelectedColor] = useState("#faff4c");
+ 
+  const [openId, setOpenId] = useState(null);
+  const [tagName, setTagName] = useState("");
+  const inputTagRef = useRef(null);
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  
+   
+
+  useEffect(() => {
+  if (registerAPI) {
+    registerAPI({
+      openModal: () => {
+      setIsPaletteOpen((prev) => !prev); 
+      }
+    });
+  }
+}, []);
+
+
+
+  useEffect(() => {
+    if (openId !== null && inputTagRef.current) {
+      inputTagRef.current.focus();
+    }
+  }, [openId]);
+  
+
+const handleCreateTag = () => {
+
+  if (!tagName.trim()) return;
+
+  const newTag = {
+    id: Math.random().toString(36).substring(2),
+    text: tagName,
+    color: selectedColor
+  };
+
+  const updatedList = [...markerList, newTag];
+
+  SaveMarkers(updatedList);
+
+  setMarkerList(updatedList);
+
+
+  setIsPaletteOpen(false)
+
+  setTagName("");
+  setSelectedColor("#faff4c");
+};
+
+
+
+
+
+
   // While is loading component, show loader and waiting message
   if (isLoading) {
 
@@ -1224,6 +1298,8 @@ const Matter = (props) => {
     setShowUnfoldingModal(false)
   }
 
+
+  
 
 
   // Matter legal details screeen
@@ -1261,12 +1337,160 @@ const Matter = (props) => {
           <GridSelectProcess />
         )}
 
-        <div className='markers'>
+      
+     
+
+        <div className='markers' style={{ position: "relative" }}>
+         
+          <button
+            type="button"
+            onClick={() => setIsPaletteOpen(!isPaletteOpen)}
+          >
+            &nbsp;&nbsp;&nbsp;<VscTag />
+            &nbsp;&nbsp;Etiquetas
+
+          </button>
+
+            
+                {isPaletteOpen && (
+
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "90%",
+                          left: 0,
+                          zIndex: 9999999,
+                          background: "#fff",
+                          padding: "10px",
+                          marginTop: "4px",
+                          border: "1px solid #ccc",
+                          borderRadius: "6px",
+                          width: "300px",
+                          display: "flex",
+                          flexDirection: "column",
+
+                          boxShadow: "0px 2px 6px rgba(0,0,0,0.15)",
+                        }}
+                      >
+                        <h4 style={{ margin: "0 0 10px 0" }}>Nova etiqueta</h4>
+
+                        <input
+                          ref={inputTagRef}
+                          type="text"
+                          placeholder="Nome da etiqueta"
+                          value={tagName}
+                          onChange={(e) => setTagName(e.target.value)}
+                          style={{
+                            width: "100%",
+                            padding: "4px",
+                            border: "1px solid #ccc",
+                            borderRadius: "4px",
+                            marginBottom: "10px"
+                          }}
+                        />
+
+                        {/* PALETA DE CORES (grid 12x) */}
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(9, 22px)",
+                            gap: "6px",
+                            marginBottom: "12px"
+                          }}
+                        >
+                          {[
+                            "#3c9df7", "#7ed957", "#a259ff", "#00d2d3", "#808080", "#ff6f91",
+                            "#ff8a5b", "#ffb84d", "#c0392b", "#27ae60", "#2ecc71", "#f1c40f",
+                            "#8e44ad", "#16a085", "#d35400", "#34495e", "#bdc3c7", "#e74c3c"
+                          ].map((c) => (
+                            <div
+                              key={c}
+                              onClick={() => setSelectedColor(c)}
+                              style={{
+                                width: "22px",
+                                height: "22px",
+                                background: c,
+                                cursor: "pointer",
+                                borderRadius: "4px",
+                                border: selectedColor === c ? "2px solid black" : "1px solid #aaa",
+                                boxSizing: "border-box"
+                              }}
+                            />
+                          ))}
+
+                        </div>
+
+                        {/* LABEL + INPUT COLOR */}
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "15px" }}>
+                          <label style={{ fontSize: "14px", minWidth: "120px" }}>Personalizar cor:</label>
+
+                          {/* input color sincronizado */}
+                          <input
+                            type="color"
+                            value={selectedColor}
+                            onChange={(e) => setSelectedColor(e.target.value)}
+                            style={{
+                              width: "40px",
+                              height: "32px",
+                              border: "none",
+                              padding: 0,
+                              cursor: "pointer",
+                              background: "transparent"
+                            }}
+                          />
+                        </div>
+
+                        {/* BOTÕES SALVAR + FECHAR */}
+                        <div style={{ display: "flex", gap: "10px", marginTop: "5px" }}>
+                          <button
+                            onClick={() => handleCreateTag()}
+                            style={{
+                              flex: 1,
+                              padding: "6px",
+                              background: "#007bff",
+                              color: "#fff",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer"
+                            }}
+                          >
+                            Salvar
+                          </button>
+
+                          <button
+                            onClick={() => setIsPaletteOpen(false)}
+                            style={{
+                              flex: 1,
+                              padding: "6px",
+                              background: "#6c757d",
+                              color: "#fff",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer"
+                            }}
+                          >
+                            Fechar
+                          </button>
+                        </div>
+
+
+                      </div>
+                    )}
+
+        
+          
           <ReactTags
             handleDelete={(i) => handleDeleteMarker(i)}
             handleAddition={(i) => handleAddition(i)}
             handleDrag={(tag, currPos, newPos) => handleDrag(tag, currPos, newPos)}
-            tags={markerList}
+            tags={markerList.map(t => {
+              const safeId = t.id.replace(/[^a-zA-Z0-9_-]/g, ""); 
+              return {
+                id: safeId,
+                text: t.text,
+                className: "tag-" + safeId
+              };
+            })}
             autofocus={false}
             readOnly={false}
             minQueryLength={5}
@@ -1276,7 +1500,24 @@ const Matter = (props) => {
             allowDragDrop
             allowAdditionFromPaste
             placeholder={(markerList.length == 0? 'Inserir Marcador': '')}
+            inputFieldPosition="none"
           />
+
+        {markerList.map(t => {
+            const safeId = t.id.replace(/[^a-zA-Z0-9_-]/g, "");
+
+            return (
+              <style key={safeId}>{`
+                .tag-${safeId} {
+                  background: ${t.color} !important;
+                  color: #fff !important;
+                  border-radius: 6px !important;
+                  padding: 4px 8px !important;
+                }
+              `}</style>
+            );
+          })}
+
         </div>
 
         <div className='content'>
@@ -1829,6 +2070,6 @@ const Matter = (props) => {
 
     </>
   )
-}
+};
 
 export default Matter

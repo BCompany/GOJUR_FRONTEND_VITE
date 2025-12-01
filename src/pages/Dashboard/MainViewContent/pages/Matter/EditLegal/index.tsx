@@ -29,10 +29,11 @@ import CourtComponent from '../EditComponents/Court'
 import PeopleComponent from '../EditComponents/People'
 import FileComponent from '../EditComponents/File'
 import { ListCustomerData, ListLawyerData, ListOpossingData, ListPartsData, ListThirdyData } from '../EditComponents/Services/PeopleData';
+import { VscTag } from 'react-icons/vsc';
 
 const MatterLegal = () => {
   const history = useHistory();
-  const {isMenuOpen, handleIsMenuOpen } = useMenuHamburguer();
+  const { isMenuOpen, handleIsMenuOpen } = useMenuHamburguer();
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const { permissionData } = useDefaultSettings();
   // const [tabsControl, setTabsControl] = useState<ITabsEditMatterLegal>({activeTab: 'matter'} as ITabsEditMatterLegal);
@@ -69,11 +70,11 @@ const MatterLegal = () => {
   const peopleRef = useRef<HTMLDivElement>(null)
   const followRef = useRef<HTMLDivElement>(null)
 
-  const LoadPerson = async() => {
+  const LoadPerson = async () => {
 
     // when is call bay publication show button to return
     const showRedirectButton = localStorage.getItem('@GoJur:redirectFromPublication')
-    if (showRedirectButton === 'S'){
+    if (showRedirectButton === 'S') {
       setRedirectPublicationButton(true)
       localStorage.removeItem('@GoJur:redirectFromPublication')
     }
@@ -85,12 +86,12 @@ const MatterLegal = () => {
     setThirdyList(await ListThirdyData(""))
 
     // open people tab after load matter page
-    if (peopleRef.current){
+    if (peopleRef.current) {
       peopleRef.current.click();
     }
 
     // open people tab after load matter page
-    if (followRef.current){
+    if (followRef.current) {
       followRef.current.click();
     }
   }
@@ -100,7 +101,7 @@ const MatterLegal = () => {
   }
 
   useEffect(() => {
-      LoadPerson()
+    LoadPerson()
   }, [])
 
   const handleMatterNumberCallback = (matterNumber: string) => {
@@ -111,315 +112,336 @@ const MatterLegal = () => {
   const handleCourtSaveCallback = () => {
 
     // when user is with follow tab open and include new court - simulate close and reopen tab to reload lists
-    if (followRef.current && followTab){
+    if (followRef.current && followTab) {
       followRef.current.click();    // close tab follow
       followRef.current.click();    // reopen to reload lists
     }
   }
+
+
+
+const [childAPI, setChildAPI] = useState(null);
+
+const handleCallChild = () => {
+    if (childAPI?.openModal) {
+      childAPI.openModal();
+    }
+  };
+
 
   // Matter legal details screeen
   return (
 
     <Container>
 
-        <HeaderPage />
+      <HeaderPage />
 
-        <TollBar>
+      <TollBar>
+
+        <div className="buttonReturn">
+          <button
+            className="buttonLinkClick"
+            title="Clique para retornar a lista de processos"
+            onClick={() => history.push('../../../matter/list')}
+            type="submit"
+          >
+            <AiOutlineArrowLeft />
+            Retornar
+          </button>
+        </div>
+
+        {redirectPublicationButton && (
 
           <div className="buttonReturn">
             <button
               className="buttonLinkClick"
-              title="Clique para retornar a lista de processos"
-              onClick={() => history.push('../../../matter/list')}
+              title="Clique para retornar a lista de publicação"
+              onClick={() => history.push('../../../publication')}
               type="submit"
             >
               <AiOutlineArrowLeft />
-              Retornar
+              Voltar a publicação
             </button>
           </div>
+        )}
 
-          {redirectPublicationButton && (
+        <div className="hamburguerMenu">
+          <button
+            id="options"
+            type="button"
+            onClick={() => handleIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? <ImMenu4 /> : <ImMenu3 />}
+          </button>
+        </div>
 
-            <div className="buttonReturn">
-              <button
-                className="buttonLinkClick"
-                title="Clique para retornar a lista de publicação"
-                onClick={() => history.push('../../../publication')}
-                type="submit"
-              >
-                <AiOutlineArrowLeft />
-                Voltar a publicação
-              </button>
-            </div>
-          )}
+        {isMenuOpen ? (
+          <MenuHamburguer name='matterOptions' />
+        ) : null}
 
-          <div className="hamburguerMenu">
+      </TollBar>
+
+      <Content>
+
+        {/* Matter */}
+        <Tabs>
+
+          <div
+            className='title first'
+            onClick={() => handleTabs("matter")}
+          >
+
             <button
-              id="options"
-              type="button"
-              onClick={() => handleIsMenuOpen(!isMenuOpen)}
+              type='button'
             >
-              {isMenuOpen ? <ImMenu4 /> : <ImMenu3 />}
+              <AiOutlineFolderOpen />
+              Processo
             </button>
+
+
+            <button
+              type="button"
+              onClick={handleCallChild}
+            >
+              <VscTag />
+              Etiquetas
+            </button>
+
+
           </div>
 
-          {isMenuOpen ? (
-            <MenuHamburguer name='matterOptions' />
-          ) : null}
+          <Tab active>
 
-        </TollBar>
+            <TabContent>
 
-        <Content>
+              <MatterDetails callbackList={{ handleLoadingPage, handleMatterNumberCallback, registerAPI: setChildAPI }} />
 
-          {/* Matter */}
-          <Tabs>
+            </TabContent>
 
-            <div
-              className='title first'
-              onClick={() => handleTabs("matter")}
+          </Tab>
+
+        </Tabs>
+
+        {/* People List */}
+        <Tabs>
+
+          <div
+            className='title'
+            ref={peopleRef}
+            onClick={() => handleTabs("peopleList")}
+          >
+
+            <button
+              type='button'
             >
+              <BsFillPeopleFill />
+              Pessoas
+            </button>
 
-              <button
-                type='button'
-              >
-                <AiOutlineFolderOpen />
-                Processo
-              </button>
+          </div>
 
-            </div>
+          <Tab active={peopleTab}>
 
-            <Tab active>
+            {peopleTab && (
+              <PeopleComponent
+                matterId={id}
+                customerList={customerList}
+                lawyerList={lawyerList}
+                opossingList={opossingList}
+                thirdyList={thirdyList}
+                partsList={partsList}
+                load={peopleTab}
+              />
+            )}
 
-              <TabContent>
+          </Tab>
 
-                <MatterDetails callbackList={{handleLoadingPage, handleMatterNumberCallback}} />
+        </Tabs>
 
-              </TabContent>
+        {/* Order List */}
+        <Tabs>
 
-            </Tab>
+          <div
+            className='title'
+            onClick={() => handleTabs("orderList")}
+          >
 
-          </Tabs>
-
-          {/* People List */}
-          <Tabs>
-
-            <div
-              className='title'
-              ref={peopleRef}
-              onClick={() => handleTabs("peopleList")}
+            <button
+              type='button'
             >
+              <AiOutlineFileSearch />
+              Pedido do Processo
+            </button>
 
-              <button
-                type='button'
-              >
-                <BsFillPeopleFill />
-                Pessoas
-              </button>
+          </div>
 
-            </div>
+          <Tab active={orderTab}>
 
-            <Tab active={peopleTab}>
+            {/* Render order componenet */}
+            {orderTab && (
+              <OrderComponent
+                matterId={id}
+                load={orderTab}
+              />
+            )}
 
-              {peopleTab && (
-                <PeopleComponent
-                  matterId={id}
-                  customerList={customerList}
-                  lawyerList={lawyerList}
-                  opossingList={opossingList}
-                  thirdyList={thirdyList}
-                  partsList={partsList}
-                  load={peopleTab}
-                />
-              )}
+          </Tab>
 
-            </Tab>
+        </Tabs>
 
-          </Tabs>
+        <Tabs>
 
-          {/* Order List */}
-          <Tabs>
+          <div
+            className='title'
+            onClick={() => handleTabs("courtList")}
+          >
 
-            <div
-              className='title'
-              onClick={() => handleTabs("orderList")}
+            <button
+              type='button'
             >
+              <GoLaw />
+              Fórum / Instancia
+            </button>
 
-              <button
-                type='button'
-              >
-                <AiOutlineFileSearch />
-                Pedido do Processo
-              </button>
+          </div>
 
-            </div>
+          <Tab active={courtTab}>
 
-            <Tab active={orderTab}>
+            {/* Render court componenet */}
+            {courtTab && (
+              <CourtComponent
+                matterId={id}
+                numberOrigem={numberOrigem}
+                handleReloadFollowTab={handleCourtSaveCallback}
+                load={courtTab}
+              />
+            )}
 
-              {/* Render order componenet */}
-              {orderTab && (
-                <OrderComponent
-                  matterId={id}
-                  load={orderTab}
-                />
-              )}
+          </Tab>
 
-            </Tab>
+        </Tabs>
 
-          </Tabs>
+        {/* Follow List */}
+        <Tabs>
 
-          <Tabs>
+          <div
+            className='title'
+            ref={followRef}   // handle to auto clicked in the first open
+            onClick={() => handleTabs("followList")}
+          >
 
-            <div
-              className='title'
-              onClick={() => handleTabs("courtList")}
+            <button
+              type='button'
+            // className={getClassTabActive('followList')}
             >
+              <GrTextAlignCenter />
+              Acompanhamentos
+            </button>
 
-              <button
-                type='button'
-              >
-                <GoLaw />
-                Fórum / Instancia
-              </button>
+          </div>
 
-            </div>
+          <Tab active={followTab}>
 
-            <Tab active={courtTab}>
+            {followTab && (
 
-              {/* Render court componenet */}
-              {courtTab && (
-                <CourtComponent
+              <>
+                <FollowComponent
                   matterId={id}
                   numberOrigem={numberOrigem}
-                  handleReloadFollowTab={handleCourtSaveCallback}
-                  load={courtTab}
+                  load={followTab}
                 />
-              )}
 
-            </Tab>
+                <FileComponent
+                  matterId={Number(id)}
+                  load={followTab}
+                  sharedFile={false}
+                  fromModal=""
+                />
+              </>
+            )}
 
-          </Tabs>
+          </Tab>
 
-          {/* Follow List */}
+        </Tabs>
+
+        {/* Finance List */}
+        {(permissionData.financial === 'S' || permissionData.adm == 'S') && (
+
           <Tabs>
 
             <div
               className='title'
-              ref={followRef}   // handle to auto clicked in the first open
-              onClick={() => handleTabs("followList")}
+              onClick={() => handleTabs("financeList")}
             >
-
               <button
                 type='button'
-                // className={getClassTabActive('followList')}
               >
-                <GrTextAlignCenter />
-                Acompanhamentos
+                <GiReceiveMoney />
+                Financeiro
               </button>
 
             </div>
 
-            <Tab active={followTab}>
+            <Tab active={financeTab}>
 
-              {followTab && (
-
-                <>
-                  <FollowComponent
-                    matterId={id}
-                    numberOrigem={numberOrigem}
-                    load={followTab}
-                  />
-
-                  <FileComponent
-                    matterId={Number(id)}
-                    load={followTab}
-                    sharedFile={false}
-                    fromModal=""
-                  />
-                </>
-              )}
+              <FinanceComponent
+                matterId={id}
+                load={financeTab}
+              />
 
             </Tab>
 
           </Tabs>
 
-          {/* Finance List */}
-          {(permissionData.financial === 'S' || permissionData.adm == 'S') && (
-
-            <Tabs>
-
-              <div
-                className='title'
-                onClick={() => handleTabs("financeList")}
-              >
-                  <button
-                    type='button'
-                  >
-                    <GiReceiveMoney />
-                    Financeiro
-                  </button>
-
-              </div>
-
-              <Tab active={financeTab}>
-
-                <FinanceComponent
-                  matterId={id}
-                  load={financeTab}
-                />
-
-              </Tab>
-
-            </Tabs>
-
-          )}
-
-
-           {/* Document List */}
-          <Tabs>
-
-            <div
-              className='title'
-              onClick={() => handleTabs("documentList")}
-            >
-
-              <button
-                type='button'
-                // className={getClassTabActive('documentList')}
-              >
-                <HiOutlineDocumentDuplicate />
-                Documentos
-              </button>
-
-            </div>
-
-            <Tab active={documentTab}>
-
-              {documentTab && (
-                <DocumentComponent
-                  matterId={id}
-                  load={documentTab}
-                />
-              )}
-
-            </Tab>
-
-          </Tabs>
-
-          <br />
-          <br />
-          <br />
-
-        </Content>
-
-        {isLoading && (
-          <>
-            <Overlay />
-            <div className='waitingMessage'>
-              <LoaderWaiting size={15} color="var(--blue-twitter)" />
-              &nbsp;&nbsp; Aguarde...
-            </div>
-          </>
         )}
+
+
+        {/* Document List */}
+        <Tabs>
+
+          <div
+            className='title'
+            onClick={() => handleTabs("documentList")}
+          >
+
+            <button
+              type='button'
+            // className={getClassTabActive('documentList')}
+            >
+              <HiOutlineDocumentDuplicate />
+              Documentos
+            </button>
+
+          </div>
+
+          <Tab active={documentTab}>
+
+            {documentTab && (
+              <DocumentComponent
+                matterId={id}
+                load={documentTab}
+              />
+            )}
+
+          </Tab>
+
+        </Tabs>
+
+        <br />
+        <br />
+        <br />
+
+      </Content>
+
+      {isLoading && (
+        <>
+          <Overlay />
+          <div className='waitingMessage'>
+            <LoaderWaiting size={15} color="var(--blue-twitter)" />
+            &nbsp;&nbsp; Aguarde...
+          </div>
+        </>
+      )}
 
     </Container>
 
