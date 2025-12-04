@@ -30,6 +30,7 @@ import PeopleComponent from '../EditComponents/People'
 import FileComponent from '../EditComponents/File'
 import { ListCustomerData, ListLawyerData, ListOpossingData, ListPartsData, ListThirdyData } from '../EditComponents/Services/PeopleData';
 import { VscTag } from 'react-icons/vsc';
+import { FaTags } from "react-icons/fa";
 
 const MatterLegal = () => {
   const history = useHistory();
@@ -203,7 +204,7 @@ const handleCallChild = () => {
               type="button"
               onClick={handleCallChild}
             >
-              <VscTag />
+              <FaTags color="#2c8ed6"/>
               Etiquetas
             </button>
 

@@ -90,6 +90,22 @@ export const Content = styled.div `
     .first {
       margin-top: -4px;
     }
+
+
+    .title.first {
+  border-right: none !important;
+}
+
+.title.first button {
+  border-right: none !important;
+}
+
+.title.first::after,
+.title.first::before {
+  display: none !important;
+}
+
+
 `
 
 export const TabContent = styled.div `

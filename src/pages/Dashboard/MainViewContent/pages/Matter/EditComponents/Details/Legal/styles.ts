@@ -16,6 +16,12 @@ export const Container = styled.div`
         border-bottom: solid 1px var(--gray);
     }
 
+    .ReactTags__remove svg {
+        fill: #000 !important;
+        width: 8px;
+        height: 8px;
+    }
+
     .personIcon {
     color: var(--blue-twitter);
     &:hover {

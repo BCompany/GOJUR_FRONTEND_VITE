@@ -73,7 +73,7 @@ import AwarenessModal from 'components/AwarenessModal';
 import MatterCRMModal from '../../Customer/CRM/Modal';
 import { useSecurity } from 'context/securityContext';
 import ReactDOM from "react-dom";
-
+import { FaTags } from "react-icons/fa";
 
 export interface CRMData {
   id: string;
@@ -2269,46 +2269,151 @@ const Matter: React.FC = () => {
   const [openId, setOpenId] = useState(null);
   const [tagName, setTagName] = useState("");
   const inputTagRef = useRef(null);
-
+  const inputTagRef1 = useRef(null);
 
  
 useEffect(() => {
   if (openId !== null && inputTagRef.current) {
     inputTagRef.current.focus();
   }
+
+  if (openId !== null && inputTagRef1.current) {
+    inputTagRef1.current.focus();
+  }
+
 }, [openId]);
 
-  const handleCreateTag = (item: IMatterData) => {
 
-    if (!tagName.trim()) return;
+/*
+const handleCreateTag = (item: IMatterData) => {
+  if (!tagName.trim()) return;
 
-    const newTag = {
-      id: Math.random().toString(36).substring(2),
-      text: tagName,
-      color: selectedColor
-    };
+  const normalizedName = tagName.trim().toLowerCase();
 
-    const updatedList = matterList.map(m =>
-      m.matterId === item.matterId
-        ? { ...m, markersList: [...m.markersList, newTag] }
-        : m
-    );
+  // pega as tags atuais do item
+  const currentMarkers =
+    matterList.find(m => m.matterId === item.matterId)?.markersList ?? [];
 
-    setMatterList(updatedList);
+  // verifica duplicidade por texto
+  const alreadyExists = currentMarkers.some(
+    t => t.text.trim().toLowerCase() === normalizedName
+  );
 
-    const updatedMarkers = updatedList.find(m => m.matterId === item.matterId)?.markersList ?? [];
+  if (alreadyExists) {
+    return;
+  }
 
-    SaveMarkers(item.matterId, updatedMarkers);
-
-
-    setOpenId(null);
-
-
-    setTagName("");
-    setSelectedColor("#faff4c");
+  const newTag = {
+    id: Math.random().toString(36).substring(2),
+    text: tagName,
+    color: selectedColor
   };
 
+  const updatedList = matterList.map(m =>
+    m.matterId === item.matterId
+      ? { ...m, markersList: [...m.markersList, newTag] }
+      : m
+  );
 
+  setMatterList(updatedList);
+
+  const updatedMarkers =
+    updatedList.find(m => m.matterId === item.matterId)?.markersList ?? [];
+
+  SaveMarkers(item.matterId, updatedMarkers);
+
+  setOpenId(null);
+  setTagName("");
+  setSelectedColor("#faff4c");
+};
+*/
+
+
+const handleCreateTag = (item: IMatterData) => {
+  if (!tagName.trim()) return;
+
+  const normalizedName = tagName.trim().toLowerCase();
+
+  // pega as tags atuais do item
+  const currentMarkers =
+    matterList.find(m => m.matterId === item.matterId)?.markersList ?? [];
+
+  // ❗ impede mais de 5 tags
+  if (currentMarkers.length >= 5) {
+    return;
+  }
+
+  // verifica duplicidade por texto
+  const alreadyExists = currentMarkers.some(
+    t => t.text.trim().toLowerCase() === normalizedName
+  );
+
+  if (alreadyExists) {
+    return;
+  }
+
+  const newTag = {
+    id: Math.random().toString(36).substring(2),
+    text: tagName,
+    color: selectedColor
+  };
+
+  const updatedList = matterList.map(m =>
+    m.matterId === item.matterId
+      ? { ...m, markersList: [...m.markersList, newTag] }
+      : m
+  );
+
+  setMatterList(updatedList);
+
+  const updatedMarkers =
+    updatedList.find(m => m.matterId === item.matterId)?.markersList ?? [];
+
+  SaveMarkers(item.matterId, updatedMarkers);
+
+  setOpenId(null);
+  setTagName("");
+  setSelectedColor("#faff4c");
+};
+
+
+const getRelativeLuminance = (hex) => {
+ 
+  if (hex == null) return 1
+  // 1. Remove o '#' e converte para R, G, B inteiros (0-255)
+  const hexValue = hex.replace('#', '');
+  const r8bit = parseInt(hexValue.substring(0, 2), 16);
+  const g8bit = parseInt(hexValue.substring(2, 4), 16);
+  const b8bit = parseInt(hexValue.substring(4, 6), 16);
+
+  // 2. Função auxiliar para normalizar (0-1) e linearizar o componente de cor
+  const linearize = (c8bit) => {
+    const csrgb = c8bit / 255;
+    if (csrgb <= 0.03928) {
+      // Linearização para valores escuros
+      return csrgb / 12.92;
+    }
+    // Linearização para valores claros
+    return Math.pow((csrgb + 0.055) / 1.055, 2.4);
+  };
+
+  // 3. Aplica a linearização para R, G e B
+  const R = linearize(r8bit);
+  const G = linearize(g8bit);
+  const B = linearize(b8bit);
+
+  // 4. Calcula a Luminância Relativa (fórmula WCAG)
+  // Pesos: 0.2126 (Red), 0.7152 (Green), 0.0722 (Blue)
+  const L = 0.2126 * R + 0.7152 * G + 0.0722 * B;
+  
+  return L;
+};
+
+
+const getTextColor = (hex) => {
+  const L = getRelativeLuminance(hex);
+  return L > 0.5 ? "#000" : "#fff"; // claro -> preto, escuro -> branco
+};
 
 
   return (
@@ -2626,12 +2731,14 @@ useEffect(() => {
                       {item.matterFolder}
 
                       &nbsp; &nbsp; &nbsp;
+                      
                       <button
                         type="button"
                         onClick={() => setOpenId(openId === item.matterId ? null : item.matterId)}
                       >
-                        <VscTag />
-                        Etiquetas
+                       
+                       <FaTags color="#2c8ed6" />&nbsp;
+                       Etiquetas
 
                       </button>
 
@@ -2666,6 +2773,11 @@ useEffect(() => {
                           placeholder="Nome da etiqueta"
                           value={tagName}
                           onChange={(e) => setTagName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              handleCreateTag(item)
+                            }
+                          }}
                           style={{
                             width: "100%",
                             padding: "4px",
@@ -2762,11 +2874,14 @@ useEffect(() => {
 
                       </div>
                     )}
-
+                
+                <div style={{ display: "flex", alignItems: "center" }}>
+                    <span style={{ display: "inline-block", width: "6px" }}>&nbsp;</span>
+                
                     <ReactTags
                       handleDelete={(i) => handleDeleteMarker(i, item)}
                       handleAddition={(i) => handleAddition(i, item)}
-                      handleDrag={(tag, currPos, newPos) => handleDrag(tag, currPos, newPos, item)}
+                      //handleDrag={(tag, currPos, newPos) => handleDrag(tag, currPos, newPos, item)}
                       tags={item.markersList.map(t => {
                         const safeId = t.id.replace(/[^a-zA-Z0-9_-]/g, ""); 
                         return {
@@ -2787,23 +2902,32 @@ useEffect(() => {
                       inputFieldPosition="none"
                     />
 
-                  
+               </div>
+
                     {item.markersList.map(t => {
                       const safeId = t.id.replace(/[^a-zA-Z0-9_-]/g, "");
-
+                      const textColor = getTextColor(t.color);
+                      
                       return (
                         <style key={safeId}>{`
                           .tag-${safeId} {
                             background: ${t.color} !important;
-                            color: #fff !important;
-                            border-radius: 6px !important;
+                            color:${textColor} !important;
+                            border-radius: 3px !important;
                             padding: 4px 8px !important;
                           }
+
+                          .tag-${safeId} .ReactTags__remove svg {
+                            fill: ${textColor} !important;
+                            width: 8px;
+                            height: 8px;
+                          }
+
                         `}</style>
                       );
                     })}
 
-
+                 
                     <div>
                       <div className='matterDetails'>
                         <div>
@@ -3374,7 +3498,7 @@ useEffect(() => {
                         type="button"
                         onClick={() => setOpenId(openId === item.matterId ? null : item.matterId)}
                       >
-                        <VscTag />
+                        <FaTags color="#2c8ed6"/>&nbsp;
                         Etiquetas
 
                       </button>
@@ -3405,11 +3529,16 @@ useEffect(() => {
                         <h4 style={{ margin: "0 0 10px 0" }}>Nova etiqueta</h4>
 
                         <input
-                          ref={inputTagRef}
+                          ref={inputTagRef1}
                           type="text"
                           placeholder="Nome da etiqueta"
                           value={tagName}
                           onChange={(e) => setTagName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              handleCreateTag(item)
+                            }
+                          }}
                           style={{
                             width: "100%",
                             padding: "4px",
@@ -3508,10 +3637,10 @@ useEffect(() => {
                     )}
 
 
-                       <ReactTags
+                    <ReactTags
                       handleDelete={(i) => handleDeleteMarker(i, item)}
                       handleAddition={(i) => handleAddition(i, item)}
-                      handleDrag={(tag, currPos, newPos) => handleDrag(tag, currPos, newPos, item)}
+                      //handleDrag={(tag, currPos, newPos) => handleDrag(tag, currPos, newPos, item)}
                       tags={item.markersList.map(t => {
                         const safeId = t.id.replace(/[^a-zA-Z0-9_-]/g, ""); 
                         return {
@@ -3535,15 +3664,23 @@ useEffect(() => {
                   
                      {item.markersList.map(t => {
                       const safeId = t.id.replace(/[^a-zA-Z0-9_-]/g, "");
+                      const textColor = getTextColor(t.color);
 
                       return (
                         <style key={safeId}>{`
                           .tag-${safeId} {
                             background: ${t.color} !important;
-                            color: #fff !important;
-                            border-radius: 6px !important;
+                            color:${textColor} !important;
+                            border-radius: 3px !important;
                             padding: 4px 8px !important;
                           }
+
+                          .tag-${safeId} .ReactTags__remove svg {
+                            fill: ${textColor} !important;
+                            width: 8px;
+                            height: 8px;
+                          }
+
                         `}</style>
                       );
                     })}

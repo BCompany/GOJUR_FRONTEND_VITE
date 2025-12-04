@@ -114,6 +114,12 @@ export const MatterList = styled.div`
     color: var(--blue-twitter);
   }
 
+.ReactTags__remove svg {
+  fill: #000 !important;
+  width: 8px;
+  height: 8px;
+}
+
 `;
 
 

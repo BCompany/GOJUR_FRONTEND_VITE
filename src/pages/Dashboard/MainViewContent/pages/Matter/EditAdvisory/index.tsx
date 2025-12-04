@@ -28,6 +28,8 @@ import PeopleComponent from '../EditComponents/People'
 import FileComponent from '../EditComponents/File'
 import MatterAttach from '../EditComponents/Attach/Index';
 import { ListCustomerData, ListLawyerData, ListOpossingData, ListPartsData, ListThirdyData } from '../EditComponents/Services/PeopleData';
+import { VscTag } from 'react-icons/vsc';
+import { FaTags } from "react-icons/fa";
 
 const MatterAdivisory = () => {
   const history = useHistory();
@@ -116,6 +118,17 @@ const MatterAdivisory = () => {
     LoadPerson()
   }, [])
 
+
+  
+  const [childAPI, setChildAPI] = useState(null);
+  
+  const handleCallChild = () => {
+      if (childAPI?.openModal) {
+        childAPI.openModal();
+      }
+    };
+  
+
   // Matter legal details screeen
   return (
 
@@ -167,13 +180,21 @@ const MatterAdivisory = () => {
                 Processo
               </button>
 
+              <button
+                type="button"
+                onClick={handleCallChild}
+              >
+                <FaTags color="#2c8ed6"/>
+                Etiquetas
+              </button>
+
             </div>
 
              <Tab active>
 
               <TabContent>
 
-                <MatterDetails callbackList={{handleLoadingPage}} />
+                <MatterDetails callbackList={{handleLoadingPage, registerAPI: setChildAPI}} />
 
               </TabContent>
 

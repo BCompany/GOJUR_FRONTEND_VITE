@@ -5,11 +5,11 @@
 /* eslint-disable array-callback-return */
 /* eslint-disable react/jsx-indent */
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import React, { useCallback, useEffect, useRef, useState, useImperativeHandle, forwardRef  } from 'react';
+import React, { useCallback, useEffect, useRef, useState, useImperativeHandle, forwardRef } from 'react';
 import { WithContext as ReactTags } from 'react-tag-input';
 import { FiSave, FiRefreshCcw, FiPrinter } from 'react-icons/fi';
 import { MdBlock, MdHelp } from 'react-icons/md';
-import { ImCopy, ImUsers }  from 'react-icons/im';
+import { ImCopy, ImUsers } from 'react-icons/im';
 import { FaCalculator } from 'react-icons/fa'
 import { FiTrash } from 'react-icons/fi'
 import { GoPlus } from 'react-icons/go'
@@ -29,7 +29,7 @@ import { useConfirmBox } from 'context/confirmBox';
 import { useToast } from 'context/toast';
 import { useParams } from 'react-router-dom';
 import { matterCalcType, matterSecurityList } from 'Shared/utils/commonListValues';
-import { Container} from './styles';
+import { Container } from './styles';
 import { IMarkerList, IMatterData, ValuesDTO, IMatterValuesData, ISelectData, IMatterCalculationData, IKeyValueDTO } from '../../../../Interfaces/IMatter';
 import { CalculateMatterValue, ComboSelectType, DeleteMatterEvents, DeleteMatter, GetLegalNature, GetMatterValuesJSON, ListJudicialAction, ListJudicialDecision, ListMatterStatus, ListProbablySuccess, ListProcessualStage, ListRito, SaveMatter, SaveMatterAttach, SaveMatterMarkers, SelectFolderCode, SelectMatter } from '../../Services/MatterData';
 import MatterUsers from '../Users';
@@ -42,7 +42,7 @@ import { VscTag } from 'react-icons/vsc';
 
 const Matter = (props) => {
 
-  const { handleLoadingPage, handleMatterNumberCallback,  registerAPI } = props.callbackList;
+  const { handleLoadingPage, handleMatterNumberCallback, registerAPI } = props.callbackList;
   const { addToast } = useToast();
   const { handleCaller, handleConfirmMessage, caller, isCancelMessage, isConfirmMessage } = useConfirmBox();
   const useModalContext = useModal();
@@ -94,7 +94,7 @@ const Matter = (props) => {
   const [matterUserCourt, setMatterUserCourt] = useState<string>('')
   const [matterObjectDescription, setMatterObjectDescription] = useState<string>('')
   const [matterUserCourtPsw, setMatterUserCourtPsw] = useState<string>('')
-  const [matterResponsibleDescription, setMatterResponsibleDescription] = useState<string> ('')
+  const [matterResponsibleDescription, setMatterResponsibleDescription] = useState<string>('')
   const [judicialActionList, setJudicialActionList] = useState<ISelectData[]>([])
   const [probablySuccessList, setProbablySuccessList] = useState<ISelectData[]>([])
   const [ritoList, setRitoList] = useState<ISelectData[]>([])
@@ -102,7 +102,7 @@ const Matter = (props) => {
   const [processualStageList, setProcessualStageList] = useState<ISelectData[]>([])
   const [matterStatusList, setMatterStatusList] = useState<ISelectData[]>([])
   const accessCode = localStorage.getItem('@GoJur:accessCode')
-  const showButtonDelete = (accessCode??"").includes('MATLDE') || (accessCode??"") == 'adm'
+  const showButtonDelete = (accessCode ?? "").includes('MATLDE') || (accessCode ?? "") == 'adm'
   let { id } = useParams() as { id: string; }
   const [showUnfoldingModal, setShowUnfoldingModal] = useState<boolean>(false);
   const [isFollowedMatterNumberChanged, setIsFollowedMatterNumberChanged] = useState<boolean>(false)
@@ -122,33 +122,29 @@ const Matter = (props) => {
 
   useEffect(() => {
 
-    if (isCancelMessage){
-  
-      if (caller === 'followedMatterNumberChanged')
-      {
+    if (isCancelMessage) {
+
+      if (caller === 'followedMatterNumberChanged') {
         setIsFollowedMatterNumberChanged(false)
         setErrorMessage("")
       }
     }
-  
-  },[isCancelMessage, caller]);
+
+  }, [isCancelMessage, caller]);
 
   useEffect(() => {
 
-    if(isConfirmMessage)
-    {
-      if (caller === 'followedMatterNumberChanged')
-      {
+    if (isConfirmMessage) {
+      if (caller === 'followedMatterNumberChanged') {
         setConfirmFollowedMatterNumberChanged(true)
         setDoubleCheck(true)
       }
     }
-  },[isConfirmMessage, caller]);
+  }, [isConfirmMessage, caller]);
 
- useEffect(() => {
+  useEffect(() => {
 
-  if(confirmFollowedMatterNumberChanged)
-    {     
+    if (confirmFollowedMatterNumberChanged) {
       setConfirmFollowedMatterNumberChanged(false)
       setIsFollowedMatterNumberChanged(false)
       setErrorMessage("")
@@ -156,32 +152,29 @@ const Matter = (props) => {
       handleConfirmMessage(false)
       handleSaveMatter();
     }
-  },[confirmFollowedMatterNumberChanged]);
+  }, [confirmFollowedMatterNumberChanged]);
 
   useEffect(() => {
 
-    if(isConfirmMessage)
-    {
-      if (caller === 'matterAwarenesError')
-      {
+    if (isConfirmMessage) {
+      if (caller === 'matterAwarenesError') {
         setMatterAwarenessError(false)
         setErrorMessage("")
         handleCaller("")
       }
     }
-  },[isConfirmMessage, caller]);
+  }, [isConfirmMessage, caller]);
 
   const LoadMatter = async () => {
 
-    try
-    {
-        if (Number(id) > 0)
-          EditMatter()
-        else
-          AddMatter();
+    try {
+      if (Number(id) > 0)
+        EditMatter()
+      else
+        AddMatter();
 
     }
-    catch(err:any){
+    catch (err: any) {
       handleLoadingPage()
       setIsLoading(false)
     }
@@ -195,7 +188,7 @@ const Matter = (props) => {
 
     // add cause value default for new matters
     newMatterValues.push({
-      id:0,
+      id: 0,
       calculationId: 0,
       isMatterValue: true,
       isRiskValue: false,
@@ -207,7 +200,7 @@ const Matter = (props) => {
 
     // add risk value default for new matters
     newMatterValues.push({
-      id:1,
+      id: 1,
       calculationId: 0,
       isRiskValue: true,
       isMatterValue: false,
@@ -218,15 +211,15 @@ const Matter = (props) => {
     })
 
     // add default user current
-    const newResponsibleData: ValuesDTO[] =[];
+    const newResponsibleData: ValuesDTO[] = [];
     newResponsibleData.push({
-      id: localStorage.getItem('@GoJur:userCompanyId')??'',
-      value: localStorage.getItem('@GoJur:name')??'',
+      id: localStorage.getItem('@GoJur:userCompanyId') ?? '',
+      value: localStorage.getItem('@GoJur:name') ?? '',
     })
 
     setMatterDateEntrance(FormatDate(new Date(), 'yyyy-MM-dd'))
     setResponsibleList(newResponsibleData)
-    setMatterResponsibleDescription(newResponsibleData[0].value??'')
+    setMatterResponsibleDescription(newResponsibleData[0].value ?? '')
     setMatterDataValues(newMatterValues)
     handleLoadingPage()
     setIsLoading(false)
@@ -244,7 +237,7 @@ const Matter = (props) => {
     setMatterNumber(matter.matterNumber)
     setMatterNumberCNJ(matter.matterNumberCNJ)
     setMatterFolder(matter.matterFolder)
-    setMatterSecurity(matter.privacity === 'Privado'? 'R': 'U')
+    setMatterSecurity(matter.privacity === 'Privado' ? 'R' : 'U')
     setMatterFlagRobot(matter.flg_Robot)
     setMatterLoadId(matter.matterIdLoad)
     setMatterFollowWebDate(matter.dtaWebFollow)
@@ -262,7 +255,7 @@ const Matter = (props) => {
     setAmazonS3Type(matter.amazonS3Type)
     setMatterUserCourt(matter.userCourt)
     setMatterUserCourtPsw(matter.passwordCourt)
-    setMatterSequence(matter.sequence??0)
+    setMatterSequence(matter.sequence ?? 0)
     setMarkerList(matter.markersList)
 
     if (matter.dateRelease)
@@ -293,48 +286,48 @@ const Matter = (props) => {
 
     if (matter.judicialActionId > 0) {
       judicialActionList.push({
-        id:matter.judicialActionId.toString(),
-        label:matter.judicialAction
+        id: matter.judicialActionId.toString(),
+        label: matter.judicialAction
       })
       setJudicialActionList(judicialActionList)
     }
 
     if (matter.probabilyExitoId > 0) {
       probablySuccessList.push({
-        id:matter.probabilyExitoId.toString(),
-        label:matter.probabilyExito
+        id: matter.probabilyExitoId.toString(),
+        label: matter.probabilyExito
       })
       setProbablySuccessList(probablySuccessList)
     }
 
     if (matter.ritoId > 0) {
       ritoList.push({
-        id:matter.ritoId.toString(),
-        label:matter.rito
+        id: matter.ritoId.toString(),
+        label: matter.rito
       })
       setRitoList(ritoList)
     }
 
     if (matter.decisionId > 0) {
       decisionList.push({
-        id:matter.decisionId.toString(),
-        label:matter.decision
+        id: matter.decisionId.toString(),
+        label: matter.decision
       })
       setDecisionList(decisionList)
     }
 
     if (matter.processualStageId > 0) {
       processualStageList.push({
-        id:matter.processualStageId.toString(),
-        label:matter.processualStage
+        id: matter.processualStageId.toString(),
+        label: matter.processualStage
       })
       setProcessualStageList(processualStageList)
     }
 
     if (matter.statusId > 0) {
       matterStatusList.push({
-        id:matter.statusId.toString(),
-        label:matter.status
+        id: matter.statusId.toString(),
+        label: matter.status
       })
       setMatterStatusList(matterStatusList)
     }
@@ -347,36 +340,36 @@ const Matter = (props) => {
       const response = await ListMatterStatus(0, 50, '')
       setMatterStatusList(response);
 
-      if (!matterStatusId){
-          const item = response.find(item => item.label == 'ATIVO');
-          if (item){
-            setMatterStatusId(Number(item.id))
-          }
+      if (!matterStatusId) {
+        const item = response.find(item => item.label == 'ATIVO');
+        if (item) {
+          setMatterStatusId(Number(item.id))
+        }
       }
     }
 
     if (!matter.judicialActionId) {
-      setJudicialActionList(await ListJudicialAction(0, 50,''))
+      setJudicialActionList(await ListJudicialAction(0, 50, ''))
     }
 
     if (!matter.probabilyExitoId) {
-      setProbablySuccessList(await ListProbablySuccess(0, 50,''))
+      setProbablySuccessList(await ListProbablySuccess(0, 50, ''))
     }
 
     if (!matter.ritoId) {
-      setRitoList(await ListRito(0, 50,''))
+      setRitoList(await ListRito(0, 50, ''))
     }
 
     if (!matter.decisionId) {
-      setDecisionList(await ListJudicialDecision(0, 50,''))
+      setDecisionList(await ListJudicialDecision(0, 50, ''))
     }
 
     if (!matter.processualStageId) {
-      setProcessualStageList(await ListProcessualStage(0, 50,''))
+      setProcessualStageList(await ListProcessualStage(0, 50, ''))
     }
   }
 
-  const GetMatterValues = async() => {
+  const GetMatterValues = async () => {
 
     const valuesList = await GetMatterValuesJSON(id)
     setMatterDataValues(valuesList)
@@ -385,12 +378,11 @@ const Matter = (props) => {
 
   const SaveMarkers = async (markersList: IMarkerList[]) => {
 
-    try
-    {
- 
+    try {
+
       setMarkerList(markersList)
 
- console.log(markersList);
+      console.log(markersList);
       // transform marker list in unique string
       /*
       let marker = '';
@@ -401,17 +393,17 @@ const Matter = (props) => {
 
       // transform marker list in unique string
       const markersJsonText = JSON.stringify(
-          markersList.map(m => ({
-            id: m.text,
-            text: m.text,
-            color: m.color
-          }))
-        );
-  
+        markersList.map(m => ({
+          id: m.text,
+          text: m.text,
+          color: m.color
+        }))
+      );
+
       // save matter endpoint call
       await SaveMatterMarkers(Number(id), markersJsonText, 'matterLegal')
     }
-    catch(err:any){
+    catch (err: any) {
 
       setMarkerList(markersList)
 
@@ -425,9 +417,9 @@ const Matter = (props) => {
 
   useEffect(() => {
 
-    if (isConfirmMessage && caller === 'matterEdit'){
+    if (isConfirmMessage && caller === 'matterEdit') {
 
-      if (isDeleting){
+      if (isDeleting) {
         handleDeleteMatter()
       }
 
@@ -435,15 +427,15 @@ const Matter = (props) => {
       setIsDeleting(false)
     }
 
-  },[caller, isConfirmMessage, isDeleting])
+  }, [caller, isConfirmMessage, isDeleting])
 
   useEffect(() => {
 
-    if (isCancelMessage && caller === 'matterEdit'){
+    if (isCancelMessage && caller === 'matterEdit') {
       setIsDeleting(false)
     }
 
-  },[caller, isCancelMessage])
+  }, [caller, isCancelMessage])
 
   const handleDeleteMarker = (i) => {
 
@@ -456,7 +448,7 @@ const Matter = (props) => {
 
     if (markerList.length >= 5) return;
 
-    if (matterId == 0){
+    if (matterId == 0) {
       addToast({
         type: 'info',
         title: 'Operação NÃO realizada',
@@ -472,7 +464,7 @@ const Matter = (props) => {
 
   const handleResponsibleListSave = (userList: ISelectData[]) => {
 
-    const newResponsibleData: ValuesDTO[] =[];
+    const newResponsibleData: ValuesDTO[] = [];
     userList.map(item => {
       newResponsibleData.push({
         id: item.id,
@@ -487,7 +479,7 @@ const Matter = (props) => {
     userList.map((user) => {
       if (count > 2) return;
 
-      if (count == 2){
+      if (count == 2) {
         // remove last special character
         respDescription = respDescription.substring(0, respDescription.length - 3);
         respDescription += ` + ${(userList.length - count)} `;
@@ -519,39 +511,39 @@ const Matter = (props) => {
 
     setCurrentListData(identity)
 
-    if (select){
+    if (select) {
       setLoadingCombo(true)
 
       // If is select a juditial action - get legal nature
-      if (identity == ComboSelectType.judicialAction){
+      if (identity == ComboSelectType.judicialAction) {
         setMatterJudicialActionId(select.id)
         const legalNature = await GetLegalNature(select.id)
         setLegalNatureDescription(legalNature.value)
       }
 
-      if (identity == ComboSelectType.probablySuccess){
+      if (identity == ComboSelectType.probablySuccess) {
         setMatterProbablySuccessId(select.id)
       }
 
-      if (identity == ComboSelectType.matterDecision){
+      if (identity == ComboSelectType.matterDecision) {
         setMatterDecisionId(select.id)
       }
 
-      if (identity == ComboSelectType.matterStatus){
+      if (identity == ComboSelectType.matterStatus) {
         setMatterStatusId(select.id)
       }
 
-      if (identity == ComboSelectType.rito){
+      if (identity == ComboSelectType.rito) {
         setMatterRitoId(select.id)
       }
 
-      if (identity == ComboSelectType.processualStage){
+      if (identity == ComboSelectType.processualStage) {
         setMatterProcessualStageId(select.id)
       }
 
       setLoadingCombo(false)
     }
-    else{
+    else {
       // Reload filter with all first 50 itens - by combo selected
       await RefreshComboSelect(identity, '');
     }
@@ -566,23 +558,23 @@ const Matter = (props) => {
 
   useDelay(() => {
 
-    if (selectFilterTerm.length > 0){
+    if (selectFilterTerm.length > 0) {
       LoadSelectLists()
     }
 
   }, [selectFilterTerm], 1000)
 
-  const LoadSelectLists = useCallback(async() => {
+  const LoadSelectLists = useCallback(async () => {
 
     await RefreshComboSelect(currentListData, selectFilterTerm)
 
-  },[selectFilterTerm, currentListData])
+  }, [selectFilterTerm, currentListData])
 
   const RefreshComboSelect = async (identity: ComboSelectType, filterTerm: string) => {
 
     setLoadingCombo(true)
 
-    if (identity === ComboSelectType.judicialAction){
+    if (identity === ComboSelectType.judicialAction) {
       setMatterJudicialActionId(0)
       const response = await ListJudicialAction(0, 50, filterTerm);
       setJudicialActionList(response)
@@ -592,31 +584,31 @@ const Matter = (props) => {
       }
     }
 
-    if (identity === ComboSelectType.probablySuccess){
+    if (identity === ComboSelectType.probablySuccess) {
       setMatterProbablySuccessId(0)
       const response = await ListProbablySuccess(0, 50, filterTerm);
       setProbablySuccessList(response)
     }
 
-    if (identity === ComboSelectType.rito){
+    if (identity === ComboSelectType.rito) {
       setMatterRitoId(0)
       const response = await ListRito(0, 50, filterTerm);
       setRitoList(response)
     }
 
-    if (identity === ComboSelectType.processualStage){
+    if (identity === ComboSelectType.processualStage) {
       setMatterProcessualStageId(0)
       const response = await ListProcessualStage(0, 50, filterTerm);
       setProcessualStageList(response)
     }
 
-    if (identity === ComboSelectType.matterStatus){
+    if (identity === ComboSelectType.matterStatus) {
       setMatterStatusId(0)
       const response = await ListMatterStatus(0, 50, filterTerm);
       setMatterStatusList(response)
     }
 
-    if (identity === ComboSelectType.matterDecision){
+    if (identity === ComboSelectType.matterDecision) {
       setMatterDecisionId(0)
       const response = await ListJudicialDecision(0, 50, filterTerm);
       setDecisionList(response)
@@ -628,9 +620,9 @@ const Matter = (props) => {
   const handleNewValuesLine = () => {
 
     const newLineValues = {
-      id:matterDataValues.length,
+      id: matterDataValues.length,
       newItem: true,
-      matterId:Number(id),
+      matterId: Number(id),
       name: ''
     }
 
@@ -641,17 +633,17 @@ const Matter = (props) => {
 
     if (matterValue.blockValue) return false;
 
-    if (matterValue.id <= 1){
+    if (matterValue.id <= 1) {
       return;
     }
 
     const newDataValues = matterDataValues.filter(value => value.id !== matterValue.id);
-     setMatterDataValues(newDataValues)
+    setMatterDataValues(newDataValues)
   }
 
   const handleCloseUsersModal = useCallback(() => {
     setShowUsers(false)
-  },[])
+  }, [])
 
   const handleCloseResponsibleModal = () => {
     setShowResponsible(false)
@@ -659,7 +651,7 @@ const Matter = (props) => {
 
   const handleShowUsersModal = () => {
 
-    if (matterId == 0){
+    if (matterId == 0) {
       addToast({
         type: 'info',
         title: 'Operação NÃO realizada',
@@ -675,36 +667,36 @@ const Matter = (props) => {
 
     const calculatorObject = GetCalculationDetails(item.id)
 
-    if (calculatorObject){
+    if (calculatorObject) {
       // if has date defined in matter value set for modal start date if not was set yet
-      if (!calculatorObject?.startDate){
-        calculatorObject.startDate = item.startDate??""
+      if (!calculatorObject?.startDate) {
+        calculatorObject.startDate = item.startDate ?? ""
       }
       setJsonCalculator(calculatorObject)
     }
 
     setMatterValueCurrentEditId(item.id)
-    setIsMatterValue(item.isMatterValue == null? false: item.isMatterValue)
+    setIsMatterValue(item.isMatterValue == null ? false : item.isMatterValue)
     setShowValues(true)
 
-  },[GetCalculationDetails])
+  }, [GetCalculationDetails])
 
 
   const handleOpenPrintValuesModal = async (item: IMatterValuesData) => {
 
-      // deny if plan is free and more than 30 days use
-      const permissionAccessPlan = await VerifyCompanyPlanAccess()
-      if (permissionAccessPlan === 'blocked'){
-        addToast({
-          type: 'info',
-          title: 'Funcionalidade exclusiva para assinantes',
-          description: "A impressão dos valores não esta disponível em seu plano vigente, entre em contato e faça o upgrade agora mesmo"
-        });
+    // deny if plan is free and more than 30 days use
+    const permissionAccessPlan = await VerifyCompanyPlanAccess()
+    if (permissionAccessPlan === 'blocked') {
+      addToast({
+        type: 'info',
+        title: 'Funcionalidade exclusiva para assinantes',
+        description: "A impressão dos valores não esta disponível em seu plano vigente, entre em contato e faça o upgrade agora mesmo"
+      });
 
-        return;
-      }
+      return;
+    }
 
-    if (item.jsonCalculator == null){
+    if (item.jsonCalculator == null) {
       addToast({
         type: 'info',
         title: 'Operação NÃO realizada',
@@ -714,8 +706,8 @@ const Matter = (props) => {
     }
 
     const calculatorObject = GetCalculationDetails(item.id)
-    if (calculatorObject){
-      if (item.startDate){ calculatorObject.startDate = item.startDate }
+    if (calculatorObject) {
+      if (item.startDate) { calculatorObject.startDate = item.startDate }
       setJsonCalculator(calculatorObject)
     }
 
@@ -736,7 +728,7 @@ const Matter = (props) => {
 
     // deny if plan is free and more than 30 days use
     const permissionAccessPlan = await VerifyCompanyPlanAccess()
-    if (permissionAccessPlan === 'blocked'){
+    if (permissionAccessPlan === 'blocked') {
       addToast({
         type: 'info',
         title: 'Funcionalidade exclusiva para assinantes',
@@ -755,59 +747,57 @@ const Matter = (props) => {
   // Effect to update risk value when was clicked on apply to risk value on matter value cause
   useEffect(() => {
 
-      if (calculateRiskValue){
+    if (calculateRiskValue) {
 
-        const matterRiskValue = matterDataValues.find(item => item.isRiskValue);
-        const matterCausaValue =  matterDataValues.find(item => item.isMatterValue);
+      const matterRiskValue = matterDataValues.find(item => item.isRiskValue);
+      const matterCausaValue = matterDataValues.find(item => item.isMatterValue);
 
-        // create new clone object for risk value with same configuration
-        if (matterCausaValue && matterRiskValue){
-          if (matterCausaValue.calculatorObject && matterRiskValue)
-          {
-            // clone matter value to risk value
-            const riskValueCalculationObject = {...matterCausaValue.calculatorObject }
-            // riskValueCalculationObject.startDate = matterRiskValue.startDate??"";
+      // create new clone object for risk value with same configuration
+      if (matterCausaValue && matterRiskValue) {
+        if (matterCausaValue.calculatorObject && matterRiskValue) {
+          // clone matter value to risk value
+          const riskValueCalculationObject = { ...matterCausaValue.calculatorObject }
+          // riskValueCalculationObject.startDate = matterRiskValue.startDate??"";
 
-            if (!matterRiskValue.startDate) matterRiskValue.startDate = matterCausaValue.startDate
-            if ((matterRiskValue.originalValue??0) > 0) matterRiskValue.startDate = matterCausaValue.startDate
+          if (!matterRiskValue.startDate) matterRiskValue.startDate = matterCausaValue.startDate
+          if ((matterRiskValue.originalValue ?? 0) > 0) matterRiskValue.startDate = matterCausaValue.startDate
 
-            if (matterRiskValue.calculatorObject)
-              riskValueCalculationObject.id = matterRiskValue.calculatorObject?.id;
+          if (matterRiskValue.calculatorObject)
+            riskValueCalculationObject.id = matterRiskValue.calculatorObject?.id;
 
-            handleCalculateValues(riskValueCalculationObject, matterRiskValue.id, false)
-          }
+          handleCalculateValues(riskValueCalculationObject, matterRiskValue.id, false)
         }
-
-        setCalculateRiskValue(false)
       }
+
+      setCalculateRiskValue(false)
+    }
 
   }, [calculateRiskValue])
 
   // update values after call save on modal calculation
   const handleCalculateValues = async (data: IMatterCalculationData, matterValueId = 0, updateCallbackValues = true, showMessage = true) => {
 
-    try
-    {
-      setStatusPage(showMessage? 'calc': '')
+    try {
+      setStatusPage(showMessage ? 'calc' : '')
       handleCloseValuesModal()
 
       // get id by parameter or state when cames from callback on modal
       const calculationId = matterValueId || matterValueCurrentEditId;
 
       // when is remove a calculation exists set a null value
-      if (!data){
+      if (!data) {
 
         const newListValues = matterDataValues.map(item =>
           item.id === calculationId
-          ?{
+            ? {
               ...item,
-              updateValue: matterValueId > 0? item.updateValue: 0,
-              originalValue: matterValueId > 0? item.originalValue: 0,
-              updateDate: matterValueId > 0? item.updateDate: "",
-              lastIndexDate: matterValueId > 0? item.lastIndexDate: "",
+              updateValue: matterValueId > 0 ? item.updateValue : 0,
+              originalValue: matterValueId > 0 ? item.originalValue : 0,
+              updateDate: matterValueId > 0 ? item.updateDate : "",
+              lastIndexDate: matterValueId > 0 ? item.lastIndexDate : "",
               calculatorObject: undefined
             }
-          : item
+            : item
         );
 
         setMatterDataValues(newListValues)
@@ -824,29 +814,28 @@ const Matter = (props) => {
       }
 
       // when is update a calculation value, first of all define flags by the combodata values
-      if (updateCallbackValues)
-      {
-        data.indexId = data.economicIndex? data.economicIndex.id: '';
-        data.tpo_Moratory = data.moratoryType? data.moratoryType.id: '';
-        data.tpo_MoratoryDate = data.moratoryDate? data.moratoryDate.id: '';
-        data.tpo_Compensatory = data.compensatoryType? data.compensatoryType.id: '';
-        data.tpo_CompensatoryDate = data.compensatoryDate? data.compensatoryDate.id: '';
-        data.tpo_Punishment = data.punishmentType? data.punishmentType.id: '';
-        data.lastIndexDate = data.lastIndexDate? data.lastIndexDate:''
+      if (updateCallbackValues) {
+        data.indexId = data.economicIndex ? data.economicIndex.id : '';
+        data.tpo_Moratory = data.moratoryType ? data.moratoryType.id : '';
+        data.tpo_MoratoryDate = data.moratoryDate ? data.moratoryDate.id : '';
+        data.tpo_Compensatory = data.compensatoryType ? data.compensatoryType.id : '';
+        data.tpo_CompensatoryDate = data.compensatoryDate ? data.compensatoryDate.id : '';
+        data.tpo_Punishment = data.punishmentType ? data.punishmentType.id : '';
+        data.lastIndexDate = data.lastIndexDate ? data.lastIndexDate : ''
       }
 
-      data.originalValue = matterValue.originalValue??0;
+      data.originalValue = matterValue.originalValue ?? 0;
       if (!matterValue.startDate) matterValue.startDate = data.startDate;
 
       await handleExecuteCalculation(data, calculationId)
 
-      if ((matterValue.isMatterValue??false) && data.applyToRiskValue){
+      if ((matterValue.isMatterValue ?? false) && data.applyToRiskValue) {
         setCalculateRiskValue(true)
       }
 
       setStatusPage('')
     }
-    catch(err: any){
+    catch (err: any) {
 
       setStatusPage('')
 
@@ -861,35 +850,35 @@ const Matter = (props) => {
 
   const handleExecuteCalculation = async (data: IMatterCalculationData, calculationId: number | undefined) => {
 
-      const resultCalculation = await CalculateMatterValue(JSON.stringify(data))
+    const resultCalculation = await CalculateMatterValue(JSON.stringify(data))
 
-      const newListValues = matterDataValues.map(item =>
-        item.id === calculationId
-        ?{
-            ...item,
-            updateDate: resultCalculation.updateDate,
-            updateValue: resultCalculation.updateValue,
-            lastIndexDate: resultCalculation.dateLastIndex,
-            calculatorObject: data,
-            jsonCalculator: JSON.stringify(data)
-          }
+    const newListValues = matterDataValues.map(item =>
+      item.id === calculationId
+        ? {
+          ...item,
+          updateDate: resultCalculation.updateDate,
+          updateValue: resultCalculation.updateValue,
+          lastIndexDate: resultCalculation.dateLastIndex,
+          calculatorObject: data,
+          jsonCalculator: JSON.stringify(data)
+        }
         : item
-      );
+    );
 
-      setMatterDataValues(newListValues)
+    setMatterDataValues(newListValues)
   }
 
-  function GetCalculationDetails(itemId:number){
+  function GetCalculationDetails(itemId: number) {
 
     const itemSelected = matterDataValues.find(item => item.id === itemId)
 
-    if (itemSelected){
+    if (itemSelected) {
       // verify if exists object calculation, if not create a default values to open new modal
-      if (!itemSelected.calculatorObject){
+      if (!itemSelected.calculatorObject) {
 
         itemSelected.calculatorObject = {
-          moratoryType: {id:'S', label: 'Juros Simples' },
-          compensatoryType: { id:'S', label: 'Juros Simples' },
+          moratoryType: { id: 'S', label: 'Juros Simples' },
+          compensatoryType: { id: 'S', label: 'Juros Simples' },
           tpo_MoratoryDate: 'V',
           tpo_CompensatoryDate: 'V',
           tpo_Punishment: 'P'
@@ -901,14 +890,13 @@ const Matter = (props) => {
     }
   }
 
-  const handleDeleteMatter = async() => {
+  const handleDeleteMatter = async () => {
 
-    try
-    {
+    try {
       setShowMessageDeletingEvent(true)
 
       await DeleteMatterEvents(id);
-      
+
       setShowMessageDeletingEvent(false)
       setShowMessageDeleting(true)
 
@@ -928,7 +916,7 @@ const Matter = (props) => {
 
       history.push('/matter/list')
     }
-    catch(err:any){
+    catch (err: any) {
       setIsDeleting(false)
       setShowMessageDeletingEvent(false)
       setShowMessageDeleting(false)
@@ -946,10 +934,10 @@ const Matter = (props) => {
     const newListValues = matterDataValues.map(item =>
 
       item.id === Number(event.target.id)
-        ?{
-            ...item,
-            name: event.target.value,
-          }
+        ? {
+          ...item,
+          name: event.target.value,
+        }
         : item
     );
 
@@ -962,10 +950,10 @@ const Matter = (props) => {
     const newListValues = matterDataValues.map(item =>
 
       item.id === Number(event.target.id)
-        ?{
-            ...item,
-            typeValue: event.target.value,
-          }
+        ? {
+          ...item,
+          typeValue: event.target.value,
+        }
         : item
     );
 
@@ -978,10 +966,10 @@ const Matter = (props) => {
     const newListValues = matterDataValues.map(item =>
 
       item.id === Number(event.target.id)
-        ?{
-            ...item,
-            startDate: event.target.value,
-          }
+        ? {
+          ...item,
+          startDate: event.target.value,
+        }
         : item
     );
 
@@ -996,32 +984,31 @@ const Matter = (props) => {
     const newListValues = matterDataValues.map(item =>
 
       item.id === Number(event.target.id)
-        ?{
-            ...item,
-            originalValue: value,
-          }
+        ? {
+          ...item,
+          originalValue: value,
+        }
         : item
     );
 
     setMatterDataValues(newListValues)
   };
 
-  const handleSaveMatter = useCallback(async() => {
+  const handleSaveMatter = useCallback(async () => {
 
-    try
-    {
+    try {
       setStatusPage('save')
 
       let errorMatterValues = false;
       matterDataValues.map(item => {
-        if (!item.isMatterValue && !item.isRiskValue && (item.name??"").length == 0)
-          errorMatterValues =true;
+        if (!item.isMatterValue && !item.isRiskValue && (item.name ?? "").length == 0)
+          errorMatterValues = true;
 
         return;
       })
 
       // thown error values
-      if (errorMatterValues){
+      if (errorMatterValues) {
 
         addToast({
           type: 'info',
@@ -1071,8 +1058,8 @@ const Matter = (props) => {
       const newMatter = id == '0';
 
       const data = {
-        cod_Processo:id,
-        des_Marcador: matterMarkers == ''? null: matterMarkers,
+        cod_Processo: id,
+        des_Marcador: matterMarkers == '' ? null : matterMarkers,
         cod_Pasta: matterFolder,
         num_Processo: matterNumber.trim(),
         num_ProcessoCNJ: matterNumberCNJ,
@@ -1085,7 +1072,7 @@ const Matter = (props) => {
         cod_SolucaoProcesso: matterDecisionId,
         cod_FaseProcessual: matterProcessualStageId,
         cod_StatusProcesso: matterStatusId,
-        dta_Protocolo:matterDateRelease,
+        dta_Protocolo: matterDateRelease,
         dta_Entrada: matterDateEntrance,
         dta_Encerramento: natterDateFinalization,
         nom_UsuarioTribunal: matterUserCourt,
@@ -1107,10 +1094,10 @@ const Matter = (props) => {
       const matterIdSaved = await SaveMatter(data)      // save matter
 
       // refresh url with new item saved
-      if (matterIdSaved && newMatter){
+      if (matterIdSaved && newMatter) {
         id = matterIdSaved;
         setMatterId(Number(id))
-        history.push(`/matter/edit/legal/${  matterIdSaved}`)
+        history.push(`/matter/edit/legal/${matterIdSaved}`)
         EditMatter()
       }
 
@@ -1124,26 +1111,26 @@ const Matter = (props) => {
       await GetMatterValues();    // reload values
 
       handleMatterNumberCallback(matterNumber)
-      
+
     }
-    catch(err: any){
+    catch (err: any) {
 
       setStatusPage('')
 
-      if (!err.response.data.typeError.warning){
+      if (!err.response.data.typeError.warning) {
         addToast({
           type: 'error',
           title: 'Operação NÃO realizada',
           description: err.response.data.Message
         });
       }
-      
-      else if (err.response.data.typeError.warning == "confirmation"){
+
+      else if (err.response.data.typeError.warning == "confirmation") {
         setErrorMessage(err.response.data.Message)
         setIsFollowedMatterNumberChanged(true)
       }
 
-      else if (err.response.data.typeError.warning == "awareness"){
+      else if (err.response.data.typeError.warning == "awareness") {
         setErrorMessage(err.response.data.Message)
         setMatterAwarenessError(true)
         EditMatter()
@@ -1151,34 +1138,33 @@ const Matter = (props) => {
 
     }
 
-  },[matterFolder, responsibleList, matterNumberCNJ, matterNumber, matterSecurity, matterTitle, matterOrder, matterJudicialActionId, matterRitoId, matterProbablySuccessId, matterDecisionId, matterProcessualStageId, matterStatusId,matterDateRelease, matterDateEntrance, natterDateFinalization, matterUserCourt, matterUserCourtPsw, matterObjectDescription, matterSequence, matterAmazonS3Type, matterDataValues,markerList,matterFlagRobot, matterLoadId, matterFollowWebDate, errorMessage, isFollowedMatterNumberChanged, doubleCheck, isMatterAwarenessError])
+  }, [matterFolder, responsibleList, matterNumberCNJ, matterNumber, matterSecurity, matterTitle, matterOrder, matterJudicialActionId, matterRitoId, matterProbablySuccessId, matterDecisionId, matterProcessualStageId, matterStatusId, matterDateRelease, matterDateEntrance, natterDateFinalization, matterUserCourt, matterUserCourtPsw, matterObjectDescription, matterSequence, matterAmazonS3Type, matterDataValues, markerList, matterFlagRobot, matterLoadId, matterFollowWebDate, errorMessage, isFollowedMatterNumberChanged, doubleCheck, isMatterAwarenessError])
 
   useEffect(() => {
 
     if (matterId != 0)
       SaveAttachMatter(useModalContext.matterSelected)
 
-  },[useModalContext.matterSelected])
+  }, [useModalContext.matterSelected])
 
   const handleAttachMatter = useCallback(() => {
 
-    if (matterId == 0){
-     addToast({
-       type: 'info',
-       title: 'Operação NÃO realizada',
-       description: 'É necessário salvar o processo antes de apensar um processo'
-     });
-     return
-   }
-   useModalContext.handleCaller('matterAttach')
-   useModalContext.handleSelectProcess('Open');
+    if (matterId == 0) {
+      addToast({
+        type: 'info',
+        title: 'Operação NÃO realizada',
+        description: 'É necessário salvar o processo antes de apensar um processo'
+      });
+      return
+    }
+    useModalContext.handleCaller('matterAttach')
+    useModalContext.handleSelectProcess('Open');
 
-}, [matterId, useModalContext.handleSelectProcess]);
+  }, [matterId, useModalContext.handleSelectProcess]);
 
-  const SaveAttachMatter = async (matterSelected: any)=> {
+  const SaveAttachMatter = async (matterSelected: any) => {
 
-    try
-    {
+    try {
       if (!matterSelected) return;
       if (useModalContext.caller != 'matterAttach') return;
 
@@ -1195,7 +1181,7 @@ const Matter = (props) => {
       useModalContext.handleCaller('')
       setStatusPage('')
     }
-    catch(err: any){
+    catch (err: any) {
       addToast({
         type: 'info',
         title: 'Operação realizada com sucesso',
@@ -1211,36 +1197,45 @@ const Matter = (props) => {
 
 
   const [selectedColor, setSelectedColor] = useState("#faff4c");
- 
+
   const [openId, setOpenId] = useState(null);
   const [tagName, setTagName] = useState("");
   const inputTagRef = useRef(null);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
-  
-   
-
-  useEffect(() => {
-  if (registerAPI) {
-    registerAPI({
-      openModal: () => {
-      setIsPaletteOpen((prev) => !prev); 
-      }
-    });
-  }
-}, []);
 
 
 
   useEffect(() => {
-    if (openId !== null && inputTagRef.current) {
+    if (registerAPI) {
+      registerAPI({
+        openModal: () => {
+          setIsPaletteOpen((prev) => !prev);
+        }
+      });
+    }
+  }, []);
+
+
+
+  useEffect(() => {
+    if (isPaletteOpen !== false && inputTagRef.current) {
       inputTagRef.current.focus();
     }
-  }, [openId]);
-  
+  }, [isPaletteOpen]);
 
+
+/*
 const handleCreateTag = () => {
-
   if (!tagName.trim()) return;
+
+
+  const alreadyExists = markerList.some(
+    (tag) => tag.text.trim().toLowerCase() === tagName.trim().toLowerCase()
+  );
+
+  if (alreadyExists) {
+    return; 
+  }
 
   const newTag = {
     id: Math.random().toString(36).substring(2),
@@ -1251,18 +1246,84 @@ const handleCreateTag = () => {
   const updatedList = [...markerList, newTag];
 
   SaveMarkers(updatedList);
-
   setMarkerList(updatedList);
 
+  setIsPaletteOpen(false);
+  setTagName("");
+  setSelectedColor("#faff4c");
+};
+*/
 
-  setIsPaletteOpen(false)
 
+const handleCreateTag = () => {
+  if (!tagName.trim()) return;
+
+  // ❗ Impede mais de 5 tags
+  if (markerList.length >= 5) {
+    return;
+  }
+
+  const alreadyExists = markerList.some(
+    (tag) => tag.text.trim().toLowerCase() === tagName.trim().toLowerCase()
+  );
+
+  if (alreadyExists) {
+    return; 
+  }
+
+  const newTag = {
+    id: Math.random().toString(36).substring(2),
+    text: tagName,
+    color: selectedColor
+  };
+
+  const updatedList = [...markerList, newTag];
+
+  SaveMarkers(updatedList);
+  setMarkerList(updatedList);
+
+  setIsPaletteOpen(false);
   setTagName("");
   setSelectedColor("#faff4c");
 };
 
 
+const getRelativeLuminance = (hex) => {
+  if (hex == null) return 1
+  // 1. Remove o '#' e converte para R, G, B inteiros (0-255)
+  const hexValue = hex.replace('#', '');
+  const r8bit = parseInt(hexValue.substring(0, 2), 16);
+  const g8bit = parseInt(hexValue.substring(2, 4), 16);
+  const b8bit = parseInt(hexValue.substring(4, 6), 16);
 
+  // 2. Função auxiliar para normalizar (0-1) e linearizar o componente de cor
+  const linearize = (c8bit) => {
+    const csrgb = c8bit / 255;
+    if (csrgb <= 0.03928) {
+      // Linearização para valores escuros
+      return csrgb / 12.92;
+    }
+    // Linearização para valores claros
+    return Math.pow((csrgb + 0.055) / 1.055, 2.4);
+  };
+
+  // 3. Aplica a linearização para R, G e B
+  const R = linearize(r8bit);
+  const G = linearize(g8bit);
+  const B = linearize(b8bit);
+
+  // 4. Calcula a Luminância Relativa (fórmula WCAG)
+  // Pesos: 0.2126 (Red), 0.7152 (Green), 0.0722 (Blue)
+  const L = 0.2126 * R + 0.7152 * G + 0.0722 * B;
+  
+  return L;
+};
+
+
+const getTextColor = (hex) => {
+  const L = getRelativeLuminance(hex);
+  return L > 0.5 ? "#000" : "#fff"; // claro -> preto, escuro -> branco
+};
 
 
 
@@ -1280,26 +1341,25 @@ const handleCreateTag = () => {
 
 
   const OpenUnfoldingModal = async () => {
-    if(matterId == 0)
-    {
+    if (matterId == 0) {
       addToast({
         type: 'info',
         title: 'Operação não realizada',
         description: 'É necessário salvar o processo antes de realizar o desdobramento'
       });
     }
-    else{
+    else {
       setShowUnfoldingModal(true)
     }
   }
 
-  
+
   const CloseUnfoldingModal = async () => {
     setShowUnfoldingModal(false)
   }
 
 
-  
+
 
 
   // Matter legal details screeen
@@ -1309,182 +1369,178 @@ const handleCreateTag = () => {
 
       <Container>
 
-      {(showUnfoldingModal) && <Overlay /> }
-      {(showUnfoldingModal) && <UnfoldingModal callbackFunction={{ CloseUnfoldingModal, matterId }} /> }
+        {(showUnfoldingModal) && <Overlay />}
+        {(showUnfoldingModal) && <UnfoldingModal callbackFunction={{ CloseUnfoldingModal, matterId }} />}
 
-      {isFollowedMatterNumberChanged && (
-        <ConfirmBoxModal
-          title="Processo - Acompanhamento"
-          caller="followedMatterNumberChanged"
-          useCheckBoxConfirm
-          message={errorMessage}
-        />
-      )}
+        {isFollowedMatterNumberChanged && (
+          <ConfirmBoxModal
+            title="Processo - Acompanhamento"
+            caller="followedMatterNumberChanged"
+            useCheckBoxConfirm
+            message={errorMessage}
+          />
+        )}
 
-      {isMatterAwarenessError && (
-        <ConfirmBoxModal
-          title="Processo - Acompanhamento"
-          caller="matterAwarenesError"
-          checkMessage="Estou ciente sobre a operação realizada."
-          buttonOkText="Estou ciente"
-          useCheckBoxConfirm
-          message={errorMessage}
-          showMainButtonCancel={false}
-        />
-      )}
+        {isMatterAwarenessError && (
+          <ConfirmBoxModal
+            title="Processo - Acompanhamento"
+            caller="matterAwarenesError"
+            checkMessage="Estou ciente sobre a operação realizada."
+            buttonOkText="Estou ciente"
+            useCheckBoxConfirm
+            message={errorMessage}
+            showMainButtonCancel={false}
+          />
+        )}
 
         {useModalContext.openSelectProcess === 'Open' && (
           <GridSelectProcess />
         )}
 
-      
-     
+
+
 
         <div className='markers' style={{ position: "relative" }}>
-         
-          <button
-            type="button"
-            onClick={() => setIsPaletteOpen(!isPaletteOpen)}
-          >
-            &nbsp;&nbsp;&nbsp;<VscTag />
-            &nbsp;&nbsp;Etiquetas
-
-          </button>
-
-            
-                {isPaletteOpen && (
-
-                      <div
-                        style={{
-                          position: "absolute",
-                          top: "90%",
-                          left: 0,
-                          zIndex: 9999999,
-                          background: "#fff",
-                          padding: "10px",
-                          marginTop: "4px",
-                          border: "1px solid #ccc",
-                          borderRadius: "6px",
-                          width: "300px",
-                          display: "flex",
-                          flexDirection: "column",
-
-                          boxShadow: "0px 2px 6px rgba(0,0,0,0.15)",
-                        }}
-                      >
-                        <h4 style={{ margin: "0 0 10px 0" }}>Nova etiqueta</h4>
-
-                        <input
-                          ref={inputTagRef}
-                          type="text"
-                          placeholder="Nome da etiqueta"
-                          value={tagName}
-                          onChange={(e) => setTagName(e.target.value)}
-                          style={{
-                            width: "100%",
-                            padding: "4px",
-                            border: "1px solid #ccc",
-                            borderRadius: "4px",
-                            marginBottom: "10px"
-                          }}
-                        />
-
-                        {/* PALETA DE CORES (grid 12x) */}
-                        <div
-                          style={{
-                            display: "grid",
-                            gridTemplateColumns: "repeat(9, 22px)",
-                            gap: "6px",
-                            marginBottom: "12px"
-                          }}
-                        >
-                          {[
-                            "#3c9df7", "#7ed957", "#a259ff", "#00d2d3", "#808080", "#ff6f91",
-                            "#ff8a5b", "#ffb84d", "#c0392b", "#27ae60", "#2ecc71", "#f1c40f",
-                            "#8e44ad", "#16a085", "#d35400", "#34495e", "#bdc3c7", "#e74c3c"
-                          ].map((c) => (
-                            <div
-                              key={c}
-                              onClick={() => setSelectedColor(c)}
-                              style={{
-                                width: "22px",
-                                height: "22px",
-                                background: c,
-                                cursor: "pointer",
-                                borderRadius: "4px",
-                                border: selectedColor === c ? "2px solid black" : "1px solid #aaa",
-                                boxSizing: "border-box"
-                              }}
-                            />
-                          ))}
-
-                        </div>
-
-                        {/* LABEL + INPUT COLOR */}
-                        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "15px" }}>
-                          <label style={{ fontSize: "14px", minWidth: "120px" }}>Personalizar cor:</label>
-
-                          {/* input color sincronizado */}
-                          <input
-                            type="color"
-                            value={selectedColor}
-                            onChange={(e) => setSelectedColor(e.target.value)}
-                            style={{
-                              width: "40px",
-                              height: "32px",
-                              border: "none",
-                              padding: 0,
-                              cursor: "pointer",
-                              background: "transparent"
-                            }}
-                          />
-                        </div>
-
-                        {/* BOTÕES SALVAR + FECHAR */}
-                        <div style={{ display: "flex", gap: "10px", marginTop: "5px" }}>
-                          <button
-                            onClick={() => handleCreateTag()}
-                            style={{
-                              flex: 1,
-                              padding: "6px",
-                              background: "#007bff",
-                              color: "#fff",
-                              border: "none",
-                              borderRadius: "4px",
-                              cursor: "pointer"
-                            }}
-                          >
-                            Salvar
-                          </button>
-
-                          <button
-                            onClick={() => setIsPaletteOpen(false)}
-                            style={{
-                              flex: 1,
-                              padding: "6px",
-                              background: "#6c757d",
-                              color: "#fff",
-                              border: "none",
-                              borderRadius: "4px",
-                              cursor: "pointer"
-                            }}
-                          >
-                            Fechar
-                          </button>
-                        </div>
 
 
-                      </div>
-                    )}
+          {isPaletteOpen && (
 
-        
-          
+            <div
+              style={{
+                position: "absolute",
+                top: "-5px",
+                left: 0,
+                zIndex: 9999999,
+                background: "#fff",
+                padding: "10px",
+                marginTop: "4px",
+                border: "1px solid #ccc",
+                borderRadius: "6px",
+                width: "300px",
+                display: "flex",
+                flexDirection: "column",
+
+                boxShadow: "0px 2px 6px rgba(0,0,0,0.15)",
+              }}
+            >
+              <h4 style={{ margin: "0 0 10px 0" }}>Nova etiqueta</h4>
+
+              <input
+                ref={inputTagRef}
+                type="text"
+                placeholder="Nome da etiqueta"
+                value={tagName}
+                onChange={(e) => setTagName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleCreateTag()
+                  }
+                }}
+                style={{
+                  width: "100%",
+                  padding: "4px",
+                  border: "1px solid #ccc",
+                  borderRadius: "4px",
+                  marginBottom: "10px"
+                }}
+              />
+
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(9, 22px)",
+                  gap: "6px",
+                  marginBottom: "12px"
+                }}
+              >
+                {[
+                  "#3c9df7", "#7ed957", "#a259ff", "#00d2d3", "#808080", "#ff6f91",
+                  "#ff8a5b", "#ffb84d", "#c0392b", "#27ae60", "#2ecc71", "#f1c40f",
+                  "#8e44ad", "#16a085", "#d35400", "#34495e", "#bdc3c7", "#e74c3c"
+                ].map((c) => (
+                  <div
+                    key={c}
+                    onClick={() => setSelectedColor(c)}
+                    style={{
+                      width: "22px",
+                      height: "22px",
+                      background: c,
+                      cursor: "pointer",
+                      borderRadius: "4px",
+                      border: selectedColor === c ? "2px solid black" : "1px solid #aaa",
+                      boxSizing: "border-box"
+                    }}
+                  />
+                ))}
+
+              </div>
+
+
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "15px" }}>
+                <label style={{ fontSize: "14px", minWidth: "120px" }}>Personalizar cor:</label>
+
+
+                <input
+                  type="color"
+                  value={selectedColor}
+                  onChange={(e) => setSelectedColor(e.target.value)}
+                  style={{
+                    width: "40px",
+                    height: "32px",
+                    border: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                    background: "transparent"
+                  }}
+                />
+              </div>
+
+
+              <div style={{ display: "flex", gap: "10px", marginTop: "5px" }}>
+                <button
+                  onClick={() => handleCreateTag()}
+                  style={{
+                    flex: 1,
+                    padding: "6px",
+                    background: "#007bff",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer"
+                  }}
+                >
+                  Salvar
+                </button>
+
+                <button
+                  onClick={() => setIsPaletteOpen(false)}
+                  style={{
+                    flex: 1,
+                    padding: "6px",
+                    background: "#6c757d",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer"
+                  }}
+                >
+                  Fechar
+                </button>
+              </div>
+
+
+            </div>
+          )}
+
+
+
           <ReactTags
             handleDelete={(i) => handleDeleteMarker(i)}
             handleAddition={(i) => handleAddition(i)}
-            handleDrag={(tag, currPos, newPos) => handleDrag(tag, currPos, newPos)}
+            //handleDrag={(tag, currPos, newPos) => handleDrag(tag, currPos, newPos)}
             tags={markerList.map(t => {
-              const safeId = t.id.replace(/[^a-zA-Z0-9_-]/g, ""); 
+              const safeId = t.id.replace(/[^a-zA-Z0-9_-]/g, "");
               return {
                 id: safeId,
                 text: t.text,
@@ -1499,21 +1555,28 @@ const handleCreateTag = () => {
             allowUnique
             allowDragDrop
             allowAdditionFromPaste
-            placeholder={(markerList.length == 0? 'Inserir Marcador': '')}
+            placeholder={(markerList.length == 0 ? 'Inserir Marcador' : '')}
             inputFieldPosition="none"
           />
 
-        {markerList.map(t => {
+          {markerList.map(t => {
             const safeId = t.id.replace(/[^a-zA-Z0-9_-]/g, "");
+            const textColor = getTextColor(t.color);
 
             return (
               <style key={safeId}>{`
                 .tag-${safeId} {
                   background: ${t.color} !important;
-                  color: #fff !important;
-                  border-radius: 6px !important;
-                  padding: 4px 8px !important;
+                  color: ${textColor} !important;
+                  border-radius: 3px !important;
+                  padding: 1px 8px !important;
                 }
+                .tag-${safeId} .ReactTags__remove svg {
+                  fill: ${textColor} !important;
+                  width: 8px;
+                  height: 8px;
+                }
+                  
               `}</style>
             );
           })}
@@ -1545,7 +1608,7 @@ const handleCreateTag = () => {
               <FiRefreshCcw className='infoMessage' title="Obtém o número de sequencia para a pasta" onClick={() => handleNextFolderName()} />
             </label>
 
-            <label style={{flex:'17.1%'}}>
+            <label style={{ flex: '17.1%' }}>
               Nº do Processo
               <input
                 className='inputField'
@@ -1553,10 +1616,10 @@ const handleCreateTag = () => {
                 onChange={(e) => setMatterNumber(e.target.value)}
                 value={matterNumber}
               />
-                <BsFolderSymlink className='infoMessage' title="Desdobramento do Processo" onClick={() => OpenUnfoldingModal()} />
+              <BsFolderSymlink className='infoMessage' title="Desdobramento do Processo" onClick={() => OpenUnfoldingModal()} />
             </label>
 
-            <label style={{flex:'17%'}}>
+            <label style={{ flex: '17%' }}>
               Nº Único (CNJ)
               <input
                 className='inputField'
@@ -1575,13 +1638,13 @@ const handleCreateTag = () => {
               Segurança
               <Select
                 value={matterSecurityList.find(item => item.id === matterSecurity)}
-                onChange={(e) => setMatterSecurity(e === null? 'U': e.id)}
+                onChange={(e) => setMatterSecurity(e === null ? 'U' : e.id)}
                 options={matterSecurityList}
                 loadingMessage={loadingMessage}
                 noOptionsMessage={noOptionsMessage}
                 styles={selectStyles}
               />
-              {matterSecurity === 'R' && <ImUsers onClick={() => handleShowUsersModal()} /> }
+              {matterSecurity === 'R' && <ImUsers onClick={() => handleShowUsersModal()} />}
             </label>
 
             <label>
@@ -1657,7 +1720,7 @@ const handleCreateTag = () => {
 
           <section>
 
-            <label style={{flex:'17.1%'}}>
+            <label style={{ flex: '17.1%' }}>
               Probab. de Êxito
               <Select
                 isSearchable
@@ -1674,7 +1737,7 @@ const handleCreateTag = () => {
               />
             </label>
 
-            <label style={{flex:'17.1%'}}>
+            <label style={{ flex: '17.1%' }}>
               Decisão
               <Select
                 isSearchable
@@ -1801,7 +1864,7 @@ const handleCreateTag = () => {
                   value={(matterResponsibleDescription ?? "").length <= 50 ? matterResponsibleDescription : `${matterResponsibleDescription.substring(0, 50)} ...`}
                   style={{ cursor: 'pointer', opacity: '0.5', width: '31.5%' }}
                 />
-                <BsPersonLinesFill className='personIcon' onClick={() => setShowResponsible(true)} style={{ marginLeft: '8px', cursor: 'pointer'}} />
+                <BsPersonLinesFill className='personIcon' onClick={() => setShowResponsible(true)} style={{ marginLeft: '8px', cursor: 'pointer' }} />
               </div>
             </label>
 
@@ -1817,7 +1880,7 @@ const handleCreateTag = () => {
                 <label>Tipo</label>
                 <label>Valor</label>
                 <label>Data</label>
-                <label style={{marginLeft:'65px'}}>Valor Atual</label>
+                <label style={{ marginLeft: '65px' }}>Valor Atual</label>
                 <label>Data Correção</label>
                 <label>Data últ. indice</label>
               </div>
@@ -1845,7 +1908,7 @@ const handleCreateTag = () => {
                     value={item.typeValue}
                     onChange={handleChangeValueType}
                     disabled={item.blockValue}
-                    style={{opacity: (item.blockValue)?'0':'1'}}
+                    style={{ opacity: (item.blockValue) ? '0' : '1' }}
                   >
                     {matterCalcType.map(item => {
                       return <option value={item.id}>{item.label}</option>
@@ -1900,7 +1963,7 @@ const handleCreateTag = () => {
 
                   <FiTrash
                     onClick={() => handleDeleteValuesLine(item)}
-                    style={{opacity: (item.blockValue)?'0':'1'}}
+                    style={{ opacity: (item.blockValue) ? '0' : '1' }}
                   />
 
                 </div>
@@ -1917,8 +1980,8 @@ const handleCreateTag = () => {
               className='buttonLinkClick'
               onClick={handleNewValuesLine}
             >
-                <GoPlus />
-                Adicionar novo
+              <GoPlus />
+              Adicionar novo
             </button>
           </div>
 
@@ -1937,7 +2000,7 @@ const handleCreateTag = () => {
         </div>
 
         {/* render append matter if exists */}
-        {Number(id) > 0 && <MatterAttach matterId={id} refresh={loadAttachList} /> }
+        {Number(id) > 0 && <MatterAttach matterId={id} refresh={loadAttachList} />}
 
         <footer>
 
@@ -2021,15 +2084,15 @@ const handleCreateTag = () => {
           />
         )}
 
-      {isDeleting && (
-        <ConfirmBoxModal
-          title="Exclusão de Processos"
-          useCheckBoxConfirm
-          caller="matterEdit"
-          message="ATENÇÃO: Confirmando a exclusão, todos os dados associados ao processo, inclusive acompanhamentos e publicações, serão excluídos(as).
+        {isDeleting && (
+          <ConfirmBoxModal
+            title="Exclusão de Processos"
+            useCheckBoxConfirm
+            caller="matterEdit"
+            message="ATENÇÃO: Confirmando a exclusão, todos os dados associados ao processo, inclusive acompanhamentos e publicações, serão excluídos(as).
           Movimentos financeiros, faturas e compromissos associados a este processo serão desassociados e mantidos. ?"
-        />
-      )}
+          />
+        )}
 
       </Container>
 
@@ -2042,8 +2105,8 @@ const handleCreateTag = () => {
             Excluindo andamentos...
           </div>
         </>
-      )} 
-      
+      )}
+
       {showMessageDeleting && (
         <>
           <Overlay />
@@ -2053,7 +2116,7 @@ const handleCreateTag = () => {
             Excluindo processo...
           </div>
         </>
-      )} 
+      )}
 
       {statusPage != '' && (
         <>
@@ -2061,9 +2124,9 @@ const handleCreateTag = () => {
           <div className='waitingMessage'>
             <Loader size={15} color="var(--blue-twitter)" />
             &nbsp;&nbsp;
-            {statusPage === 'calc' &&  <span>Atualizando valores...</span> }
-            {statusPage === 'save' &&  <span>Salvando...</span> }
-            {statusPage === 'attach' &&  <span>Anexando processo...</span> }
+            {statusPage === 'calc' && <span>Atualizando valores...</span>}
+            {statusPage === 'save' && <span>Salvando...</span>}
+            {statusPage === 'attach' && <span>Anexando processo...</span>}
           </div>
         </>
       )}
