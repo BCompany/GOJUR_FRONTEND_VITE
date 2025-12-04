@@ -185,6 +185,7 @@ export interface ISelectUserData {
 export interface IMarkerList {
   id: string;
   text: string;
+  color:string;
 }
 
 export interface IParameterData {

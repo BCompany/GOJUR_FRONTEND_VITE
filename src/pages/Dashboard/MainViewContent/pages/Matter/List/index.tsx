@@ -72,10 +72,14 @@ import FollowModal from '../FollowModal';
 import AwarenessModal from 'components/AwarenessModal';
 import MatterCRMModal from '../../Customer/CRM/Modal';
 import { useSecurity } from 'context/securityContext';
+import ReactDOM from "react-dom";
+import { FaTags } from "react-icons/fa";
 
 export interface CRMData {
   id: string;
 }
+
+
 
 
 const Matter: React.FC = () => {
@@ -395,7 +399,7 @@ const Matter: React.FC = () => {
     return listSelectGrup
   }
 
-
+/*
   const SaveMarkers = async (matterId: number, markersList: IMarkerList[]) => {
 
     try {
@@ -411,6 +415,38 @@ const Matter: React.FC = () => {
         matterId,
         matterType,
         markers: marker
+      })
+    }
+    catch (err: any) {
+
+      addToast({
+        type: 'info',
+        title: 'Operação NÃO realizada',
+        description: "Houve uma falha na gravação deste marcador, verifique se o processo possui alguma pendência de cadastro e tente novamente"
+      });
+    }
+  }
+*/
+
+
+  const SaveMarkers = async (matterId: number, markersList: IMarkerList[]) => {
+
+    try {
+      // transform marker list in unique string
+      const markersJsonText = JSON.stringify(
+          markersList.map(m => ({
+            id: m.text,
+            text: m.text,
+            color: m.color
+          }))
+        );
+
+      // save marker
+      await api.post('/Processo/SalvarMarcadores', {
+        token,
+        matterId,
+        matterType,
+        markers: markersJsonText 
       })
     }
     catch (err: any) {
@@ -1299,6 +1335,7 @@ const Matter: React.FC = () => {
   };
 
 
+  /*
   const handleAddition = (tag, item: IMatterData) => {
 
     // allow only 5 markers by folder
@@ -1317,6 +1354,29 @@ const Matter: React.FC = () => {
 
       setMatterList(updateMatterList)
       SaveMarkers(item.matterId, item.markersList)
+    }
+  };
+*/
+
+
+  const handleAddition = (tag, item: IMatterData) => {
+
+    // allow only 5 markers by folder
+    if (item.markersList.length < 5) {
+
+      item.markersList.push(tag)
+      const updateMatterList = matterList.map(matter =>
+
+        matter.matterId === item.matterId ?
+          {
+            ...matter,
+            markersList: item.markersList
+          } :
+          matter
+      );
+
+      setMatterList(updateMatterList)
+      //SaveMarkers(item.matterId, item.markersList)
     }
   };
 
@@ -2184,9 +2244,9 @@ const Matter: React.FC = () => {
     localStorage.removeItem('@Gojur:followUpId');
     localStorage.removeItem('@Gojur:notificationTag');
 
-    if (workflowView == "LISTA") 
+    if (workflowView == "LISTA")
       history.push(`/workflowexec/list`)
-    else if (workflowView == "KANBAN") 
+    else if (workflowView == "KANBAN")
       history.push(`/workflowexec/kanban`)
 
   }
@@ -2201,6 +2261,159 @@ const Matter: React.FC = () => {
     setShowMatterCRMModal(false)
     setMatterSelectedId(0)
   }
+
+
+
+  const [selectedColor, setSelectedColor] = useState("#faff4c");
+
+  const [openId, setOpenId] = useState(null);
+  const [tagName, setTagName] = useState("");
+  const inputTagRef = useRef(null);
+  const inputTagRef1 = useRef(null);
+
+ 
+useEffect(() => {
+  if (openId !== null && inputTagRef.current) {
+    inputTagRef.current.focus();
+  }
+
+  if (openId !== null && inputTagRef1.current) {
+    inputTagRef1.current.focus();
+  }
+
+}, [openId]);
+
+
+/*
+const handleCreateTag = (item: IMatterData) => {
+  if (!tagName.trim()) return;
+
+  const normalizedName = tagName.trim().toLowerCase();
+
+  // pega as tags atuais do item
+  const currentMarkers =
+    matterList.find(m => m.matterId === item.matterId)?.markersList ?? [];
+
+  // verifica duplicidade por texto
+  const alreadyExists = currentMarkers.some(
+    t => t.text.trim().toLowerCase() === normalizedName
+  );
+
+  if (alreadyExists) {
+    return;
+  }
+
+  const newTag = {
+    id: Math.random().toString(36).substring(2),
+    text: tagName,
+    color: selectedColor
+  };
+
+  const updatedList = matterList.map(m =>
+    m.matterId === item.matterId
+      ? { ...m, markersList: [...m.markersList, newTag] }
+      : m
+  );
+
+  setMatterList(updatedList);
+
+  const updatedMarkers =
+    updatedList.find(m => m.matterId === item.matterId)?.markersList ?? [];
+
+  SaveMarkers(item.matterId, updatedMarkers);
+
+  setOpenId(null);
+  setTagName("");
+  setSelectedColor("#faff4c");
+};
+*/
+
+
+const handleCreateTag = (item: IMatterData) => {
+  if (!tagName.trim()) return;
+
+  const normalizedName = tagName.trim().toLowerCase();
+
+  // pega as tags atuais do item
+  const currentMarkers =
+    matterList.find(m => m.matterId === item.matterId)?.markersList ?? [];
+
+  // ❗ impede mais de 5 tags
+  if (currentMarkers.length >= 5) {
+    return;
+  }
+
+  // verifica duplicidade por texto
+  const alreadyExists = currentMarkers.some(
+    t => t.text.trim().toLowerCase() === normalizedName
+  );
+
+  if (alreadyExists) {
+    return;
+  }
+
+  const newTag = {
+    id: Math.random().toString(36).substring(2),
+    text: tagName,
+    color: selectedColor
+  };
+
+  const updatedList = matterList.map(m =>
+    m.matterId === item.matterId
+      ? { ...m, markersList: [...m.markersList, newTag] }
+      : m
+  );
+
+  setMatterList(updatedList);
+
+  const updatedMarkers =
+    updatedList.find(m => m.matterId === item.matterId)?.markersList ?? [];
+
+  SaveMarkers(item.matterId, updatedMarkers);
+
+  setOpenId(null);
+  setTagName("");
+  setSelectedColor("#faff4c");
+};
+
+
+const getRelativeLuminance = (hex) => {
+ 
+  if (hex == null) return 1
+  // 1. Remove o '#' e converte para R, G, B inteiros (0-255)
+  const hexValue = hex.replace('#', '');
+  const r8bit = parseInt(hexValue.substring(0, 2), 16);
+  const g8bit = parseInt(hexValue.substring(2, 4), 16);
+  const b8bit = parseInt(hexValue.substring(4, 6), 16);
+
+  // 2. Função auxiliar para normalizar (0-1) e linearizar o componente de cor
+  const linearize = (c8bit) => {
+    const csrgb = c8bit / 255;
+    if (csrgb <= 0.03928) {
+      // Linearização para valores escuros
+      return csrgb / 12.92;
+    }
+    // Linearização para valores claros
+    return Math.pow((csrgb + 0.055) / 1.055, 2.4);
+  };
+
+  // 3. Aplica a linearização para R, G e B
+  const R = linearize(r8bit);
+  const G = linearize(g8bit);
+  const B = linearize(b8bit);
+
+  // 4. Calcula a Luminância Relativa (fórmula WCAG)
+  // Pesos: 0.2126 (Red), 0.7152 (Green), 0.0722 (Blue)
+  const L = 0.2126 * R + 0.7152 * G + 0.0722 * B;
+  
+  return L;
+};
+
+
+const getTextColor = (hex) => {
+  const L = getRelativeLuminance(hex);
+  return L > 0.5 ? "#000" : "#fff"; // claro -> preto, escuro -> branco
+};
 
 
   return (
@@ -2516,13 +2729,167 @@ const Matter: React.FC = () => {
                       &nbsp; Pasta:
                       {' '}
                       {item.matterFolder}
+
+                      &nbsp; &nbsp; &nbsp;
+                      
+                      <button
+                        type="button"
+                        onClick={() => setOpenId(openId === item.matterId ? null : item.matterId)}
+                      >
+                       
+                       <FaTags color="#2c8ed6" />&nbsp;
+                       Etiquetas
+
+                      </button>
+
                     </header>
 
+
+                    {openId === item.matterId && (
+
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "5%",
+                          left: 0,
+                          background: "#fff",
+                          padding: "10px",
+                          marginTop: "4px",
+                          border: "1px solid #ccc",
+                          borderRadius: "6px",
+                          width: "300px",
+                          display: "flex",
+                          flexDirection: "column",
+
+                          boxShadow: "0px 2px 6px rgba(0,0,0,0.15)",
+                          zIndex: 9999999
+                        }}
+                      >
+                        <h4 style={{ margin: "0 0 10px 0" }}>Nova etiqueta</h4>
+
+                        <input
+                          ref={inputTagRef}
+                          type="text"
+                          placeholder="Nome da etiqueta"
+                          value={tagName}
+                          onChange={(e) => setTagName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              handleCreateTag(item)
+                            }
+                          }}
+                          style={{
+                            width: "100%",
+                            padding: "4px",
+                            border: "1px solid #ccc",
+                            borderRadius: "4px",
+                            marginBottom: "10px"
+                          }}
+                        />
+
+                        {/* PALETA DE CORES (grid 12x) */}
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(9, 22px)",
+                            gap: "6px",
+                            marginBottom: "12px"
+                          }}
+                        >
+                          {[
+                            "#3c9df7", "#7ed957", "#a259ff", "#00d2d3", "#808080", "#ff6f91",
+                            "#ff8a5b", "#ffb84d", "#c0392b", "#27ae60", "#2ecc71", "#f1c40f",
+                            "#8e44ad", "#16a085", "#d35400", "#34495e", "#bdc3c7", "#e74c3c"
+                          ].map((c) => (
+                            <div
+                              key={c}
+                              onClick={() => setSelectedColor(c)}
+                              style={{
+                                width: "22px",
+                                height: "22px",
+                                background: c,
+                                cursor: "pointer",
+                                borderRadius: "4px",
+                                border: selectedColor === c ? "2px solid black" : "1px solid #aaa",
+                                boxSizing: "border-box"
+                              }}
+                            />
+                          ))}
+
+                        </div>
+
+                        {/* LABEL + INPUT COLOR */}
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "15px" }}>
+                          <label style={{ fontSize: "14px", minWidth: "120px" }}>Personalizar cor:</label>
+
+                          {/* input color sincronizado */}
+                          <input
+                            type="color"
+                            value={selectedColor}
+                            onChange={(e) => setSelectedColor(e.target.value)}
+                            style={{
+                              width: "40px",
+                              height: "32px",
+                              border: "none",
+                              padding: 0,
+                              cursor: "pointer",
+                              background: "transparent"
+                            }}
+                          />
+                        </div>
+
+                        {/* BOTÕES SALVAR + FECHAR */}
+                        <div style={{ display: "flex", gap: "10px", marginTop: "5px" }}>
+                          <button
+                            onClick={() => handleCreateTag(item)}
+                            style={{
+                              flex: 1,
+                              padding: "6px",
+                              background: "#007bff",
+                              color: "#fff",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer"
+                            }}
+                          >
+                            Salvar
+                          </button>
+
+                          <button
+                            onClick={() => setOpenId(null)}
+                            style={{
+                              flex: 1,
+                              padding: "6px",
+                              background: "#6c757d",
+                              color: "#fff",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer"
+                            }}
+                          >
+                            Fechar
+                          </button>
+                        </div>
+
+
+                      </div>
+                    )}
+                
+                <div style={{ display: "flex", alignItems: "center" }}>
+                    <span style={{ display: "inline-block", width: "6px" }}>&nbsp;</span>
+                
                     <ReactTags
                       handleDelete={(i) => handleDeleteMarker(i, item)}
                       handleAddition={(i) => handleAddition(i, item)}
-                      handleDrag={(tag, currPos, newPos) => handleDrag(tag, currPos, newPos, item)}
-                      tags={item.markersList}
+                      //handleDrag={(tag, currPos, newPos) => handleDrag(tag, currPos, newPos, item)}
+                      tags={item.markersList.map(t => {
+                        const safeId = t.id.replace(/[^a-zA-Z0-9_-]/g, ""); 
+                        return {
+                          id: safeId,
+                          text: t.text,
+                          className: "tag-" + safeId
+                        };
+                      })}
                       autofocus={false}
                       readOnly={false}
                       minQueryLength={5}
@@ -2532,8 +2899,35 @@ const Matter: React.FC = () => {
                       allowDragDrop
                       allowAdditionFromPaste
                       placeholder={(item.markersList.length == 0 ? 'Inserir Marcador' : '')}
+                      inputFieldPosition="none"
                     />
 
+               </div>
+
+                    {item.markersList.map(t => {
+                      const safeId = t.id.replace(/[^a-zA-Z0-9_-]/g, "");
+                      const textColor = getTextColor(t.color);
+                      
+                      return (
+                        <style key={safeId}>{`
+                          .tag-${safeId} {
+                            background: ${t.color} !important;
+                            color:${textColor} !important;
+                            border-radius: 3px !important;
+                            padding: 4px 8px !important;
+                          }
+
+                          .tag-${safeId} .ReactTags__remove svg {
+                            fill: ${textColor} !important;
+                            width: 8px;
+                            height: 8px;
+                          }
+
+                        `}</style>
+                      );
+                    })}
+
+                 
                     <div>
                       <div className='matterDetails'>
                         <div>
@@ -3098,15 +3492,163 @@ const Matter: React.FC = () => {
                       &nbsp; Pasta:
                       {' '}
                       {item.matterFolder}
+
+                       &nbsp; &nbsp; &nbsp;
+                      <button
+                        type="button"
+                        onClick={() => setOpenId(openId === item.matterId ? null : item.matterId)}
+                      >
+                        <FaTags color="#2c8ed6"/>&nbsp;
+                        Etiquetas
+
+                      </button>
+
                     </header>
 
-                    {/* <FcAbout className='iconMarkersInfo' title='Adicione marcadores de fácil identificação para cada pasta do processo' /> */}
+
+                       {openId === item.matterId && (
+
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "5%",
+                          left: 0,
+                          background: "#fff",
+                          padding: "10px",
+                          marginTop: "4px",
+                          border: "1px solid #ccc",
+                          borderRadius: "6px",
+                          width: "300px",
+                          display: "flex",
+                          flexDirection: "column",
+
+                          boxShadow: "0px 2px 6px rgba(0,0,0,0.15)",
+                          zIndex: 9999999
+                        }}
+                      >
+                        <h4 style={{ margin: "0 0 10px 0" }}>Nova etiqueta</h4>
+
+                        <input
+                          ref={inputTagRef1}
+                          type="text"
+                          placeholder="Nome da etiqueta"
+                          value={tagName}
+                          onChange={(e) => setTagName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              handleCreateTag(item)
+                            }
+                          }}
+                          style={{
+                            width: "100%",
+                            padding: "4px",
+                            border: "1px solid #ccc",
+                            borderRadius: "4px",
+                            marginBottom: "10px"
+                          }}
+                        />
+
+                        {/* PALETA DE CORES (grid 12x) */}
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(9, 22px)",
+                            gap: "6px",
+                            marginBottom: "12px"
+                          }}
+                        >
+                          {[
+                            "#3c9df7", "#7ed957", "#a259ff", "#00d2d3", "#808080", "#ff6f91",
+                            "#ff8a5b", "#ffb84d", "#c0392b", "#27ae60", "#2ecc71", "#f1c40f",
+                            "#8e44ad", "#16a085", "#d35400", "#34495e", "#bdc3c7", "#e74c3c"
+                          ].map((c) => (
+                            <div
+                              key={c}
+                              onClick={() => setSelectedColor(c)}
+                              style={{
+                                width: "22px",
+                                height: "22px",
+                                background: c,
+                                cursor: "pointer",
+                                borderRadius: "4px",
+                                border: selectedColor === c ? "2px solid black" : "1px solid #aaa",
+                                boxSizing: "border-box"
+                              }}
+                            />
+                          ))}
+
+                        </div>
+
+                        {/* LABEL + INPUT COLOR */}
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "15px" }}>
+                          <label style={{ fontSize: "14px", minWidth: "120px" }}>Personalizar cor:</label>
+
+                          {/* input color sincronizado */}
+                          <input
+                            type="color"
+                            value={selectedColor}
+                            onChange={(e) => setSelectedColor(e.target.value)}
+                            style={{
+                              width: "40px",
+                              height: "32px",
+                              border: "none",
+                              padding: 0,
+                              cursor: "pointer",
+                              background: "transparent"
+                            }}
+                          />
+                        </div>
+
+                        {/* BOTÕES SALVAR + FECHAR */}
+                        <div style={{ display: "flex", gap: "10px", marginTop: "5px" }}>
+                          <button
+                            onClick={() => handleCreateTag(item)}
+                            style={{
+                              flex: 1,
+                              padding: "6px",
+                              background: "#007bff",
+                              color: "#fff",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer"
+                            }}
+                          >
+                            Salvar
+                          </button>
+
+                          <button
+                            onClick={() => setOpenId(null)}
+                            style={{
+                              flex: 1,
+                              padding: "6px",
+                              background: "#6c757d",
+                              color: "#fff",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer"
+                            }}
+                          >
+                            Fechar
+                          </button>
+                        </div>
+
+
+                      </div>
+                    )}
+
 
                     <ReactTags
                       handleDelete={(i) => handleDeleteMarker(i, item)}
                       handleAddition={(i) => handleAddition(i, item)}
-                      handleDrag={(tag, currPos, newPos) => handleDrag(tag, currPos, newPos, item)}
-                      tags={item.markersList}
+                      //handleDrag={(tag, currPos, newPos) => handleDrag(tag, currPos, newPos, item)}
+                      tags={item.markersList.map(t => {
+                        const safeId = t.id.replace(/[^a-zA-Z0-9_-]/g, ""); 
+                        return {
+                          id: safeId,
+                          text: t.text,
+                          className: "tag-" + safeId
+                        };
+                      })}
                       autofocus={false}
                       readOnly={false}
                       minQueryLength={5}
@@ -3116,7 +3658,33 @@ const Matter: React.FC = () => {
                       allowDragDrop
                       allowAdditionFromPaste
                       placeholder={(item.markersList.length == 0 ? 'Inserir Marcador' : '')}
+                      inputFieldPosition="none"
                     />
+
+                  
+                     {item.markersList.map(t => {
+                      const safeId = t.id.replace(/[^a-zA-Z0-9_-]/g, "");
+                      const textColor = getTextColor(t.color);
+
+                      return (
+                        <style key={safeId}>{`
+                          .tag-${safeId} {
+                            background: ${t.color} !important;
+                            color:${textColor} !important;
+                            border-radius: 3px !important;
+                            padding: 4px 8px !important;
+                          }
+
+                          .tag-${safeId} .ReactTags__remove svg {
+                            fill: ${textColor} !important;
+                            width: 8px;
+                            height: 8px;
+                          }
+
+                        `}</style>
+                      );
+                    })}
+
 
                     <div>
                       <div className='matterDetails'>
