@@ -3636,7 +3636,8 @@ const getTextColor = (hex) => {
                       </div>
                     )}
 
-
+ <div style={{ display: "flex", alignItems: "center" }}>
+                    <span style={{ display: "inline-block", width: "6px" }}>&nbsp;</span>
                     <ReactTags
                       handleDelete={(i) => handleDeleteMarker(i, item)}
                       handleAddition={(i) => handleAddition(i, item)}
@@ -3660,7 +3661,7 @@ const getTextColor = (hex) => {
                       placeholder={(item.markersList.length == 0 ? 'Inserir Marcador' : '')}
                       inputFieldPosition="none"
                     />
-
+</div>
                   
                      {item.markersList.map(t => {
                       const safeId = t.id.replace(/[^a-zA-Z0-9_-]/g, "");
