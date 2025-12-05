@@ -435,7 +435,7 @@ const Matter: React.FC = () => {
       // transform marker list in unique string
       const markersJsonText = JSON.stringify(
           markersList.map(m => ({
-            id: m.text,
+            //id: m.text,
             text: m.text,
             color: m.color
           }))
@@ -2896,10 +2896,10 @@ const getTextColor = (hex) => {
                       maxLength={30}
                       allowDeleteFromEmptyInput
                       allowUnique
-                      allowDragDrop
                       allowAdditionFromPaste
                       placeholder={(item.markersList.length == 0 ? 'Inserir Marcador' : '')}
                       inputFieldPosition="none"
+                      allowDragDrop={false}
                     />
 
                </div>
@@ -3636,7 +3636,8 @@ const getTextColor = (hex) => {
                       </div>
                     )}
 
- <div style={{ display: "flex", alignItems: "center" }}>
+
+                  <div style={{ display: "flex", alignItems: "center" }}>
                     <span style={{ display: "inline-block", width: "6px" }}>&nbsp;</span>
                     <ReactTags
                       handleDelete={(i) => handleDeleteMarker(i, item)}
@@ -3656,12 +3657,12 @@ const getTextColor = (hex) => {
                       maxLength={30}
                       allowDeleteFromEmptyInput
                       allowUnique
-                      allowDragDrop
                       allowAdditionFromPaste
                       placeholder={(item.markersList.length == 0 ? 'Inserir Marcador' : '')}
                       inputFieldPosition="none"
+                      allowDragDrop={false}
                     />
-</div>
+                </div>
                   
                      {item.markersList.map(t => {
                       const safeId = t.id.replace(/[^a-zA-Z0-9_-]/g, "");
