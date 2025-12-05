@@ -394,7 +394,7 @@ const Matter = (props) => {
       // transform marker list in unique string
       const markersJsonText = JSON.stringify(
         markersList.map(m => ({
-          id: m.text,
+          //id: m.text,
           text: m.text,
           color: m.color
         }))
