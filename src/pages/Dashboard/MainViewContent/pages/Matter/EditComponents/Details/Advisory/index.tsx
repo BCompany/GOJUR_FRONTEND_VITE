@@ -1314,10 +1314,10 @@ const getTextColor = (hex) => {
             maxLength={30}
             allowDeleteFromEmptyInput
             allowUnique
-            allowDragDrop
             allowAdditionFromPaste
             placeholder={(markerList.length == 0? 'Inserir Marcador': '')}
             inputFieldPosition="none"
+            allowDragDrop={false}
           />
 
 
