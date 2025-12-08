@@ -1045,14 +1045,17 @@ const Matter = (props) => {
       const responsibleValuesJSON = JSON.stringify(responsibleListData)
       const matterValuesJSON = JSON.stringify(matterDataValues)
 
-      // build marker description
+   
+      // transform marker list in unique string
       let matterMarkers = ''
-      markerList.map(item => {
-        matterMarkers += item.text
-        matterMarkers += ","
+      matterMarkers = JSON.stringify(
+        markerList.map(m => ({
+          //id: m.text,
+          text: m.text,
+          color: m.color
+        }))
+      );
 
-        return;
-      })
 
       // flag if is a new matter or e
       const newMatter = id == '0';
