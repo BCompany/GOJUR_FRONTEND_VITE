@@ -383,13 +383,7 @@ const Matter = (props) => {
       setMarkerList(markersList)
 
       console.log(markersList);
-      // transform marker list in unique string
-      /*
-      let marker = '';
-      markersList.map((item) => {
-        marker += `${item.text  },`
-      })
-      */
+   
 
       // transform marker list in unique string
       const markersJsonText = JSON.stringify(
@@ -1050,7 +1044,6 @@ const Matter = (props) => {
       let matterMarkers = ''
       matterMarkers = JSON.stringify(
         markerList.map(m => ({
-          //id: m.text,
           text: m.text,
           color: m.color
         }))
@@ -1062,7 +1055,7 @@ const Matter = (props) => {
 
       const data = {
         cod_Processo: id,
-        des_Marcador: matterMarkers == '' ? null : matterMarkers,
+        des_Marcador: matterMarkers == '' || matterMarkers == '[]' ? null : matterMarkers,
         cod_Pasta: matterFolder,
         num_Processo: matterNumber.trim(),
         num_ProcessoCNJ: matterNumberCNJ,

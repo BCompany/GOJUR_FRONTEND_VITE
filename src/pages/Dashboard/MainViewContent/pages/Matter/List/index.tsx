@@ -399,35 +399,6 @@ const Matter: React.FC = () => {
     return listSelectGrup
   }
 
-/*
-  const SaveMarkers = async (matterId: number, markersList: IMarkerList[]) => {
-
-    try {
-      // transform marker list in unique string
-      let marker = '';
-      markersList.map((item) => {
-        marker += `${item.text},`
-      })
-
-      // save marker
-      await api.post('/Processo/SalvarMarcadores', {
-        token,
-        matterId,
-        matterType,
-        markers: marker
-      })
-    }
-    catch (err: any) {
-
-      addToast({
-        type: 'info',
-        title: 'Operação NÃO realizada',
-        description: "Houve uma falha na gravação deste marcador, verifique se o processo possui alguma pendência de cadastro e tente novamente"
-      });
-    }
-  }
-*/
-
 
   const SaveMarkers = async (matterId: number, markersList: IMarkerList[]) => {
 
