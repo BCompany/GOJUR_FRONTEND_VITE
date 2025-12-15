@@ -25,6 +25,7 @@ export interface IWorkflowActions {
         privacy:string;
         responsible:string;
         when: string;
+        typeOfDays: string;
     } | null;
 }
 

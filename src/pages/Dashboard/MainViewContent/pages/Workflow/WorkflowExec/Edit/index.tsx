@@ -549,42 +549,6 @@ const handleSimularWorkflow = async () => {
   }
 };
 
-/*
-  const handleSimularWorkflow = async () => {
-    try {
-      setTriggerActionsMap({});
-
-      if (Object.keys(triggerDates).length == 0) {
-        addToast({
-          type: "info",
-          title: "Campos Obrigatórios",
-          description: "Selecione o workflow, e preencha todas as datas antes de continuar"
-        })
-        return;
-      }
-
-
-
-      for (const triggerIdStr of Object.keys(triggerDates)) {
-        const triggerId = Number(triggerIdStr);
-        const actions = await fetchTriggerActions(triggerId);
-
-        //if (!actions || actions.length === 0) {
-        if (actions === "error") {
-
-          return;
-        }
-
-        setTriggerActionsMap((prev) => ({ ...prev, [triggerId]: actions }));
-      }
-
-    } catch (err) {
-      console.error(err);
-      return [];
-    }
-  };
-
-*/
 
   const LoadSubject = useCallback(async () => {
     try {

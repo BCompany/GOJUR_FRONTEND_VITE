@@ -1179,6 +1179,35 @@ export default function Workflow() {
     );
   };
 
+
+   const handleTypeOfDaysChange = (
+    newValue: string,
+    workflowTriggerId: number,
+    workflowActionId: number
+  ) => {
+    setWorkflowTrigger(prev =>
+      prev.map(trigger => {
+        if (trigger.workflowTriggerId !== workflowTriggerId) return trigger;
+
+        return {
+          ...trigger,
+          actions: trigger.actions.map(action => {
+            if (action.workflowactionId !== workflowActionId) return action;
+
+            return {
+              ...action,
+              configuration: {
+                ...action.configuration,
+                typeOfDays: newValue, 
+              },
+            };
+          }),
+        };
+      })
+    );
+  };
+
+
   const handleResponsibleChange = (
     newValue: string,
     workflowTriggerId?: number,
@@ -1913,20 +1942,6 @@ export default function Workflow() {
                         <FiXCircle />
                         Configurar compromisso
 
-                        { /*painelAberto === trigger.workflowTriggerId || trigger.workflowId === 0 ? ( 
-                        
-                        
-                         <>
-                            <FiXCircle />
-                            Configurar compromisso
-                          </>
-                        ) : (
-                          <>
-                            <FiPlusCircle />
-                            Ver compromisso
-                          </>
-                        )   */}
- 
  
                       </button>
 
@@ -1956,9 +1971,23 @@ export default function Workflow() {
                                 gap: "8px",
                               }}
                             >
-                              Informe os dias para criação do compromisso
+                              
+                               Dias para criação do compromisso
+                               <select
+                                name="tipoDias"
+                                id={`tipoDias-${action.workflowactionId}`}  
+                                value={action.configuration?.typeOfDays ?? "C"}   
+                                onChange={(e) =>
+                                    handleTypeOfDaysChange(e.target.value, trigger.workflowTriggerId, action.workflowactionId)
+                                  }       
+                                style={{ width: "10px", maxWidth: "100px" }}
+                              >
+                                <option value="C">Corridos</option>
+                                <option value="U">Úteis</option>
+                              </select>
+
                               <FcAbout
-                                style={{ height: "15px", width: "15px", marginRight: "85px" }}
+                                style={{ height: "15px", width: "15px", marginRight: "55px" }}
                                 title="Você deve Informar a regra para criação do compromisso a partir a da data do gatilho, informar se deve ser criado antes ou depois e quantos dias considerar."
                               />
 
