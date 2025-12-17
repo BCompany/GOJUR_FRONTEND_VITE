@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-
+import { VitePWA } from 'vite-plugin-pwa'
 import { resolve } from 'path';
 
 const aliases = {
@@ -26,7 +26,23 @@ export default defineConfig(({ mode }) => {
 
   console.log(mode)
   return {
-    plugins: [react()],
+    plugins: [react(),
+       VitePWA({
+
+      registerType: 'autoUpdate',
+
+      workbox: {
+
+        clientsClaim: true,
+
+        skipWaiting: true,
+
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10 MB
+
+      },
+
+    }),
+    ],
     server: { port: 3000 },
     build: {
       sourcemap: mode === 'development' // generate just in dev mode 
