@@ -27,18 +27,12 @@ export default defineConfig(({ mode }) => {
   console.log(mode)
   return {
     plugins: [react(),
-       VitePWA({
-
+      VitePWA({
       registerType: 'autoUpdate',
-
       workbox: {
-
         clientsClaim: true,
-
         skipWaiting: true,
-
-        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10 MB
-
+        /*maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10 MB*/
       },
 
     }),
