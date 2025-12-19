@@ -1,25 +1,30 @@
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
-import { Workbox } from 'workbox-window'
+import { registerSW } from 'virtual:pwa-register'
+
+
+const updateSW = registerSW({
+  immediate: true,
+
+  onRegisteredSW(swUrl, registration) {
+    //
+    if (registration) {
+      setInterval(() => {
+        registration.update()
+      }, 60 * 1000) // a cada 1 minuto
+    }
+  },
+
+  onNeedRefresh() {
+    console.log('Nova versão detectada, recarregando...')
+    window.location.reload()
+  },
+
+  onOfflineReady() {
+    console.log('App pronto para uso offline')
+  },
+})
+
 
 ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
 
-if ('serviceWorker' in navigator) {
-
-  const wb = new Workbox('/sw.js')
-
- 
-
-  wb.addEventListener('waiting', () => {
-
-    wb.messageSW({ type: 'SKIP_WAITING' })
-
-    window.location.reload()
-
-  })
-
- 
-
-  wb.register()
-
-}

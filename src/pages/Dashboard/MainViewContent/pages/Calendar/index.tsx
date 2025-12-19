@@ -1466,6 +1466,7 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
                 <FcParallelTasks />
                 Workflow
               </button>
+              <h1>versao <br/>GG<br/></h1>
               </>
  )}
 
