@@ -2,7 +2,14 @@ export function registerSW() {
   if (!('serviceWorker' in navigator)) return
 
   window.addEventListener('load', async () => {
+
     const reg = await navigator.serviceWorker.register('/gojursw.js')
+
+    document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+       reg.update()
+     }
+    })
 
     reg.addEventListener('updatefound', () => {
       const newWorker = reg.installing
