@@ -81,7 +81,10 @@
     "tslib": "^2.2.0",
     "uuid": "^8.3.2",
     "uuidv4": "^6.2.4",
+    "vite-plugin-pwa": "^1.2.0",
     "webpack-dev-server": "3.11.1",
+    "workbox-core": "^7.4.0",
+    "workbox-precaching": "^7.4.0",
     "yup": "^0.32.9"
   },
   "devDependencies": {

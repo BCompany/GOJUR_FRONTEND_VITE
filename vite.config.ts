@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa'
 
 import { resolve } from 'path';
 
@@ -26,7 +27,14 @@ export default defineConfig(({ mode }) => {
 
   console.log(mode)
   return {
-    plugins: [react()],
+    plugins: [react(),
+   VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src/serviceWorkers',
+      filename: 'gojursw.ts',
+      injectRegister: false
+    })
+    ],
     server: { port: 3000 },
     build: {
       sourcemap: mode === 'development' // generate just in dev mode 
