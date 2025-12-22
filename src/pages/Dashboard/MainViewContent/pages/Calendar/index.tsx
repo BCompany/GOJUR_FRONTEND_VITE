@@ -138,7 +138,7 @@ const Calendar: React.FC = () => {
   const [openModalCalendarReport, setOpenModalCalendarReport] =
     useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-   const history = useHistory();
+  const history = useHistory();
   const [isLoadingSearch, setIsLoadingSearch] = useState<boolean>(false);
   const [isEndPage, setIsEndPage] = useState(false);
   const [isPagination, setIsPagination] = useState(false);
@@ -230,9 +230,9 @@ const Calendar: React.FC = () => {
   const [subjectType, setSubjectType] = useState<string>('A');
   const [principalColor, setPrincipalColor] = useState<string>('#51B749');
 
-const {permissionsSecurity, handleValidateSecurity } = useSecurity();
+  const { permissionsSecurity, handleValidateSecurity } = useSecurity();
   const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKFEX");
- const [workflowView, setWorkflowView] = useState('')
+  const [workflowView, setWorkflowView] = useState('')
 
   // DATE SELECT
   const [openModalDateSelect, setOpenModalDateSelect] =
@@ -1258,14 +1258,14 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
     localStorage.removeItem('@Gojur:filterMatterId')
 
 
-    if (workflowView == "LISTA" )
+    if (workflowView == "LISTA")
       history.push(`/workflowexec/list`)
-    else if (workflowView == "KANBAN" )
+    else if (workflowView == "KANBAN")
       history.push(`/workflowexec/kanban`)
 
   };
 
-   
+
 
   const buttonsCalendarLabel = {
     dayGridMonth: 'Mês',
@@ -1336,10 +1336,10 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
   );
 
 
-    useEffect(() => {
-        LoadDefaultProps();
-    
-      }, [workflowView]);
+  useEffect(() => {
+    LoadDefaultProps();
+
+  }, [workflowView]);
 
   const LoadDefaultProps = async () => {
     try {
@@ -1349,7 +1349,7 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
       });
 
       const workflowViewDefault = response.data.find(item => item.id === 'defaultWorkflowParameter' || item.id === 'adm')
-  
+
       // // default view workflow
       if (workflowViewDefault) {
         setWorkflowView(workflowViewDefault.value)
@@ -1455,20 +1455,20 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
                 Calculadora de Prazos
               </button>
 
-  {(checkWorkflow ) && (
-     <>
-              <button
-                className="buttonLinkClick"
-                onClick={() => handleWorkflow()}
-                title="Clique para abrir o workflow"
-                type="submit"
-              >
-                <FcParallelTasks />
-                Workflow
-              </button>
-              <h1>versao <br/>GG<br/></h1>
-              </>
- )}
+              {(checkWorkflow) && (
+                <>
+                  <button
+                    className="buttonLinkClick"
+                    onClick={() => handleWorkflow()}
+                    title="Clique para abrir o workflow"
+                    type="submit"
+                  >
+                    <FcParallelTasks />
+                    Workflow
+                  </button> 
+                  <h1>15H<br/>22 de Dezembro</h1>
+                </>
+              )}
 
             </div>
 
@@ -1627,7 +1627,7 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
                         type="button"
                         onClick={() => saveFastEvent()}
                       >
-                        <FiSave style={{marginTop:'-3px'}} />
+                        <FiSave style={{ marginTop: '-3px' }} />
                         {!isSaving && <span>Salvar</span>}
                       </button>
                     )}
@@ -1894,9 +1894,9 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
                           {`
                               ${format(new Date(item.start), 'dd')}
                               ${` ${ConvertMonthToPtBr(
-                                new Date(item.start).getMonth() + 1,
-                                true,
-                              )} de ${new Date(item.start).getFullYear()}`}
+                            new Date(item.start).getMonth() + 1,
+                            true,
+                          )} de ${new Date(item.start).getFullYear()}`}
                               ${`(${ConvertDayOfWeekToPtBr(item.dayOfWeek)})`}
                           `}
                         </div>
@@ -2543,9 +2543,9 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
                           {`
                               ${format(new Date(item.start), 'dd')}
                               ${` ${ConvertMonthToPtBr(
-                                new Date(item.start).getMonth() + 1,
-                                true,
-                              )} de ${new Date(item.start).getFullYear()}`}
+                            new Date(item.start).getMonth() + 1,
+                            true,
+                          )} de ${new Date(item.start).getFullYear()}`}
                               ${`(${ConvertDayOfWeekToPtBr(item.dayOfWeek)})`}
                           `}
                         </div>
