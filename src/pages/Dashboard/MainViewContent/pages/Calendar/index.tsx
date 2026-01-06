@@ -2293,24 +2293,120 @@ const Calendar: React.FC = () => {
               </div>
 
               <div style={{ zIndex: 9997 }}>
-                <MultiSelect
-                  options={optionsCalendarFilter}
-                  value={multiFilter}
-                  onChange={(values: []) => {
-                    setIsLoadingSearch(showSearchList); // set reload for list search
-                    setIsLoading(!showSearchList); // set reload for full calendar
-                    setMultiFilter(values);
-                  }}
-                  labelledBy="Selecione"
-                  className="select"
-                  selectAllLabel="Selecione"
-                  overrideStrings={{
-                    allItemsAreSelected: 'Todos',
-                    selectSomeItems: 'Filtragem Rápida',
-                  }}
-                  hasSelectAll={false}
-                  disableSearch
-                />
+              
+                <div className="select" style={{ width: 350, position: 'relative', fontFamily: 'Arial' }}>
+                  <div
+                    onClick={() => setOpen(a => !a)}
+                    style={{
+                      border: '1px solid #4A90E2',
+                      borderRadius: 6,
+                      padding: '10px 12px',
+                      cursor: 'pointer',
+                      background: '#fff',
+                      fontWeight: 600,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      minWidth: 200,
+                    }}
+                  >
+                    <span style={{ textAlign: 'center', flex: 1 }}> {[
+                      ...multiFilter.map(item => item.label),
+                      appointmentSubject,
+                    ]
+                      .filter(Boolean)
+                      .join(', ') || 'Filtragem Rápida'} 
+                    </span>
+                    <span style={{ marginLeft: 8 }}>▼</span>
+                  </div>
+
+
+                  {open && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '110%',
+                        left: 0,
+                        width: '100%',
+                        background: '#fff',
+                        border: '1px solid #ddd',
+                        borderRadius: 6,
+                        boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+                        zIndex: 1000,
+                      }}
+                    >
+
+                      {optionsCalendarFilter.map(opt => (
+                        <label
+                          key={opt.value}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8,
+                            padding: '6px 12px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={multiFilter1.includes(opt.value)}
+                            onChange={() => {
+                              toggle(opt.value)
+                              setIsLoadingSearch(showSearchList)
+                              setIsLoading(!showSearchList)
+                            }}
+                          />
+                          {opt.label}
+                        </label>
+                      ))}
+
+
+                      <div style={{ padding: 12, borderTop: '1px solid #eee' }}>
+
+                        <Select
+                          placeholder="Digite ou selecione o assunto"
+                          isClearable
+                          isSearchable
+                          options={optionsSubject}
+                          value={
+                            optionsSubject.find(
+                              o => o.id === appointmentSubjectId
+                            ) ?? null
+                          }
+                          onChange={(opt: any) => {
+                            handleSubjectChange(opt);
+
+                          }}
+                          getOptionLabel={(o: any) => o.label}
+                          getOptionValue={(o: any) => String(o.id)}
+                          styles={{
+                            control: base => ({
+                              ...base,
+                              minHeight: 12,
+                              fontSize: 12,
+                            }),
+                            option: (base, state) => ({
+                              ...base,
+                              fontSize: 12,         
+                              //padding: '6px 12px',  
+                            }),
+                            menuPortal: base => ({
+                              ...base,
+                              zIndex: 99999,
+                            }),
+                          }}
+                          menuPortalTarget={document.body}
+                        />
+
+                      </div>
+
+                    </div>
+                  )}
+
+                </div>
+
+
+
               </div>
 
               <div>
