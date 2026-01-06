@@ -413,6 +413,39 @@ export const TaskBar = styled.div`
     width:100%;
     padding-bottom:6px;
 
+    
+.calendar-filter-wrapper {
+  position: relative;
+}
+
+/* Escondido por padrão */
+.assunto-integrado {
+  display: none;
+  background: #fff;
+  padding: 6px;
+  border: 1px solid #ddd;
+  border-top: none;
+}
+
+/* Quando o dropdown do MultiSelect estiver aberto */
+.calendar-filter-wrapper
+  .dropdown-content
+  + .assunto-integrado {
+  display: block;
+}
+
+/* Estilo do select */
+.assunto-select {
+  width: 100%;
+  height: 36px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+
+
+
     .icons{
       margin-top:22px;
       margin-left:10px;

@@ -93,9 +93,15 @@ import {
 import CalendarReport from './Report';
 import CalendarExportConfig from './Export';
 
+
 export interface IDefaultsProps {
   id: string;
   value: string;
+}
+
+export interface ISelectValues {
+  id: string;
+  label: string;
 }
 
 const Calendar: React.FC = () => {
@@ -138,7 +144,7 @@ const Calendar: React.FC = () => {
   const [openModalCalendarReport, setOpenModalCalendarReport] =
     useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-   const history = useHistory();
+  const history = useHistory();
   const [isLoadingSearch, setIsLoadingSearch] = useState<boolean>(false);
   const [isEndPage, setIsEndPage] = useState(false);
   const [isPagination, setIsPagination] = useState(false);
@@ -230,15 +236,20 @@ const Calendar: React.FC = () => {
   const [subjectType, setSubjectType] = useState<string>('A');
   const [principalColor, setPrincipalColor] = useState<string>('#51B749');
 
-const {permissionsSecurity, handleValidateSecurity } = useSecurity();
+  const { permissionsSecurity, handleValidateSecurity } = useSecurity();
   const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKFEX");
- const [workflowView, setWorkflowView] = useState('')
+  const [workflowView, setWorkflowView] = useState('')
 
   // DATE SELECT
   const [openModalDateSelect, setOpenModalDateSelect] =
     useState<boolean>(false);
   const [selectDateStart, setSelectDateStart] = useState<string>('');
   const calendarRef = useRef<any>(null);
+
+  const [optionsSubject, setOptionsSubject] = useState<ISelectValues[]>([]);
+  const [appointmentSubject, setAppointmentSubject] = useState<string>('');
+  const [appointmentSubjectId, setAppointmentSubjectId] = useState<string>('')
+
 
   useDelay(
     () => {
@@ -251,7 +262,7 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
   );
 
   // LOAD FULL CALENDAR
-  const LoadCalendar = useCallback(async () => {
+  const LoadCalendar = useCallback(async (subjectIdParam?: number) => {
     try {
       if (startDate == '' || endDate == '') {
         return;
@@ -267,6 +278,15 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
         });
       }
 
+    //alert(appointmentSubjectId);
+
+    const subjectId =
+      subjectIdParam !== undefined  
+        ? subjectIdParam
+        : appointmentSubjectId !== '' && appointmentSubjectId !== undefined
+          ? appointmentSubjectId
+          : 0;
+
       const response = await api.get<IFullCalendar[]>(
         '/Compromisso/ListarCalendario',
         {
@@ -274,6 +294,7 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
             startDate,
             endDate,
             filterItens,
+            subjectId,
             token,
           },
         },
@@ -303,6 +324,13 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
       }
     }
   }, [multiFilter, startDate, endDate, token, defaultView]);
+
+
+  useEffect(() => {
+    //alert('PASSO 1 ' + appointmentSubjectId);
+    LoadCalendar(Number(appointmentSubjectId));
+  }, [appointmentSubjectId]);
+
 
   // LOAD CALENDAR SEARCH VIEW
   const LoadCalendarSearch = useCallback(async () => {
@@ -1258,14 +1286,14 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
     localStorage.removeItem('@Gojur:filterMatterId')
 
 
-    if (workflowView == "LISTA" )
+    if (workflowView == "LISTA")
       history.push(`/workflowexec/list`)
-    else if (workflowView == "KANBAN" )
+    else if (workflowView == "KANBAN")
       history.push(`/workflowexec/kanban`)
 
   };
 
-   
+
 
   const buttonsCalendarLabel = {
     dayGridMonth: 'Mês',
@@ -1336,10 +1364,10 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
   );
 
 
-    useEffect(() => {
-        LoadDefaultProps();
-    
-      }, [workflowView]);
+  useEffect(() => {
+    LoadDefaultProps();
+
+  }, [workflowView]);
 
   const LoadDefaultProps = async () => {
     try {
@@ -1349,7 +1377,7 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
       });
 
       const workflowViewDefault = response.data.find(item => item.id === 'defaultWorkflowParameter' || item.id === 'adm')
-  
+
       // // default view workflow
       if (workflowViewDefault) {
         setWorkflowView(workflowViewDefault.value)
@@ -1362,6 +1390,80 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
       console.log(err);
     }
   }
+
+
+  const handleSubjectChange = (item) => {
+    if (item) {
+      setAppointmentSubject(item.label)
+      setAppointmentSubjectId(item.id)
+    }
+    else {
+      setAppointmentSubject('')
+      setAppointmentSubjectId('')
+      LoadSubject(true)
+    }
+  }
+
+
+  const [open, setOpen] = useState(false)
+  const [multiFilter1, setMultiFilter1] = useState<string[]>([])
+
+
+  const toggle = (value: string) => {
+    setMultiFilter1(prev =>
+      prev.includes(value)
+        ? prev.filter(v => v !== value)
+        : [...prev, value]
+    )
+  }
+
+  useEffect(() => {
+    const mapped = optionsCalendarFilter
+      .filter(opt => multiFilter1.includes(opt.value))
+      .map(opt => ({
+        value: opt.value,
+        label: opt.label,
+      }))
+
+    setMultiFilter(mapped)
+  }, [multiFilter1])
+
+
+  const LoadSubject = useCallback(async (reload = false, termSearch = '') => {
+    try {
+      if (termSearch === '') {
+        termSearch = appointmentSubject;
+      }
+
+      if (reload) {
+        termSearch = '';
+      }
+
+      const response = await api.post(`/Assunto/Listar`, {
+        description: termSearch,
+        token: token
+      });
+
+      const subjectList: ISelectValues[] = [];
+      response.data.map(item => {
+        return subjectList.push({
+          id: item.id,
+          label: item.value
+        })
+      })
+
+      setOptionsSubject(subjectList);
+    }
+    catch (err) {
+      console.log(err);
+    }
+  }, [appointmentSubject])
+
+
+  useDelay(() => {
+    LoadSubject()
+
+  }, [appointmentSubject], 1000)
 
 
   return (
@@ -1424,26 +1526,130 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
                 title="Pesquisa de compromissos por assunto, descrição e observação"
               />
 
-              <div style={{ zIndex: 9997 }}>
-                <MultiSelect
-                  options={optionsCalendarFilter}
-                  value={multiFilter}
-                  onChange={(values: []) => {
-                    setIsLoadingSearch(showSearchList); // set reload for list search
-                    setIsLoading(!showSearchList); // set reload for full calendar
-                    setMultiFilter(values);
-                  }}
-                  labelledBy="Selecione"
-                  className="select"
-                  selectAllLabel="Selecione"
-                  overrideStrings={{
-                    allItemsAreSelected: 'Todos',
-                    selectSomeItems: 'Filtragem Rápida',
-                  }}
-                  hasSelectAll={false}
-                  disableSearch
-                />
+              <div className="calendar-filter-wrapper" style={{ zIndex: 9997 }}>
+
+                <div className="select" style={{ width: 350, position: 'relative', fontFamily: 'Arial' }}>
+                  <div
+                    onClick={() => setOpen(a => !a)}
+                    style={{
+                      border: '1px solid #4A90E2',
+                      borderRadius: 6,
+                      padding: '10px 12px',
+                      cursor: 'pointer',
+                      background: '#fff',
+                      fontWeight: 600,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      minWidth: 200,
+                    }}
+                  >
+                    <span style={{ textAlign: 'center', flex: 1 }}> {[
+                      ...multiFilter.map(item => item.label),
+                      appointmentSubject,
+                    ]
+                      .filter(Boolean)
+                      .join(', ') || 'Filtragem Rápida'} 
+                    </span>
+                    <span style={{ marginLeft: 8 }}>▼</span>
+                  </div>
+
+
+                  {open && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '110%',
+                        left: 0,
+                        width: '100%',
+                        background: '#fff',
+                        border: '1px solid #ddd',
+                        borderRadius: 6,
+                        boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+                        zIndex: 1000,
+                      }}
+                    >
+
+                      {optionsCalendarFilter.map(opt => (
+                        <label
+                          key={opt.value}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8,
+                            padding: '6px 12px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={multiFilter1.includes(opt.value)}
+                            onChange={() => {
+                              toggle(opt.value)
+                              setIsLoadingSearch(showSearchList)
+                              setIsLoading(!showSearchList)
+                            }}
+                          />
+                          {opt.label}
+                        </label>
+                      ))}
+
+
+                      <div style={{ padding: 12, borderTop: '1px solid #eee' }}>
+
+                        <Select
+                          placeholder="Digite ou selecione o assunto"
+                          isClearable
+                          isSearchable
+                          options={optionsSubject}
+                          value={
+                            optionsSubject.find(
+                              o => o.id === appointmentSubjectId
+                            ) ?? null
+                          }
+                          onChange={(opt: any) => {
+                            handleSubjectChange(opt);
+
+                          }}
+                          getOptionLabel={(o: any) => o.label}
+                          getOptionValue={(o: any) => String(o.id)}
+                          styles={{
+                            control: base => ({
+                              ...base,
+                              minHeight: 12,
+                              fontSize: 12,
+                            }),
+                            option: (base, state) => ({
+                              ...base,
+                              fontSize: 12,         
+                              //padding: '6px 12px',  
+                            }),
+                            menuPortal: base => ({
+                              ...base,
+                              zIndex: 99999,
+                            }),
+                          }}
+                          menuPortalTarget={document.body}
+                        />
+
+                      </div>
+
+                    </div>
+                  )}
+
+                  {/*
+                  <div style={{ marginTop: 12, fontSize: 12 }}>
+                    <div><strong>Filtros:</strong> {multiFilter1.join(', ') || 'nenhum'}</div>
+                    <div><strong>Assunto:</strong> {appointmentSubject || 'nenhum'}</div>
+                  </div>
+                  */}
+
+                </div>
+
+
               </div>
+
+
 
               <button
                 className="buttonLinkClick"
@@ -1455,19 +1661,19 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
                 Calculadora de Prazos
               </button>
 
-  {(checkWorkflow ) && (
-     <>
-              <button
-                className="buttonLinkClick"
-                onClick={() => handleWorkflow()}
-                title="Clique para abrir o workflow"
-                type="submit"
-              >
-                <FcParallelTasks />
-                Workflow
-              </button>
-              </>
- )}
+              {(checkWorkflow) && (
+                <>
+                  <button
+                    className="buttonLinkClick"
+                    onClick={() => handleWorkflow()}
+                    title="Clique para abrir o workflow"
+                    type="submit"
+                  >
+                    <FcParallelTasks />
+                    Workflow
+                  </button>
+                </>
+              )}
 
             </div>
 
@@ -1626,7 +1832,7 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
                         type="button"
                         onClick={() => saveFastEvent()}
                       >
-                        <FiSave style={{marginTop:'-3px'}} />
+                        <FiSave style={{ marginTop: '-3px' }} />
                         {!isSaving && <span>Salvar</span>}
                       </button>
                     )}
@@ -1893,9 +2099,9 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
                           {`
                               ${format(new Date(item.start), 'dd')}
                               ${` ${ConvertMonthToPtBr(
-                                new Date(item.start).getMonth() + 1,
-                                true,
-                              )} de ${new Date(item.start).getFullYear()}`}
+                            new Date(item.start).getMonth() + 1,
+                            true,
+                          )} de ${new Date(item.start).getFullYear()}`}
                               ${`(${ConvertDayOfWeekToPtBr(item.dayOfWeek)})`}
                           `}
                         </div>
@@ -2542,9 +2748,9 @@ const {permissionsSecurity, handleValidateSecurity } = useSecurity();
                           {`
                               ${format(new Date(item.start), 'dd')}
                               ${` ${ConvertMonthToPtBr(
-                                new Date(item.start).getMonth() + 1,
-                                true,
-                              )} de ${new Date(item.start).getFullYear()}`}
+                            new Date(item.start).getMonth() + 1,
+                            true,
+                          )} de ${new Date(item.start).getFullYear()}`}
                               ${`(${ConvertDayOfWeekToPtBr(item.dayOfWeek)})`}
                           `}
                         </div>
