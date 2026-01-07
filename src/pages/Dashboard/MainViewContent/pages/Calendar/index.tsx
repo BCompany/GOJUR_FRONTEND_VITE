@@ -46,6 +46,7 @@ import { FaCalculator } from 'react-icons/fa';
 import { FcAbout, FcSearch, FcParallelTasks } from 'react-icons/fc';
 import { useMenuHamburguer } from 'context/menuHamburguer';
 import MenuHamburguer from 'components/MenuHamburguer';
+import FilterCalendar from 'components/FilterCalendar'
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import { useToast } from 'context/toast';
@@ -249,7 +250,7 @@ const Calendar: React.FC = () => {
   const [optionsSubject, setOptionsSubject] = useState<ISelectValues[]>([]);
   const [appointmentSubject, setAppointmentSubject] = useState<string>('');
   const [appointmentSubjectId, setAppointmentSubjectId] = useState<string>('')
-
+  const [totalPeriod, setTotalPeriod] = useState<number>(0)
 
   useDelay(
     () => {
@@ -278,7 +279,6 @@ const Calendar: React.FC = () => {
         });
       }
 
-    //alert(appointmentSubjectId);
 
     const subjectId =
       subjectIdParam !== undefined  
@@ -303,6 +303,22 @@ const Calendar: React.FC = () => {
       setCalendarList(response.data);
       setIsLoading(false);
       localStorage.removeItem('@GoJur:DeadLineJson');
+
+
+      const viewStart = new Date(`${startDate}T00:00:00`)
+      const viewEnd = new Date(`${endDate}T00:00:00`)
+
+      const total = response.data.filter(item => {
+        const start = new Date(item.start)
+        const end = item.end ? new Date(item.end) : start
+
+        return start < viewEnd && end >= viewStart
+      }).length
+
+          
+      setTotalPeriod(total)
+
+
     } catch (err: any) {
       setIsLoading(false);
 
@@ -365,7 +381,7 @@ const Calendar: React.FC = () => {
         },
       },
     );
-
+  
     setTotalPageCount(
       response.data.length == 0 ? 0 : response.data[0].totalPage,
     );
@@ -1267,6 +1283,7 @@ const Calendar: React.FC = () => {
 
     setStartDate(sDate);
     setEndDate(eDate);
+    
   };
 
   const handleOpenDeadLineCalculator = () => {
@@ -1466,6 +1483,10 @@ const Calendar: React.FC = () => {
   }, [appointmentSubject], 1000)
 
 
+//const handleEventsSet = (events: EventApi[]) => {
+//  console.log('Total de eventos visíveis:', events.length)
+//}
+
   return (
     <>
       {!isMOBILE && (
@@ -1484,6 +1505,11 @@ const Calendar: React.FC = () => {
           )}
 
           <HeaderPage />
+
+
+          <div className='total'>
+            <span>Total de Compromisso(s): {totalPeriod}</span>
+          </div>
 
           <TaskBar>
             <div>
@@ -1528,124 +1554,19 @@ const Calendar: React.FC = () => {
 
               <div className="calendar-filter-wrapper" style={{ zIndex: 9997 }}>
 
-                <div className="select" style={{ width: 350, position: 'relative', fontFamily: 'Arial' }}>
-                  <div
-                    onClick={() => setOpen(a => !a)}
-                    style={{
-                      border: '1px solid #4A90E2',
-                      borderRadius: 6,
-                      padding: '10px 12px',
-                      cursor: 'pointer',
-                      background: '#fff',
-                      fontWeight: 600,
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      minWidth: 200,
-                    }}
-                  >
-                    <span style={{ textAlign: 'center', flex: 1 }}> {[
-                      ...multiFilter.map(item => item.label),
-                      appointmentSubject,
-                    ]
-                      .filter(Boolean)
-                      .join(', ') || 'Filtragem Rápida'} 
-                    </span>
-                    <span style={{ marginLeft: 8 }}>▼</span>
-                  </div>
-
-
-                  {open && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '110%',
-                        left: 0,
-                        width: '100%',
-                        background: '#fff',
-                        border: '1px solid #ddd',
-                        borderRadius: 6,
-                        boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
-                        zIndex: 1000,
-                      }}
-                    >
-
-                      {optionsCalendarFilter.map(opt => (
-                        <label
-                          key={opt.value}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 8,
-                            padding: '6px 12px',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={multiFilter1.includes(opt.value)}
-                            onChange={() => {
-                              toggle(opt.value)
-                              setIsLoadingSearch(showSearchList)
-                              setIsLoading(!showSearchList)
-                            }}
-                          />
-                          {opt.label}
-                        </label>
-                      ))}
-
-
-                      <div style={{ padding: 12, borderTop: '1px solid #eee' }}>
-
-                        <Select
-                          placeholder="Digite ou selecione o assunto"
-                          isClearable
-                          isSearchable
-                          options={optionsSubject}
-                          value={
-                            optionsSubject.find(
-                              o => o.id === appointmentSubjectId
-                            ) ?? null
-                          }
-                          onChange={(opt: any) => {
-                            handleSubjectChange(opt);
-
-                          }}
-                          getOptionLabel={(o: any) => o.label}
-                          getOptionValue={(o: any) => String(o.id)}
-                          styles={{
-                            control: base => ({
-                              ...base,
-                              minHeight: 12,
-                              fontSize: 12,
-                            }),
-                            option: (base, state) => ({
-                              ...base,
-                              fontSize: 12,         
-                              //padding: '6px 12px',  
-                            }),
-                            menuPortal: base => ({
-                              ...base,
-                              zIndex: 99999,
-                            }),
-                          }}
-                          menuPortalTarget={document.body}
-                        />
-
-                      </div>
-
-                    </div>
-                  )}
-
-                  {/*
-                  <div style={{ marginTop: 12, fontSize: 12 }}>
-                    <div><strong>Filtros:</strong> {multiFilter1.join(', ') || 'nenhum'}</div>
-                    <div><strong>Assunto:</strong> {appointmentSubject || 'nenhum'}</div>
-                  </div>
-                  */}
-
-                </div>
-
+                <FilterCalendar
+                  optionsCalendarFilter={optionsCalendarFilter}
+                  multiFilter={multiFilter}
+                  selectedFilterValues={multiFilter1}
+                  onToggleFilter={toggle}
+                  optionsSubject={optionsSubject}
+                  appointmentSubjectId={appointmentSubjectId}
+                  appointmentSubject={appointmentSubject}
+                  onSubjectChange={handleSubjectChange}
+                  setIsLoading={setIsLoading}
+                  setIsLoadingSearch={setIsLoadingSearch}
+                  showSearchList={showSearchList}
+                />
 
               </div>
 
@@ -1677,6 +1598,7 @@ const Calendar: React.FC = () => {
 
             </div>
 
+
             <div className="buttonHamburguer">
               <button
                 type="button"
@@ -1691,6 +1613,7 @@ const Calendar: React.FC = () => {
 
               {isMenuOpen ? <MenuHamburguer name="calendarOptions" /> : null}
             </div>
+
           </TaskBar>
 
           <Content>
@@ -2294,116 +2217,21 @@ const Calendar: React.FC = () => {
 
               <div style={{ zIndex: 9997 }}>
               
-                <div className="select" style={{ width: 350, position: 'relative', fontFamily: 'Arial' }}>
-                  <div
-                    onClick={() => setOpen(a => !a)}
-                    style={{
-                      border: '1px solid #4A90E2',
-                      borderRadius: 6,
-                      padding: '10px 12px',
-                      cursor: 'pointer',
-                      background: '#fff',
-                      fontWeight: 600,
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      minWidth: 200,
-                    }}
-                  >
-                    <span style={{ textAlign: 'center', flex: 1 }}> {[
-                      ...multiFilter.map(item => item.label),
-                      appointmentSubject,
-                    ]
-                      .filter(Boolean)
-                      .join(', ') || 'Filtragem Rápida'} 
-                    </span>
-                    <span style={{ marginLeft: 8 }}>▼</span>
-                  </div>
+             
 
-
-                  {open && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '110%',
-                        left: 0,
-                        width: '100%',
-                        background: '#fff',
-                        border: '1px solid #ddd',
-                        borderRadius: 6,
-                        boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
-                        zIndex: 1000,
-                      }}
-                    >
-
-                      {optionsCalendarFilter.map(opt => (
-                        <label
-                          key={opt.value}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 8,
-                            padding: '6px 12px',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={multiFilter1.includes(opt.value)}
-                            onChange={() => {
-                              toggle(opt.value)
-                              setIsLoadingSearch(showSearchList)
-                              setIsLoading(!showSearchList)
-                            }}
-                          />
-                          {opt.label}
-                        </label>
-                      ))}
-
-
-                      <div style={{ padding: 12, borderTop: '1px solid #eee' }}>
-
-                        <Select
-                          placeholder="Digite ou selecione o assunto"
-                          isClearable
-                          isSearchable
-                          options={optionsSubject}
-                          value={
-                            optionsSubject.find(
-                              o => o.id === appointmentSubjectId
-                            ) ?? null
-                          }
-                          onChange={(opt: any) => {
-                            handleSubjectChange(opt);
-
-                          }}
-                          getOptionLabel={(o: any) => o.label}
-                          getOptionValue={(o: any) => String(o.id)}
-                          styles={{
-                            control: base => ({
-                              ...base,
-                              minHeight: 12,
-                              fontSize: 12,
-                            }),
-                            option: (base, state) => ({
-                              ...base,
-                              fontSize: 12,         
-                              //padding: '6px 12px',  
-                            }),
-                            menuPortal: base => ({
-                              ...base,
-                              zIndex: 99999,
-                            }),
-                          }}
-                          menuPortalTarget={document.body}
-                        />
-
-                      </div>
-
-                    </div>
-                  )}
-
-                </div>
+              <FilterCalendar
+                  optionsCalendarFilter={optionsCalendarFilter}
+                  multiFilter={multiFilter}
+                  selectedFilterValues={multiFilter1}
+                  onToggleFilter={toggle}
+                  optionsSubject={optionsSubject}
+                  appointmentSubjectId={appointmentSubjectId}
+                  appointmentSubject={appointmentSubject}
+                  onSubjectChange={handleSubjectChange}
+                  setIsLoading={setIsLoading}
+                  setIsLoadingSearch={setIsLoadingSearch}
+                  showSearchList={showSearchList}
+                />
 
 
 

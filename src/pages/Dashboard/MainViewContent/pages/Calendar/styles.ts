@@ -8,6 +8,15 @@ interface SearchProps {
 export const Container = styled.div`
   height:100%;
   overflow:auto;
+
+ .total {
+    @media (min-width: 480px) { flex:15% }
+    margin-top:0px;
+    text-align:center;
+    color:var(--blue-twitter);
+    font-size:0.675rem;
+  }
+
 `;
 
 
@@ -51,6 +60,7 @@ export const Content = styled.div`
     width:15rem;
     border-radius:25px;
   }
+
 
   #hamburguerMenu {
     flex:1;
@@ -413,7 +423,8 @@ export const TaskBar = styled.div`
     width:100%;
     padding-bottom:6px;
 
-    
+
+
 .calendar-filter-wrapper {
   position: relative;
 }
