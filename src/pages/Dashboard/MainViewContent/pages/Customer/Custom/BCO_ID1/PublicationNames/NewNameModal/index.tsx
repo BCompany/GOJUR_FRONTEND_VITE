@@ -411,7 +411,7 @@ const NewNameModal = (props) => {
             <br />
             <input
               required
-              maxLength={100}
+              maxLength={200}
               type="text"
               style={{backgroundColor: 'white'}}
               name="descricao"
@@ -502,7 +502,7 @@ const NewNameModal = (props) => {
             Variação
             <br />
             <input
-              maxLength={100}
+              maxLength={200}
               placeholder='Digite a variação, pressione Enter para confirmar'
               type="text"
               style={{backgroundColor: 'white', marginBottom:"10px"}}
@@ -536,7 +536,7 @@ const NewNameModal = (props) => {
             Exclusão
             <br />
             <input
-              maxLength={100}
+              maxLength={200}
               placeholder='Digite a exclusão, pressione Enter para confirmar'
               type="text"
               style={{backgroundColor: 'white', marginBottom:"10px"}}
