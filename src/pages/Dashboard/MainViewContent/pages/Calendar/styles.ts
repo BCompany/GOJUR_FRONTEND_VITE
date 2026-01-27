@@ -8,6 +8,15 @@ interface SearchProps {
 export const Container = styled.div`
   height:100%;
   overflow:auto;
+
+ .total {
+    @media (min-width: 480px) { flex:15% }
+    margin-top:0px;
+    text-align:center;
+    color:var(--blue-twitter);
+    font-size:0.675rem;
+  }
+
 `;
 
 
@@ -51,6 +60,7 @@ export const Content = styled.div`
     width:15rem;
     border-radius:25px;
   }
+
 
   #hamburguerMenu {
     flex:1;
@@ -412,6 +422,40 @@ export const TaskBar = styled.div`
     background-color:var(--white);
     width:100%;
     padding-bottom:6px;
+
+
+
+.calendar-filter-wrapper {
+  position: relative;
+}
+
+/* Escondido por padrão */
+.assunto-integrado {
+  display: none;
+  background: #fff;
+  padding: 6px;
+  border: 1px solid #ddd;
+  border-top: none;
+}
+
+/* Quando o dropdown do MultiSelect estiver aberto */
+.calendar-filter-wrapper
+  .dropdown-content
+  + .assunto-integrado {
+  display: block;
+}
+
+/* Estilo do select */
+.assunto-select {
+  width: 100%;
+  height: 36px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+
+
 
     .icons{
       margin-top:22px;
