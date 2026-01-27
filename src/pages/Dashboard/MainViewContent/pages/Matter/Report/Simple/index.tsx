@@ -33,7 +33,21 @@ import { useForm } from 'react-hook-form';
 import { Container, Content, Form, ItemList, TollBar } from './styles';
 import { ISelectData, IDefaultsProps, IMatterReportData, ISubject, ICustomerGroup, ICustomerPosition, IAutoCompleteData, IAutoCompleteCourtData, IOpposing, ILawyer, ILegalCause, IMatterStatus, IMatterSolution, IMatterProbability, ICourt, IMatterPhase, ILegalNature, IMatterEventType, IMatterDemandType, IResponsible, IAdvisoryType } from '../../../Interfaces/IMatter';
 
+export enum ComboSelectType {
+  judicialAction,
+  legalNature,
+  processualStage,
+  matterStatus,
+  matterDecision,
+  probablySuccess,
+  advisororyType,
+  rito,
+}
 
+export interface ValuesDTO {
+  id: string;
+  value: string;
+}
 
 const MatterReportSimple: React.FC = () => {
 
@@ -199,6 +213,11 @@ const [idReportGenerate, setIdReportGenerate] = useState<number>(0)
 const [printHudeData, setPrintHudeData] = useState<boolean>(false);
 const [showReportOpenFileModal, setShowReportOpenFileModal] = useState<boolean>(false);
 const [reportLink, setReportLink] = useState<string>('');
+const [currentListData, setCurrentListData] = useState<ComboSelectType>({} as ComboSelectType)
+const [ritoList, setRitoList] = useState<ISelectData[]>([])
+const [selectFilterTerm, setSelectFilterTerm] = useState<string>('')
+const [matterRitoId, setMatterRitoId] = useState<number>()
+const [ritoReportList, setRitoReportList] = useState<ISelectData[]>([]);
 
 
 // When exists report id verify if is avaiable every 5 seconds
@@ -443,6 +462,14 @@ useEffect(() => {
   LoadMatterDemandType()
   LoadResponsible()
   LoadAdvisoryType()
+
+  const loadRito = async () => {
+    const result = await ListRito(0, 50, '')
+    setRitoList(result)
+  }
+
+  loadRito()
+
 },[])
 
 
@@ -1290,6 +1317,19 @@ const LoadResponsible = async (userName?: string) => {
     })
 
 
+    console.log(ritoReportList);
+    let ritoListItens = 'matterRito=';
+    ritoReportList.map((rito) => {
+      return ritoListItens += `${rito.id};`
+    })
+
+    let ritoListItensDesc = '';
+    ritoReportList.map((rito) => {
+      return ritoListItensDesc += `${rito.label} ,`
+    })
+
+
+
     let stateListItens = 'state=';
     stateReportList.map((state) => {
       return stateListItens += `${state.id}-`
@@ -1334,6 +1374,8 @@ const LoadResponsible = async (userName?: string) => {
       matterDemandTypeDesc: matterDemandTypeListItensDesc,
       responsibleId: responsibleListItens,
       responsibleDesc: responsibleListItensDesc,
+      ritoId: ritoListItens,
+      ritoDesc: ritoListItensDesc,
       matterMarkers: markersListItens,
       matterMarkersDesc: markersListItensDesc,
       matterTitle,
@@ -1378,7 +1420,7 @@ const LoadResponsible = async (userName?: string) => {
       description: err.response.data.Message
     })
   }
-},[addToast, customerReportList, customerGroupReportList, customerPositionReportList, opposingReportList, lawyerReportList, legalCauseReportList, matterStatusReportList, matterSolutionReportList, matterProbabilityReportList, courtReportList, matterPhaseReportList, legalNatureReportList, stateReportList, matterEventTypeReportList, matterDemandTypeReportList, responsibleReportList, markersReportList, reportType, hudeDataWarning, printHudeData, customerId, customerDesc, customerGroupId, customerGroupDesc, customerPositionId, customerPositionDesc, opposingId, opposingDesc, lawyerId, lawyerDesc, legalCauseId, legalCauseDesc, matterStatusId, matterStatusDesc, matterSolutionId, matterSolutionDesc, matterProbabilityId, matterProbabilityDesc, courtId, courtDesc, federalUnitName, matterPhaseId, matterPhaseDesc, legalNatureId, legalNatureDesc, matterAdvisoryTypeId, matterAdvisoryTypeDesc, matterEventTypeId, matterEventTypeDesc, matterDemandTypeId, matterDemandTypeDesc, responsibleId, responsibleDesc, matterTitle, calendarEventQty, matterEventQty, dtaEventStart, dtaEventEnd, daysWithoutQty, daysWithQty, dtaDistributionStart, dtaDistributionEnd, dtaEntradaStart, dtaEntradaEnd, dtaEncerramentoStart, dtaEncerramentoEnd, matterType, stateId, stateDesc, privateEvent, orderBy, reportLayout]); 
+},[addToast, customerReportList, customerGroupReportList, customerPositionReportList, opposingReportList, lawyerReportList, legalCauseReportList, matterStatusReportList, matterSolutionReportList, matterProbabilityReportList, courtReportList, matterPhaseReportList, legalNatureReportList, stateReportList, matterEventTypeReportList, matterDemandTypeReportList, responsibleReportList, ritoReportList, markersReportList, reportType, hudeDataWarning, printHudeData, customerId, customerDesc, customerGroupId, customerGroupDesc, customerPositionId, customerPositionDesc, opposingId, opposingDesc, lawyerId, lawyerDesc, legalCauseId, legalCauseDesc, matterStatusId, matterStatusDesc, matterSolutionId, matterSolutionDesc, matterProbabilityId, matterProbabilityDesc, courtId, courtDesc, federalUnitName, matterPhaseId, matterPhaseDesc, legalNatureId, legalNatureDesc, matterAdvisoryTypeId, matterAdvisoryTypeDesc, matterEventTypeId, matterEventTypeDesc, matterDemandTypeId, matterDemandTypeDesc, responsibleId, responsibleDesc, matterTitle, calendarEventQty, matterEventQty, dtaEventStart, dtaEventEnd, daysWithoutQty, daysWithQty, dtaDistributionStart, dtaDistributionEnd, dtaEntradaStart, dtaEntradaEnd, dtaEncerramentoStart, dtaEncerramentoEnd, matterType, stateId, stateDesc, privateEvent, orderBy, reportLayout]); 
 
 
 
@@ -1885,7 +1927,7 @@ const handleRemoveItemMatterDemandType = (matterDemandType) => {
 
 
 const handleResponsibleSelected = (item) => { 
-    
+ 
   if (item){
     setResponsibleValue(item.label)
     setResponsibleDesc(item.label)
@@ -1908,12 +1950,32 @@ const handleListItemResponsible = (responsible) => {
   setResponsibleReportList(previousValues => [...previousValues, responsible])
 }
 
+
+
+const handleListItemRito = (rito) => {
+
+  // if is already add on list return false
+  const existItem = ritoReportList.filter(item => item.id === rito.id);
+  if (existItem.length > 0){
+    return;
+  }
+
+  setRitoReportList(previousValues => [...previousValues, rito])
+}
+
+
 const handleRemoveItemResponsible = (responsible) => {
 
   const responsibleListUpdate = responsibleReportList.filter(item => item.id != responsible.id);
   setResponsibleReportList(responsibleListUpdate)
 }
+ 
+ 
+const handleRemoveItemRito = (rito) => {
 
+  const ritoListUpdate = ritoReportList.filter(item => item.id != rito.id);
+  setRitoReportList(ritoListUpdate)
+}
 
 const handleListIteMarkers = (event) => {
 
@@ -1941,6 +2003,79 @@ const handleRemoveItemMarkers = (markers) => {
   const markersListUpdate = markersReportList.filter(item => item != markers);
   setMarkersReportList(markersListUpdate)
 }
+
+
+function ConvertList(list: ValuesDTO[] = []){
+
+    const listSelectGroup: ISelectData[] = []
+
+    list.map(item => {
+        listSelectGroup.push({
+            id: item.id,
+            label: item.value
+        })
+
+        return;
+    })
+
+    return listSelectGroup
+}
+
+
+async function ListRito(page: number, rows: number, filterClause: string) {
+    const token = localStorage.getItem('@GoJur:token');
+
+    const response = await api.get<ValuesDTO[]>('/Rito/ListarCombo', {
+        params: {filterClause, rows, token}
+    })
+
+    return ConvertList(response.data);
+}
+
+
+  const handleReactInputText = useCallback((identity: ComboSelectType, term: string) => {
+
+    setSelectFilterTerm(term)
+    setCurrentListData(identity)
+
+  }, [])
+
+
+   const handleReactSelectChange = async (identity: ComboSelectType, select) => {
+  
+      setCurrentListData(identity)
+  
+      if (select) {
+        //setLoadingCombo(true)
+  
+       
+        if (identity == ComboSelectType.rito) {
+          setMatterRitoId(0)
+          handleListItemRito(select)
+        }
+  
+        //setLoadingCombo(false)
+      }
+      else {
+        // Reload filter with all first 50 itens - by combo selected
+        await RefreshComboSelect(identity, '');
+
+      }
+    }
+  
+
+
+     const RefreshComboSelect = async (identity: ComboSelectType, filterTerm: string) => {
+        //setLoadingCombo(true)
+    
+        if (identity === ComboSelectType.rito) {
+          setMatterRitoId(0)
+          const response = await ListRito(0, 50, filterTerm);
+          setRitoList(response)
+        }
+
+        //setLoadingCombo(false)
+      }
 
 
   return (
@@ -2522,7 +2657,48 @@ const handleRemoveItemMarkers = (markers) => {
             </div>
 
 
+
+
+
             <div style={{ width:"99%", display:"inline-block", marginLeft:"1%"}}>
+
+                  <AutoCompleteSelect className="selectOpposing">
+        
+                    Rito
+                    <Select
+                        isSearchable
+                        isClearable
+                        //isLoading={currentListData === ComboSelectType.rito && isLoadingCombo}
+                        options={ritoList}
+                        value={ritoList.filter(options => Number(options.id) == matterRitoId)}
+                        onInputChange={(term) => handleReactInputText(ComboSelectType.rito, term)}
+                        onChange={(item) => handleReactSelectChange(ComboSelectType.rito, item)}
+                        placeholder=""
+                        loadingMessage={loadingMessage}
+                        noOptionsMessage={noOptionsMessage}
+                        styles={selectStyles}
+                      />
+                  </AutoCompleteSelect>   
+
+                  <ItemList>
+
+                    {ritoReportList.map(item => {
+                      return (
+                        <span>
+                          {item.label}
+                          <p className="buttonLinkClick" onClick={() => handleRemoveItemRito(item)}> 
+                            Excluir
+                          </p> 
+                        </span>
+                      )
+                    })} 
+
+                  </ItemList>
+
+            
+
+
+
               <div style={{display:"flex", marginLeft:"1%", marginTop:"1%"}}>
                 <label htmlFor="descricao" style={{width:"100%"}}>
                   Marcadores
@@ -2884,6 +3060,7 @@ const handleRemoveItemMarkers = (markers) => {
                     <option value="nom_ClientePrincipal">Cliente</option>
                     <option value="nom_ContrarioPrincipal">Contrário</option>
                     <option value="dta_Acompanhamento desc">Acompanhamento mais recente</option>
+                    <option value="dta_Acompanhamento asc">Acompanhamento mais antigo</option>
                     <option value="cod_PastaFmt">Pasta</option>
                     <option value="nom_Forum">Fórum / Vara</option>
 
