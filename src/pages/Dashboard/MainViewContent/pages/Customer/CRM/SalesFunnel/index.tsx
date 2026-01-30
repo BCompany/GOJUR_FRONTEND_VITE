@@ -155,11 +155,13 @@ const SalesFunnel = () => {
 
   useEffect(() => {
     if (salesFunnelId > 0){
-      LoadSalesFunnelSteps()
+      LoadSalesFunnelSteps() 
       ListBusinessCustomer()
     }
+
   }, [salesFunnelId])
 
+  
 
   useEffect(() => {
     if (!isLoading){
@@ -226,6 +228,15 @@ const SalesFunnel = () => {
     const salesFunnelDefault  = response.data.filter(row => row.isDefault == 'S')
     if (salesFunnelDefault.length > 0) {
       setSalesFunnelId(Number(salesFunnelDefault[0].id))
+    }
+
+    const params = new URLSearchParams(location.search)
+    const paramSalesFunnelId = params.get('salesFunnelId')
+    
+    if ( paramSalesFunnelId !== null) {
+  
+      setSalesFunnelId(Number(paramSalesFunnelId))
+
     }
 
     // When is edit by sales funnel redirect
@@ -518,14 +529,20 @@ const SalesFunnel = () => {
   
   const handleClickCard = (businessId: number) => {
     localStorage.setItem('@Gojur:funnelRedirect', 'S')
-    history.push(`../../customer/business/edit/${  businessId}`)
+
+    sessionStorage.setItem( 'salesFunnelId', salesFunnelId.toString())
+
+    history.push(`../../customer/business/edit/${businessId}?salesFunnelId=${  salesFunnelId}`)
+
     handleCloseMenuCard()
   }
 
 
   const handleEditCard = () => {
     localStorage.setItem('@Gojur:funnelRedirect', 'S')
-    history.push(`../../customer/business/edit/${  businessCardId}`)
+
+    history.push(`../../customer/business/edit/${  businessCardId}?salesFunnelId=${  salesFunnelId}`)
+
     handleCloseMenuCard()
   }
 
@@ -569,8 +586,9 @@ const SalesFunnel = () => {
     if (funnelStep){
       localStorage.setItem('@Gojur:funnelStep', JSON.stringify(funnelStep))
     }
+    
+    history.push(`../../customer/business/edit/0?salesFunnelId=${salesFunnelId}`)
 
-    history.push(`../../customer/business/edit/0`)
   }
 
 
