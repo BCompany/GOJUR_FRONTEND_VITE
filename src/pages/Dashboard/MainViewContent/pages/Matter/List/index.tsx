@@ -2592,7 +2592,7 @@ const getTextColor = (hex) => {
             useCheckBoxConfirm
             caller="matterList"
             message="ATENÇÃO: Confirmando a exclusão, todos os dados associados ao processo, inclusive acompanhamentos e publicações, serão excluídos(as).
-            Movimentos financeiros, faturas e compromissos associados a este processo serão desassociados e mantidos. ?"
+            Movimentos financeiros, faturas, workflows e compromissos associados a este processo serão desassociados e mantidos. ?"
           />
 
         )}
