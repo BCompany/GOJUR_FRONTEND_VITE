@@ -456,7 +456,7 @@ export default function BusinessCardEdit( ) {
       description: `O Negócio foi salvo com sucesso`
     });
     
-    handleCancel();
+    //handleCancel();
     handleTriggerCaller('')
     setisSaving(false);
   }
@@ -497,7 +497,7 @@ export default function BusinessCardEdit( ) {
   const handleCancel = () => {
     
     console.log('MatterRedirect: ', matterRedirect)
-    
+
     if (matterRedirect){
       history.push('../../../matter/list')
     }
@@ -511,7 +511,11 @@ export default function BusinessCardEdit( ) {
       }
     }
     else{
-      history.push(`../../../CRM/salesFunnel/`)
+    
+      const params = new URLSearchParams(location.search)
+      const paramSalesFunnelId = params.get('salesFunnelId')
+
+      history.push(`../../../CRM/salesFunnel?salesFunnelId=${paramSalesFunnelId}` )
     }
   }
 
