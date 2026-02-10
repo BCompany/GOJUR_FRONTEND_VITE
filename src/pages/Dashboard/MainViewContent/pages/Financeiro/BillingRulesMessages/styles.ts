@@ -195,7 +195,7 @@ export const Content = styled.div`
   align-items: center;
   gap: 12px; /* espaço entre label e input */
    margin-top: 12px;
-    margin-left: -7px;
+    //margin-left: -7px;
 }
 
 .form-row label {
@@ -227,7 +227,7 @@ export const Content = styled.div`
   .autoComplete{
     width: 92.5%;
     margin-top: 12px;
-    margin-left: -7px;
+    //margin-left: -7px;
   }
 
   table{
@@ -351,7 +351,7 @@ export const ModalDeleteOptions = styled.div`
   }
 `;
 
-export const OverlayFinancial = styled.div `
+export const OverlayFinancial = styled.div`
     background-color: rgba(0, 0, 0, 0.4);
     position: absolute;
     top: 0;
@@ -438,4 +438,33 @@ export const Editor1 = styled.div`
   }
 
 `;
+
+
+
+export const FormCenter = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+`;
+
+export const FormCard = styled.div`
+  width: 60%;
+  min-width: 700px;
+  background-color: rgba(255, 255, 255, 0.3);
+  padding: 1.5rem 2rem;
+  border-radius: 0.25rem;
+  box-shadow: 1px 1px 4px 0.5px rgba(0,0,0,0.15);
+`;
+
+export const FormTitle = styled.h5`
+  margin-bottom: 1rem;
+`;
+
+export const FormActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+`;
+
+
 

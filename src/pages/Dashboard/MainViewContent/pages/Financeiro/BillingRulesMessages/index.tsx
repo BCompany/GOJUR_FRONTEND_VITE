@@ -17,10 +17,11 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import api from 'services/api';
 import { ImMenu3, ImMenu4 } from 'react-icons/im';
 import { GoDash, GoPlus } from 'react-icons/go';
+import { MdBlock } from 'react-icons/md';
 import { FiTrash, FiEdit, FiX, FiMail, FiSave } from 'react-icons/fi';
 import { FaRegTimesCircle, FaCheck, FaFileContract, FaFileInvoiceDollar, FaHandshake, FaWhatsapp } from 'react-icons/fa';
 import { CgFileDocument } from 'react-icons/cg';
-import { RiMoneyDollarBoxFill } from 'react-icons/ri';
+import { RiMoneyDollarBoxFill, RiCloseLine } from 'react-icons/ri';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import { ClassicEditor, AccessibilityHelp, Alignment, AutoImage, Autosave, BlockQuote, Bold, CloudServices, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, Heading, ImageBlock, ImageCaption, ImageInline, ImageInsertViaUrl, ImageResize, ImageStyle, ImageTextAlternative, ImageToolbar, ImageUpload, Indent, IndentBlock, Italic, Link, LinkImage, List, ListProperties, PageBreak, Paragraph, SelectAll, SourceEditing, Strikethrough, Table, TableCaption, TableCellProperties, TableColumnResize, TableProperties, TableToolbar, Underline, Undo } from 'ckeditor5';
 import { customColorPalette } from 'Shared/dataComponents/graphicsColors';
@@ -48,7 +49,7 @@ import { format } from 'date-fns';
 import { IFinancialTotal, IAccount, ISelectData, IFinancial, IFinancialDeal } from '../Interfaces/IFinancial';
 import FinancialDocumentModal from '../DocumentModal';
 import FinancialPaymentModal from '../PaymentModal';
-import { Container, Content, Editor1, GridContainerFinancial, ModalDeleteOptions, OverlayFinancial, HamburguerHeader } from './styles';
+import { Container, Content, Editor1,FormCenter, FormCard, FormTitle, FormActions, GridContainerFinancial, ModalDeleteOptions, OverlayFinancial, HamburguerHeader } from './styles';
 import DealDefaultModal from '../Category/Modal/DealDefaultModal';
 import { trigger } from 'swr';
 
@@ -396,162 +397,128 @@ const BillingRulesMessages: React.FC = () => {
     }
 
 
-    return (
-        <Container>
+return (
+  <Container>
+    <HeaderPage />
 
-            <HeaderPage />
+    {!isMOBILE && (
+      <Content>
+        <FormCenter>
+          <FormCard>
 
+            <FormTitle>Dias para aviso antes do vencimento</FormTitle>
 
-            {!isMOBILE && (
-                <Content>
+            <h5>Email</h5>
 
-                    <div style={{ height: '300px' }}>
+            <div className="autoComplete">
+              <p style={{ height: '27px' }}>Título</p>
+              <input
+                type="text"
+                className="inputField"
+                maxLength={20}
+              />
+            </div>
 
-                        <div style={{ float: 'left', width: '50%', height: '280px' }}>
+            <div className="autoComplete">
+              <p style={{ height: '27px' }}>Palavras Chave</p>
+              <select
+                id="financeBilling"
+                className="inputField"
+                onChange={handleComboChange}
+              >
+                <option value="0">Selecione...</option>
+                <option value="#data">Data do Dia</option>
+                <option value="#contaBancaria">Conta Bancária</option>
+                <option value="#categoria">Categoria</option>
+                <option value="#formaPagamento">Forma Pagamento</option>
+                <option value="#tipoPagamento">Tipo Pagamento</option>
+                <option value="#numeroFatura">Número Fatura</option>
+                <option value="#referenciaFatura">Referencia Fatura</option>
+                <option value="#servicosDescricao">Serviços Descrição</option>
+                <option value="#servicosListaComValor">Serviços Lista Com Valor</option>
+                <option value="#totalFatura">Total Fatura</option>
+                <option value="#valorTotalExtenso">Valor Total Extenso</option>
+                <option value="#dataemissao">Data Emissão</option>
+                <option value="#primeiroVencimentoParcela">Primeiro Vencimento Parcela</option>
+                <option value="#todosVencimentosParcela">Todos Vencimentos Parcela</option>
+                <option value="#primeiroVencimentoBoleto">Primeiro Vencimento Boleto</option>
+                <option value="#todosVencimentosBoleto">Todos Vencimentos Boleto</option>
+              </select>
+            </div>
 
-                            <h3>Régua de Cobrança Mensagens</h3><br />
+            <div className="form-row">
+              <Editor1>
+                <CKEditor
+                  id="ckeditor"
+                  ref={editorRef}
+                  editor={ClassicEditor}
+                  data={documentText}
+                  config={editorConfig}
+                />
+              </Editor1>
+            </div>
 
+            <br />
+            <h5>WhatsApp</h5>
 
-                            <br />
-                            <h5>Email</h5>
+            <div className="autoComplete">
+              <p style={{ height: '27px' }}>Palavras Chave</p>
+              <select
+                id="financeBilling1"
+                className="inputField"
+                onChange={handleComboChange1}
+              >
+                <option value="0">Selecione...</option>
+                <option value="#data">Data do Dia</option>
+                <option value="#contaBancaria">Conta Bancária</option>
+                <option value="#categoria">Categoria</option>
+                <option value="#formaPagamento">Forma Pagamento</option>
+                <option value="#tipoPagamento">Tipo Pagamento</option>
+                <option value="#numeroFatura">Número Fatura</option>
+                <option value="#referenciaFatura">Referencia Fatura</option>
+                <option value="#servicosDescricao">Serviços Descrição</option>
+                <option value="#servicosListaComValor">Serviços Lista Com Valor</option>
+                <option value="#totalFatura">Total Fatura</option>
+                <option value="#valorTotalExtenso">Valor Total Extenso</option>
+                <option value="#dataemissao">Data Emissão</option>
+                <option value="#primeiroVencimentoParcela">Primeiro Vencimento Parcela</option>
+                <option value="#todosVencimentosParcela">Todos Vencimentos Parcela</option>
+                <option value="#primeiroVencimentoBoleto">Primeiro Vencimento Boleto</option>
+                <option value="#todosVencimentosBoleto">Todos Vencimentos Boleto</option>
+              </select>
+            </div>
 
-                            <div className='autoComplete'>
+            <div className="form-row">
+              <Editor1>
+                <CKEditor
+                  id="ckeditor1"
+                  ref={editorRef1}
+                  editor={ClassicEditor}
+                  data={documentText1}
+                  config={editorConfig1}
+                />
+              </Editor1>
+            </div>
 
-                                <p style={{ height: '27px' }}>Título</p>
-                                <input
-                                    type="text"
-                                    className='inputField'
-                                    maxLength={20}
-                                />
+            <FormActions>
+              <button className="buttonClick" type="submit">
+                <FiSave />
+                Salvar
+              </button>
 
+              <button className="buttonClick" type="submit">
+               <MdBlock />
+                Fechar
+              </button>
 
-                            </div>
+            </FormActions>
 
-                            <div className='autoComplete'>
-
-                                <p style={{ height: '27px' }}>Palavras Chave</p>
-                                <select
-                                    id="financeBilling"
-                                    className='inputField'
-                                    onChange={handleComboChange}
-                                >
-                                    <option value="0">Selecione...</option>
-                                    <option value="#data">Data do Dia</option>
-                                    <option value="#contaBancaria">Conta Bancária</option>
-                                    <option value="#categoria">Categoria</option>
-                                    <option value="#formaPagamento">Forma Pagamento</option>
-                                    <option value="#tipoPagamento">Tipo Pagamento</option>
-                                    <option value="#numeroFatura">Número Fatura</option>
-                                    <option value="#referenciaFatura">Referencia Fatura</option>
-                                    <option value="#servicosDescricao">Serviços Descrição</option>
-                                    <option value="#servicosListaComValor">Serviços Lista Com Valor</option>
-                                    <option value="#totalFatura">Total Fatura</option>
-                                    <option value="#valorTotalExtenso">valor Total Extenso</option>
-                                    <option value="#dataemissao">Data Emissão</option>
-                                    <option value="#primeiroVencimentoParcela">Primeiro Vencimento Parcela</option>
-                                    <option value="#todosVencimentosParcela">Todos Vencimentos Parcela</option>
-                                    <option value="#primeiroVencimentoBoleto">Primeiro Vencimento Boleto</option>
-                                    <option value="#todosVencimentosBoleto">Todos Vencimentos Boleto</option>
-                                </select>
-
-                            </div>
-
-                            <div className="form-row">
-
-                                <Editor1>
-
-                                    <CKEditor
-                                        id="ckeditor"
-                                        ref={editorRef}
-                                        editor={ClassicEditor}
-                                        data={documentText}
-                                        config={editorConfig}
-                                      
-
-                                    />
-                                </Editor1>
-
-
-                            </div>
-
-                            <br />
-                            <h5>Whatsapp</h5>
-
-                            <div className='autoComplete'>
-
-                                <p style={{ height: '27px' }}>Palavras Chave</p>
-
-                                <select
-                                    id="financeBilling1"
-                                    className='inputField'
-                                    onChange={handleComboChange1}
-                                >
-                                    <option value="0">Selecione...</option>
-                                    <option value="#data">Data do Dia</option>
-                                    <option value="#contaBancaria">Conta Bancária</option>
-                                    <option value="#categoria">Categoria</option>
-                                    <option value="#formaPagamento">Forma Pagamento</option>
-                                    <option value="#tipoPagamento">Tipo Pagamento</option>
-                                    <option value="#numeroFatura">Número Fatura</option>
-                                    <option value="#referenciaFatura">Referencia Fatura</option>
-                                    <option value="#servicosDescricao">Serviços Descrição</option>
-                                    <option value="#servicosListaComValor">Serviços Lista Com Valor</option>
-                                    <option value="#totalFatura">Total Fatura</option>
-                                    <option value="#valorTotalExtenso">valor Total Extenso</option>
-                                    <option value="#dataemissao">Data Emissão</option>
-                                    <option value="#primeiroVencimentoParcela">Primeiro Vencimento Parcela</option>
-                                    <option value="#todosVencimentosParcela">Todos Vencimentos Parcela</option>
-                                    <option value="#primeiroVencimentoBoleto">Primeiro Vencimento Boleto</option>
-                                    <option value="#todosVencimentosBoleto">Todos Vencimentos Boleto</option>
-                                </select>
-
-
-                            </div>
-
-                            <div className="form-row">
-
-                                <Editor1>
-
-                                    <CKEditor
-                                        id="ckeditor1"
-                                        ref={editorRef1}
-                                        editor={ClassicEditor}
-                                        data={documentText1}
-                                        config={editorConfig1}
-
-                                    />
-                                </Editor1>
-
-
-                            </div>
-
-                            <br />
-                            <div className="form-row">
-                                <button className="buttonClick" type="submit">
-                                    <FiSave />
-                                    Salvar
-                                </button>
-
-                            </div>
-
-                            <br /><br />
-
-                        </div>
-
-
-
-                    </div>
-
-
-
-
-
-                </Content>
-            )}
-
-
-        </Container>
-    );
+          </FormCard>
+        </FormCenter>
+      </Content>
+    )}
+  </Container>
+);
 };
 
 export default BillingRulesMessages;

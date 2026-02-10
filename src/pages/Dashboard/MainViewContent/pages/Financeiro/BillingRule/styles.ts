@@ -17,6 +17,76 @@ export const Content = styled.div`
   box-shadow: 1px 1px 4px 0.5px rgba(0,0,0,0.15);
   overflow: auto;
 
+
+   .section {
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      display: flex; 
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 18px;
+      align-items: center;
+      gap: 8px;  
+      line-height: 1;          
+    }
+
+    .section-title svg {
+      //display: block;        
+      margin-top: -1px;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      //margin-top: 10px;
+    }
+
+    .row input[type="number"] {
+      width: 80px;
+    }
+
+    .row.channels .buttonLinkClick {
+  display: flex;
+  align-items: center;
+
+}
+
+    .channels label {
+      font-weight: normal;
+      margin-right: 12px;
+    }
+
+    .actions {
+      text-align: right;
+      margin-top: 24px;
+    }
+
+.channels .channel {
+  display: flex;
+  align-items: center;   /* ALINHAMENTO VERTICAL */
+  gap: 6px;              /* espaço entre ícone e texto */
+  cursor: pointer;
+}
+
+/* opcional: garante que o svg não "desça" */
+.channels svg {
+  display: block;
+}
+
+    button {
+      padding: 10px 16px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+    }
+
+
   .item2a{
     display: flex;
     flex-direction: row;
@@ -84,6 +154,31 @@ export const Content = styled.div`
     }
   }
   
+   .notificationEmailActive {
+      height: 18px;
+      width: 18px;
+      color: blue;
+    }
+
+    .notificationEmailInactive {
+      height: 18px;
+      width: 18px;
+      color: var(--grey);
+    }
+
+    .notificationWhatsAppActive {
+      height: 18px;
+      width: 18px;
+      color: green;
+    }
+
+    .notificationWhatsAppInactive {
+      height: 18px;
+      width: 18px;
+      color: var(--grey);
+    }
+
+
   span{
     font-size: 14px;
   }
@@ -195,12 +290,12 @@ export const Content = styled.div`
   align-items: center;
   gap: 12px; /* espaço entre label e input */
    margin-top: 12px;
-    margin-left: -7px;
+    //margin-left: -7px;
 }
 
 .form-row label {
   min-width: 260px; /* controla o alinhamento */
-  font-weight: 500;
+  //font-weight: 500;
 }
 
 .form-row input {
@@ -227,7 +322,7 @@ export const Content = styled.div`
   .autoComplete{
     width: 92.5%;
     margin-top: 12px;
-    margin-left: -7px;
+    //margin-left: -7px;
   }
 
   table{
@@ -396,4 +491,30 @@ export const HamburguerHeader = styled.div`
       height: 1.5rem;
     }
   }
+`;
+
+
+export const FormCenter = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+`;
+
+export const FormCard = styled.div`
+  width: 60%;
+  min-width: 700px;
+  background-color: rgba(255, 255, 255, 0.3);
+  padding: 1.5rem 2rem;
+  border-radius: 0.25rem;
+  box-shadow: 1px 1px 4px 0.5px rgba(0,0,0,0.15);
+`;
+
+export const FormTitle = styled.h5`
+  margin-bottom: 1rem;
+`;
+
+export const FormActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
 `;
