@@ -48,7 +48,7 @@ import { format } from 'date-fns';
 import { IFinancialTotal, IAccount, ISelectData, IFinancial, IFinancialDeal } from '../Interfaces/IFinancial';
 import FinancialDocumentModal from '../DocumentModal';
 import FinancialPaymentModal from '../PaymentModal';
-import { Container, Content, Editor, GridContainerFinancial, ModalDeleteOptions, OverlayFinancial, HamburguerHeader } from './styles';
+import { Container, Content, Editor1, GridContainerFinancial, ModalDeleteOptions, OverlayFinancial, HamburguerHeader } from './styles';
 import DealDefaultModal from '../Category/Modal/DealDefaultModal';
 import { trigger } from 'swr';
 
@@ -458,7 +458,7 @@ const BillingRulesMessages: React.FC = () => {
 
                             <div className="form-row">
 
-                                <Editor>
+                                <Editor1>
 
                                     <CKEditor
                                         id="ckeditor"
@@ -469,7 +469,7 @@ const BillingRulesMessages: React.FC = () => {
                                       
 
                                     />
-                                </Editor>
+                                </Editor1>
 
 
                             </div>
@@ -510,7 +510,7 @@ const BillingRulesMessages: React.FC = () => {
 
                             <div className="form-row">
 
-                                <Editor>
+                                <Editor1>
 
                                     <CKEditor
                                         id="ckeditor1"
@@ -520,7 +520,7 @@ const BillingRulesMessages: React.FC = () => {
                                         config={editorConfig1}
 
                                     />
-                                </Editor>
+                                </Editor1>
 
 
                             </div>

@@ -398,7 +398,7 @@ export const HamburguerHeader = styled.div`
   }
 `;
 
-export const Editor = styled.div`
+export const Editor1 = styled.div`
   flex: 1;
   overflow: auto;
   min-height: 200px;
