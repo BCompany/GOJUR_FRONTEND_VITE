@@ -23,7 +23,7 @@ import { FaRegTimesCircle, FaCheck, FaFileContract, FaFileInvoiceDollar, FaHands
 import { CgFileDocument } from 'react-icons/cg';
 import { RiMoneyDollarBoxFill, RiCloseLine } from 'react-icons/ri';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
-import { ClassicEditor, AccessibilityHelp, Alignment, AutoImage, Autosave, BlockQuote, Bold, CloudServices, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, Heading, ImageBlock, ImageCaption, ImageInline, ImageInsertViaUrl, ImageResize, ImageStyle, ImageTextAlternative, ImageToolbar, ImageUpload, Indent, IndentBlock, Italic, Link, LinkImage, List, ListProperties, PageBreak, Paragraph, SelectAll, SourceEditing, Strikethrough, Table, TableCaption, TableCellProperties, TableColumnResize, TableProperties, TableToolbar, Underline, Undo } from 'ckeditor5';
+import { ClassicEditor, AccessibilityHelp, Alignment, AutoImage, Autosave, BlockQuote, Bold, CloudServices, Essentials, FontBackgroundColor, FontColor, FontFamily, FontSize, Heading, ImageBlock, ImageCaption, ImageInline, ImageInsertViaUrl, ImageResize, ImageStyle, ImageTextAlternative, ImageToolbar, ImageUpload, Indent, IndentBlock, Italic, Link, LinkImage, List, ListProperties, PageBreak, Paragraph, SelectAll, SourceEditing, Strikethrough, Table, TableCaption, TableCellProperties, TableColumnResize, TableProperties, TableToolbar, Underline, Undo, LegacyTodoList } from 'ckeditor5';
 import { customColorPalette } from 'Shared/dataComponents/graphicsColors';
 import Uploader from './Uploader'
 import translations from 'ckeditor5/translations/pt-br.js';
@@ -52,22 +52,30 @@ import FinancialPaymentModal from '../PaymentModal';
 import { Container, Content, Editor1,FormCenter, FormCard, FormTitle, FormActions, GridContainerFinancial, ModalDeleteOptions, OverlayFinancial, HamburguerHeader } from './styles';
 import DealDefaultModal from '../Category/Modal/DealDefaultModal';
 import { trigger } from 'swr';
+import { FcAlarmClock, FcCalendar } from "react-icons/fc";
+import { IBillingRuler, IBillingRulerWarning } from '../BillingRule/Interfaces/IBillingRuler';
 
 const BillingRulesMessages: React.FC = () => {
-    const { addToast } = useToast();
-    const { signOut } = useAuth();
-    const baseUrl = envProvider.redirectUrl;
-    const { handleJsonStateObject, handleStateType, jsonStateObject, stateType } = useStateContext();
-    const history = useHistory();
-    const { isMOBILE } = useDevice();
-    const token = localStorage.getItem('@GoJur:token');
-    const MDLFAT = localStorage.getItem('@GoJur:moduleCode');
-    const [documentText, setDocumentText] = useState<string>('');
-     const [documentText1, setDocumentText1] = useState<string>('');
-    const editorRef = useRef(null);
-    const editorRef1 = useRef(null);
-    const editorContainerRef = useRef(null);
-    const [htmlChangeData, setHtmlChangeData] = useState(false);
+const { addToast } = useToast();
+const { signOut } = useAuth();
+const baseUrl = envProvider.redirectUrl;
+const { handleJsonStateObject, handleStateType, jsonStateObject, stateType } = useStateContext();
+const history = useHistory();
+const { isMOBILE } = useDevice();
+const token = localStorage.getItem('@GoJur:token');
+const MDLFAT = localStorage.getItem('@GoJur:moduleCode');
+const [documentText, setDocumentText] = useState<string>('');
+const [documentText1, setDocumentText1] = useState<string>('');
+const editorRef = useRef(null);
+const editorRef1 = useRef(null);
+const editorContainerRef = useRef(null);
+const [htmlChangeData, setHtmlChangeData] = useState(false);
+const [ message, setMessage ] = useState<string>('');
+const [emailTitle, setEmailTitle] = useState('');
+const [emailBody, setEmailBody] = useState('');
+const [whatsBody, setWhatsBody] = useState('');
+const [warningType, setWarningType] = useState('');
+
 
 
     const handleComboChange = (e: any) => {
@@ -397,6 +405,78 @@ const BillingRulesMessages: React.FC = () => {
     }
 
 
+    // Initialization
+    useEffect(() => {
+    
+        LoadMessages()
+    
+    }, [])
+    
+
+
+const LoadMessages = useCallback(async () => {
+
+    try {
+            const params = new URLSearchParams(location.search)
+            let parambillingRulerWarningId= params.get('billingRulerWarningId') 
+    
+            const response = await api.get<IBillingRulerWarning>('/Financeiro/ReguaCobranca/SelecionarAviso', {
+                                    params: {
+                                        id: Number(parambillingRulerWarningId),
+                                        token
+                                    }
+                                })
+
+            setMessage(response.data.warningType == 'PREVIO' ? response.data.daysOfWarning + " dia(s) antes do vencimento" : response.data.warningType == 'VENCIMENTO' ? "no vencimento" : response.data.daysOfWarning + " dia(s) após o vencimento" )
+             //alert(response.data.daysOfWarning);    
+            setWarningType(response.data.warningType || '');
+            setEmailTitle(response.data.emailNotificationTitle || '');
+            setEmailBody(response.data.emailNotificationDescription || '');
+            setWhatsBody(response.data.whatsAppNotificationDescription || '');
+
+    }catch (err) {
+    
+    console.log(err)
+    }
+    
+}, [location.search, token ]);
+
+
+
+const handleSaveMessage = async () => {
+  try {
+    const params = new URLSearchParams(location.search);
+    const billingRulerWarningId = Number(params.get('billingRulerWarningId'));
+    const billingRulerId = Number(params.get('billingRulerId'));
+    const notificationType = params.get('notificationType');
+    
+    await api.post('/Financeiro/ReguaCobranca/SalvarAviso', {
+      billingRulerWarningId,
+      billingRulerId,
+      warningType,
+      notificationType,
+      emailNotificationTitle: emailTitle,
+      emailNotificationDescription: emailBody,
+      whatsAppNotificationDescription: whatsBody,
+      token
+    });
+
+    addToast({
+      type: "success",
+      title: "Mensagem salva",
+      description: "Mensagem atualizada com sucesso"
+    });
+
+  } catch (err) {
+    addToast({
+      type: "error",
+      title: "Erro",
+      description: err.response?.data?.message || "Ocorreu um erro ao salvar a mensagem"
+    });
+  }
+};
+
+
 return (
   <Container>
     <HeaderPage />
@@ -406,102 +486,142 @@ return (
         <FormCenter>
           <FormCard>
 
-            <FormTitle>Dias para aviso antes do vencimento</FormTitle>
+            <FormTitle>Personalizar Mensagem</FormTitle>
 
-            <h5>Email</h5>
+            <p className='align-Icon' style={{ height: '27px' }}><FcCalendar />Essa mensagem será enviada <strong>{message}</strong> </p>
 
-            <div className="autoComplete">
-              <p style={{ height: '27px' }}>Título</p>
-              <input
-                type="text"
-                className="inputField"
-                maxLength={20}
-              />
+
+
+                <div className="section">
+                  <div className="section-title">
+                    <FiMail/>Email
+                  </div>
+
+                  <div className="row">
+                    <div className="autoComplete">
+                    <p style={{ height: '27px' }}>Título</p>
+                    <input
+                        type="text"
+                        className="inputField"
+                        maxLength={20}
+                        value={emailTitle}
+                        onChange={(e) => setEmailTitle(e.target.value)}
+                    />
+                    </div>
+                  </div>
+
+                <div className="row">
+                    <div className="autoComplete">
+                    <p style={{ height: '27px' }}>Palavras Chave</p>
+                    <select
+                        id="financeBilling"
+                        className="inputField"
+                        onChange={handleComboChange}
+                    >
+                        <option value="0">Selecione...</option>
+                        <option value="#data">Data do Dia</option>
+                        <option value="#contaBancaria">Conta Bancária</option>
+                        <option value="#categoria">Categoria</option>
+                        <option value="#formaPagamento">Forma Pagamento</option>
+                        <option value="#tipoPagamento">Tipo Pagamento</option>
+                        <option value="#numeroFatura">Número Fatura</option>
+                        <option value="#referenciaFatura">Referencia Fatura</option>
+                        <option value="#servicosDescricao">Serviços Descrição</option>
+                        <option value="#servicosListaComValor">Serviços Lista Com Valor</option>
+                        <option value="#totalFatura">Total Fatura</option>
+                        <option value="#valorTotalExtenso">Valor Total Extenso</option>
+                        <option value="#dataemissao">Data Emissão</option>
+                        <option value="#primeiroVencimentoParcela">Primeiro Vencimento Parcela</option>
+                        <option value="#todosVencimentosParcela">Todos Vencimentos Parcela</option>
+                        <option value="#primeiroVencimentoBoleto">Primeiro Vencimento Boleto</option>
+                        <option value="#todosVencimentosBoleto">Todos Vencimentos Boleto</option>
+                    </select>
+                    </div>
+ 
+                </div>
+
+                <div className="row">
+                    <div className="form-row">
+                    <Editor1>
+                       <CKEditor
+                        editor={ClassicEditor}
+                        data={emailBody}
+                        config={editorConfig}
+                        onChange={(event, editor) => {
+                            const data = editor.getData();
+                            setEmailBody(data);
+                        }}
+                        />
+                    </Editor1>
+                    </div>
+
+                </div>
             </div>
 
-            <div className="autoComplete">
-              <p style={{ height: '27px' }}>Palavras Chave</p>
-              <select
-                id="financeBilling"
-                className="inputField"
-                onChange={handleComboChange}
-              >
-                <option value="0">Selecione...</option>
-                <option value="#data">Data do Dia</option>
-                <option value="#contaBancaria">Conta Bancária</option>
-                <option value="#categoria">Categoria</option>
-                <option value="#formaPagamento">Forma Pagamento</option>
-                <option value="#tipoPagamento">Tipo Pagamento</option>
-                <option value="#numeroFatura">Número Fatura</option>
-                <option value="#referenciaFatura">Referencia Fatura</option>
-                <option value="#servicosDescricao">Serviços Descrição</option>
-                <option value="#servicosListaComValor">Serviços Lista Com Valor</option>
-                <option value="#totalFatura">Total Fatura</option>
-                <option value="#valorTotalExtenso">Valor Total Extenso</option>
-                <option value="#dataemissao">Data Emissão</option>
-                <option value="#primeiroVencimentoParcela">Primeiro Vencimento Parcela</option>
-                <option value="#todosVencimentosParcela">Todos Vencimentos Parcela</option>
-                <option value="#primeiroVencimentoBoleto">Primeiro Vencimento Boleto</option>
-                <option value="#todosVencimentosBoleto">Todos Vencimentos Boleto</option>
-              </select>
-            </div>
+    
+            <div className="section">
+                <div className="section-title">
+                    <FaWhatsapp/>WhatsApp
+                  </div>
 
-            <div className="form-row">
-              <Editor1>
-                <CKEditor
-                  id="ckeditor"
-                  ref={editorRef}
-                  editor={ClassicEditor}
-                  data={documentText}
-                  config={editorConfig}
-                />
-              </Editor1>
-            </div>
+                   <div className="row">
+                    <div className="autoComplete">
+                    <p style={{ height: '27px' }}>Palavras Chave</p>
+                    <select
+                        id="financeBilling1"
+                        className="inputField"
+                        onChange={handleComboChange1}
+                    >
+                        <option value="0">Selecione...</option>
+                        <option value="#data">Data do Dia</option>
+                        <option value="#contaBancaria">Conta Bancária</option>
+                        <option value="#categoria">Categoria</option>
+                        <option value="#formaPagamento">Forma Pagamento</option>
+                        <option value="#tipoPagamento">Tipo Pagamento</option>
+                        <option value="#numeroFatura">Número Fatura</option>
+                        <option value="#referenciaFatura">Referencia Fatura</option>
+                        <option value="#servicosDescricao">Serviços Descrição</option>
+                        <option value="#servicosListaComValor">Serviços Lista Com Valor</option>
+                        <option value="#totalFatura">Total Fatura</option>
+                        <option value="#valorTotalExtenso">Valor Total Extenso</option>
+                        <option value="#dataemissao">Data Emissão</option>
+                        <option value="#primeiroVencimentoParcela">Primeiro Vencimento Parcela</option>
+                        <option value="#todosVencimentosParcela">Todos Vencimentos Parcela</option> 
+                        <option value="#primeiroVencimentoBoleto">Primeiro Vencimento Boleto</option>
+                        <option value="#todosVencimentosBoleto">Todos Vencimentos Boleto</option>
+                    </select>
+                    </div>
+                </div>
+            
+                <div className="row">
+                    <div className="form-row">
+                    <Editor1>
+                        <CKEditor
+                        editor={ClassicEditor}
+                        data={whatsBody}
+                        config={editorConfig1}
+                        onChange={(event, editor) => {
+                            const data = editor.getData();
+                            setWhatsBody(data);
+                        }}
+                        />
+                    </Editor1>
+                    </div>
+                    
+                </div>
 
-            <br />
-            <h5>WhatsApp</h5>
+                <div className="row">
+                    <p>Mensagens de WhatsApp devem ser curtas e objetivas</p>
 
-            <div className="autoComplete">
-              <p style={{ height: '27px' }}>Palavras Chave</p>
-              <select
-                id="financeBilling1"
-                className="inputField"
-                onChange={handleComboChange1}
-              >
-                <option value="0">Selecione...</option>
-                <option value="#data">Data do Dia</option>
-                <option value="#contaBancaria">Conta Bancária</option>
-                <option value="#categoria">Categoria</option>
-                <option value="#formaPagamento">Forma Pagamento</option>
-                <option value="#tipoPagamento">Tipo Pagamento</option>
-                <option value="#numeroFatura">Número Fatura</option>
-                <option value="#referenciaFatura">Referencia Fatura</option>
-                <option value="#servicosDescricao">Serviços Descrição</option>
-                <option value="#servicosListaComValor">Serviços Lista Com Valor</option>
-                <option value="#totalFatura">Total Fatura</option>
-                <option value="#valorTotalExtenso">Valor Total Extenso</option>
-                <option value="#dataemissao">Data Emissão</option>
-                <option value="#primeiroVencimentoParcela">Primeiro Vencimento Parcela</option>
-                <option value="#todosVencimentosParcela">Todos Vencimentos Parcela</option>
-                <option value="#primeiroVencimentoBoleto">Primeiro Vencimento Boleto</option>
-                <option value="#todosVencimentosBoleto">Todos Vencimentos Boleto</option>
-              </select>
-            </div>
+                </div>
 
-            <div className="form-row">
-              <Editor1>
-                <CKEditor
-                  id="ckeditor1"
-                  ref={editorRef1}
-                  editor={ClassicEditor}
-                  data={documentText1}
-                  config={editorConfig1}
-                />
-              </Editor1>
+
             </div>
+                
+           
 
             <FormActions>
-              <button className="buttonClick" type="submit">
+              <button className="buttonClick" type="button" onClick={handleSaveMessage}>
                 <FiSave />
                 Salvar
               </button>
