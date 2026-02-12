@@ -75,6 +75,8 @@ const [emailTitle, setEmailTitle] = useState('');
 const [emailBody, setEmailBody] = useState('');
 const [whatsBody, setWhatsBody] = useState('');
 const [warningType, setWarningType] = useState('');
+const [daysOfWarning, setDaysOfWarning] = useState('');
+const [notificationType, setNotificationType] = useState('');
 
 
 
@@ -430,9 +432,11 @@ const LoadMessages = useCallback(async () => {
             setMessage(response.data.warningType == 'PREVIO' ? response.data.daysOfWarning + " dia(s) antes do vencimento" : response.data.warningType == 'VENCIMENTO' ? "no vencimento" : response.data.daysOfWarning + " dia(s) após o vencimento" )
              //alert(response.data.daysOfWarning);    
             setWarningType(response.data.warningType || '');
+            setDaysOfWarning(response.data.daysOfWarning ? response.data.daysOfWarning.toString() : '');
             setEmailTitle(response.data.emailNotificationTitle || '');
             setEmailBody(response.data.emailNotificationDescription || '');
             setWhatsBody(response.data.whatsAppNotificationDescription || '');
+            setNotificationType(response.data.notificationType || '');    
 
     }catch (err) {
     
@@ -448,13 +452,14 @@ const handleSaveMessage = async () => {
     const params = new URLSearchParams(location.search);
     const billingRulerWarningId = Number(params.get('billingRulerWarningId'));
     const billingRulerId = Number(params.get('billingRulerId'));
-    const notificationType = params.get('notificationType');
-    
+    //const notificationType = params.get('notificationType');
+   
     await api.post('/Financeiro/ReguaCobranca/SalvarAviso', {
       billingRulerWarningId,
       billingRulerId,
       warningType,
       notificationType,
+      daysOfWarning,
       emailNotificationTitle: emailTitle,
       emailNotificationDescription: emailBody,
       whatsAppNotificationDescription: whatsBody,
@@ -477,6 +482,21 @@ const handleSaveMessage = async () => {
 };
 
 
+
+ 
+const handleClose = () => {
+
+    const params = new URLSearchParams(location.search);
+    const billingRulerId = Number(params.get('billingRulerId'));
+
+    history.push(
+        `BillingRule?billingRulerId=${billingRulerId}`
+    );
+
+};
+
+
+
 return (
   <Container>
     <HeaderPage />
@@ -491,7 +511,7 @@ return (
             <p className='align-Icon' style={{ height: '27px' }}><FcCalendar />Essa mensagem será enviada <strong>{message}</strong> </p>
 
 
-
+{(notificationType === 'EMAILWHATS' || notificationType === 'EMAIL') && (
                 <div className="section">
                   <div className="section-title">
                     <FiMail/>Email
@@ -558,7 +578,10 @@ return (
                 </div>
             </div>
 
-    
+    )}
+
+ 
+    {(notificationType === 'EMAILWHATS' || notificationType === 'WHATS') && (
             <div className="section">
                 <div className="section-title">
                     <FaWhatsapp/>WhatsApp
@@ -618,7 +641,7 @@ return (
 
             </div>
                 
-           
+            )}
 
             <FormActions>
               <button className="buttonClick" type="button" onClick={handleSaveMessage}>
@@ -626,7 +649,7 @@ return (
                 Salvar
               </button>
 
-              <button className="buttonClick" type="submit">
+              <button className="buttonClick" type="submit" onClick={handleClose}>
                <MdBlock />
                 Fechar
               </button>

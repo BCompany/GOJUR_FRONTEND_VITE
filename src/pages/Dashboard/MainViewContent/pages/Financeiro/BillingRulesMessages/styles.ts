@@ -480,6 +480,10 @@ export const Editor1 = styled.div`
     border: solid 1px;
   }
 
+  .ck.ck-toolbar {
+  position: static !important;
+}
+
   .ck-editor__editable {
     max-height: 600px;
   }

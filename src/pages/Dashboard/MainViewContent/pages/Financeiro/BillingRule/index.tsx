@@ -50,12 +50,12 @@ import { Container, Content, FormCenter, FormCard, FormActions, GridContainerFin
 import DealDefaultModal from '../Category/Modal/DealDefaultModal';
 import { trigger } from 'swr';
 import { Form } from '../BillingContract/styles';
-import { IBillingRuler } from './Interfaces/IBillingRuler';
+import { IBillingRuler, IBillingRulerWarning } from './Interfaces/IBillingRuler';
 import { FcAlarmClock, FcCalendar } from "react-icons/fc";
 
 const BillingRule: React.FC = () => {
   const { addToast } = useToast();
-   const history = useHistory()
+  const history = useHistory()
   const { signOut } = useAuth();
   const formRef = useRef<HTMLFormElement>(null);
   const { isMOBILE } = useDevice();
@@ -74,7 +74,7 @@ const BillingRule: React.FC = () => {
   const [posteriorId, setPosteriorId] = useState<Number>(0);
 
   const [billingRulerId, setBillingRulerId] = useState<Number>(0);
-
+  const [originalWarnings, setOriginalWarnings] = useState<IBillingRulerWarning[]>([]);
 
 
   type NotificationType = 'EMAIL' | 'WHATS' | 'EMAILWHATS' | 'NONE';
@@ -104,48 +104,69 @@ const BillingRule: React.FC = () => {
   });
 
 
-  const handleSubmitBillingRuler = async (data: IBillingRuler) => {
+    const handleSubmitBillingRulerWarning = async (data: IBillingRuler) => {
 
-    if (!data.descriptionBillingRuler || data.descriptionBillingRuler.trim() === "") {
-      addToast({
-        type: "error",
-        title: "Campo obrigatório",
-        description: "Informe a descrição da Régua de Cobrança"
-      });
+    const params = new URLSearchParams(location.search);
+    const billingRulerIdParam = Number(params.get('billingRulerId'));
 
-      return;
-    }
+    const finalBillingRulerId =
+      billingRulerIdParam && billingRulerIdParam > 0
+        ? billingRulerIdParam
+        : billingRulerId && Number(billingRulerId) > 0
+          ? billingRulerId
+          : 0;
+
 
     const payload: IBillingRuler = {
       ...data,
-      billingRulerId: billingRulerId ? billingRulerId : 0,
+      billingRulerId: finalBillingRulerId,
       token,
       companyId: Number(companyId),
-      //inclusionDate: now,
+
       billingRulerWarningDTOList: data.billingRulerWarningDTOList.map(
-        (item, index) => ({
-          ...item,
-          billingRulerWarningId:
-            index === 0
-              ? previoId
-              : index === 1
-                ? vencimentoId
-                : posteriorId,
-          companyId: Number(companyId),
-          billingRulerId: billingRulerId ? billingRulerId : 0,
-          notificationType: resolveNotificationType(
-            index === 0
-              ? flgNotifyEmail1
-              : index === 1
-                ? flgNotifyEmail2
-                : flgNotifyEmail3,
-            index === 0
-              ? flgNotifyWhatsApp1
-              : index === 1
-                ? flgNotifyWhatsApp2
-                : flgNotifyWhatsApp3
-          )
-        })
+        (item, index) => {
+
+          const original = originalWarnings.find(
+            w => w.warningType === item.warningType
+          );
+
+          return {
+            ...item,
+
+            billingRulerWarningId:
+              index === 0
+                ? previoId
+                : index === 1
+                  ? vencimentoId
+                  : posteriorId,
+
+            companyId: Number(companyId),
+            billingRulerId: finalBillingRulerId,
+
+            notificationType: resolveNotificationType(
+              index === 0
+                ? flgNotifyEmail1
+                : index === 1
+                  ? flgNotifyEmail2
+                  : flgNotifyEmail3,
+              index === 0
+                ? flgNotifyWhatsApp1
+                : index === 1
+                  ? flgNotifyWhatsApp2
+                  : flgNotifyWhatsApp3
+            ),
+
+            // 🔒 preserva os valores originais
+            emailNotificationTitle:
+              original?.emailNotificationTitle ?? item.emailNotificationTitle,
+
+            emailNotificationDescription:
+              original?.emailNotificationDescription ?? item.emailNotificationDescription,
+
+            whatsAppNotificationDescription:
+              original?.whatsAppNotificationDescription ?? item.whatsAppNotificationDescription
+          };
+        }
       )
     };
 
@@ -157,7 +178,106 @@ const BillingRule: React.FC = () => {
       const newId = Number(response.data);
 
       setBillingRulerId(newId);
-    
+
+      return reloadBillingRuler(newId);
+
+    } catch (err: any) {
+
+      console.error('STATUS ', err?.response?.status);
+      console.error('ERRO API ', err?.response?.data);
+      //alert(JSON.stringify(err?.response?.data, null, 2));
+
+
+      addToast({
+        type: 'info',
+        title: 'Configure a Régua de Cobrança',
+        description: err.response.data.Message
+      });
+
+
+      return null;
+
+    }
+
+  };
+
+
+
+  const handleSubmitBillingRuler = async (data: IBillingRuler) => {
+
+    const params = new URLSearchParams(location.search);
+    const billingRulerIdParam = Number(params.get('billingRulerId'));
+
+    const finalBillingRulerId =
+      billingRulerIdParam && billingRulerIdParam > 0
+        ? billingRulerIdParam
+        : billingRulerId && Number(billingRulerId) > 0
+          ? billingRulerId
+          : 0;
+
+
+    const payload: IBillingRuler = {
+      ...data,
+      billingRulerId: finalBillingRulerId,
+      token,
+      companyId: Number(companyId),
+
+      billingRulerWarningDTOList: data.billingRulerWarningDTOList.map(
+        (item, index) => {
+
+          const original = originalWarnings.find(
+            w => w.warningType === item.warningType
+          );
+
+          return {
+            ...item,
+
+            billingRulerWarningId:
+              index === 0
+                ? previoId
+                : index === 1
+                  ? vencimentoId
+                  : posteriorId,
+
+            companyId: Number(companyId),
+            billingRulerId: finalBillingRulerId,
+
+            notificationType: resolveNotificationType(
+              index === 0
+                ? flgNotifyEmail1
+                : index === 1
+                  ? flgNotifyEmail2
+                  : flgNotifyEmail3,
+              index === 0
+                ? flgNotifyWhatsApp1
+                : index === 1
+                  ? flgNotifyWhatsApp2
+                  : flgNotifyWhatsApp3
+            ),
+
+            // 🔒 preserva os valores originais
+            emailNotificationTitle:
+              original?.emailNotificationTitle ?? item.emailNotificationTitle,
+
+            emailNotificationDescription:
+              original?.emailNotificationDescription ?? item.emailNotificationDescription,
+
+            whatsAppNotificationDescription:
+              original?.whatsAppNotificationDescription ?? item.whatsAppNotificationDescription
+          };
+        }
+      )
+    };
+
+    try {
+      const response = await api.post('/Financeiro/ReguaCobranca/Salvar', payload)
+
+      //Recarrega Reguá de Cobrança
+
+      const newId = Number(response.data);
+
+      setBillingRulerId(newId);
+
 
       addToast({
         type: "success",
@@ -173,11 +293,12 @@ const BillingRule: React.FC = () => {
       console.error('ERRO API ', err?.response?.data);
       //alert(JSON.stringify(err?.response?.data, null, 2));
 
+
       addToast({
-        type: "error",
-        title: "Falha ao cadastrar Régua de Cobrança",
-        description: JSON.stringify(err?.response?.data, null, 2)
-      })
+        type: 'info',
+        title: 'Operação NÃO realizada',
+        description: err.response.data.Message
+      });
 
 
       return null;
@@ -189,46 +310,95 @@ const BillingRule: React.FC = () => {
 
 
   const reloadBillingRuler = useCallback(async (billingRulerIdParam: number) => {
-  try {
-    const response = await api.get<IBillingRuler>(
-      '/Financeiro/ReguaCobranca/Selecionar',
-      {
-        params: {
-          id: billingRulerIdParam,
-          token,
-        },
-      }
-    );
+    try {
+      const response = await api.get<IBillingRuler>(
+        '/Financeiro/ReguaCobranca/Selecionar',
+        {
+          params: {
+            id: billingRulerIdParam,
+            token,
+          },
+        }
+      );
 
-    const data = response.data;
+      const data = response.data;
 
-    reset(data);
+      reset(data);
+        
+      console.log(data);
 
+      const previo = data.billingRulerWarningDTOList.find(
+        x => x.warningType === 'PREVIO'
+      );
 
-    const previo = data.billingRulerWarningDTOList.find(
-      x => x.warningType === 'PREVIO'
-    );
+      const vencimento = data.billingRulerWarningDTOList.find(
+        x => x.warningType === 'VENCIMENTO'
+      );
 
-    const vencimento = data.billingRulerWarningDTOList.find(
-      x => x.warningType === 'VENCIMENTO'
-    );
+      const posterior = data.billingRulerWarningDTOList.find(
+        x => x.warningType === 'POSTERIOR'
+      );
 
-    const posterior = data.billingRulerWarningDTOList.find(
-      x => x.warningType === 'POSTERIOR'
-    );
+      setPrevioId(previo?.billingRulerWarningId ?? 0);
+      setVencimentoId(vencimento?.billingRulerWarningId ?? 0);
+      setPosteriorId(posterior?.billingRulerWarningId ?? 0);
+      
+      console.log(data.billingRulerWarningDTOList); 
+    
+      const existeEmailPrevio = data.billingRulerWarningDTOList.some(
+        x => (x.notificationType === 'EMAIL' || 
+            x.notificationType === 'EMAILWHATS') &&
+            x.warningType === 'PREVIO'
+      );
 
-    setPrevioId(previo?.billingRulerWarningId ?? 0);
-    setVencimentoId(vencimento?.billingRulerWarningId ?? 0);
-    setPosteriorId(posterior?.billingRulerWarningId ?? 0);
+       const existeWhatsPrevio = data.billingRulerWarningDTOList.some(
+        x => (x.notificationType === 'WHATS' || 
+            x.notificationType === 'EMAILWHATS') && 
+            x.warningType === 'PREVIO'
+      );
 
+      const existeEmailVencimento = data.billingRulerWarningDTOList.some(
+        x => (x.notificationType === 'EMAIL' || 
+            x.notificationType === 'EMAILWHATS') &&
+            x.warningType === 'VENCIMENTO'
+      );
 
-    return data;
+       const existeWhatsVencimento = data.billingRulerWarningDTOList.some(
+        x => (x.notificationType === 'WHATS' || 
+            x.notificationType === 'EMAILWHATS') && 
+            x.warningType === 'VENCIMENTO'
+      );
 
-  } catch (err) {
-    console.error(err);
-    return null;
-  }
-}, [token, reset]);
+      const existeEmailPosterior = data.billingRulerWarningDTOList.some(
+        x => (x.notificationType === 'EMAIL' || 
+            x.notificationType === 'EMAILWHATS') &&
+            x.warningType === 'POSTERIOR'
+      );
+
+       const existeWhatsPosterior = data.billingRulerWarningDTOList.some(
+        x => (x.notificationType === 'WHATS' || 
+            x.notificationType === 'EMAILWHATS') && 
+            x.warningType === 'POSTERIOR'
+      );
+
+      setFlgNotifyEmail1(existeEmailPrevio)
+      setFlgNotifyWhatsApp1(existeWhatsPrevio)
+
+      setFlgNotifyEmail2(existeEmailVencimento) 
+      setFlgNotifyWhatsApp2(existeWhatsVencimento)  
+
+      setFlgNotifyEmail3(existeEmailPosterior) 
+      setFlgNotifyWhatsApp3(existeWhatsPosterior)  
+ 
+      setOriginalWarnings(data.billingRulerWarningDTOList);
+
+      return data;
+
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
+  }, [token, reset]);
 
 
 
@@ -245,22 +415,37 @@ const BillingRule: React.FC = () => {
 
 
 
-const handlePersonalizarMensagem = (warningType: string) => {
-  handleSubmit(async (data: IBillingRuler) => {
-   
-      const result = await handleSubmitBillingRuler(data);
+  const handlePersonalizarMensagem = (warningType: string) => {
+    handleSubmit(async (data: IBillingRuler) => {
+
+      const result = await handleSubmitBillingRulerWarning(data);
 
       const warning = result.billingRulerWarningDTOList.find(
         x => x.warningType === warningType
       );
- 
 
-       history.push(
-        `BillingRulesMessages?billingRulerWarningId=${warning?.billingRulerWarningId}&billingRulerId=${result.billingRulerId}&notificationType=${warning?.notificationType}`
+
+      //history.push(
+      //  `BillingRulesMessages?billingRulerWarningId=${warning?.billingRulerWarningId}&billingRulerId=${result.billingRulerId}&notificationType=${warning?.notificationType}`
+      //);
+
+      history.push(
+        `BillingRulesMessages?billingRulerWarningId=${warning?.billingRulerWarningId}&billingRulerId=${result.billingRulerId}`
       );
+       
+    })();
+  };
 
-  })();
-};
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const billingRulerIdParam = Number(params.get('billingRulerId'));
+
+    if (billingRulerIdParam && billingRulerIdParam > 0) {
+      reloadBillingRuler(billingRulerIdParam);
+    }
+
+  }, [location.search]);
 
   return (
     <Container>
@@ -326,7 +511,7 @@ const handlePersonalizarMensagem = (warningType: string) => {
 
                   <div className="row channels">
                     <label className="channel">
-                      <input type="checkbox" checked={flgNotifyEmail1} onClick={() => { setFlgNotifyEmail1(!flgNotifyEmail1) }}></input>
+                      <input type="checkbox" checked={flgNotifyEmail1} onChange={() => { setFlgNotifyEmail1(!flgNotifyEmail1) }}></input>
 
                       {flgNotifyEmail1 == true ? (
                         <FiMail className='notificationEmailActive' />
@@ -337,7 +522,7 @@ const handlePersonalizarMensagem = (warningType: string) => {
                     </label>
 
                     <label className="channel">
-                      <input type="checkbox" checked={flgNotifyWhatsApp1} onClick={() => { setFlgNotifyWhatsApp1(!flgNotifyWhatsApp1) }} ></input>
+                      <input type="checkbox" checked={flgNotifyWhatsApp1} onChange={() => { setFlgNotifyWhatsApp1(!flgNotifyWhatsApp1) }} ></input>
 
                       {flgNotifyWhatsApp1 == true ? (
                         <FaWhatsapp className='notificationWhatsAppActive' />
@@ -391,7 +576,7 @@ const handlePersonalizarMensagem = (warningType: string) => {
 
                   <div className="row channels">
                     <label className="channel">
-                      <input type="checkbox" checked={flgNotifyEmail2} onClick={() => { setFlgNotifyEmail2(!flgNotifyEmail2) }}></input>
+                      <input type="checkbox" checked={flgNotifyEmail2} onChange={() => { setFlgNotifyEmail2(!flgNotifyEmail2) }}></input>
                       {flgNotifyEmail2 == true ? (
                         <FiMail className='notificationEmailActive' />
                       ) : (
@@ -401,7 +586,7 @@ const handlePersonalizarMensagem = (warningType: string) => {
                     </label>
 
                     <label className="channel">
-                      <input type="checkbox" checked={flgNotifyWhatsApp2} onClick={() => { setFlgNotifyWhatsApp2(!flgNotifyWhatsApp2) }}></input>
+                      <input type="checkbox" checked={flgNotifyWhatsApp2} onChange={() => { setFlgNotifyWhatsApp2(!flgNotifyWhatsApp2) }}></input>
                       {flgNotifyWhatsApp2 == true ? (
                         <FaWhatsapp className='notificationWhatsAppActive' />
                       ) : (
@@ -412,7 +597,7 @@ const handlePersonalizarMensagem = (warningType: string) => {
                     </label>
 
 
-                    <button className="buttonLinkClick" type="submit">
+                    <button className="buttonLinkClick" type="button" onClick={() => handlePersonalizarMensagem("VENCIMENTO")}>
                       <FaPencilAlt />
                       Personalizar Mensagem
                     </button>
@@ -456,7 +641,7 @@ const handlePersonalizarMensagem = (warningType: string) => {
 
                   <div className="row channels">
                     <label className="channel">
-                      <input type="checkbox" checked={flgNotifyEmail3} onClick={() => { setFlgNotifyEmail3(!flgNotifyEmail3) }}></input>
+                      <input type="checkbox" checked={flgNotifyEmail3} onChange={() => { setFlgNotifyEmail3(!flgNotifyEmail3) }}></input>
                       {flgNotifyEmail3 == true ? (
                         <FiMail className='notificationEmailActive' />
                       ) : (
@@ -467,7 +652,7 @@ const handlePersonalizarMensagem = (warningType: string) => {
                     </label>
 
                     <label className="channel">
-                      <input type="checkbox" checked={flgNotifyWhatsApp3} onClick={() => { setFlgNotifyWhatsApp3(!flgNotifyWhatsApp3) }}></input>
+                      <input type="checkbox" checked={flgNotifyWhatsApp3} onChange={() => { setFlgNotifyWhatsApp3(!flgNotifyWhatsApp3) }}></input>
                       {flgNotifyWhatsApp3 == true ? (
                         <FaWhatsapp className='notificationWhatsAppActive' />
                       ) : (
@@ -477,7 +662,7 @@ const handlePersonalizarMensagem = (warningType: string) => {
                     </label>
 
 
-                    <button className="buttonLinkClick" type="submit">
+                    <button className="buttonLinkClick" type="button" onClick={() => handlePersonalizarMensagem("POSTERIOR")}>
                       <FaPencilAlt />
                       Personalizar Mensagem
                     </button>
