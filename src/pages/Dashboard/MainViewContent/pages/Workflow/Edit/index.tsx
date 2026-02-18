@@ -76,7 +76,7 @@ export default function Workflow() {
   const [customerGroupValue, setCustomerGroupValue] = useState(''); // group field value
   const [workflowId, setWorkflowId] = useState<number>(0);
   const [totalTriggers, setTotalTriggers] = useState<number>(0);
-  
+
   const [workflowtriggerId, setWorkflowTriggerId] = useState<number>(0);
   const [customerSalesChannelId, setCustomerSalesChannelId] = useState(''); // group field id
   const [customerType, setCustomerType] = useState('F'); //  field type
@@ -141,7 +141,10 @@ export default function Workflow() {
   const [currentWorkflowTriggerId, setCurrentWorkflowTriggerId] = useState<number>(0);
   const [painelAberto, setPainelAberto] = useState<string | null>(null);
   const [appointmentSubject, setAppointmentSubject] = useState<string>(''); // Assuntos do Compromisso
-  const [optionsSubject, setOptionsSubject] = useState<ISelectValues[]>([]); // Lista de Assuntos
+  //const [optionsSubject, setOptionsSubject] = useState<ISelectValues[]>([]); // Lista de Assuntos
+  const [optionsSubject, setOptionsSubject] = useState<{
+    [actionId: number]: ISelectValues[];
+  }>({});
   const [appointmentSubjectId, setAppointmentSubjectId] = useState<string>(''); // Assuntos do Compromisso
   const [appointmentNotifyMatterCustomer, setAppointmentNotifyMatterCustomer,] = useState<string>('N'); // Controla o Input de notificação de cliente
   const [appointmentRemindersList, setAppointmentRemindersList] = useState<LembretesData[]>([]); // Lista de Lembretes
@@ -155,7 +158,7 @@ export default function Workflow() {
   useEffect(() => {
     //handleValidateSecurity(SecurityModule.configuration)
     LoadWorkflow()
-    LoadSubject();
+    //LoadSubject();
     setAppointmentBlockUpdate(false)
 
   }, [])
@@ -254,7 +257,7 @@ export default function Workflow() {
       if (t.triggerType === "DATA") {
         return Boolean(t.configuration?.label?.trim());
       }
-      return 0; 
+      return 0;
     });
 
     if (!isValid) {
@@ -275,10 +278,10 @@ export default function Workflow() {
       const response = await api.put('/Workflow/Salvar', {
         token,
         apiKey,
-        workflowId: workflow.workflowId ? workflow.workflowId : 0, 
+        workflowId: workflow.workflowId ? workflow.workflowId : 0,
         name: workflowName,
-        companyId, 
-        triggers: triggerList 
+        companyId,
+        triggers: triggerList
       })
 
 
@@ -287,18 +290,11 @@ export default function Workflow() {
 
       await reloadWorkflow(id);
 
-      /*
-      addToast({
-        type: "success",
-        title: "Workflow salvo",
-        description: workflow.workflowId ? "As alterações feitas no workflow foram salvas" : "Workflow adicionado"
-      })
-      */
 
       return id;
 
     } catch (err: any) {
-      const status = err.response?.data?.statusCode;  
+      const status = err.response?.data?.statusCode;
       const message = err.response?.data?.Message || err.message || "Erro desconhecido";
 
       // eslint-disable-next-line no-alert
@@ -331,7 +327,7 @@ export default function Workflow() {
       if (t.triggerType === "DATA") {
         return Boolean(t.configuration?.label?.trim());
       }
-      return true; 
+      return true;
     });
 
     if (!isValid) {
@@ -352,13 +348,13 @@ export default function Workflow() {
       const response = await api.put('/Workflow/Salvar', {
         token,
         apiKey,
-        workflowId: workflow.workflowId ? workflow.workflowId : 0, 
-        name: workflowName, 
-        companyId,   
-        triggers: triggerList 
+        workflowId: workflow.workflowId ? workflow.workflowId : 0,
+        name: workflowName,
+        companyId,
+        triggers: triggerList
       })
 
-   
+
       const id = Number(response.data);
       setWorkflowId(id);
 
@@ -384,11 +380,10 @@ export default function Workflow() {
         fetchTriggerActions(trigger.workflowTriggerId);
 
       }
-      else
-      {
-     
+      else {
+
         //const currentOrder = [...workflowTrigger];
-        
+
         await reloadWorkflow(id)
 
         /*
@@ -406,7 +401,7 @@ export default function Workflow() {
 
       }
 
-     
+
       addToast({
         type: "success",
         title: "Workflow salvo",
@@ -540,7 +535,7 @@ export default function Workflow() {
           actionType: 'CRIARCOMPROMISSO',
           daysbeforeandafter: 0,
           configuration: {
-            when: "depois", 
+            when: "depois",
             privacy: "N",
             reminders: []
           }
@@ -611,7 +606,7 @@ export default function Workflow() {
         when: "depois",
         privacy: "N",
         reminders: [],
-        starttime:"09:00"
+        starttime: "09:00"
       }
     };
 
@@ -630,7 +625,7 @@ export default function Workflow() {
   const handleDeleteTrigger = useCallback((triggerId) => {
     const address = workflowTrigger.filter(item => item.workflowTriggerId !== triggerId);
 
-    if (address.length >=0) {
+    if (address.length >= 0) {
       setWorkflowTrigger(address)
     } else {
       addToast({
@@ -639,7 +634,7 @@ export default function Workflow() {
         description: "Só é possivel excluir quando há mais de um gatilho cadastrado"
       })
     }
-  }, [addToast, workflowTrigger]); 
+  }, [addToast, workflowTrigger]);
 
 
   const handleChangeTriggerType = useCallback((value, triggerId) => {
@@ -655,7 +650,7 @@ export default function Workflow() {
 
     setWorkflowTrigger(newTypePhone)
 
-  }, [workflowTrigger]); 
+  }, [workflowTrigger]);
 
 
 
@@ -729,19 +724,19 @@ export default function Workflow() {
 
       const trigger = workflowTrigger.filter(item => item.workflowTriggerId !== workflowtriggerId);
 
-      
-      //if (trigger.length ==0) {
-      if (totalTriggers <=1 && workflowtriggerId.toString().length <= 10) {
 
-          addToast({
-            type: "info",
-            title: "Operação invalida",
-            description: "Só é possivel excluir quando há mais de um gatilho cadastrado"
-          })
-          return
+      //if (trigger.length ==0) {
+      if (totalTriggers <= 1 && workflowtriggerId.toString().length <= 10) {
+
+        addToast({
+          type: "info",
+          title: "Operação invalida",
+          description: "Só é possivel excluir quando há mais de um gatilho cadastrado"
+        })
+        return
 
       }
-  
+
       setIsDeletingTrigger(true)
 
       await api.delete('/Workflow/DeletarGatilho', {
@@ -806,23 +801,23 @@ export default function Workflow() {
       setIsDeletingTrigger(false)
       //setCurrentWorkflowId(0)
 
-        const currentOrder = [...workflowTrigger];
+      const currentOrder = [...workflowTrigger];
       await reloadWorkflow(workflowId);
 
       setPainelAberto(workflowtriggerId);
       fetchTriggerActions(workflowtriggerId);
       handleNewAction(workflowtriggerId);
 
-       setWorkflowTrigger(prev => {
-      const updated = [...prev];
-    
-      updated.sort((a, b) => {
-        const orderA = currentOrder.findIndex(t => t.workflowTriggerId === a.workflowTriggerId);
-        const orderB = currentOrder.findIndex(t => t.workflowTriggerId === b.workflowTriggerId);
-        return orderA - orderB;
+      setWorkflowTrigger(prev => {
+        const updated = [...prev];
+
+        updated.sort((a, b) => {
+          const orderA = currentOrder.findIndex(t => t.workflowTriggerId === a.workflowTriggerId);
+          const orderB = currentOrder.findIndex(t => t.workflowTriggerId === b.workflowTriggerId);
+          return orderA - orderB;
+        });
+        return updated;
       });
-      return updated;
-    });
 
 
 
@@ -876,37 +871,76 @@ export default function Workflow() {
   };
 
 
-
-  const LoadSubject = useCallback(async (reload = false, termSearch = '') => {
-    try {
-      if (termSearch === '') {
-        termSearch = appointmentSubject;
+  /*
+    const LoadSubject = useCallback(async (reload = false, termSearch = '') => {
+      try {
+        if (termSearch === '') {
+          termSearch = appointmentSubject;
+        }
+  
+        if (reload) {
+          termSearch = '';
+        }
+  
+        const response = await api.post(`/Assunto/Listar`, {
+          description: termSearch,
+          token
+        });
+  
+        const subjectList: ISelectValues[] = [];
+        response.data.map(item => {
+          return subjectList.push({
+            id: item.id,
+            label: item.value
+          })
+        })
+  
+        setOptionsSubject(subjectList);
       }
-
-      if (reload) {
-        termSearch = '';
+      catch (err) {
+        console.log(err);
       }
+    }, [appointmentSubject])
+  */
 
-      const response = await api.post(`/Assunto/Listar`, {
-        description: termSearch,
-        token
-      });
+  const LoadSubject = useCallback(
+    async (
+      actionId: number,
+      reload = false,
+      termSearch = ''
+    ) => {
+      try {
+        let search = termSearch;
 
-      const subjectList: ISelectValues[] = [];
-      response.data.map(item => {
-        return subjectList.push({
+        if (!search) {
+          search = appointmentSubject;
+        }
+
+        if (reload) {
+          search = '';
+        }
+
+        const response = await api.post(`/Assunto/Listar`, {
+          description: search,
+          token
+        });
+
+        const subjectList: ISelectValues[] = response.data.map(item => ({
           id: item.id,
           label: item.value
-        })
-      })
+        }));
 
-      setOptionsSubject(subjectList);
-    }
-    catch (err) {
-      console.log(err);
-    }
-  }, [appointmentSubject])
+        setOptionsSubject(prev => ({
+          ...prev,
+          [actionId]: subjectList
+        }));
 
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    [appointmentSubject, token]
+  );
 
 
   const CustomerEmailNotification = useCallback(key => {
@@ -1096,6 +1130,7 @@ export default function Workflow() {
   };
 
 
+
   const handleSubjectChange = (
     selected: { id: string | number; label: string } | null,
     workflowTriggerId: number | undefined,
@@ -1142,7 +1177,7 @@ export default function Workflow() {
               ...action,
               configuration: {
                 ...action.configuration,
-                reminders: newValues, 
+                reminders: newValues,
               },
             };
           }),
@@ -1170,7 +1205,7 @@ export default function Workflow() {
               ...action,
               configuration: {
                 ...action.configuration,
-                privacy: newValue, 
+                privacy: newValue,
               },
             };
           }),
@@ -1180,7 +1215,7 @@ export default function Workflow() {
   };
 
 
-   const handleTypeOfDaysChange = (
+  const handleTypeOfDaysChange = (
     newValue: string,
     workflowTriggerId: number,
     workflowActionId: number
@@ -1198,7 +1233,7 @@ export default function Workflow() {
               ...action,
               configuration: {
                 ...action.configuration,
-                typeOfDays: newValue, 
+                typeOfDays: newValue,
               },
             };
           }),
@@ -1371,7 +1406,7 @@ export default function Workflow() {
       return;
     }
 
-  
+
     const trigger = workflowTrigger.find(t => t.workflowTriggerId === triggerId);
 
     if (!trigger.configuration?.label || trigger.configuration.label.trim() === "") {
@@ -1385,29 +1420,18 @@ export default function Workflow() {
     }
 
     if (!trigger) {
-      //alert("Trigger não encontrada.");
+
       return;
     }
 
-    //const currentOrder = [...workflowTrigger];
+
     const id = await handleSalvarWorkflow();
 
     if (id > 0) {
 
       await fetchTriggerActions(triggerId);
 
-    /*
-    setWorkflowTrigger(prev => {
-      const updated = [...prev];
-     
-      updated.sort((a, b) => {
-        const orderA = currentOrder.findIndex(t => t.workflowTriggerId === a.workflowTriggerId);
-        const orderB = currentOrder.findIndex(t => t.workflowTriggerId === b.workflowTriggerId);
-        return orderA - orderB;
-      });
-      return updated;
-    });
-    */  
+
       setPainelAberto(triggerId);
       setConfigureEvent(true);
       setNameTrigger(trigger.configuration?.label);
@@ -1421,12 +1445,12 @@ export default function Workflow() {
     try {
 
       const response = await api.get<IWorkflowActions[]>('/Workflow/ListarAcoes', {
-        params: { filterTerm: "gatilho="+triggerId, token }
+        params: { filterTerm: "gatilho=" + triggerId, token }
       });
 
-      
+
       let data: IWorkflowActions[] = response.data.map((action: any) => {
-        let configuration = null; 
+        let configuration = null;
         if (action.configDescription) {
           try {
             configuration = JSON.parse(action.configDescription);
@@ -1456,22 +1480,91 @@ export default function Workflow() {
             workflowTriggerId: triggerId,
             actionType: "CRIARCOMPROMISSO",
             daysbeforeandafter: 0,
-            configuration: { when: "depois", starttime:"09:00",  reminders: [] }
+            configuration: { when: "depois", starttime: "09:00", reminders: [] }
           }
         ];
       }
 
-      
+
+
+      /*************************************************** */
+
+      const subjectsToLoad: { actionId: number; subjectId: string }[] = [];
+
+      data.forEach(action => {
+        if (action.configuration?.subject) {
+          subjectsToLoad.push({
+            actionId: action.workflowactionId,
+            subjectId: action.configuration.subject
+          });
+        }
+      });
+
+      for (const item of subjectsToLoad) {
+
+        const currentOptions = optionsSubject[item.actionId] || [];
+
+        const exists = currentOptions.some(
+          opt => String(opt.id) === String(item.subjectId)
+        );
+
+        if (!exists) {
+          try {
+          
+            const response = await api.post('/Assunto/Editar', {
+              id: item.subjectId,
+              token
+            });
+
+            const subject = response.data;
+
+            
+            if (subject) {
+          
+             LoadSubject(item.actionId, false, subject.subjectDescription);
+              
+              /*
+              setOptionsSubject(prev => {
+                const actionOptions = prev[item.actionId] || [];
+
+                const alreadyExists = actionOptions.some(
+                  opt => String(opt.id) === String(subject.subjectId)
+                );
+
+                if (alreadyExists) return prev;
+
+                return {
+                  ...prev,
+                  [item.actionId]: [
+                    ...actionOptions,
+                    {
+                      id: subject.subjectId,
+                      label: subject.subjectDescription
+                    }
+                  ]
+                };
+              });
+
+              */
+            }
+            
+          } catch (err) {
+            console.log(err);
+          }
+        }
+      }
+
+      /*************************************************** */
+
       setWorkflowTrigger(prev =>
         prev.map(tr =>
           tr.workflowTriggerId === triggerId ? { ...tr, actions: data } : tr
         )
       );
-      
+
 
     } catch (error) {
-      //console.error(error);
-      //alert("Erro ao carregar ações do compromisso.");
+
     }
   };
 
@@ -1508,16 +1601,7 @@ export default function Workflow() {
         return false;
       }
 
-      /*
-      if (!action.daysbeforeandafter || action.daysbeforeandafter == 0) {
-        addToast({
-          type: "error",
-          title: "Falha ao cadastrar compromisso",
-          description: "O campo de dias antes/depois deve ser diferente que zero"
-        })
-        return false;
-      }
-      */
+
 
       const hora = action.configuration?.starttime;
 
@@ -1529,19 +1613,6 @@ export default function Workflow() {
         })
         return false;
       }
-
-      /*
-      const lembretes = action.configuration?.reminders;
-
-      if (!Array.isArray(lembretes) || lembretes.length === 0) {
-        addToast({
-          type: "error",
-          title: "Falha ao cadastrar compromisso",
-          description: "Selecione pelo menos um lembrete"
-        })
-        return false;
-      }
-      */
 
       const descricao = action.configuration?.description;
 
@@ -1556,9 +1627,9 @@ export default function Workflow() {
 
 
       const config = {
-        ...action.configuration,  
+        ...action.configuration,
         privacy: action.configuration?.privacy ?? "N",
-        responsible: action.configuration?.responsible ?? "U",  
+        responsible: action.configuration?.responsible ?? "U",
         reminders: action.configuration?.reminders ?? []
       };
 
@@ -1584,13 +1655,7 @@ export default function Workflow() {
       await api.put('/workflow/salvaracao', actionPayload);
 
       return true;
-      /*
-      addToast({
-        type: "success",
-        title: "Compromisso salvo",
-        description: workflow.workflowId ? "As alterações feitas no compromisso foram salvas" : "compromisso adicionado"
-      })
-      */
+
 
     } catch (err: any) {
       const status = err.response?.data?.statusCode;  // protegemos com ?.
@@ -1620,12 +1685,12 @@ export default function Workflow() {
         (trigger) => trigger.configuration?.label?.trim() === nameTrigger
       );
       if (!trigger) {
-        //alert("Trigger não encontrada");
+
         return;
       }
 
       console.log(trigger);
-    
+
       const action = trigger.actions?.find(a => a.workflowactionId === actionId);
       if (!action) {
         alert("Action não encontrada");
@@ -1641,17 +1706,6 @@ export default function Workflow() {
         return false;
       }
 
-      /*
-      if (!action.daysbeforeandafter || action.daysbeforeandafter == 0) {
-        addToast({
-          type: "error",
-          title: "Falha ao cadastrar compromisso",
-          description: "O campo de dias antes/depois deve ser diferente que zero"
-        })
-        return false;
-      }
-      */
-
       const hora = action.configuration?.starttime;
 
       if (!hora || hora.trim() === "") {
@@ -1663,18 +1717,6 @@ export default function Workflow() {
         return false;
       }
 
-      /*
-      const lembretes = action.configuration?.reminders;
-
-      if (!Array.isArray(lembretes) || lembretes.length === 0) {
-        addToast({
-          type: "error",
-          title: "Falha ao cadastrar compromisso",
-          description: "Selecione pelo menos um lembrete"
-        })
-        return false;
-      }
-      */
 
       const descricao = action.configuration?.description;
 
@@ -1690,9 +1732,9 @@ export default function Workflow() {
 
 
       const config = {
-        ...action.configuration,  
+        ...action.configuration,
         privacy: action.configuration?.privacy ?? "N",
-        responsible: action.configuration?.responsible ?? "U",  
+        responsible: action.configuration?.responsible ?? "U",
       };
 
       console.log('Config action ' + JSON.stringify(config));
@@ -1731,24 +1773,23 @@ export default function Workflow() {
       handleNewAction(triggerId);
 
 
-    setWorkflowTrigger(prev => {
-      const updated = [...prev];
+      setWorkflowTrigger(prev => {
+        const updated = [...prev];
 
-      updated.sort((a, b) => {
-        const orderA = currentOrder.findIndex(t => t.workflowTriggerId === a.workflowTriggerId);
-        const orderB = currentOrder.findIndex(t => t.workflowTriggerId === b.workflowTriggerId);
-        return orderA - orderB;
+        updated.sort((a, b) => {
+          const orderA = currentOrder.findIndex(t => t.workflowTriggerId === a.workflowTriggerId);
+          const orderB = currentOrder.findIndex(t => t.workflowTriggerId === b.workflowTriggerId);
+          return orderA - orderB;
+        });
+        return updated;
       });
-      return updated;
-    });
 
 
 
     } catch (err: any) {
-      const status = err.response?.data?.statusCode;  
+      const status = err.response?.data?.statusCode;
       const message = err.response?.data?.Message || err.message || "Erro desconhecido";
 
-      // eslint-disable-next-line no-alert
       if (status !== 500) {
 
         addToast({
@@ -1760,6 +1801,8 @@ export default function Workflow() {
 
     }
   };
+
+
 
   const handleRemoveAction = (TriggerId: number, ActionId: number) => {
     //alert('triggerid: ' + TriggerId + ' actionid: ' + ActionId);
@@ -1814,6 +1857,7 @@ export default function Workflow() {
   }, [addToast, history]);
 
 
+
   return (
     <Container>
 
@@ -1859,454 +1903,519 @@ export default function Workflow() {
 
               <label htmlFor="endereco" style={{ marginTop: '-55px' }}>
                 <p>Informe abaixo as datas que serão gatilhos para iniciar o workflow - arraste para reordenar as datas</p>
-                
+
                 <DragDropContext
-    onDragEnd={(result) => {
-      if (!result.destination) return;
+                  onDragEnd={(result) => {
+                    if (!result.destination) return;
 
-      const reordered = Array.from(workflowTrigger);
-      const [removed] = reordered.splice(result.source.index, 1);
-      reordered.splice(result.destination.index, 0, removed);
+                    const reordered = Array.from(workflowTrigger);
+                    const [removed] = reordered.splice(result.source.index, 1);
+                    reordered.splice(result.destination.index, 0, removed);
 
-      // Atualiza a ordem
-      setWorkflowTrigger(reordered);
-    }}
-  >
-    <Droppable droppableId="workflowTriggers">
-      {(provided) => (
-        <div ref={provided.innerRef} {...provided.droppableProps}>
-          {workflowTrigger.map((trigger, index) => (
-            <Draggable
-              key={trigger.workflowTriggerId}
-              draggableId={String(trigger.workflowTriggerId)}
-              index={index}
-            >
-              {(provided) => (
-                <section
-                  id="endereco"
-                  ref={provided.innerRef}
-                  {...provided.draggableProps}
-                  {...provided.dragHandleProps}
-                  style={{
-                    background: "#fff",
-                    border: "1px solid #ccc",
-                    borderRadius: "8px",
-                    padding: "16px",
-                    marginBottom: "16px",
-                    ...provided.draggableProps.style,
+                    // Atualiza a ordem
+                    setWorkflowTrigger(reordered);
                   }}
                 >
-                   
-                    <label style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                      Tipo gatilho
-                      <Select
-                        isSearchable
-                        id="triggerSelect"
-                        styles={selectStyles}
-                        value={workflowTriggerTypes.filter(options => options.id === trigger.triggerType)}
-                        onChange={(item) => handleChangeTriggerType(item?.id, trigger.workflowTriggerId)}
-                        options={workflowTriggerTypes}
-                        isDisabled={true}
-                        placeholder="Selecione"
-                      />
-                    </label>
-
-                    <label style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                      Informe o "label" para data
-                      <input
-                        id="triggerDescription"
-                        type="text"
-                        autoComplete="off"
-                        value={trigger.configuration?.label || ""}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) => handleChangeTrigger(e.target.value, trigger.workflowTriggerId)}
-                        maxLength={30}
-                        style={{ width: "400px" }}
-                      />
-                    </label>
-
-                    <label htmlFor="telefone" id="trigger">
-
-                      <button type="button" className='buttonLinkClick' onClick={() =>
-                        handleCheckBoxDeleteTrigger(trigger.workflowTriggerId)} style={{ width: "200px" }}>
-                        <FiTrash />
-                        Apagar este gatilho
-                      </button>
-
-                      <button
-                        type="button"
-                        className='buttonLinkClick'
-                        onClick={() => handleConfigurarCompromisso(trigger.workflowTriggerId!)}
-                        style={{ width: "200px" }}
-                      >
-
-                        <FiXCircle />
-                        Configurar compromisso
-
- 
-                      </button>
-
-                    </label>
-                    
-                    <label htmlFor="telefone" id="trigger">
-
-
-                    </label>
-
-
-
-
-                    {painelAberto === trigger.workflowTriggerId && (
-                      <>
-
-                        {trigger.actions?.map(action => (
-                          <>
-
-                            <label
-                              htmlFor="telefone2"
-                              id="trigger"
-                              style={{
-                                gridColumn: "2 / span 3", 
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "8px",
-                              }}
-                            >
-                              
-                               Dias para criação do compromisso
-                               <select
-                                name="tipoDias"
-                                id={`tipoDias-${action.workflowactionId}`}  
-                                value={action.configuration?.typeOfDays ?? "C"}   
-                                onChange={(e) =>
-                                    handleTypeOfDaysChange(e.target.value, trigger.workflowTriggerId, action.workflowactionId)
-                                  }       
-                                style={{ width: "10px", maxWidth: "100px" }}
-                              >
-                                <option value="C">Corridos</option>
-                                <option value="U">Úteis</option>
-                              </select>
-
-                              <FcAbout
-                                style={{ height: "15px", width: "15px", marginRight: "55px" }}
-                                title="Você deve Informar a regra para criação do compromisso a partir a da data do gatilho, informar se deve ser criado antes ou depois e quantos dias considerar."
-                              />
-
-                              <label style={{ display: "flex", alignItems: "center", gap: "5px", marginRight: "20px" }}>
-                                <input
-                                  type="radio"
-                                  name={`quando-${trigger.workflowTriggerId}-${action.workflowactionId}`} // único por trigger+ação
-                                  value="antes"
-                                  checked={action.configuration?.when === "antes"}
-                                  onChange={() =>
-                                    handleWhenChange("antes", trigger.workflowTriggerId, action.workflowactionId)
-                                  }
-                                />
-                                Antes
-                              </label>
-
-                              <label style={{ display: "flex", alignItems: "center", gap: "5px", marginRight: "20px" }}>
-                                <input
-                                  type="radio"
-                                  name={`quando-${trigger.workflowTriggerId}-${action.workflowactionId}`} // mesmo name do par
-                                  value="depois"
-                                  checked={action.configuration?.when === "depois"}
-                                  onChange={() =>
-                                    handleWhenChange("depois", trigger.workflowTriggerId, action.workflowactionId)
-                                  }
-                                />
-                                Depois
-                              </label>
-
-                              <label style={{ display: "flex", alignItems: "center", gap: "5px", marginRight: "15px" }}>
-
-                                Qtd. de dias
-                                <input
-                                  type="number"
-                                  min={0}
-                                  value={Math.abs(action.daysbeforeandafter ?? 0)}
-                                  onChange={(e) =>
-                                    handleChangeDays(
-                                      e.target.value,
-                                      trigger.workflowTriggerId,
-                                      action.workflowactionId
-                                    )
-                                  }
-                                  style={{ width: "50px" }}
-                                />
-
-                              </label>
-                            </label>
-
-
-
-                            <label htmlFor="telefone" id="trigger" style={{
-                              gridColumn: "2 / span 1", 
-                              display: "flex",
-                              //flexDirection: "column",
-                            }}>
-
-                              <div id="triggerDados">
-                                Assunto
-                                <Select
-                                  isSearchable
-                                  isClearable
-                                  id="triggerSubject"
-                                  placeholder='Selecione o Assunto'
-                                  onChange={(item) => handleSubjectChange(item, trigger.workflowTriggerId, action.workflowactionId)}
-                                  onInputChange={(term) => setAppointmentSubject(term)}
-                                  value={optionsSubject.filter((opt) => opt.id === action.configuration?.subject)}
-                                  options={optionsSubject}
-                                  loadingMessage={loadingMessage}
-                                  noOptionsMessage={noOptionsMessage}
-                                  styles={{
-                                    control: (base) => ({
-                                      ...base,
-                                      minWidth: "400px", left: "-7px"
-                                    })
-                                  }}
-                                />
-
-                              </div>
-
-                            </label>
-
-
-                            <label htmlFor="telefone2" id="trigger" >
-
-
-                              <div id="triggerDados">
-
-                                Hora Inicio
-
-
-                                <TimePicker
-                                  name={`timepicker-${action.workflowactionId}`}
-                                  id={`timepicker-${action.workflowactionId}`}
-                                  value={toHHmm(action.configuration?.starttime)}
-                                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                    const time = e.target.value; 
-                                    handleNewHourBeggin(time, trigger.workflowTriggerId, action.workflowactionId);
-                                  }}
-                                  disabled={appointmentBlockUpdate}
-                                  style={{
-                                    width: "100px",
-                                    maxWidth: "100px",
-                                    display: "inline-block",
-                                  }}
-                                />
-
-                              </div>
-                            </label>
-                            <label htmlFor="telefone" id="trigger" style={{
-                              gridColumn: "2 / span 1", 
-                              display: "flex",
-                              //flexDirection: "column",
-                            }}>
-                              <div id="triggerDados">
-
-                                Privacidade
-                                <select
-                                  name="privacidade"
-                                  id={`privacidade-${action.workflowactionId}`}
-                                  value={action.configuration?.privacy ?? "N"}
-                                  onChange={(e) =>
-                                    handlePrivacyChange(e.target.value, trigger.workflowTriggerId, action.workflowactionId)
-                                  }
-                                  disabled={appointmentBlockUpdate}
-                                  style={{ width: "400px" }}
-                                >
-                                  <option value="N">Público</option>
-                                  <option value="S">Privado</option>
-                                </select>
-                              </div>
-
-                            </label>
-                            <label htmlFor="telefone2" id="trigger" >
-
-                              <div id="triggerDados">
-                                Responsável
-
-                                <select
-                                  name="responsavel"
-                                  id={`responsavel-${action.workflowactionId}`}
-                                  value={action.configuration?.responsible ?? "U"}
-                                  onChange={(e) =>
-                                    handleResponsibleChange(e.target.value, trigger.workflowTriggerId, action.workflowactionId)
-                                  }
-                                  disabled={appointmentBlockUpdate}
-                                  style={{ width: "300px" }}
-                                >
-                                  <option value="U">Usuário</option>
-                                  <option value="R">Resp.Processo</option>
-                                  <option value="A">Atribuir</option>
-                                </select>
-
-                              </div>
-
-                            </label>
-
-
-                            <label
-                              htmlFor="obs"
-                              style={{
-                                gridColumn: "2 / span 2", 
-                                display: "flex",
-                                flexDirection: "column",
-                              }}
-                            >
-                              <div id="triggerDados">
-                                Lembretes
-                                <Select
-                                  isMulti
-                                  name="lembretes"
-                                  id={`lembretes-${action.workflowactionId}`}
-                                  placeholder="Selecione."
-                                  value={
-                                    (action.configuration?.reminders ?? []).map(reminder =>
-                                      optionsLembrete
-                                        .filter(opt => opt.key !== "00")
-                                        .map(opt => ({ value: opt.key, label: opt.value }))
-                                        .find(opt => opt.value === reminder)
-                                    ).filter(Boolean)
-                                  }
-                                  onChange={(selected) => {
-                                    const values = selected.map(opt => opt.value);
-                                    handleSelectLembretes(values, trigger.workflowTriggerId, action.workflowactionId);
-                                  }}
-                                  options={optionsLembrete
-                                    .filter(opt => opt.key !== "00")
-                                    .map(opt => ({
-                                      value: opt.key,
-                                      label: opt.value
-                                    }))}
-                                  isDisabled={appointmentBlockUpdate}
-                                  styles={{
-                                    control: (base) => ({
-                                      ...base,
-                                      width: "725px",
-                                      minWidth: "160px",
-                                    })
-                                  }}
-                                />
-
-                              </div>
-
-                            </label>
-
-
-                            <label
-                              htmlFor="obs"
-                              style={{
-                                gridColumn: "2 / span 2", 
-                                display: "flex",
-                                flexDirection: "column",
-                              }}
-                            >
-                              <div id="triggerDados">
-                                <span>Descrição</span>
-
-                                <textarea
-                                  value={action.configuration?.description ?? ""}
-                                  onChange={(e) =>
-                                    handleDescriptionChange(
-                                      e.target.value,
-                                      trigger.workflowTriggerId,
-                                      action.workflowactionId
-                                    )
-                                  }
-                                  style={{
-                                    width: "725px",
-                                    minHeight: "150px",
-                                    resize: "vertical",
-                                    background: "white",
-                                    color: "black",
-                                    border: "1px solid #ccc",
-                                    borderRadius: "6px",
-                                    padding: "8px",
-                                    fontSize: "14px",
-                                  }}
-                                />
-
-                              </div>
-                            </label>
-
-                            <label
-                              htmlFor="obs"
-                              style={{
-                                gridColumn: "2 / span 2", // ocupa 2 colunas a partir da coluna 1
-                                display: "flex",
-                                flexDirection: "column",
-                              }}
-                            >
-                              <div style={{ width: "725px", display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "8px", }}>
-                                <button type="button" className='buttonLinkClick' onClick={() => handleNewAction(trigger.workflowTriggerId!)}>
-                                  <FiPlus />
-                                  Incluir novo compromisso
-                                </button>
-
-                                <button type="button" className='buttonLinkClick' onClick={() => handleSalvarCompromisso(trigger.workflowTriggerId, action.workflowactionId)}>
-                                  <FiSave />
-                                  Salvar
-                                </button>
-
-
-                                <button type="button" className='buttonLinkClick' onClick={() =>
-                                  handleDeleteWorkflowAcao(trigger.workflowTriggerId, action.workflowactionId)} >
-                                  <FiTrash />
-                                  Excluir
-                                </button>
-
-                                <button type="button" className='buttonLinkClick' onClick={() => handleRemoveAction(trigger.workflowTriggerId, action.workflowactionId)}>
-                                  <FiX />
-                                  Fechar
-                                </button>
-
-                              </div>
-                            </label>
-
-
-                            <label
-                              htmlFor="obs"
-                              style={{
-                                gridColumn: "2 / span 2",
-                                display: "flex",
-                                flexDirection: "column",
-                              }}
-                            >
-
-                              <hr
+                  <Droppable droppableId="workflowTriggers">
+                    {(provided) => (
+                      <div ref={provided.innerRef} {...provided.droppableProps}>
+                        {workflowTrigger.map((trigger, index) => (
+                          <Draggable
+                            key={trigger.workflowTriggerId}
+                            draggableId={String(trigger.workflowTriggerId)}
+                            index={index}
+                          >
+                            {(provided) => (
+                              <section
+                                id="endereco"
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
                                 style={{
-                                  gridColumn: "2 / span 2",
-                                  width: "100%",
-                                  border: "none",
-                                  borderTop: "3px solid #ccc",
-                                  margin: "1rem 0",
+                                  background: "#fff",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "8px",
+                                  padding: "16px",
+                                  marginBottom: "16px",
+                                  ...provided.draggableProps.style,
                                 }}
-                              />
+                              >
 
-                            </label>
+                                <label style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                                  Tipo gatilho
+                                  <Select
+                                    isSearchable
+                                    id="triggerSelect"
+                                    styles={selectStyles}
+                                    value={workflowTriggerTypes.filter(options => options.id === trigger.triggerType)}
+                                    onChange={(item) => handleChangeTriggerType(item?.id, trigger.workflowTriggerId)}
+                                    options={workflowTriggerTypes}
+                                    isDisabled={true}
+                                    placeholder="Selecione"
+                                  />
+                                </label>
+
+                                <label style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                                  Informe o "label" para data
+                                  <input
+                                    id="triggerDescription"
+                                    type="text"
+                                    autoComplete="off"
+                                    value={trigger.configuration?.label || ""}
+                                    onChange={(e: ChangeEvent<HTMLInputElement>) => handleChangeTrigger(e.target.value, trigger.workflowTriggerId)}
+                                    maxLength={30}
+                                    style={{ width: "400px" }}
+                                  />
+                                </label>
+
+                                <label htmlFor="telefone" id="trigger">
+
+                                  <button type="button" className='buttonLinkClick' onClick={() =>
+                                    handleCheckBoxDeleteTrigger(trigger.workflowTriggerId)} style={{ width: "200px" }}>
+                                    <FiTrash />
+                                    Apagar este gatilho
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    className='buttonLinkClick'
+                                    onClick={() => handleConfigurarCompromisso(trigger.workflowTriggerId!)}
+                                    style={{ width: "200px" }}
+                                  >
+
+                                    <FiXCircle />
+                                    Configurar compromisso
 
 
-                          </>
+                                  </button>
+
+                                </label>
+
+                                <label htmlFor="telefone" id="trigger">
 
 
+                                </label>
+
+
+
+
+                                {painelAberto === trigger.workflowTriggerId && (
+                                  <>
+
+                                    {trigger.actions?.map(action => (
+                                      <>
+
+                                        <label
+                                          htmlFor="telefone2"
+                                          id="trigger"
+                                          style={{
+                                            gridColumn: "2 / span 3",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: "8px",
+                                          }}
+                                        >
+
+                                          Dias para criação do compromisso
+                                          <select
+                                            name="tipoDias"
+                                            id={`tipoDias-${action.workflowactionId}`}
+                                            value={action.configuration?.typeOfDays ?? "C"}
+                                            onChange={(e) =>
+                                              handleTypeOfDaysChange(e.target.value, trigger.workflowTriggerId, action.workflowactionId)
+                                            }
+                                            style={{ width: "10px", maxWidth: "100px" }}
+                                          >
+                                            <option value="C">Corridos</option>
+                                            <option value="U">Úteis</option>
+                                          </select>
+
+                                          <FcAbout
+                                            style={{ height: "15px", width: "15px", marginRight: "55px" }}
+                                            title="Você deve Informar a regra para criação do compromisso a partir a da data do gatilho, informar se deve ser criado antes ou depois e quantos dias considerar."
+                                          />
+
+                                          <label style={{ display: "flex", alignItems: "center", gap: "5px", marginRight: "20px" }}>
+                                            <input
+                                              type="radio"
+                                              name={`quando-${trigger.workflowTriggerId}-${action.workflowactionId}`} // único por trigger+ação
+                                              value="antes"
+                                              checked={action.configuration?.when === "antes"}
+                                              onChange={() =>
+                                                handleWhenChange("antes", trigger.workflowTriggerId, action.workflowactionId)
+                                              }
+                                            />
+                                            Antes
+                                          </label>
+
+                                          <label style={{ display: "flex", alignItems: "center", gap: "5px", marginRight: "20px" }}>
+                                            <input
+                                              type="radio"
+                                              name={`quando-${trigger.workflowTriggerId}-${action.workflowactionId}`} // mesmo name do par
+                                              value="depois"
+                                              checked={action.configuration?.when === "depois"}
+                                              onChange={() =>
+                                                handleWhenChange("depois", trigger.workflowTriggerId, action.workflowactionId)
+                                              }
+                                            />
+                                            Depois
+                                          </label>
+
+                                          <label style={{ display: "flex", alignItems: "center", gap: "5px", marginRight: "15px" }}>
+
+                                            Qtd. de dias
+                                            <input
+                                              type="number"
+                                              min={0}
+                                              value={Math.abs(action.daysbeforeandafter ?? 0)}
+                                              onChange={(e) =>
+                                                handleChangeDays(
+                                                  e.target.value,
+                                                  trigger.workflowTriggerId,
+                                                  action.workflowactionId
+                                                )
+                                              }
+                                              style={{ width: "50px" }}
+                                            />
+
+                                          </label>
+                                        </label>
+
+
+
+                                        <label htmlFor="telefone" id="trigger" style={{
+                                          gridColumn: "2 / span 1",
+                                          display: "flex",
+                                          //flexDirection: "column",
+                                        }}>
+
+                                          <div id="triggerDados">
+                                            Assunto
+                                            <Select
+                                              key={action.workflowactionId}
+                                              isSearchable
+                                              isClearable
+                                              id="triggerSubject"
+                                              placeholder="Selecione o Assunto"
+
+                                               onMenuOpen={() => {
+                                                const actionId = action.workflowactionId;
+
+                                                const currentOptions = optionsSubject[actionId];
+
+                                                if (!currentOptions || currentOptions.length === 0) {
+                                                  LoadSubject(actionId, true);
+                                                }
+                                              }}
+                                              
+                                              onChange={(item) =>
+                                                handleSubjectChange(
+                                                  item,
+                                                  trigger.workflowTriggerId,
+                                                  action.workflowactionId
+                                                )
+                                              }
+
+                                             onInputChange={(term, meta) => {
+                                              if (meta.action === "menu-close" || meta.action === "input-blur") {
+                                                return;
+                                              }
+
+                                              if (term && term.length >= 1) {
+                                                LoadSubject(action.workflowactionId, false, term);
+                                              }
+                                            }}
+
+                                              value={
+                                                optionsSubject[action.workflowactionId]?.find(
+                                                  (opt) =>
+                                                    String(opt.id) ===
+                                                    String(action.configuration?.subject)
+                                                ) || null
+                                              }
+
+                                              options={
+                                                optionsSubject[action.workflowactionId] || []
+                                              }
+
+                                              loadingMessage={loadingMessage}
+                                              noOptionsMessage={noOptionsMessage}
+
+                                              styles={{
+                                                control: (base) => ({
+                                                  ...base,
+                                                  minWidth: "400px",
+                                                  left: "-7px",
+                                                }),
+                                              }}
+                                            />
+
+                                            {/*}
+                                            <Select
+                                              isSearchable
+                                              isClearable
+                                              id="triggerSubject"
+                                              placeholder='Selecione o Assunto'
+                                              onChange={(item) => handleSubjectChange(item, trigger.workflowTriggerId, action.workflowactionId)}
+                                              onInputChange={(term) => {
+                                                setAppointmentSubject(term);
+                                                //LoadSubject(false, term);
+                                              }}
+                                              value={optionsSubject.filter((opt) => opt.id === action.configuration?.subject)}
+                                              options={optionsSubject}
+                                              loadingMessage={loadingMessage}
+                                              noOptionsMessage={noOptionsMessage}
+                                              styles={{
+                                                control: (base) => ({
+                                                  ...base,
+                                                  minWidth: "400px", left: "-7px"
+                                                })
+                                              }}
+                                            />
+                                              */}
+
+
+                                          </div>
+
+                                        </label>
+
+
+                                        <label htmlFor="telefone2" id="trigger" >
+
+
+                                          <div id="triggerDados">
+
+                                            Hora Inicio
+
+
+                                            <TimePicker
+                                              name={`timepicker-${action.workflowactionId}`}
+                                              id={`timepicker-${action.workflowactionId}`}
+                                              value={toHHmm(action.configuration?.starttime)}
+                                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                                const time = e.target.value;
+                                                handleNewHourBeggin(time, trigger.workflowTriggerId, action.workflowactionId);
+                                              }}
+                                              disabled={appointmentBlockUpdate}
+                                              style={{
+                                                width: "100px",
+                                                maxWidth: "100px",
+                                                display: "inline-block",
+                                              }}
+                                            />
+
+                                          </div>
+                                        </label>
+                                        <label htmlFor="telefone" id="trigger" style={{
+                                          gridColumn: "2 / span 1",
+                                          display: "flex",
+                                          //flexDirection: "column",
+                                        }}>
+                                          <div id="triggerDados">
+
+                                            Privacidade
+                                            <select
+                                              name="privacidade"
+                                              id={`privacidade-${action.workflowactionId}`}
+                                              value={action.configuration?.privacy ?? "N"}
+                                              onChange={(e) =>
+                                                handlePrivacyChange(e.target.value, trigger.workflowTriggerId, action.workflowactionId)
+                                              }
+                                              disabled={appointmentBlockUpdate}
+                                              style={{ width: "400px" }}
+                                            >
+                                              <option value="N">Público</option>
+                                              <option value="S">Privado</option>
+                                            </select>
+                                          </div>
+
+                                        </label>
+                                        <label htmlFor="telefone2" id="trigger" >
+
+                                          <div id="triggerDados">
+                                            Responsável
+
+                                            <select
+                                              name="responsavel"
+                                              id={`responsavel-${action.workflowactionId}`}
+                                              value={action.configuration?.responsible ?? "U"}
+                                              onChange={(e) =>
+                                                handleResponsibleChange(e.target.value, trigger.workflowTriggerId, action.workflowactionId)
+                                              }
+                                              disabled={appointmentBlockUpdate}
+                                              style={{ width: "300px" }}
+                                            >
+                                              <option value="U">Usuário</option>
+                                              <option value="R">Resp.Processo</option>
+                                              <option value="A">Atribuir</option>
+                                            </select>
+
+                                          </div>
+
+                                        </label>
+
+
+                                        <label
+                                          htmlFor="obs"
+                                          style={{
+                                            gridColumn: "2 / span 2",
+                                            display: "flex",
+                                            flexDirection: "column",
+                                          }}
+                                        >
+                                          <div id="triggerDados">
+                                            Lembretes
+                                            <Select
+                                              isMulti
+                                              name="lembretes"
+                                              id={`lembretes-${action.workflowactionId}`}
+                                              placeholder="Selecione."
+                                              value={
+                                                (action.configuration?.reminders ?? []).map(reminder =>
+                                                  optionsLembrete
+                                                    .filter(opt => opt.key !== "00")
+                                                    .map(opt => ({ value: opt.key, label: opt.value }))
+                                                    .find(opt => opt.value === reminder)
+                                                ).filter(Boolean)
+                                              }
+                                              onChange={(selected) => {
+                                                const values = selected.map(opt => opt.value);
+                                                handleSelectLembretes(values, trigger.workflowTriggerId, action.workflowactionId);
+                                              }}
+                                              options={optionsLembrete
+                                                .filter(opt => opt.key !== "00")
+                                                .map(opt => ({
+                                                  value: opt.key,
+                                                  label: opt.value
+                                                }))}
+                                              isDisabled={appointmentBlockUpdate}
+                                              styles={{
+                                                control: (base) => ({
+                                                  ...base,
+                                                  width: "725px",
+                                                  minWidth: "160px",
+                                                })
+                                              }}
+                                            />
+
+                                          </div>
+
+                                        </label>
+
+
+                                        <label
+                                          htmlFor="obs"
+                                          style={{
+                                            gridColumn: "2 / span 2",
+                                            display: "flex",
+                                            flexDirection: "column",
+                                          }}
+                                        >
+                                          <div id="triggerDados">
+                                            <span>Descrição</span>
+
+                                            <textarea
+                                              value={action.configuration?.description ?? ""}
+                                              onChange={(e) =>
+                                                handleDescriptionChange(
+                                                  e.target.value,
+                                                  trigger.workflowTriggerId,
+                                                  action.workflowactionId
+                                                )
+                                              }
+                                              style={{
+                                                width: "725px",
+                                                minHeight: "150px",
+                                                resize: "vertical",
+                                                background: "white",
+                                                color: "black",
+                                                border: "1px solid #ccc",
+                                                borderRadius: "6px",
+                                                padding: "8px",
+                                                fontSize: "14px",
+                                              }}
+                                            />
+
+                                          </div>
+                                        </label>
+
+                                        <label
+                                          htmlFor="obs"
+                                          style={{
+                                            gridColumn: "2 / span 2", // ocupa 2 colunas a partir da coluna 1
+                                            display: "flex",
+                                            flexDirection: "column",
+                                          }}
+                                        >
+                                          <div style={{ width: "725px", display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "8px", }}>
+                                            <button type="button" className='buttonLinkClick' onClick={() => handleNewAction(trigger.workflowTriggerId!)}>
+                                              <FiPlus />
+                                              Incluir novo compromisso
+                                            </button>
+
+                                            <button type="button" className='buttonLinkClick' onClick={() => handleSalvarCompromisso(trigger.workflowTriggerId, action.workflowactionId)}>
+                                              <FiSave />
+                                              Salvar
+                                            </button>
+
+
+                                            <button type="button" className='buttonLinkClick' onClick={() =>
+                                              handleDeleteWorkflowAcao(trigger.workflowTriggerId, action.workflowactionId)} >
+                                              <FiTrash />
+                                              Excluir
+                                            </button>
+
+                                            <button type="button" className='buttonLinkClick' onClick={() => handleRemoveAction(trigger.workflowTriggerId, action.workflowactionId)}>
+                                              <FiX />
+                                              Fechar
+                                            </button>
+
+                                          </div>
+                                        </label>
+
+
+                                        <label
+                                          htmlFor="obs"
+                                          style={{
+                                            gridColumn: "2 / span 2",
+                                            display: "flex",
+                                            flexDirection: "column",
+                                          }}
+                                        >
+
+                                          <hr
+                                            style={{
+                                              gridColumn: "2 / span 2",
+                                              width: "100%",
+                                              border: "none",
+                                              borderTop: "3px solid #ccc",
+                                              margin: "1rem 0",
+                                            }}
+                                          />
+
+                                        </label>
+
+
+                                      </>
+
+
+                                    ))}
+
+                                  </>
+
+                                )}
+
+
+                              </section>
+                            )}
+                          </Draggable>
                         ))}
-
-                      </>
-
+                        {provided.placeholder}
+                      </div>
                     )}
-
-
-                </section>
-              )}
-            </Draggable>
-          ))}
-          {provided.placeholder}
-        </div>
-      )}
-    </Droppable>
-  </DragDropContext>
-</label>
+                  </Droppable>
+                </DragDropContext>
+              </label>
 
 
               <br />
