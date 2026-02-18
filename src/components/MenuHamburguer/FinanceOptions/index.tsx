@@ -55,6 +55,9 @@ const FinanceOptionsMenu = () => {
   const checkCashFlow = permissionsSecurity.find(item => item.name === "FINRPT5");
 
   const billingContract = permissionsSecurity.find(item => item.name === "FATCTTO");
+
+  const checkBillingRuler = permissionsSecurity.find(item => item.name === "FINREGCO");
+
   const [checkBillingContract, setCheckBillingContract] = useState<boolean>(false);
 
   const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -193,6 +196,13 @@ const FinanceOptionsMenu = () => {
     handleRedirect(`/FinancialStatus`)
   }, []);
 
+  
+  const handleBillingRuler = useCallback(() => {
+    handleIsOpenMenuConfig(true)
+    setShowConfigMenu(false)
+    handleIsMenuOpen(false)
+    handleRedirect(`financeiro/billingrule/list`)
+  }, []);
 
   return(
     <>
@@ -317,6 +327,23 @@ const FinanceOptionsMenu = () => {
                   }}
                 >
                   Status Financeiro
+                </button>
+              </div>
+            </>
+          )}
+
+          {checkBillingRuler &&(
+            <>
+              <div style={{display:(showConfigMenu?'grid':'none')}}>
+                <hr />
+                <button
+                  type="button"
+                  className="menuLink"
+                  onClick={() => {
+                    handleBillingRuler();
+                  }}
+                >
+                  Régua de Cobrança
                 </button>
               </div>
             </>

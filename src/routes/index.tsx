@@ -53,6 +53,7 @@ const Routes: React.FC = () => {
       <Route path="/financeiro/movement/:type/:account/:id" exact component={DashboardPath} isPrivate />
       <Route path="/financeiro/deal/:account/:installment/:id" exact component={DashboardPath} isPrivate />
       <Route path="/financeiro/billingrule" exact component={DashboardPath} isPrivate />
+      <Route path="/financeiro/billingrule/list" exact component={DashboardPath} isPrivate />
       <Route path="/financeiro/billingrulesmessages" exact component={DashboardPath} isPrivate />
 
       <Route path="/matter/list" exact component={Matter} isPrivate />

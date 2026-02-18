@@ -538,23 +538,24 @@ return (
                         className="inputField"
                         onChange={handleComboChange}
                     >
-                        <option value="0">Selecione...</option>
+                        <option value="">Selecione...</option>
+                        <optgroup label="📄 Dados da Fatura">
                         <option value="#data">Data do Dia</option>
-                        <option value="#contaBancaria">Conta Bancária</option>
-                        <option value="#categoria">Categoria</option>
-                        <option value="#formaPagamento">Forma Pagamento</option>
-                        <option value="#tipoPagamento">Tipo Pagamento</option>
-                        <option value="#numeroFatura">Número Fatura</option>
-                        <option value="#referenciaFatura">Referencia Fatura</option>
-                        <option value="#servicosDescricao">Serviços Descrição</option>
-                        <option value="#servicosListaComValor">Serviços Lista Com Valor</option>
+                        <option value="#vencimento">Vencimento</option>
+                        <option value="#valor">Valor</option>
+                        <option value="#descricao">Descrição</option>
+                        <option value="#numeroParcela">Número Parcela</option>
+                        <option value="#numeroTotalParcela">Total de Parcelas</option>
+                        <option value="#notaFiscal">Número Nota Fiscal</option>
+                        <option value="#formaPagto">Forma de Pagamento</option>
+                        <option value="#numeroFatura">Número da Fatura</option>
                         <option value="#totalFatura">Total Fatura</option>
-                        <option value="#valorTotalExtenso">Valor Total Extenso</option>
-                        <option value="#dataemissao">Data Emissão</option>
-                        <option value="#primeiroVencimentoParcela">Primeiro Vencimento Parcela</option>
-                        <option value="#todosVencimentosParcela">Todos Vencimentos Parcela</option>
-                        <option value="#primeiroVencimentoBoleto">Primeiro Vencimento Boleto</option>
-                        <option value="#todosVencimentosBoleto">Todos Vencimentos Boleto</option>
+                        </optgroup>
+                        <optgroup label="📄 Dados do Cliente">
+                        <option value="#nomeCliente">Nome</option>
+                        <option value="#cpfcnpjCliente">CPF/CNPJ</option>
+                        <option value="#enderecoCliente">Endereço</option>
+                        </optgroup>
                     </select>
                     </div>
  
@@ -564,6 +565,7 @@ return (
                     <div className="form-row">
                     <Editor1>
                        <CKEditor
+                        ref={editorRef}
                         editor={ClassicEditor}
                         data={emailBody}
                         config={editorConfig}
@@ -595,23 +597,24 @@ return (
                         className="inputField"
                         onChange={handleComboChange1}
                     >
-                        <option value="0">Selecione...</option>
+                        <option value="">Selecione...</option>
+                        <optgroup label="📄 Dados da Fatura">
                         <option value="#data">Data do Dia</option>
-                        <option value="#contaBancaria">Conta Bancária</option>
-                        <option value="#categoria">Categoria</option>
-                        <option value="#formaPagamento">Forma Pagamento</option>
-                        <option value="#tipoPagamento">Tipo Pagamento</option>
-                        <option value="#numeroFatura">Número Fatura</option>
-                        <option value="#referenciaFatura">Referencia Fatura</option>
-                        <option value="#servicosDescricao">Serviços Descrição</option>
-                        <option value="#servicosListaComValor">Serviços Lista Com Valor</option>
+                        <option value="#vencimento">Vencimento</option>
+                        <option value="#valor">Valor</option>
+                        <option value="#descricao">Descrição</option>
+                        <option value="#numeroParcela">Número Parcela</option>
+                        <option value="#numeroTotalParcela">Total de Parcelas</option>
+                        <option value="#notaFiscal">Número Nota Fiscal</option>
+                        <option value="#formaPagto">Forma de Pagamento</option>
+                        <option value="#numeroFatura">Número da Fatura</option>
                         <option value="#totalFatura">Total Fatura</option>
-                        <option value="#valorTotalExtenso">Valor Total Extenso</option>
-                        <option value="#dataemissao">Data Emissão</option>
-                        <option value="#primeiroVencimentoParcela">Primeiro Vencimento Parcela</option>
-                        <option value="#todosVencimentosParcela">Todos Vencimentos Parcela</option> 
-                        <option value="#primeiroVencimentoBoleto">Primeiro Vencimento Boleto</option>
-                        <option value="#todosVencimentosBoleto">Todos Vencimentos Boleto</option>
+                        </optgroup>
+                        <optgroup label="📄 Dados do Cliente">
+                        <option value="#nomeCliente">Nome</option>
+                        <option value="#cpfcnpjCliente">CPF/CNPJ</option>
+                        <option value="#enderecoCliente">Endereço</option>
+                        </optgroup>
                     </select>
                     </div>
                 </div>
@@ -620,6 +623,7 @@ return (
                     <div className="form-row">
                     <Editor1>
                         <CKEditor
+                         ref={editorRef1}
                         editor={ClassicEditor}
                         data={whatsBody}
                         config={editorConfig1}
@@ -631,11 +635,6 @@ return (
                     </Editor1>
                     </div>
                     
-                </div>
-
-                <div className="row">
-                    <p>Mensagens de WhatsApp devem ser curtas e objetivas</p>
-
                 </div>
 
 

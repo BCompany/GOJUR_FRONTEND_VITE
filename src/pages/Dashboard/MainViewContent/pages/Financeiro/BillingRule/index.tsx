@@ -466,7 +466,8 @@ const BillingRule: React.FC = () => {
                     name="descriptionBillingRuler"
                     ref={register}
                     className="inputField"
-                    maxLength={20}
+                    maxLength={100}
+                    required
                     placeholder='Ex: Régua padrão para clientes PJ'
 
                   />
@@ -511,7 +512,11 @@ const BillingRule: React.FC = () => {
 
                   <div className="row channels">
                     <label className="channel">
-                      <input type="checkbox" checked={flgNotifyEmail1} onChange={() => { setFlgNotifyEmail1(!flgNotifyEmail1) }}></input>
+                      <input type="checkbox" checked={flgNotifyEmail1} 
+                        onChange={() => {
+                          setFlgNotifyEmail1(!flgNotifyEmail1);
+                        }}
+                      ></input>
 
                       {flgNotifyEmail1 == true ? (
                         <FiMail className='notificationEmailActive' />
@@ -522,7 +527,13 @@ const BillingRule: React.FC = () => {
                     </label>
 
                     <label className="channel">
-                      <input type="checkbox" checked={flgNotifyWhatsApp1} onChange={() => { setFlgNotifyWhatsApp1(!flgNotifyWhatsApp1) }} ></input>
+                      <input type="checkbox" checked={flgNotifyWhatsApp1} 
+                          onChange={() => {
+                            setFlgNotifyWhatsApp1(!flgNotifyWhatsApp1);
+                          }}
+                      >
+
+                      </input>
 
                       {flgNotifyWhatsApp1 == true ? (
                         <FaWhatsapp className='notificationWhatsAppActive' />
@@ -576,7 +587,11 @@ const BillingRule: React.FC = () => {
 
                   <div className="row channels">
                     <label className="channel">
-                      <input type="checkbox" checked={flgNotifyEmail2} onChange={() => { setFlgNotifyEmail2(!flgNotifyEmail2) }}></input>
+                      <input type="checkbox" checked={flgNotifyEmail2} 
+                       onChange={() => { 
+                        setFlgNotifyEmail2(!flgNotifyEmail2);
+                      }}
+                      ></input>
                       {flgNotifyEmail2 == true ? (
                         <FiMail className='notificationEmailActive' />
                       ) : (
@@ -586,7 +601,11 @@ const BillingRule: React.FC = () => {
                     </label>
 
                     <label className="channel">
-                      <input type="checkbox" checked={flgNotifyWhatsApp2} onChange={() => { setFlgNotifyWhatsApp2(!flgNotifyWhatsApp2) }}></input>
+                      <input type="checkbox" checked={flgNotifyWhatsApp2} 
+                      onChange={() => {
+                        setFlgNotifyWhatsApp2(!flgNotifyWhatsApp2);
+                      }}
+                      ></input>
                       {flgNotifyWhatsApp2 == true ? (
                         <FaWhatsapp className='notificationWhatsAppActive' />
                       ) : (
@@ -640,8 +659,12 @@ const BillingRule: React.FC = () => {
                   </div>
 
                   <div className="row channels">
-                    <label className="channel">
-                      <input type="checkbox" checked={flgNotifyEmail3} onChange={() => { setFlgNotifyEmail3(!flgNotifyEmail3) }}></input>
+                    <label className="channel">  
+                      <input type="checkbox" checked={flgNotifyEmail3}    
+                      onChange={() => {
+                        setFlgNotifyEmail3(!flgNotifyEmail3);
+                      }}  
+                      ></input> 
                       {flgNotifyEmail3 == true ? (
                         <FiMail className='notificationEmailActive' />
                       ) : (
@@ -652,7 +675,11 @@ const BillingRule: React.FC = () => {
                     </label>
 
                     <label className="channel">
-                      <input type="checkbox" checked={flgNotifyWhatsApp3} onChange={() => { setFlgNotifyWhatsApp3(!flgNotifyWhatsApp3) }}></input>
+                      <input type="checkbox" checked={flgNotifyWhatsApp3} 
+                      onChange={() => {
+                        setFlgNotifyWhatsApp3(!flgNotifyWhatsApp3);
+                      }}
+                      ></input>
                       {flgNotifyWhatsApp3 == true ? (
                         <FaWhatsapp className='notificationWhatsAppActive' />
                       ) : (
@@ -825,7 +852,7 @@ const BillingRule: React.FC = () => {
                     Salvar
                   </button>
 
-                  <button className="buttonClick" type="button">
+                  <button className="buttonClick" type="button"  onClick={() => history.push('/financeiro/billingrule/list')}>
                     <MdBlock />
                     Fechar
                   </button>
