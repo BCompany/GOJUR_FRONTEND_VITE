@@ -2150,31 +2150,7 @@ export default function Workflow() {
                                               }}
                                             />
 
-                                            {/*}
-                                            <Select
-                                              isSearchable
-                                              isClearable
-                                              id="triggerSubject"
-                                              placeholder='Selecione o Assunto'
-                                              onChange={(item) => handleSubjectChange(item, trigger.workflowTriggerId, action.workflowactionId)}
-                                              onInputChange={(term) => {
-                                                setAppointmentSubject(term);
-                                                //LoadSubject(false, term);
-                                              }}
-                                              value={optionsSubject.filter((opt) => opt.id === action.configuration?.subject)}
-                                              options={optionsSubject}
-                                              loadingMessage={loadingMessage}
-                                              noOptionsMessage={noOptionsMessage}
-                                              styles={{
-                                                control: (base) => ({
-                                                  ...base,
-                                                  minWidth: "400px", left: "-7px"
-                                                })
-                                              }}
-                                            />
-                                              */}
-
-
+                                          
                                           </div>
 
                                         </label>
