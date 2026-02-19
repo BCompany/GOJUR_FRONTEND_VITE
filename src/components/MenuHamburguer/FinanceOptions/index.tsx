@@ -56,7 +56,7 @@ const FinanceOptionsMenu = () => {
 
   const billingContract = permissionsSecurity.find(item => item.name === "FATCTTO");
 
-  const checkBillingRuler = permissionsSecurity.find(item => item.name === "FINREGCO");
+  const checkBillingRuler = permissionsSecurity.find(item => item.name === "FINREGCOx");
 
   const [checkBillingContract, setCheckBillingContract] = useState<boolean>(false);
 
