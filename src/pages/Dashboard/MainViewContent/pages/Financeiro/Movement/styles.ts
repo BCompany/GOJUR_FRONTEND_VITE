@@ -120,10 +120,11 @@ export const Content = styled.div`
             font-size: 0.675rem;
             background-color: #FFFFFF;
             width: 100%;
-            height:40px;
+            //height:40px;
+            padding: 0.40rem;
             border-bottom: 1px solid rgba(0,0,0,0.15);
             color: var(--secondary);
-            margin-top:-2px;
+            margin-top:1px;
             &:focus {
                 border-bottom: 1px solid var(--orange);
             }
@@ -224,7 +225,7 @@ export const Content = styled.div`
           font-size: 0.675rem;
           background-color: #FFFFFF;
           width: 100%;
-          height:40px;
+          height:40px; 
           border-bottom: 1px solid rgba(0,0,0,0.15);
           color: var(--secondary);
           margin-top:-2px;

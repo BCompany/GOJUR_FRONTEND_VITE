@@ -519,7 +519,8 @@ return (
 
                   <div className="row">
                     <div className="autoComplete">
-                    <p style={{ height: '27px' }}>Título</p>
+                    
+                    <label>Título
                     <input
                         type="text"
                         className="inputField"
@@ -527,12 +528,13 @@ return (
                         value={emailTitle}
                         onChange={(e) => setEmailTitle(e.target.value)}
                     />
+                    </label>
                     </div>
                   </div>
 
                 <div className="row">
                     <div className="autoComplete">
-                    <p style={{ height: '27px' }}>Palavras Chave</p>
+                    <label>Palavras Chave
                     <select
                         id="financeBilling"
                         className="inputField"
@@ -557,6 +559,7 @@ return (
                         <option value="#enderecoCliente">Endereço</option>
                         </optgroup>
                     </select>
+                    </label>
                     </div>
  
                 </div>
@@ -591,7 +594,8 @@ return (
 
                    <div className="row">
                     <div className="autoComplete">
-                    <p style={{ height: '27px' }}>Palavras Chave</p>
+       
+                    <label>Palavras Chave
                     <select
                         id="financeBilling1"
                         className="inputField"
@@ -616,6 +620,8 @@ return (
                         <option value="#enderecoCliente">Endereço</option>
                         </optgroup>
                     </select>
+                    </label>
+
                     </div>
                 </div>
             

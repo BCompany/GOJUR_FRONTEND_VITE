@@ -460,7 +460,9 @@ const BillingRule: React.FC = () => {
               <form onSubmit={handleSubmit(handleSubmitBillingRuler)}>
                 {/* DESCRIÇÃO */}
                 <div className="autoComplete">
-                  <p style={{ height: '27px' }}>Descrição</p>
+              
+                   <label >
+                    Descrição
                   <input
                     type="text"
                     name="descriptionBillingRuler"
@@ -471,6 +473,8 @@ const BillingRule: React.FC = () => {
                     placeholder='Ex: Régua padrão para clientes PJ'
 
                   />
+                  </label>
+
                 </div>
                 <br />
 
