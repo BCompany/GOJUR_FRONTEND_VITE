@@ -13,6 +13,9 @@ import Conta from '../MainViewContent/pages/Conta';
 import Financeiro from '../MainViewContent/pages/Financeiro';
 import FinancialMovement from '../MainViewContent/pages/Financeiro/Movement';
 import FinancialDeal from '../MainViewContent/pages/Financeiro/Deal';
+import BillingRule from '../MainViewContent/pages/Financeiro/BillingRule';
+import BillingRuleList from '../MainViewContent/pages/Financeiro/BillingRule/List';
+import BillingRulesMessages from '../MainViewContent/pages/Financeiro/BillingRulesMessages';
 import Matter from '../MainViewContent/pages/Matter/List';
 import Publication from '../MainViewContent/pages/Publication';
 import Workflow from '../MainViewContent/pages/Workflow/List';
@@ -111,6 +114,10 @@ const Routes: React.FC = () => {
       <Route path="/financeiro" exact component={Financeiro} isPrivate />
       <Route path="/financeiro/movement/:type/:account/:id" exact component={FinancialMovement} isPrivate />
       <Route path="/financeiro/deal/:account/:installment/:id" exact component={FinancialDeal} isPrivate />
+      <Route path="/financeiro/billingrule" exact component={BillingRule} isPrivate />
+      <Route path="/financeiro/billingrule/List" exact component={BillingRuleList} isPrivate /> 
+      <Route path="/financeiro/billingrulesmessages" exact component={BillingRulesMessages} isPrivate />
+      
       <Route path="/matter/list" exact component={Matter} isPrivate />
       <Route path="/matter/printer/cover" exact component={MatterPrint} isPrivate />
       <Route path="/publication" exact component={Publication} isPrivate />
