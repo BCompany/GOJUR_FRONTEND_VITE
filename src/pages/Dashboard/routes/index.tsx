@@ -16,6 +16,8 @@ import FinancialDeal from '../MainViewContent/pages/Financeiro/Deal';
 import BillingRule from '../MainViewContent/pages/Financeiro/BillingRule';
 import BillingRuleList from '../MainViewContent/pages/Financeiro/BillingRule/List';
 import BillingRulesMessages from '../MainViewContent/pages/Financeiro/BillingRulesMessages';
+import BillingInvoicing from '../MainViewContent/pages/Financeiro/BillingInvoicing';
+
 import Matter from '../MainViewContent/pages/Matter/List';
 import Publication from '../MainViewContent/pages/Publication';
 import Workflow from '../MainViewContent/pages/Workflow/List';
@@ -117,7 +119,8 @@ const Routes: React.FC = () => {
       <Route path="/financeiro/billingrule" exact component={BillingRule} isPrivate />
       <Route path="/financeiro/billingrule/List" exact component={BillingRuleList} isPrivate /> 
       <Route path="/financeiro/billingrulesmessages" exact component={BillingRulesMessages} isPrivate />
-      
+      <Route path="/financeiro/billinginvoicing" exact component={BillingInvoicing} isPrivate />
+
       <Route path="/matter/list" exact component={Matter} isPrivate />
       <Route path="/matter/printer/cover" exact component={MatterPrint} isPrivate />
       <Route path="/publication" exact component={Publication} isPrivate />
