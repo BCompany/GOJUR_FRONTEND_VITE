@@ -43,12 +43,25 @@ import LogModal from 'components/LogModal';
 import { DataTypeProvider, PagingState, CustomPaging, IntegratedPaging, SortingState, IntegratedSorting } from '@devexpress/dx-react-grid';
 import { Grid, Table, TableHeaderRow, PagingPanel } from '@devexpress/dx-react-grid-material-ui';
 import GridSelectProcess from '../../Dashboard/resorces/DashboardComponents/CreateAppointment/GridSelectProcess';
-import { ISelectData, MatterData, IMovementUploadFile } from '../Interfaces/IFinancial';
+import { IFinancialTotal, IAccount, ISelectData, IFinancial, IFinancialDeal } from '../Interfaces/IFinancial';
 import { IPayments } from '../Interfaces/IPayments';
 import FinancialPaymentModal from '../PaymentModal';
 import FinancialDocumentModal from '../DocumentModal';
 import { ModalDeleteOptions, OverlayFinancial } from '../styles';
 import { Container, Content, Process, GridSubContainer, ModalPaymentInformation, HamburguerHeader } from './styles';
+import { IBillingRuler, IBillingRulerWarning } from '../BillingRule/Interfaces/IBillingRuler';
+
+interface IOption {
+    value: number;
+    label: string;
+}
+
+export interface IPaymentFormData {
+    paymentFormId: string;
+    paymentFormDescription: string;
+    paymentFormType: string;
+    count: string;
+}
 
 const BillingInvoicing: React.FC = () => {
     const { isMenuOpen, handleIsMenuOpen, isOpenMenuDealDefaultCategory, handleIsOpenMenuDealDefaultCategory } = useMenuHamburguer();
@@ -62,11 +75,13 @@ const BillingInvoicing: React.FC = () => {
     const { isMOBILE } = useDevice();
     const { handleSelectProcess, selectProcess, matterSelected, openSelectProcess } = useModal();
     const [accountId, setAccountId] = useState('');
-    const [movementId, setMovementId] = useState<number>();
+    const [movementId, setMovementId] = useState('');
     const [movementType, setMovementType] = useState('');
-    const [paymentFormList, setPaymentFormList] = useState<ISelectData[]>([]);
+    //const [paymentFormList, setPaymentFormList] = useState<ISelectData[]>([]);
     const [paymentFormId, setPaymentFormId] = useState('');
     const [paymentFormDescription, setPaymentFormDescription] = useState<string>("")
+    const [paymentFormType, setPaymentFormType] = useState<string>('B');
+
     const [paymentFormTerm, setPaymentFormTerm] = useState('');
     const [categoryList, setCategoryList] = useState<ISelectData[]>([]);
     const [categoryId, setCategoryId] = useState('');
@@ -89,9 +104,10 @@ const BillingInvoicing: React.FC = () => {
     const [movementParcelasDatas, setMovementParcelasDatas] = useState('M');
     const [showParcelasDatas, setShowParcelasDatas] = useState<boolean>(false);
     const [taxInvoice, setTaxInvoice] = useState<string>('');
+    const [description, setDescription] = useState<string>('');
     const [movementDescription, setMovementDescription] = useState('');
     const [selectedPeopleList, setSelectedPeopleList] = useState<ISelectData[]>([]);
-    const [selectedPeople, setSelectedPeople] = useState<ISelectData>();   
+    const [selectedPeople, setSelectedPeople] = useState<ISelectData>();
     const [showNotifyPeople, setShowNotifyPeople] = useState<boolean>(false);
     const [checkPeopleList, setCheckPeopleList] = useState<boolean>(false);
     const [reminders, setReminders] = useState('00');
@@ -136,104 +152,142 @@ const BillingInvoicing: React.FC = () => {
     )
 
     const [isOpen, setIsOpen] = useState(false);
+    const [invoiceNumber, setInvoiceNumber] = useState<string>('000000');
+    const [movementList, setMovementList] = useState<IFinancial[]>([]);
+    const [billingRulerList, setBillingRulerList] = useState<IOption[]>([]);
+    const [paymentFormList, setPaymentFormList] = useState<IPaymentFormData[]>([]);
 
 
-const Initialize = async () => {
-    await LoadStates()
-}
-
+    const Initialize = async () => {
+        await PaymentFormList();
+        await LoadStates()
     
-const LoadStates = async() => {
-    const indexId1 = pathname.indexOf('id=')
-
-    const params = new URLSearchParams(location.search);
-    const instalmentIdParam = Number(params.get('instalmentId'));
-
-    setMovementId(instalmentIdParam)
-}
-
-
-  useEffect(() => {
-    Initialize()
-  }, [])
-
-
-useEffect(() => {
-    if(movementId != 0)
-    {
-        LoadMovement(movementId)
     }
-}, [movementId])
-    
+
+
+    const LoadStates = async () => {
+        const indexId1 = pathname.indexOf('id=')
+
+        const params = new URLSearchParams(location.search);
+        const instalmentIdParam = Number(params.get('instalmentId'));
+
+        setMovementId(instalmentIdParam.toString())
+    }
+
+
+    useEffect(() => {
+        Initialize()
+    }, [])
+
+
+    useEffect(() => {
+        if (movementId != '' && movementId != '0') {
+            LoadMovement(movementId)
+        }
+    }, [movementId])
+
 
     const LoadMovement = async (movementId) => {
         try {
-          setIsLoading(true);
-    
-          const response = await api.get('/Financeiro/Editar', { params:{ id: Number(movementId), token }})
-          
-          
-          //setMovementDate(format(new Date(response.data.dta_Movimento), "yyyy-MM-dd"))
-          setMovementValue(response.data.vlr_Movimento)
-          
-            /*
-          setMovementType(movementType)
-          setMovementParcelas(response.data.qtd_Parcelamento.toString())
-          setMovementParcelasFirst(response.data.qtd_Parcelamento.toString())
-          setMovementParcelasDatas(response.data.Periodicidade)
-          setPaymentFormId(response.data.cod_FormaPagamento)
-          setPaymentFormDescription(response.data.des_FormaPagamento)
-          setCategoryId(response.data.cod_Categoria)
-          setCategoryDescription(response.data.nom_Categoria)
-          setCenterCostId(response.data.cod_CentroCusto)
-          setCenterCostDescription(response.data.des_CentroCusto)
-          setTaxInvoice(response.data.num_NotaFiscal)
-          setMovementDescription(response.data.des_Movimento)
-          */
-          
+            setIsLoading(true);
+
+            const response = await api.get('/Financeiro/Editar', { params: { id: Number(movementId), token } })
+
+
+            setMovementValue(response.data.vlr_Movimento)
+            setMovementParcelas(response.data.num_Parcela.toString() + '/' + response.data.qtd_Parcelamento.toString())
+
             const selectedItem = response.data.UserList.find(item =>
                 item.label.toLowerCase().includes("cliente")
             );
-           
-        
-            setSelectedPeople(selectedItem)
-          
-          /*
-          setFlgNotifyPeople(response.data.flg_NotificaPessoa)
-          setFlgNotifyEmail(response.data.flg_NotificaEmail)
-          setFlgNotifyWhatsApp(response.data.flg_NotificaWhatsApp)
-          setReminders(response.data.Lembrete)
-          setShowNotifyPeople(response.data.UserList.length > 0 && response.data.Lembrete != null)
-          setFlgReembolso(response.data.flg_Reembolso)
-          setFlgStatus(response.data.flg_Status)
-          setShowParcelasDatas(response.data.qtd_Parcelamento != "1")
-          setAccountId(response.data.cod_Conta)
-          setPaymentQtd(response.data.qtd_Parcelamento)
-          setInvoice(response.data.cod_FaturaParcela)
-          setSequence(response.data.num_SequenciaFatura)
-    
-          if(response.data.qtd_Parcelamento != "1"){
-            setEnablePayments(false)
-          }
-    
-          if(response.data.cod_Processo != null)
-          {
-            setMatterId(response.data.cod_Processo)
-            setProcessTitle(`${response.data.num_Processo} - ${response.data.matterCustomerDesc} x ${response.data.matterOpposingDesc}`)
-          }
-            
-          await LoadPayments()
-          await LoadDocuments()
-    
-          */
 
-          setIsLoading(false);
+
+            setSelectedPeople(selectedItem)
+
+
+            const response1 = await api.get<IFinancial[]>('/Financeiro/ListarMovimentoPorParcelamento',
+                {
+                    params: {
+                        installmentsId: Number(response.data.cod_Parcelamento),
+                        page: currentPage + 1,
+                        rows: pageSize,
+                        token
+                    }
+                })
+
+
+            const dadosFormatados = response1.data.map(item => {
+
+            const forma = paymentFormList.find(
+                f => Number(f.paymentFormId) === Number(item.cod_FormaPagamento)
+            );
+
+            return {
+                ...item,
+                parcelaFormatada: `${item.num_Parcela}/${item.qtd_Parcelamento}`,
+                des_FormaPagamento: forma?.paymentFormDescription || ''
+            };
+            });
+           
+            setMovementList(dadosFormatados);                        
+
+            //console.log(paymentFormList);
+
+            const primeiraParcela = dadosFormatados.find(
+                item => Number(item.num_Parcela) === 1
+            );
+
+            if (primeiraParcela) {
+                setDescription(primeiraParcela.des_Movimento);
+            }
+
+            setIsLoading(false);
         }
-        catch (err:any) {
-          setIsLoading(false)
-          addToast({type: "info", title: "Operação não realizada", description: err.response.data.Message})
+        catch (err: any) {
+            setIsLoading(false)
+            addToast({ type: "info", title: "Operação não realizada", description: err.response.data.Message })
+
         }
-      }
+    }
+
+
+
+    const ListBillingRuler = useCallback(async (term: string) => {
+        try {
+            const token = localStorage.getItem("@GoJur:token");
+
+            const response = await api.get<IBillingRuler[]>("/Financeiro/ReguaCobranca/Listar", {
+                params: {
+                    page: 0,
+                    rows: 50,
+                    filterClause: term,
+                    token,
+                },
+            });
+
+            const options = response.data.map((item) => ({
+                value: item.billingRulerId,
+                label: item.descriptionBillingRuler,
+            }));
+
+            setBillingRulerList(options);
+
+            return options;
+
+        } catch (err) {
+            //console.error(err);
+
+            if (err.response.data.statusCode == 1002) {
+                addToast({
+                    type: 'info',
+                    title: 'Permissão negada',
+                    description: 'Seu usuário não tem permissão para acessar esse módulo, contate o administrador do sistema',
+                });
+                //signOut()
+            }
+
+        }
+    }, []);
 
 
 
@@ -305,7 +359,7 @@ useEffect(() => {
         { columnName: '', width: '8%' },
         { columnName: 'Parcela', width: '30%' },
         { columnName: 'Vencimento', width: '30%' },
-        { columnName: 'FormaPagto', width: '8%' },
+        { columnName: 'Forma Pagto', width: '8%' },
         { columnName: 'Valor', width: '8%' },
         { columnName: 'Status', width: '8%' },
         { columnName: 'acoes', width: '8%' },
@@ -318,15 +372,49 @@ useEffect(() => {
     const [dateColumns] = useState(['dateUpload']);
     const columns = [
         { name: '', title: '' },
-        { name: 'Parcela', title: 'Parcela' },
-        { name: 'Vencimento', title: 'Vencimento' },
-        { name: 'FormaPagto', title: 'Forma Pagto' },
-        { name: 'Valor', title: 'Valor' },
-        { name: 'Status', title: 'Status' },
+        { name: 'parcelaFormatada', title: 'Parcela' },
+        { name: 'dta_Movimento', title: 'Vencimento' },
+        { name: 'des_FormaPagamento', title: 'Forma Pagto' },
+        { name: 'vlr_Movimento_Contabil', title: 'Valor' },
+        { name: 'flg_Status', title: 'Status' },
         { name: 'acoes', title: 'Ações' },
-        { name: 'Observacao', title: 'Observação' }
+        { name: 'des_Movimento', title: 'Observação' }
 
     ];
+
+    useEffect(() => {
+        ListBillingRuler("")
+
+    }, [])
+
+
+
+    const PaymentFormList = useCallback(async () => {
+        try {
+
+     
+             const response = await api.get<IPaymentFormData[]>("/FormaDePagamento/Listar", {
+                params: {
+                    page: 0,
+                    rows: 200,
+                    filterClause: '',
+                    token,
+                },
+            });
+
+          
+            //console.log(response.data)
+            setPaymentFormList(response.data)   
+
+
+        } catch (err) {
+            addToast({ type: "info", title: "Operação não realizada", description: err.response.data.Message })
+
+        }
+
+    }, []);
+
+
 
     return (
 
@@ -402,8 +490,8 @@ useEffect(() => {
                                 <input
                                     type="text"
                                     className='inputField'
-                                    maxLength={20}
-                                    value={taxInvoice}
+                                    maxLength={200}
+                                    value={description}
                                     onChange={(e: ChangeEvent<HTMLInputElement>) => setTaxInvoice(e.target.value)}
                                 />
                             </label>
@@ -411,15 +499,26 @@ useEffect(() => {
                             <label>
                                 Régua de Cobrança
                                 <Select
-                                    isSearchable
                                     isClearable
-                                    value={{ id: paymentFormId, label: paymentFormDescription }}
-                                    onInputChange={(term) => setPaymentFormTerm(term)}
-                                    required
-                                    placeholder=""
+                                    isSearchable
+                                    id="workflow"
+                                    options={billingRulerList}
+                                    placeholder="Selecione"
+                                    //value={workflow}
+                                    //onChange={handleChangeWorkflow}
+                                    onInputChange={(inputValue, { action }) => {
+                                        if (action === "input-change") {
+                                            ListBillingRuler(inputValue);
+                                        }
+                                    }}
+                                    filterOption={(option, inputValue) =>
+                                        option.label.toLowerCase().includes(inputValue.toLowerCase())
+                                    }
+                                    classNamePrefix="rs"
                                     styles={selectStyles}
-                                    options={paymentFormList}
+                                //isDisabled={blockUpdate}
                                 />
+
                             </label>
 
                         </section>
@@ -431,12 +530,12 @@ useEffect(() => {
                         <br />
                         <div className="mini-invoice">
                             <div className="mini-top">
-                                <span className="mini-number">Fat. 000001</span>
+                                <span className="mini-number">Fat. {invoiceNumber}</span>
                                 <span className="mini-status aberta">ABERTA</span>
                             </div>
 
                             <div className="mini-installment">
-                                Parcela 2/4
+                                Parcela {movementParcelas}
                             </div>
 
                             <div className="mini-value">
@@ -453,7 +552,7 @@ useEffect(() => {
 
                 <GridSubContainer style={{ pointerEvents: (isDeletingFile ? 'none' : 'all') }}>
                     <Grid
-                        rows={documentList}
+                        rows={movementList}
                         columns={columns}
                     >
                         <SortingState
