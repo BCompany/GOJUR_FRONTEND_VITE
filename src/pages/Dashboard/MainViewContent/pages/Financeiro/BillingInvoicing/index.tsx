@@ -43,7 +43,6 @@ import LogModal from 'components/LogModal';
 import { DataTypeProvider, PagingState, CustomPaging, IntegratedPaging, SortingState, IntegratedSorting } from '@devexpress/dx-react-grid';
 import { Grid, Table, TableHeaderRow, PagingPanel } from '@devexpress/dx-react-grid-material-ui';
 import GridSelectProcess from '../../Dashboard/resorces/DashboardComponents/CreateAppointment/GridSelectProcess';
-import { IFinancialTotal, IAccount, ISelectData, IFinancial, IFinancialDeal } from '../Interfaces/IFinancial';
 import { IPayments } from '../Interfaces/IPayments';
 import FinancialPaymentModal from '../PaymentModal';
 import FinancialDocumentModal from '../DocumentModal';
@@ -56,18 +55,44 @@ interface IOption {
     label: string;
 }
 
-export interface IPaymentFormData {
+interface IPaymentFormData {
     paymentFormId: string;
     paymentFormDescription: string;
     paymentFormType: string;
     count: string;
 }
 
+interface IFinancial {
+  cod_Movimento: string;
+  dta_Movimento: string;
+  dta_Liquidacao: string;
+  des_Movimento: string;
+  nom_Categoria: string;
+  tpo_Movimento: string;
+  cod_FormaPagamento: string;
+  vlr_Movimento_Contabil: string;
+  vlr_Liquidacao_Contabil: string;
+  qtd_Parcelamento: string;
+  num_Parcela: string;
+  matterCustomerDesc: string;
+  matterOpposingDesc: string;
+  userNames: string;
+  num_Processo: string;
+  totalRecords: number;
+  cod_FaturaParcela: number;
+  cod_Acordo: string;
+  parcelaFormatada?: string;
+  cod_Fatura2Movimento?:string;
+  flg_MovimentoExccluido?: string;  
+}
+
+
 const BillingInvoicing: React.FC = () => {
     const { isMenuOpen, handleIsMenuOpen, isOpenMenuDealDefaultCategory, handleIsOpenMenuDealDefaultCategory } = useMenuHamburguer();
     const { isConfirmMessage, isCancelMessage, handleCancelMessage, handleConfirmMessage, caller } = useConfirmBox();
     const { handleStateType } = useStateContext();
     const token = localStorage.getItem('@GoJur:token');
+     const companyId = localStorage.getItem('@GoJur:companyId');
     const { pathname } = useLocation();
     const history = useHistory();
     const { addToast } = useToast();
@@ -141,7 +166,7 @@ const BillingInvoicing: React.FC = () => {
     const [isDeletingFile, setIsDeletingFile] = useState<boolean>(false);
     const [documentList, setDocumentList] = useState<IMovementUploadFile[]>([]);
     const [currentPage, setCurrentPage] = useState(0);
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(5);
     const [totalRows, setTotalRows] = useState<number>(0);
     const [tokenContinuation, setTokenContinuation] = useState<string | null>('');
     const [showLog, setShowLog] = useState(false);
@@ -152,6 +177,7 @@ const BillingInvoicing: React.FC = () => {
     )
 
     const [isOpen, setIsOpen] = useState(false);
+    const [invoiceId, setInvoiceId] = useState<number>(0);
     const [invoiceNumber, setInvoiceNumber] = useState<string>('000000');
     const [movementList, setMovementList] = useState<IFinancial[]>([]);
     const [billingRulerList, setBillingRulerList] = useState<IOption[]>([]);
@@ -201,7 +227,7 @@ const BillingInvoicing: React.FC = () => {
                 item.label.toLowerCase().includes("cliente")
             );
 
-
+            console.log(selectedItem);
             setSelectedPeople(selectedItem)
 
 
@@ -210,7 +236,7 @@ const BillingInvoicing: React.FC = () => {
                     params: {
                         installmentsId: Number(response.data.cod_Parcelamento),
                         page: currentPage + 1,
-                        rows: pageSize,
+                        rows: 500,
                         token
                     }
                 })
@@ -416,6 +442,58 @@ const BillingInvoicing: React.FC = () => {
 
 
 
+ const handleSave = async () => {
+  try {
+    setIsLoading(true);
+
+    const payload = {
+      invoiceId: invoiceId || 0,
+      companyId: companyId,
+      invoiceNumber: invoiceNumber,
+      personId: selectedPeople?.id,
+      personName: selectedPeople?.label,
+      invoiceDescription: description,
+      issueDate: new Date(),
+      token: token,
+
+      billingIssuingInvoices: movementList.map(item => ({
+        invoiceMovimentId: item.cod_Fatura2Movimento || 0,
+        companyId: companyId,
+        invoiceId: invoiceId || 0,  
+        movementID: Number(item.cod_Movimento),
+        descriptionObservation: item.des_Movimento || '',
+        flg_ExcludedMovement: item.flg_MovimentoExccluido || "N"
+      }))
+    };
+
+    const response = await api.post(
+      "/Financeiro/Faturamento2/Salvar",
+      payload
+    );
+
+    addToast({
+      type: "success",
+      title: "Sucesso",
+      description: "Faturamento salvo com sucesso"
+    });
+
+    console.log("InvoiceId retornado:", response.data);
+
+    setIsLoading(false);
+
+  } catch (err: any) {
+    setIsLoading(false);
+
+    addToast({
+      type: "error",
+      title: "Operação não realizada",
+      description: err.response?.data?.Message
+    });
+  }
+};
+    
+
+
     return (
 
         <Container>
@@ -566,7 +644,7 @@ const BillingInvoicing: React.FC = () => {
                             onPageSizeChange={setPageSize}
                         />
                         <IntegratedPaging />
-                        <CustomPaging totalCount={totalRows} />
+                        
                         <DateTypeProvider for={dateColumns} />
                         <Table
                             cellComponent={CustomCell}
@@ -596,7 +674,7 @@ const BillingInvoicing: React.FC = () => {
                         <button
                             className="buttonClick"
                             type='button'
-                            onClick={() => Save('')}
+                            onClick={() => handleSave()}
                         >
 
                             Gerar Fatura
