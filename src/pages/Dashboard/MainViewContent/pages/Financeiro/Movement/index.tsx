@@ -85,6 +85,9 @@ const FinancialMovement: React.FC = () => {
   const [movementDate, setMovementDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [movementValue, setMovementValue] = useState<number>();
   const [movementParcelas, setMovementParcelas] = useState('1');
+  const [currentInstallment, setCurrentInstallment] = useState('1');
+
+  
   const [movementParcelasFirst, setMovementParcelasFirst] = useState('1');
   const [movementParcelasDatas, setMovementParcelasDatas] = useState('M');
   const [showParcelasDatas, setShowParcelasDatas] = useState<boolean>(false);
@@ -260,6 +263,9 @@ const FinancialMovement: React.FC = () => {
       setMovementParcelas(response.data.qtd_Parcelamento.toString())
       setMovementParcelasFirst(response.data.qtd_Parcelamento.toString())
       setMovementParcelasDatas(response.data.Periodicidade)
+
+       setCurrentInstallment(response.data.num_Parcela.toString() + '/' + response.data.qtd_Parcelamento.toString())
+
       setPaymentFormId(response.data.cod_FormaPagamento)
       setPaymentFormDescription(response.data.des_FormaPagamento)
       setCategoryId(response.data.cod_Categoria)
@@ -1163,7 +1169,10 @@ const FinancialMovement: React.FC = () => {
             </span>
           )}
         </div>
-        <br />
+      
+         <div style={{ textAlign: 'right' }}>
+          <span>Parcela {currentInstallment}</span>
+         </div>
 
         <section id='FirstElements'>
           <label htmlFor='Data'>
@@ -1582,6 +1591,16 @@ const FinancialMovement: React.FC = () => {
           </div>
 
           <div style={{float:'right'}}>
+
+            <button
+              className="buttonClick"
+              type='button'
+              onClick={() => { history.push(`/financeiro/billinginvoicing?instalmentId=${movementId}`) }}
+            >  
+      
+              Faturar
+            </button>
+
             <button
               className="buttonClick"
               type='button'

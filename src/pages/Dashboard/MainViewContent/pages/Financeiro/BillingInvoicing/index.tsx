@@ -86,6 +86,10 @@ interface IFinancial {
   flg_MovimentoExccluido?: string;  
 }
 
+ interface ISelectData {
+  id: string;
+  label: string;
+}
 
 const BillingInvoicing: React.FC = () => {
     const { isMenuOpen, handleIsMenuOpen, isOpenMenuDealDefaultCategory, handleIsOpenMenuDealDefaultCategory } = useMenuHamburguer();
@@ -182,7 +186,25 @@ const BillingInvoicing: React.FC = () => {
     const [movementList, setMovementList] = useState<IFinancial[]>([]);
     const [billingRulerList, setBillingRulerList] = useState<IOption[]>([]);
     const [paymentFormList, setPaymentFormList] = useState<IPaymentFormData[]>([]);
+    const [selectedRows, setSelectedRows] = useState<number[]>([]);
+    const [selectedBillingRuler, setSelectedBillingRuler] = useState<ISelectData | null>(null);
 
+const handleSelectRow = (rowId: number) => {
+    setSelectedRows(prev =>
+        prev.includes(rowId)
+            ? prev.filter(id => id !== rowId)
+            : [...prev, rowId]
+    );
+};
+
+const handleSelectAll = () => {
+    if (selectedRows.length === movementList.length) {
+        setSelectedRows([]);
+    } else {
+        setSelectedRows(movementList.map(item => item.parcelaFormatada)); 
+   
+    }
+};
 
     const Initialize = async () => {
         await PaymentFormList();
@@ -206,11 +228,16 @@ const BillingInvoicing: React.FC = () => {
     }, [])
 
 
-    useEffect(() => {
-        if (movementId != '' && movementId != '0') {
-            LoadMovement(movementId)
+ useEffect(() => {
+    const loadData = async () => {
+        if (movementId !== '' && movementId !== '0') {
+            await LoadMovement(movementId);
+            await LoadBillingInvoicing(movementId);
         }
-    }, [movementId])
+    };
+
+    loadData();
+}, [movementId]);
 
 
     const LoadMovement = async (movementId) => {
@@ -223,11 +250,17 @@ const BillingInvoicing: React.FC = () => {
             setMovementValue(response.data.vlr_Movimento)
             setMovementParcelas(response.data.num_Parcela.toString() + '/' + response.data.qtd_Parcelamento.toString())
 
+            if ( Number(response.data.num_Parcela) > 1 )
+            {
+                setIsLoading(false)
+                addToast({ type: "info", title: "Operação não realizada", description: "Só é possivel faturar na primeira parcela" })
+                history.push(`/financeiro`)
+            }
+
             const selectedItem = response.data.UserList.find(item =>
                 item.label.toLowerCase().includes("cliente")
             );
 
-            console.log(selectedItem);
             setSelectedPeople(selectedItem)
 
 
@@ -267,6 +300,8 @@ const BillingInvoicing: React.FC = () => {
                 setDescription(primeiraParcela.des_Movimento);
             }
 
+
+
             setIsLoading(false);
         }
         catch (err: any) {
@@ -275,6 +310,75 @@ const BillingInvoicing: React.FC = () => {
 
         }
     }
+
+
+
+const LoadBillingInvoicing = async (instalmentId) => {
+    try {
+        setIsLoading(true);
+
+        const response = await api.get('/Financeiro/Faturamento2/Editar', {
+            params: {
+                instalmentId: Number(instalmentId),
+                token
+            }
+        });
+
+        const data = response.data;
+
+        if (data && Object.keys(data).length > 0) {
+
+            setInvoiceId(data.invoiceId);
+            setInvoiceNumber(data.invoiceNumber);
+
+            const selectedItem: ISelectData = {
+                id: data.personId?.toString() || '',
+                label: data.personName || ''
+            };
+
+            setSelectedPeople(selectedItem);
+            setDescription(data.invoiceDescription);
+
+            const selectedItem1: ISelectData = {
+                value: data.billingRulerId?.toString() || '',
+                label: data.billingRulerName || ''
+            };
+
+            console.log(selectedItem1);
+            setSelectedBillingRuler(selectedItem1);
+
+            setMovementDate(
+            format(new Date(data.issueDate), "yyyy-MM-dd")
+            );
+
+            // Lista de movimentos da fatura
+            //if (data.billingIssuingInvoices) {
+            //    setBillingMovementList(data.billingIssuingInvoices);
+            //}
+
+
+        } 
+        /*
+        else {
+            addToast({
+                type: "info",
+                title: "Nenhum registro encontrado",
+                description: "Não foi encontrada nenhuma fatura para esse ID."
+            });
+        }
+        */
+
+        setIsLoading(false);
+
+    } catch (err: any) {
+        setIsLoading(false);
+        addToast({
+            type: "info",
+            title: "Operação não realizada",
+            description: err.response?.data?.Message
+        });
+    }
+};
 
 
 
@@ -316,6 +420,26 @@ const BillingInvoicing: React.FC = () => {
     }, []);
 
 
+const CustomHeaderCell = (props: any) => {
+    const { column } = props;
+
+    if (column.name === '') {
+        return (
+            <TableHeaderRow.Cell {...props}>
+                <input
+                    type="checkbox"
+                    checked={
+                        movementList.length > 0 &&
+                        selectedRows.length === movementList.length
+                    }
+                    onChange={handleSelectAll}
+                />
+            </TableHeaderRow.Cell>
+        );
+    }
+
+    return <TableHeaderRow.Cell {...props} />;
+};
 
     const CustomCell = (props) => {
         const { column } = props;
@@ -330,28 +454,15 @@ const BillingInvoicing: React.FC = () => {
         }
 
         if (column.title === '') {
-            const imageExtensions = ['gif', 'png', 'svg', 'jpg', 'jpeg']
-            const docExtension = ['pdf', 'doc', 'docx']
-            const planExtensions = ['xlsx', 'xls']
+            const rowId = props.row.parcelaFormatada; 
 
             return (
-                <Table.Cell onClick={(e) => handleClick(props)} {...props}>
-                    &nbsp;&nbsp;
-                    {/* image extensions image */}
-                    {(imageExtensions.includes(props.row.fileType) &&
-                        <BsImage title='Clique para fazer o download desta imagem' />
-                    )}
-                    {(planExtensions.includes(props.row.fileType) &&
-                        <SiMicrosoftexcel title='Clique para fazer o download desta planilha' />
-                    )}
-                    {(docExtension.includes(props.row.fileType) &&
-                        <FaFilePdf title='Clique para fazer o download deste documento' />
-                    )}
-                    {((!imageExtensions.includes(props.row.fileType)
-                        && !planExtensions.includes(props.row.fileType)
-                        && !docExtension.includes(props.row.fileType)) &&
-                        <HiDocumentText title='Clique para fazer o download deste documento' />
-                    )}
+                <Table.Cell {...props}>
+                    <input
+                        type="checkbox"
+                        checked={selectedRows.includes(rowId)}
+                        onChange={() => handleSelectRow(rowId)}
+                    />
                 </Table.Cell>
             );
         }
@@ -385,12 +496,12 @@ const BillingInvoicing: React.FC = () => {
         { columnName: '', width: '8%' },
         { columnName: 'Parcela', width: '30%' },
         { columnName: 'Vencimento', width: '30%' },
-        { columnName: 'Forma Pagto', width: '8%' },
         { columnName: 'Valor', width: '8%' },
+        { columnName: 'Forma Pagto', width: '8%' },
         { columnName: 'Status', width: '8%' },
-        { columnName: 'acoes', width: '8%' },
-        { columnName: 'Observacao', width: '8%' }
-
+        { columnName: 'Observacao', width: '8%' },
+        { columnName: 'acoes', width: '8%' }
+        
 
     ]);
 
@@ -400,12 +511,12 @@ const BillingInvoicing: React.FC = () => {
         { name: '', title: '' },
         { name: 'parcelaFormatada', title: 'Parcela' },
         { name: 'dta_Movimento', title: 'Vencimento' },
-        { name: 'des_FormaPagamento', title: 'Forma Pagto' },
         { name: 'vlr_Movimento_Contabil', title: 'Valor' },
+        { name: 'des_FormaPagamento', title: 'Forma Pagto' },
         { name: 'flg_Status', title: 'Status' },
-        { name: 'acoes', title: 'Ações' },
-        { name: 'des_Movimento', title: 'Observação' }
-
+        { name: 'des_Movimento', title: 'Observação' },
+        { name: 'acoes', title: 'Ações' }
+       
     ];
 
     useEffect(() => {
@@ -446,12 +557,14 @@ const BillingInvoicing: React.FC = () => {
   try {
     setIsLoading(true);
 
+
     const payload = {
       invoiceId: invoiceId || 0,
       companyId: companyId,
       invoiceNumber: invoiceNumber,
       personId: selectedPeople?.id,
       personName: selectedPeople?.label,
+      billingRulerId: selectedBillingRuler?.value ?? null,
       invoiceDescription: description,
       issueDate: new Date(),
       token: token,
@@ -471,13 +584,16 @@ const BillingInvoicing: React.FC = () => {
       payload
     );
 
+
+    await LoadMovement(movementId)
+    await LoadBillingInvoicing(movementId)
+
+
     addToast({
       type: "success",
       title: "Sucesso",
       description: "Faturamento salvo com sucesso"
     });
-
-    console.log("InvoiceId retornado:", response.data);
 
     setIsLoading(false);
 
@@ -570,7 +686,7 @@ const BillingInvoicing: React.FC = () => {
                                     className='inputField'
                                     maxLength={200}
                                     value={description}
-                                    onChange={(e: ChangeEvent<HTMLInputElement>) => setTaxInvoice(e.target.value)}
+                                    onChange={(e: ChangeEvent<HTMLInputElement>) => setDescription(e.target.value)}
                                 />
                             </label>
 
@@ -582,8 +698,14 @@ const BillingInvoicing: React.FC = () => {
                                     id="workflow"
                                     options={billingRulerList}
                                     placeholder="Selecione"
-                                    //value={workflow}
-                                    //onChange={handleChangeWorkflow}
+                                    value={selectedBillingRuler}
+                                    onChange={(selectedOption) => {
+                                        if (selectedOption) {
+                                            setSelectedBillingRuler(selectedOption);
+                                        } else {
+                                            setSelectedBillingRuler(null);
+                                        }
+                                    }}
                                     onInputChange={(inputValue, { action }) => {
                                         if (action === "input-change") {
                                             ListBillingRuler(inputValue);
@@ -594,7 +716,6 @@ const BillingInvoicing: React.FC = () => {
                                     }
                                     classNamePrefix="rs"
                                     styles={selectStyles}
-                                //isDisabled={blockUpdate}
                                 />
 
                             </label>
@@ -608,14 +729,14 @@ const BillingInvoicing: React.FC = () => {
                         <br />
                         <div className="mini-invoice">
                             <div className="mini-top">
-                                <span className="mini-number">Fat. {invoiceNumber}</span>
+                                <span className="mini-number">Fat. {invoiceNumber?.toString().padStart(6, '0')}</span>
                                 <span className="mini-status aberta">ABERTA</span>
                             </div>
-
+                            {/*
                             <div className="mini-installment">
                                 Parcela {movementParcelas}
                             </div>
-
+                                */}
                             <div className="mini-value">
                                 R$ {movementValue}
 
@@ -651,7 +772,7 @@ const BillingInvoicing: React.FC = () => {
                             columnExtensions={tableColumnExtensions}
                             messages={languageGridEmpty}
                         />
-                        <TableHeaderRow showSortingControls />
+                        <TableHeaderRow cellComponent={CustomHeaderCell} />
                         <PagingPanel
                             messages={languageGridPagination}
                         />
@@ -722,6 +843,15 @@ const BillingInvoicing: React.FC = () => {
                             <FiChevronDown
                                 className={`dropdownIcon ${isOpen ? "rotate" : ""}`}
                             />
+                        </button>
+
+                        <button
+                            type='button'
+                            className="buttonClick"
+                            onClick={() => { history.push(`/financeiro`) }}
+                        >
+                            <FaRegTimesCircle />
+                            Fechar
                         </button>
 
                         {isOpen && (
