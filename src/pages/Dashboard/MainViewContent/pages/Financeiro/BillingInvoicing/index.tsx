@@ -42,9 +42,11 @@ import { HeaderPage } from 'components/HeaderPage';
 import LogModal from 'components/LogModal';
 import { DataTypeProvider, PagingState, CustomPaging, IntegratedPaging, SortingState, IntegratedSorting } from '@devexpress/dx-react-grid';
 import { Grid, Table, TableHeaderRow, PagingPanel } from '@devexpress/dx-react-grid-material-ui';
+import { TableColumnVisibility } from '@devexpress/dx-react-grid-material-ui';
 import GridSelectProcess from '../../Dashboard/resorces/DashboardComponents/CreateAppointment/GridSelectProcess';
 import { IPayments } from '../Interfaces/IPayments';
 import FinancialPaymentModal from '../PaymentModal';
+import FinancialInvoicingModal from '../InvoicingModal';
 import FinancialDocumentModal from '../DocumentModal';
 import { ModalDeleteOptions, OverlayFinancial } from '../styles';
 import { Container, Content, Process, GridSubContainer, ModalPaymentInformation, HamburguerHeader } from './styles';
@@ -105,6 +107,8 @@ const BillingInvoicing: React.FC = () => {
     const { handleSelectProcess, selectProcess, matterSelected, openSelectProcess } = useModal();
     const [accountId, setAccountId] = useState('');
     const [movementId, setMovementId] = useState('');
+    const [movementIdEdit, setMovementIdEdit] = useState('');
+    
     const [movementType, setMovementType] = useState('');
     //const [paymentFormList, setPaymentFormList] = useState<ISelectData[]>([]);
     const [paymentFormId, setPaymentFormId] = useState('');
@@ -158,8 +162,7 @@ const BillingInvoicing: React.FC = () => {
     const [blockAssociateMatter, setBlockAssociateMatter] = useState(false);
     const [appointmentMatter, setAppointmentMatter] = useState<MatterData | undefined>({} as MatterData);
     const [matterAttachedModal, setMatterAttachedModal] = useState(false);
-    const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
-    const [enablePayments, setEnablePayments] = useState<boolean>(true);
+      const [enablePayments, setEnablePayments] = useState<boolean>(true);
     const [showPayments, setShowPayments] = useState<boolean>(false);
     const [showChangeInstallments, setShowChangeInstallments] = useState<boolean>(false);
     const [changeInstallments, setChangeInstallments] = useState<boolean>(false);
@@ -180,14 +183,19 @@ const BillingInvoicing: React.FC = () => {
         <DataTypeProvider formatterComponent={DateFormatter} {...props} />
     )
 
-    const [isOpen, setIsOpen] = useState(false);
-    const [invoiceId, setInvoiceId] = useState<number>(0);
-    const [invoiceNumber, setInvoiceNumber] = useState<string>('000000');
-    const [movementList, setMovementList] = useState<IFinancial[]>([]);
-    const [billingRulerList, setBillingRulerList] = useState<IOption[]>([]);
-    const [paymentFormList, setPaymentFormList] = useState<IPaymentFormData[]>([]);
-    const [selectedRows, setSelectedRows] = useState<number[]>([]);
-    const [selectedBillingRuler, setSelectedBillingRuler] = useState<ISelectData | null>(null);
+const [isOpen, setIsOpen] = useState(false);
+const [invoiceId, setInvoiceId] = useState<number>(0);
+const [invoiceNumber, setInvoiceNumber] = useState<string>('000000');
+const [movementList, setMovementList] = useState<IFinancial[]>([]);
+const [billingRulerList, setBillingRulerList] = useState<IOption[]>([]);
+const [paymentFormList, setPaymentFormList] = useState<IPaymentFormData[]>([]);
+const [selectedRows, setSelectedRows] = useState<number[]>([]);
+const [selectedBillingRuler, setSelectedBillingRuler] = useState<ISelectData | null>(null);
+const [buttonFatura, setButtonFatura] = useState<string>('Gerar Fatura');
+const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
+const [visualizeType, setVisualizeType] = useState('V');
+
+
 
 const handleSelectRow = (rowId: number) => {
     setSelectedRows(prev =>
@@ -284,13 +292,12 @@ const handleSelectAll = () => {
             return {
                 ...item,
                 parcelaFormatada: `${item.num_Parcela}/${item.qtd_Parcelamento}`,
-                des_FormaPagamento: forma?.paymentFormDescription || ''
+                des_FormaPagamento: forma?.paymentFormDescription || '',
+                flg_Efetivado: item.flg_Efetivado === 'S' ? 'RECEBIDO' : 'PENDENTE'
             };
             });
            
             setMovementList(dadosFormatados);                        
-
-            //console.log(paymentFormList);
 
             const primeiraParcela = dadosFormatados.find(
                 item => Number(item.num_Parcela) === 1
@@ -350,6 +357,8 @@ const LoadBillingInvoicing = async (instalmentId) => {
             setMovementDate(
             format(new Date(data.issueDate), "yyyy-MM-dd")
             );
+
+             setButtonFatura('Alterar Fatura');
 
             // Lista de movimentos da fatura
             //if (data.billingIssuingInvoices) {
@@ -475,21 +484,56 @@ const CustomHeaderCell = (props: any) => {
             );
         }
 
+
+        if (column.title === 'Ações') {
+
+            const rowFp = props.row.des_FormaPagamento;
+
+            if(rowFp == 'BOLETO')
+            {
+            return (
+                <Table.Cell onClick={(e) => handleClick(props)} {...props}>
+                      <button
+                            className="buttonLinkClick"
+                            type='button'
+                            onClick={() => handleSave()}
+                        >
+
+                            Gerar Boleto
+                        </button>
+                    
+                </Table.Cell>
+            );
+
+            }
+
+        }
+
+
+
+         if (column.title === 'Editar') {
+            return (
+                <Table.Cell onClick={(e) => handleClick(props)} {...props}>
+                      <button
+                            className="buttonLinkClick"
+                            type='button'
+                        >
+
+                            Editar
+                        </button>
+                    
+                </Table.Cell>
+            );
+
+        }
+
+
+
         return <Table.Cell {...props} />;
     };
 
 
-    const handleClick = (props: any) => {
-        // call download function
-        if (props.column.name === 'download' || props.column.name === '') {
-            //handleDownloadFile(props.row.fileName)
-        }
-
-        // call delete function
-        if (props.column.name === 'delete') {
-            //handleDeleteFile(props.row.fileName)
-        }
-    }
+   
 
 
     const [tableColumnExtensions] = useState([
@@ -500,7 +544,8 @@ const CustomHeaderCell = (props: any) => {
         { columnName: 'Forma Pagto', width: '8%' },
         { columnName: 'Status', width: '8%' },
         { columnName: 'Observacao', width: '8%' },
-        { columnName: 'acoes', width: '8%' }
+        { columnName: 'acoes', width: '8%' },
+        { columnName: 'Editar', width: '8%' }
         
 
     ]);
@@ -508,16 +553,22 @@ const CustomHeaderCell = (props: any) => {
 
     const [dateColumns] = useState(['dateUpload']);
     const columns = [
+        { name: 'cod_Movimento', title: 'Código' }, 
         { name: '', title: '' },
         { name: 'parcelaFormatada', title: 'Parcela' },
         { name: 'dta_Movimento', title: 'Vencimento' },
         { name: 'vlr_Movimento_Contabil', title: 'Valor' },
         { name: 'des_FormaPagamento', title: 'Forma Pagto' },
-        { name: 'flg_Status', title: 'Status' },
+        { name: 'flg_Efetivado', title: 'Status' },
         { name: 'des_Movimento', title: 'Observação' },
-        { name: 'acoes', title: 'Ações' }
+        { name: 'acoes', title: 'Ações' },
+        { name: 'editar', title: 'Editar' }
        
     ];
+
+const [hiddenColumnNames, setHiddenColumnNames] = useState<string[]>([
+  'cod_Movimento'
+]);
 
     useEffect(() => {
         ListBillingRuler("")
@@ -608,6 +659,49 @@ const CustomHeaderCell = (props: any) => {
   }
 };
     
+
+const handleClick = useCallback(async (props: any) => {
+    //setMovementId(props.row.cod_Movimento)
+    //setDealDetailId(props.row.cod_AcordoDetalhe)
+    //setInvoice(props.row.cod_FaturaParcela)
+    //setMovementType(props.row.tpo_Movimento)
+
+    if (props.column.name === 'editar'){
+
+        const id = props.row.cod_Movimento;
+
+        setMovementIdEdit(id);
+
+        setShowPaymentModal(true)
+    }
+
+   
+  }, [accountId, currentPage, pageSize]);
+
+
+const ClosePaymentModal = async () => {
+    setMovementId('')
+    //setInvoice('')
+    setMovementType('')
+    setShowPaymentModal(false)
+    setIsLoading(true)
+  }
+
+const LoadMovementsByPeriod = useCallback(async () => {
+   
+  },[])
+
+
+const LoadTotalByPeriod = async () => {
+}
+
+ const LoadMovementsByExtract = useCallback(async () => {
+  },[])
+
+
+ const LoadTotalByExtract = async () => {
+
+  };
 
 
     return (
@@ -773,6 +867,10 @@ const CustomHeaderCell = (props: any) => {
                             messages={languageGridEmpty}
                         />
                         <TableHeaderRow cellComponent={CustomHeaderCell} />
+                                                <TableColumnVisibility
+  hiddenColumnNames={hiddenColumnNames}
+  onHiddenColumnNamesChange={setHiddenColumnNames}
+/>
                         <PagingPanel
                             messages={languageGridPagination}
                         />
@@ -798,20 +896,10 @@ const CustomHeaderCell = (props: any) => {
                             onClick={() => handleSave()}
                         >
 
-                            Gerar Fatura
+                            {buttonFatura}
                         </button>
 
-                        {(movementId != '0' && invoice == 0) && (
-                            <button
-                                className="buttonClick"
-                                type='button'
-                                onClick={() => Copy()}
-                            >
-
-                                Salvar
-                            </button>
-                        )}
-
+                     
                         {(!isMOBILE && movementId != '0' && invoice == 0) && (
                             <button
                                 className="buttonClick"
@@ -876,8 +964,8 @@ const CustomHeaderCell = (props: any) => {
                 &nbsp;
             </Content>
 
-            {(showPaymentModal) && <OverlayFinancial />}
-            {(showPaymentModal) && <FinancialPaymentModal callbackFunction={{ movementId, ClosePaymentModal }} />}
+            {(showPaymentModal) && <OverlayFinancial /> }
+            {(showPaymentModal) && <FinancialInvoicingModal callbackFunction={{movementIdEdit, invoice, visualizeType, movementType, movementList, ClosePaymentModal, LoadMovementsByPeriod, LoadTotalByPeriod, LoadMovementsByExtract, LoadTotalByExtract }} /> }
 
             {showModalOptions && (
                 <ModalOptions

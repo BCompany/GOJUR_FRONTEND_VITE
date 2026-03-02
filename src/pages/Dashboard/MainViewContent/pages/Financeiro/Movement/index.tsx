@@ -77,6 +77,7 @@ const FinancialMovement: React.FC = () => {
   const [centerCostDescription, setCenterCostDescription] = useState<string>('')
   const [centerCostTerm, setCenterCostTerm] = useState('');
   const [peopleList, setPeopleList] = useState<ISelectData[]>([]);
+ 
   const [peopleId, setPeopleId] = useState('');
   const [peopleDescription, setPeopleDescription] = useState<string>('');
   const [peopleTerm, setPeopleTerm] = useState('');
@@ -90,10 +91,13 @@ const FinancialMovement: React.FC = () => {
   
   const [movementParcelasFirst, setMovementParcelasFirst] = useState('1');
   const [movementParcelasDatas, setMovementParcelasDatas] = useState('M');
+  const [codParcelamento, setCodParcelamento] = useState('0');
   const [showParcelasDatas, setShowParcelasDatas] = useState<boolean>(false);
   const [taxInvoice, setTaxInvoice] = useState<string>('');
   const [movementDescription, setMovementDescription] = useState('');
   const [selectedPeopleList, setSelectedPeopleList] = useState<ISelectData[]>([]);
+  const [selectedPeopleListOld, setSelectedPeopleListOld] = useState<ISelectData[]>([]);
+
   const [showNotifyPeople, setShowNotifyPeople] = useState<boolean>(false);
   const [checkPeopleList, setCheckPeopleList] = useState<boolean>(false);
   const [reminders, setReminders] = useState('00');
@@ -119,7 +123,11 @@ const FinancialMovement: React.FC = () => {
   const [enablePayments, setEnablePayments] = useState<boolean>(true);
   const [showPayments, setShowPayments] = useState<boolean>(false);
   const [showChangeInstallments, setShowChangeInstallments] = useState<boolean>(false);
+  const [showChangeCustomer, setShowChangeCustomer] = useState<boolean>(false);
+  
   const [changeInstallments, setChangeInstallments] = useState<boolean>(false);
+  const [changeCustomer, setChangeCustomer] = useState<boolean>(false);
+  
   const [invoice, setInvoice] = useState<number>(0);
   const [sequence, setSequence] = useState<string>('');
   const [uploadingStatus, setUploadingStatus] = useState<string>('none');
@@ -137,11 +145,16 @@ const FinancialMovement: React.FC = () => {
     <DataTypeProvider formatterComponent={DateFormatter} {...props} />
   )
 
+ const [buttonFatura, setButtonFatura] = useState<string>('Faturar');
+const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
+ 
+
   
   useEffect(() => {
     if (isCancelMessage)
     {
       setShowChangeInstallments(false)
+      setShowChangeCustomer(false)
       handleCancelMessage(false)
     }
   }, [isCancelMessage, caller]);
@@ -152,6 +165,7 @@ const FinancialMovement: React.FC = () => {
     {
       handleConfirmChangeInstallments()
       setShowChangeInstallments(false)
+      setShowChangeCustomer(false)
       handleConfirmMessage(false)
     }
   }, [isConfirmMessage, caller]);
@@ -186,6 +200,7 @@ const FinancialMovement: React.FC = () => {
     if(movementId != '' && movementId != '0')
     {
       LoadMovement(movementId)
+      
     }
   }, [movementId])
 
@@ -263,8 +278,9 @@ const FinancialMovement: React.FC = () => {
       setMovementParcelas(response.data.qtd_Parcelamento.toString())
       setMovementParcelasFirst(response.data.qtd_Parcelamento.toString())
       setMovementParcelasDatas(response.data.Periodicidade)
+      setCodParcelamento(response.data.cod_Parcelamento)
 
-       setCurrentInstallment(response.data.num_Parcela.toString() + '/' + response.data.qtd_Parcelamento.toString())
+      setCurrentInstallment(response.data.num_Parcela.toString() + '/' + response.data.qtd_Parcelamento.toString())
 
       setPaymentFormId(response.data.cod_FormaPagamento)
       setPaymentFormDescription(response.data.des_FormaPagamento)
@@ -274,7 +290,12 @@ const FinancialMovement: React.FC = () => {
       setCenterCostDescription(response.data.des_CentroCusto)
       setTaxInvoice(response.data.num_NotaFiscal)
       setMovementDescription(response.data.des_Movimento)
-      setSelectedPeopleList(response.data.UserList)
+      //setSelectedPeopleList(response.data.UserList)
+      //setSelectedPeopleListOld(response.data.UserList)
+
+      setSelectedPeopleList(response.data.UserList.map(item => ({ ...item })));
+      setSelectedPeopleListOld(response.data.UserList.map(item => ({ ...item })));
+
       setFlgNotifyPeople(response.data.flg_NotificaPessoa)
       setFlgNotifyEmail(response.data.flg_NotificaEmail)
       setFlgNotifyWhatsApp(response.data.flg_NotificaWhatsApp)
@@ -300,6 +321,7 @@ const FinancialMovement: React.FC = () => {
 
       await LoadPayments()
       await LoadDocuments()
+      await LoadBillingInvoicing(movementId);
 
       setIsLoading(false);
     }
@@ -308,6 +330,42 @@ const FinancialMovement: React.FC = () => {
       addToast({type: "info", title: "Operação não realizada", description: err.response.data.Message})
     }
   }
+
+
+  const LoadBillingInvoicing = async (instalmentId) => {
+      try {
+          setIsLoading(true);
+  
+          const response = await api.get('/Financeiro/Faturamento2/Editar', {
+              params: {
+                  instalmentId: Number(instalmentId),
+                  token
+              }
+          });
+  
+          const data = response.data;
+  
+          if (data && Object.keys(data).length > 0) {
+
+            setButtonFatura('Ver Fatura');
+            setInvoiceNumber(Number(data.invoiceNumber));
+         
+
+          } 
+  
+          setIsLoading(false);
+  
+      } catch (err: any) {
+          setIsLoading(false);
+          addToast({
+              type: "info",
+              title: "Operação não realizada",
+              description: err.response?.data?.Message
+          });
+      }
+  };
+  
+  
 
 
   const LoadPayments = async () => {
@@ -461,6 +519,8 @@ const FinancialMovement: React.FC = () => {
       setPeopleDescription(item.label)
       setShowNotifyPeople(reminders != '00' && reminders != null)
       handleListItemPeople(item)
+      setChangeCustomer(true);
+    
     }else{
       setPeopleId('')
       setPeopleDescription('')
@@ -562,7 +622,7 @@ const FinancialMovement: React.FC = () => {
       setIsSaving(false)
       setShowChangeInstallments(false)
     }
-  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp]);
+  }, [isSaving, selectedPeopleList, movementId, invoiceNumber, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, changeCustomer, invoice, flgNotifyEmail, flgNotifyWhatsApp]);
 
 
   const Copy = useCallback(async() => {
@@ -646,12 +706,41 @@ const FinancialMovement: React.FC = () => {
   }, [movementId]);
 
 
+
   const Validate =() => {
     let isValid = true;
 
     // avoid click many times
     if (isSaving){
       return;
+    }
+
+    
+
+    if (invoiceNumber !== 0)
+    {  
+        
+      if(changeCustomer)
+      {
+          const newCustomers = selectedPeopleList.filter(item =>
+            item.label.toLowerCase().includes('cliente')
+          );
+        
+          const formerCustomers = selectedPeopleListOld.filter(item1 =>
+            item1.label.toLowerCase().includes('cliente')
+          );
+        
+          const thereWasAChange =
+            newCustomers.some(novo =>
+              !formerCustomers.some(antigo => antigo.id === novo.id)
+            );
+
+          if (thereWasAChange) {
+            setShowChangeCustomer(true)
+            isValid = false;
+          }
+
+        }
     }
 
     if (categoryId == '')
@@ -694,6 +783,7 @@ const FinancialMovement: React.FC = () => {
       setShowModalOptions(true)
       isValid = false;
     }
+
 
     return isValid;
   }
@@ -1075,6 +1165,7 @@ const FinancialMovement: React.FC = () => {
 
   const handleConfirmChangeInstallments = async () => {
     setChangeInstallments(false);
+    setChangeCustomer(false);
     setActionSave('all');
   }
 
@@ -1112,6 +1203,41 @@ const FinancialMovement: React.FC = () => {
   const handleCloseLog = () => {
     setShowLog(false)
   }
+
+
+  const handleFaturar = async () => {
+  try {
+    const response = await api.get('/Financeiro/ListarClientesPorParcelamento', {
+      params: {
+        installmentsId: codParcelamento,
+        page: 1,
+        rows: 500,
+        token
+      }
+    });
+
+    const lista = response.data;
+
+    if (!lista || lista.length === 0) {
+      addToast({type: "info", title: "Operação NÃO realizada", description: "Nenhum cliente encontrado para este parcelamento."})
+      return;
+    }
+
+    const codPessoas = new Set(lista.map(x => x.cod_Pessoa));
+
+    if (codPessoas.size > 1) {
+      addToast({type: "info", title: "Operação NÃO realizada", description: "Não é possível faturar. Existem clientes diferentes neste parcelamento."})
+      return;
+    }
+
+    history.push(`/financeiro/billinginvoicing?instalmentId=${movementId}`);
+
+  } catch (error) {
+    console.error(error);
+    addToast({type: "error", title: "Operação NÃO realizada", description: "Erro ao validar clientes."})
+  }
+};
+
 
 
   return (
@@ -1592,14 +1718,17 @@ const FinancialMovement: React.FC = () => {
 
           <div style={{float:'right'}}>
 
+          {movementId != "0" && (
             <button
               className="buttonClick"
               type='button'
-              onClick={() => { history.push(`/financeiro/billinginvoicing?instalmentId=${movementId}`) }}
+              onClick={() => { handleFaturar() }}
             >  
       
-              Faturar
+              {buttonFatura}
             </button>
+            )}
+
 
             <button
               className="buttonClick"
@@ -1812,6 +1941,16 @@ const FinancialMovement: React.FC = () => {
           caller="changeDefaultHeader"
           useCheckBoxConfirm
           message="Foi alterado o número de parcelas do movimento, o reparcelamento implica em alterar todas as parcelas considerando os dados do movimento atual. Eventuais liquidações serão mantidas desde que a parcela não seja removida (no caso de redução de parcelas)."
+        />
+      )}
+
+
+      {showChangeCustomer && (
+        <ConfirmBoxModal
+          title="Alterar cliente do movimento"
+          caller="changeDefaultHeaderCustomer"
+          useCheckBoxConfirm
+          message="Foi alterado o cliente do movimento, a alteração de cliente implica em alterar todas as parcelas considerando os dados do movimento atual. Eventuais liquidações serão mantidas desde que a parcela não seja removida (no caso de redução de parcelas)."
         />
       )}
 
