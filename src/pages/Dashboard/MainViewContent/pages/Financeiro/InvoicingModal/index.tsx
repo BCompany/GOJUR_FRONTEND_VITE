@@ -7,8 +7,11 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
-import React, {useEffect, useState, useCallback, ChangeEvent} from 'react';
+import React, { useEffect, useState, useCallback, ChangeEvent } from 'react';
 import api from 'services/api';
+import ModalOptions from 'components/ModalOptions';
+import ConfirmBoxModal from 'components/ConfirmBoxModal';
+import { useConfirmBox } from 'context/confirmBox';
 import Select from 'react-select';
 import { format } from 'date-fns';
 import { FaRegTimesCircle, FaCheck } from 'react-icons/fa';
@@ -46,15 +49,17 @@ interface IFinancial {
   cod_FaturaParcela: number;
   cod_Acordo: string;
   parcelaFormatada?: string;
-  cod_Fatura2Movimento?:string;
-  flg_MovimentoExccluido?: string;  
+  cod_Fatura2Movimento?: string;
+  flg_MovimentoExccluido?: string;
+  des_Observacao?: string;
 }
 
 const FinancialInvoicingModal = (props) => {
 
-  const {movementIdEdit, invoice, movementType, movementList, ClosePaymentModal} = props.callbackFunction
+  const { movementIdEdit, invoice, movementList, ClosePaymentModal } = props.callbackFunction
   const token = localStorage.getItem('@GoJur:token');
   const { addToast } = useToast();
+   const {isConfirmMessage, isCancelMessage, handleCancelMessage, handleConfirmMessage, caller} = useConfirmBox();
   const [paymentList, setPaymentList] = useState<IPayments[]>([]);
   const [showPostBackValidation, setShowPostBackValidation] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -66,30 +71,81 @@ const FinancialInvoicingModal = (props) => {
   const [movement, setMovement] = useState<IFinancial>();
   const [movementDate, setMovementDate] = useState<string>('');
   const [movementValue, setMovementValue] = useState<number | null>(null);
+  const [observation, setObservation] = useState<string>('');
+  const [selectedPeopleList, setSelectedPeopleList] = useState<ISelectData[]>([]);
+  const [currentInstallment, setCurrentInstallment] = useState('1');
+  const [movementParcelasDatas, setMovementParcelasDatas] = useState('M');
+  const [movementType, setMovementType] = useState('');
+  const [movementParcelasFirst, setMovementParcelasFirst] = useState('1');
+  const [codParcelamento, setCodParcelamento] = useState('0');
+  const [categoryId, setCategoryId] = useState('');
+  const [categoryDescription, setCategoryDescription] = useState('');
+  const [centerCostId, setCenterCostId] = useState('');
+  const [centerCostDescription, setCenterCostDescription] = useState<string>('')
+  const [taxInvoice, setTaxInvoice] = useState<string>('');
+  const [movementDescription, setMovementDescription] = useState('');
+  const [flgNotifyPeople, setFlgNotifyPeople] = useState<boolean>(false);
+  const [flgNotifyEmail, setFlgNotifyEmail] = useState<boolean>(true);
+  const [flgNotifyWhatsApp, setFlgNotifyWhatsApp] = useState<boolean>(false);
+  const [reminders, setReminders] = useState('00');
+  const [showNotifyPeople, setShowNotifyPeople] = useState<boolean>(false);
+  const [flgReembolso, setFlgReembolso] = useState<boolean>(false);
+  const [flgStatus, setFlgStatus] = useState('A');
+  const [showParcelasDatas, setShowParcelasDatas] = useState<boolean>(false);
+  const [accountId, setAccountId] = useState('');
+  const [paymentQtd, setPaymentQtd] = useState('');
+  //const [invoice, setInvoice] = useState<number>(0);
+  const [sequence, setSequence] = useState<string>('');
+  const [enablePayments, setEnablePayments] = useState<boolean>(true);
+  const [matterId, setMatterId] = useState('');
+  const [processTitle, setProcessTitle] = useState('Associar Processo');
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
+  const [actionSave, setActionSave] = useState<string>('');
+  const [changeInstallments, setChangeInstallments] = useState<boolean>(false);
+  const [changeCustomer, setChangeCustomer] = useState<boolean>(false);
+ const [showChangeInstallments, setShowChangeInstallments] = useState<boolean>(false);
+  const [showModalOptions, setShowModalOptions] = useState<boolean>(false);
+
 
   useEffect(() => {
-    LoadMovement()
-    LoadPaymentForm()
-  },[])
+      if (isCancelMessage)
+      {
+        setShowChangeInstallments(false)
+        //setShowChangeCustomer(false)
+        handleCancelMessage(false)
+      }
+    }, [isCancelMessage, caller]);
+  
+  
+    useEffect(() => {
+      if(isConfirmMessage)
+      {
+        handleConfirmChangeInstallments()
+        setShowChangeInstallments(false)
+        //setShowChangeCustomer(false)
+        handleConfirmMessage(false)
+      }
+    }, [isConfirmMessage, caller]);
+  
 
-
-  const LoadMovement = async () => {
-
-    const movement = movementList.find(
-      item => item.cod_Movimento === Number(movementIdEdit)
-    );
-
-    setMovement(movement);
-    //console.log(movementList);
-    //console.log(movement);
-
+  const handleConfirmChangeInstallments = async () => {
+    setChangeInstallments(false);
+    setChangeCustomer(false);
+    setActionSave('all');
   }
 
-  const LoadPayments = async () => {
+  useEffect(() => {
+    LoadMovement(Number(movementIdEdit))
+    LoadPaymentForm()
+  }, [])
+
+
+    const LoadPayments = async () => {
 
     try {
       const response = await api.get<IPayments[]>('/Financeiro/ObterPagamentos', {
-        params:{
+        params: {
           token,
           movementId
         }
@@ -101,7 +157,7 @@ const FinancialInvoicingModal = (props) => {
       })
 
       setPaymentList(paymentListReturn)
-      
+
     } catch (err) {
       console.log(err);
     }
@@ -113,11 +169,11 @@ const FinancialInvoicingModal = (props) => {
     const newPayment: IPayments = {
       cod_Movimento: movementId,
       cod_MovimentoLiquidacao: id.toString(),
-      dta_LiquidacaoStr:format(new Date(), 'yyyy-MM-dd'),
+      dta_LiquidacaoStr: format(new Date(), 'yyyy-MM-dd'),
       vlr_Liquidacao: 0,
       total_Restante: 0,
       tpo_Movimento: '',
-      action:'NEW',
+      action: 'NEW',
     }
 
     setPaymentList(oldPayment => [...oldPayment, newPayment])
@@ -125,23 +181,23 @@ const FinancialInvoicingModal = (props) => {
 
 
   const ChangeDate = useCallback((value, paymentId) => {
-   
+
     const newPayment = paymentList.map(payment => payment.cod_MovimentoLiquidacao === paymentId ? {
       ...payment,
       dta_LiquidacaoStr: value
-    }: payment)
+    } : payment)
 
     setPaymentList(newPayment)
 
-  },[paymentList]);
+  }, [paymentList]);
 
 
   const ChangeValue = (value, paymentId) => {
-    
+
     const newPayment = paymentList.map(payment => payment.cod_MovimentoLiquidacao === paymentId ? {
       ...payment,
       vlr_Liquidacao: Number(value)
-    }: payment)
+    } : payment)
 
     setPaymentList(newPayment)
   };
@@ -152,96 +208,35 @@ const FinancialInvoicingModal = (props) => {
     const payment = paymentList.map(i => i.cod_MovimentoLiquidacao === paymentId ? {
       ...i,
       action: 'DELETE'
-    }: i);
+    } : i);
     setPaymentList(payment)
 
-  },[paymentList]);
+  }, [paymentList]);
 
-  
+
   const CloseModal = () => {
     ClosePaymentModal()
   }
 
 
-  const SavePayments = useCallback(async(item) => {
+   
+
+  const LoadPaymentForm = async () => {
     try {
-      setIsLoading(true)
-      setShowPostBackValidation(false)
-
-      if (!Validate(paymentList)) return;
-    
-      const response = await api.post<IPayments[]>('/Financeiro/SalvarPagamentos', {
-        
-        movementId,
-        paymentList,
-        postBackValidation: item,
-        token
-      });
-
-      setIsLoading(false)
-      CloseModal()
-      
-    } catch (err) {
-      setShowPostBackValidation(true)
-      setIsLoading(false)
-      console.log(err);
+      const response = await api.get<ISelectData[]>('FormaDePagamento/ListarPorFiltro', { params: { filterClause: paymentFormTerm, token } })
+      setPaymentFormList(response.data)
     }
-  },[paymentList]);
-
-
-  const Validate =(paymentList) => {
-
-    let isValid = true;
-    
-    if(invoice != 0 && invoice != undefined)
-    {
-      addToast({
-        type: "info",
-        title: "AVISO",
-        description: "Esta movimentação esta vinculada diretamente a uma fatura, as alterações devem ser realizadas em sua fatura de origem."
-      })
-      
-      isValid = false;
-      setIsLoading(false)
+    catch (err: any) {
+      addToast({ type: "info", title: "Operação não realizada", description: err.response.data })
     }
-
-    paymentList.map((item) => {
-      
-      if(item.vlr_Liquidacao <= 0)
-      {
-        addToast({
-          type: "info",
-          title: "Valor não permitido",
-          description: "Os valores dos pagamentos devem ser maiores que zero"
-        })
-
-        isValid = false;
-        setIsLoading(false)
-      }
-
-      return;
-    })
-    
-    return isValid;
   }
 
 
-  const LoadPaymentForm = async () => {
-      try {
-        const  response = await api.get<ISelectData[]>('FormaDePagamento/ListarPorFiltro', { params:{filterClause: paymentFormTerm, token}})
-        setPaymentFormList(response.data)
-      }
-      catch (err:any) {
-        addToast({type: "info", title: "Operação não realizada", description: err.response.data})
-      }
-    }
-
-
   const handlePaymentFormSelected = (item) => {
-    if (item){
+    if (item) {
       setPaymentFormId(item.id)
       setPaymentFormDescription(item.label)
-    }else{
+    } else {
       setPaymentFormId('')
       setPaymentFormDescription('')
       LoadPaymentForm()
@@ -252,69 +247,265 @@ const FinancialInvoicingModal = (props) => {
 
   const handleChangeParcelas = (id: string) => {
     setMovementParcelas(id)
-    //setShowParcelasDatas(id != '1')
+
+    setShowParcelasDatas(id != '1')
+
+    if(movementIdEdit != '0' && id != movementParcelasFirst)
+    {
+      setChangeInstallments(true)
+    }
+    else{
+      setChangeInstallments(false)
+    }
+
 
   }
 
 
-useEffect(() => {
-  if (movement?.dta_Movimento) {
-    setMovementDate(convertBRToISO(movement.dta_Movimento));
-    console.log(movement);
-  }
-  if (movement?.vlr_Movimento) {
-    setMovementValue(Number(movement.vlr_Movimento));
-  }
   
-}, [movement]);
+  useEffect(() => {
+ 
+    if (movement?.des_Observacao) {
+      setObservation(movement.des_Observacao);
+    }
+    
+
+  }, [movement]);
 
 
-const convertBRToISO = (dateBR: string) => {
-  if (!dateBR) return '';
+  const convertBRToISO = (dateBR: string) => {
+    if (!dateBR) return '';
 
-  const [day, month, year] = dateBR.split('/');
-  return `${year}-${month}-${day}`;
-};
+    const [day, month, year] = dateBR.split('/');
+    return `${year}-${month}-${day}`;
+  };
 
 
-  return(
+
+    const LoadMovement = async (movementId) => {
+      try {
+        setIsLoading(true);
+    
+        const response = await api.get('/Financeiro/Editar', { params:{ id: Number(movementId), token }})
+  
+        setMovementDate(format(new Date(response.data.dta_Movimento), "yyyy-MM-dd"))
+        setMovementValue(response.data.vlr_Movimento)
+        //setMovementType(movementType)
+        setMovementType('R')
+
+        setMovementParcelas(response.data.qtd_Parcelamento.toString())
+        setMovementParcelasFirst(response.data.qtd_Parcelamento.toString())
+        setMovementParcelasDatas(response.data.Periodicidade)
+        setCodParcelamento(response.data.cod_Parcelamento)
+  
+        setCurrentInstallment(response.data.num_Parcela.toString() + '/' + response.data.qtd_Parcelamento.toString())
+  
+        setPaymentFormId(response.data.cod_FormaPagamento)
+        setPaymentFormDescription(response.data.des_FormaPagamento)
+
+        
+        setCategoryId(response.data.cod_Categoria)
+        setCategoryDescription(response.data.nom_Categoria)
+        setCenterCostId(response.data.cod_CentroCusto)
+        setCenterCostDescription(response.data.des_CentroCusto)
+        setTaxInvoice(response.data.num_NotaFiscal)
+        setMovementDescription(response.data.des_Movimento)
+        
+        setSelectedPeopleList(response.data.UserList.map(item => ({ ...item })));
+        
+        
+        setFlgNotifyPeople(response.data.flg_NotificaPessoa)
+        setFlgNotifyEmail(response.data.flg_NotificaEmail)
+        setFlgNotifyWhatsApp(response.data.flg_NotificaWhatsApp)
+        setReminders(response.data.Lembrete)
+        setShowNotifyPeople(response.data.UserList.length > 0 && response.data.Lembrete != null)
+        setFlgReembolso(response.data.flg_Reembolso)
+        setFlgStatus(response.data.flg_Status)
+        setShowParcelasDatas(response.data.qtd_Parcelamento != "1")
+        setAccountId(response.data.cod_Conta)
+        setPaymentQtd(response.data.qtd_Parcelamento)
+        //setInvoice(response.data.cod_FaturaParcela)
+        setSequence(response.data.num_SequenciaFatura)
+  
+        if(response.data.qtd_Parcelamento != "1"){
+          setEnablePayments(false)
+        }
+  
+        if(response.data.cod_Processo != null)
+        {
+          setMatterId(response.data.cod_Processo)
+          setProcessTitle(`${response.data.num_Processo} - ${response.data.matterCustomerDesc} x ${response.data.matterOpposingDesc}`)
+        }
+  
+        //await LoadPayments()
+        //await LoadDocuments()
+        //await LoadBillingInvoicing(movementId);
+        
+
+        const movement = movementList.find(
+          item => item.cod_Movimento === Number(movementIdEdit)
+        );
+
+        setMovement(movement);
+
+        setIsLoading(false);
+      }
+      catch (err:any) {
+        setIsLoading(false)
+        addToast({type: "info", title: "Operação não realizada", description: err.response.data.Message})
+      }
+    }
+  
+
+  const Validate =() => {
+    let isValid = true;
+
+    // avoid click many times
+    if (isSaving){
+      return;
+    }
+
+    if (categoryId == '')
+    {
+      addToast({ type: "info", title: "Preencher campo", description: "O campo categoria deve ser preenchido" })
+      isValid = false;
+    }
+
+    if (!movementDate)
+    {
+      addToast({ type: "info", title: "Preencher campo", description: "O campo vencimento deve ser preenchido" })
+      isValid = false;
+    }
+
+    if (movementValue == 0)
+    {
+      addToast({ type: "info", title: "Preencher campo", description: "O campo valor deve ser preenchido" })
+      isValid = false;
+    }
+
+    if (movementDescription == '')
+    {
+      addToast({ type: "info", title: "Preencher campo", description: "O campo descrição deve ser preenchido" })
+      isValid = false;
+    }
+
+    if(invoice != 0)
+    {
+      addToast({ type: "info", title: "AVISO", description: "Esta movimentação esta vinculada diretamente a uma fatura, as alterações devem ser realizadas em sua fatura de origem." })
+      isValid = false;
+    }
+
+  
+    if (changeInstallments)
+    {
+      setShowChangeInstallments(true)
+      isValid = false;
+    }
+    else if (movementParcelas !=  '1' && actionSave.length == 0 && movementIdEdit.toString() != '0')
+    {
+      setShowModalOptions(true)
+      isValid = false;
+    }
+
+
+    return isValid;
+  }
+
+
+
+
+    const Save = useCallback(async(caller: string) => {
+    try {
+
+      if (!Validate()) return;
+
+      setIsSaving(true)
+      setShowModalOptions(false)
+
+      let peopleIdsItems = '';
+      selectedPeopleList.map((people) => {
+        return peopleIdsItems += `${people.id},`
+      })
+
+      const response = await api.post('/Financeiro/Salvar', {
+        cod_Movimento: movementIdEdit,
+        dta_Movimento: movementDate,
+        vlr_Movimento: movementValue,
+        tpo_Movimento : movementType,
+        qtd_Parcelamento: movementParcelas,
+        Periodicidade: movementParcelasDatas,
+        cod_FormaPagamento: paymentFormId,
+        cod_Categoria: categoryId,
+        cod_CentroCusto: centerCostId,
+        num_NotaFiscal: taxInvoice,
+        des_Movimento: movementDescription,
+        peopleIds: peopleIdsItems,
+        flg_NotificaPessoa: flgNotifyPeople,
+        flg_NotificaEmail: flgNotifyEmail,
+        flg_NotificaWhatsApp: flgNotifyWhatsApp,
+        flg_Status: flgStatus,
+        Lembrete: reminders,
+        editChild: actionSave.length == 0? "justOne": actionSave, // Action save is used to define if is save one, all or next, when is empty consider only one
+        flg_Reembolso: flgReembolso,
+        cod_Processo: matterId,
+        cod_Conta: accountId,
+        token
+      })
+
+      addToast({type: "success", title: "Operação realizada com sucesso", description: `${  movementType == 'R'? 'Receita': 'Despesa'  } salva com sucesso`})
+
+      //handleStateType('Inactive')
+
+      CloseModal();
+      
+    } catch (err:any) {
+      addToast({type: "info", title: "Falha ao salvar movimento.", description: err.response.data.Message})
+      setIsSaving(false)
+      setShowChangeInstallments(false)
+    }
+  }, [isSaving, selectedPeopleList, movementIdEdit, invoiceNumber, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, changeCustomer, invoice, flgNotifyEmail, flgNotifyWhatsApp]);
+
+
+  const handleCallback = (actionSave: string) => {
+    setActionSave(actionSave)
+  }
+
+  useEffect (() => {
+    if (actionSave.length > 0){
+      Save('');
+    }
+  }, [actionSave])
+
+  return (
     <>
       <Modal show>
 
-        <div id='Header' style={{height:'30px'}}>
+        <div id='Header' style={{ height: '30px' }}>
           <div className='menuTitle'>
-            {movementType == "R" && (
-              <>
-                &nbsp;&nbsp;&nbsp;&nbsp;Liquidar Receita
-              </>
-            )}
-            {movementType == "D" && (
-              <>
-                &nbsp;&nbsp;&nbsp;&nbsp;Liquidar Despesa
-              </>
-            )} 
+       
+            Parcela {currentInstallment}
           </div>
           <div className='menuSection'>
             <FiX onClick={(e) => CloseModal()} />
           </div>
         </div>
 
-        <div id='Labels' style={{marginLeft:'5%', marginTop:'5px', height:'30px'}}>
-          <div style={{float:'left', width:'40%'}}>
+        <div id='Labels' style={{ marginLeft: '5%', marginTop: '5px', height: '30px' }}>
+          <div style={{ float: 'left', width: '40%' }}>
             Vencimento:
           </div>
-          <div style={{float:'left', width:'42%'}}>
+          <div style={{ float: 'left', width: '42%' }}>
             Valor:
           </div>
-          <div style={{float:'left', width:'18%'}}>
-            
+          <div style={{ float: 'left', width: '18%' }}>
+
           </div>
         </div>
 
-        <div id='Elements' style={{marginLeft:'4.5%', height:'40px'}}>
-               
-          <div style={{float:'left', width:'35%'}}>
-           <input
+        <div id='Elements' style={{ marginLeft: '4.5%', height: '40px' }}>
+
+          <div style={{ float: 'left', width: '35%' }}>
+            <input
               type="date"
               value={movementDate}
               onChange={(e) => setMovementDate(e.target.value)}
@@ -322,103 +513,104 @@ const convertBRToISO = (dateBR: string) => {
             />
           </div>
 
-          <div style={{float:'left', width:'35%', marginTop:'3px'}}>
+          <div style={{ float: 'left', width: '35%', marginTop: '3px' }}>
             <IntlCurrencyInput
-  currency="BRL"
-  config={currencyConfig}
-  value={movementValue}
-  onChange={(event, value) => {
-    setMovementValue(value);
-  }}
-/>
+              currency="BRL"
+              config={currencyConfig}
+              value={movementValue}
+              onChange={(event, value) => {
+                setMovementValue(value);
+              }}
+            />
           </div>
         </div>
 
 
-        <div id='Labels' style={{marginLeft:'5%', marginTop:'5px', height:'30px'}}>
-          <div style={{float:'left', width:'40%'}}>
+        <div id='Labels' style={{ marginLeft: '5%', marginTop: '5px', height: '30px' }}>
+          <div style={{ float: 'left', width: '40%' }}>
             Forma Pagto:
           </div>
-          <div style={{float:'left', width:'42%'}}>
+          <div style={{ float: 'left', width: '42%' }}>
             Parcelas:
           </div>
-          <div style={{float:'left', width:'18%'}}>
-            
+          <div style={{ float: 'left', width: '18%' }}>
+
           </div>
         </div>
 
 
-        <div id='Elements' style={{marginLeft:'4.5%', height:'40px'}}>
-               
-          <div style={{float:'left', width:'35%'}}>
-              <Select
-                isSearchable
-                isClearable
-                value={{ id: paymentFormId, label: paymentFormDescription }}
-                onChange={handlePaymentFormSelected}
-                onInputChange={(term) => setPaymentFormTerm(term)}
-                required
-                placeholder=""
-                options={paymentFormList}
-              />
+        <div id='Elements' style={{ marginLeft: '4.5%', height: '40px' }}>
+
+          <div style={{ float: 'left', width: '35%' }}>
+            <Select
+              isSearchable
+              isClearable
+              value={{ id: paymentFormId, label: paymentFormDescription }}
+              onChange={handlePaymentFormSelected}
+              onInputChange={(term) => setPaymentFormTerm(term)}
+              required
+              placeholder=""
+              options={paymentFormList}
+            />
           </div>
 
-          <div style={{float:'left', width:'35%'}}>
+          <div style={{ float: 'left', width: '35%' }}>
             <Select
               autoComplete="off"
               value={parcelas.filter(options => options.id === movementParcelas)}
-              onChange={(item) => handleChangeParcelas(item? item.id: '')}
+              onChange={(item) => handleChangeParcelas(item ? item.id : '')}
               options={parcelas}
             />
           </div>
         </div>
 
 
-        
-        <div id='Labels' style={{marginLeft:'5%', marginTop:'5px', height:'30px'}}>
-          <div style={{float:'left', width:'40%'}}>
+
+        <div id='Labels' style={{ marginLeft: '5%', marginTop: '5px', height: '30px' }}>
+          <div style={{ float: 'left', width: '40%' }}>
             Observação
           </div>
-         
+
         </div>
 
 
-        <div id='Elements' style={{marginLeft:'4.5%', height:'40px'}}>
-               
-          <div style={{float:'left', width:'70%'}}>
+        <div id='Elements' style={{ marginLeft: '4.5%', height: '40px' }}>
+
+          <div style={{ float: 'left', width: '70%' }}>
             <input
-              type='text'
-              title=""
-              style={{width:'100%'}}
+              type="text"
+              value={observation}
+              onChange={(e) => setObservation(e.target.value)}
+              style={{ width: '100%' }}
             />
           </div>
 
-       
+
         </div>
 
 
         <br />
         <br />
 
-        <div id='Buttons' style={{float:'right', marginRight:'7%', height:'60px'}}>
-          <div style={{float:'left'}}>
-            <button 
+        <div id='Buttons' style={{ float: 'right', marginRight: '7%', height: '60px' }}>
+          <div style={{ float: 'left' }}>
+            <button
               className="buttonClick"
               type='button'
-              onClick={()=> SavePayments(false)}
-              style={{width:'100px'}}
+              onClick={() => Save('')}
+              style={{ width: '100px' }}
             >
               <BiSave />
               Salvar
             </button>
           </div>
-                    
-          <div style={{float:'left', width:'100px'}}>
-            <button 
+
+          <div style={{ float: 'left', width: '100px' }}>
+            <button
               type='button'
               className="buttonClick"
               onClick={() => CloseModal()}
-              style={{width:'100px'}}
+              style={{ width: '100px' }}
             >
               <FaRegTimesCircle />
               Cancelar
@@ -428,36 +620,54 @@ const convertBRToISO = (dateBR: string) => {
 
       </Modal>
 
-      {(showPostBackValidation) && <OverlayFinancialPayment /> }
+      {showModalOptions && (
+        <ModalOptions
+          description="Este movimento está parcelado, deseja atualizar também as outras parcelas ?"
+          close={() => setShowModalOptions(false)}
+          callback={handleCallback}
+        />
+      )}
+
+       {showChangeInstallments && (
+        <ConfirmBoxModal
+          title="Alterar parcelas do movimento"
+          caller="changeDefaultHeader"
+          useCheckBoxConfirm
+          message="Foi alterado o número de parcelas do movimento, o reparcelamento implica em alterar todas as parcelas considerando os dados do movimento atual. Eventuais liquidações serão mantidas desde que a parcela não seja removida (no caso de redução de parcelas)."
+        />
+      )}
+      
+
+      {(showPostBackValidation) && <OverlayFinancialPayment />}
       {showPostBackValidation && (
         <ModalPostBackValidation>
           <div className='menuSection'>
             <FiX onClick={(e) => setShowPostBackValidation(false)} />
           </div>
-          <div style={{marginLeft:'5%'}}>
+          <div style={{ marginLeft: '5%' }}>
             {/* A soma dos pagamentos totalizam: R$ 15,00, este valor excede o total da parcela de: ( R$ 10,00 ). Deseja continuar mesmo assim ? */}
             A soma dos pagamentos excedem o total da parcela. Deseja continuar mesmo assim ?
             <br />
             <br />
-            <div style={{float:'right', marginRight:'7%', bottom:0}}>
-              <div style={{float:'left'}}>
-                <button 
+            <div style={{ float: 'right', marginRight: '7%', bottom: 0 }}>
+              <div style={{ float: 'left' }}>
+                <button
                   className="buttonClick"
                   type='button'
-                  onClick={()=> SavePayments(true)}
-                  style={{width:'100px'}}
+                  onClick={() => SavePayments(true)}
+                  style={{ width: '100px' }}
                 >
                   <FaCheck />
                   Sim
                 </button>
               </div>
-                       
-              <div style={{float:'left', width:'100px'}}>
-                <button 
+
+              <div style={{ float: 'left', width: '100px' }}>
+                <button
                   type='button'
                   className="buttonClick"
                   onClick={() => setShowPostBackValidation(false)}
-                  style={{width:'100px'}}
+                  style={{ width: '100px' }}
                 >
                   <FaRegTimesCircle />
                   Não
@@ -472,8 +682,8 @@ const convertBRToISO = (dateBR: string) => {
       {isLoading && (
         <>
           <Overlay />
-          <div className='waitingMessage'>   
-            <LoaderWaiting size={15} color="var(--blue-twitter)" /> 
+          <div className='waitingMessage'>
+            <LoaderWaiting size={15} color="var(--blue-twitter)" />
             &nbsp;&nbsp; Carregando...
           </div>
         </>

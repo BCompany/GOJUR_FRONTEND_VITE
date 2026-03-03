@@ -86,6 +86,7 @@ interface IFinancial {
   parcelaFormatada?: string;
   cod_Fatura2Movimento?:string;
   flg_MovimentoExccluido?: string;  
+  des_Observacao?: string;  
 }
 
  interface ISelectData {
@@ -560,7 +561,7 @@ const CustomHeaderCell = (props: any) => {
         { name: 'vlr_Movimento_Contabil', title: 'Valor' },
         { name: 'des_FormaPagamento', title: 'Forma Pagto' },
         { name: 'flg_Efetivado', title: 'Status' },
-        { name: 'des_Movimento', title: 'Observação' },
+        { name: 'des_Observacao', title: 'Observação' },
         { name: 'acoes', title: 'Ações' },
         { name: 'editar', title: 'Editar' }
        
@@ -591,7 +592,6 @@ const [hiddenColumnNames, setHiddenColumnNames] = useState<string[]>([
             });
 
           
-            //console.log(response.data)
             setPaymentFormList(response.data)   
 
 
@@ -661,11 +661,6 @@ const [hiddenColumnNames, setHiddenColumnNames] = useState<string[]>([
     
 
 const handleClick = useCallback(async (props: any) => {
-    //setMovementId(props.row.cod_Movimento)
-    //setDealDetailId(props.row.cod_AcordoDetalhe)
-    //setInvoice(props.row.cod_FaturaParcela)
-    //setMovementType(props.row.tpo_Movimento)
-
     if (props.column.name === 'editar'){
 
         const id = props.row.cod_Movimento;
@@ -680,11 +675,10 @@ const handleClick = useCallback(async (props: any) => {
 
 
 const ClosePaymentModal = async () => {
-    setMovementId('')
     //setInvoice('')
     setMovementType('')
     setShowPaymentModal(false)
-    setIsLoading(true)
+    setIsLoading(false)
   }
 
 const LoadMovementsByPeriod = useCallback(async () => {
@@ -965,7 +959,7 @@ const LoadTotalByPeriod = async () => {
             </Content>
 
             {(showPaymentModal) && <OverlayFinancial /> }
-            {(showPaymentModal) && <FinancialInvoicingModal callbackFunction={{movementIdEdit, invoice, visualizeType, movementType, movementList, ClosePaymentModal, LoadMovementsByPeriod, LoadTotalByPeriod, LoadMovementsByExtract, LoadTotalByExtract }} /> }
+            {(showPaymentModal) && <FinancialInvoicingModal callbackFunction={{movementIdEdit, invoice, visualizeType, movementList, ClosePaymentModal, LoadMovementsByPeriod, LoadTotalByPeriod, LoadMovementsByExtract, LoadTotalByExtract }} /> }
 
             {showModalOptions && (
                 <ModalOptions
