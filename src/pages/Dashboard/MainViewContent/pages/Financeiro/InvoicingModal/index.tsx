@@ -56,7 +56,7 @@ interface IFinancial {
 
 const FinancialInvoicingModal = (props) => {
 
-  const { movementIdEdit, invoice, movementList, ClosePaymentModal } = props.callbackFunction
+  const { movementId, movementIdEdit, invoice, movementList, ClosePaymentModal, LoadMovement } = props.callbackFunction
   const token = localStorage.getItem('@GoJur:token');
   const { addToast } = useToast();
    const {isConfirmMessage, isCancelMessage, handleCancelMessage, handleConfirmMessage, caller} = useConfirmBox();
@@ -136,7 +136,7 @@ const FinancialInvoicingModal = (props) => {
   }
 
   useEffect(() => {
-    LoadMovement(Number(movementIdEdit))
+    LoadMovementForm(Number(movementIdEdit))
     LoadPaymentForm()
   }, [])
 
@@ -282,7 +282,7 @@ const FinancialInvoicingModal = (props) => {
 
 
 
-    const LoadMovement = async (movementId) => {
+    const LoadMovementForm = async (movementId) => {
       try {
         setIsLoading(true);
     
@@ -427,7 +427,7 @@ const FinancialInvoicingModal = (props) => {
         return peopleIdsItems += `${people.id},`
       })
 
-      const response = await api.post('/Financeiro/Salvar', {
+      const response = await api.post('/Financeiro/Faturamento2/Movimento/Salvar', {
         cod_Movimento: movementIdEdit,
         dta_Movimento: movementDate,
         vlr_Movimento: movementValue,
@@ -438,7 +438,7 @@ const FinancialInvoicingModal = (props) => {
         cod_Categoria: categoryId,
         cod_CentroCusto: centerCostId,
         num_NotaFiscal: taxInvoice,
-        des_Movimento: movementDescription,
+        des_Movimento: observation,
         peopleIds: peopleIdsItems,
         flg_NotificaPessoa: flgNotifyPeople,
         flg_NotificaEmail: flgNotifyEmail,
@@ -457,6 +457,10 @@ const FinancialInvoicingModal = (props) => {
       //handleStateType('Inactive')
 
       CloseModal();
+
+      await LoadMovement(movementId.toString());
+
+   
       
     } catch (err:any) {
       addToast({type: "info", title: "Falha ao salvar movimento.", description: err.response.data.Message})

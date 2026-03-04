@@ -85,7 +85,6 @@ interface IFinancial {
   cod_Acordo: string;
   parcelaFormatada?: string;
   cod_Fatura2Movimento?:string;
-  flg_MovimentoExccluido?: string;  
   des_Observacao?: string;  
 }
 
@@ -134,6 +133,8 @@ const BillingInvoicing: React.FC = () => {
     const [movementDate, setMovementDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
     const [movementValue, setMovementValue] = useState<number>();
     const [movementParcelas, setMovementParcelas] = useState('1');
+    const [movementNumParcela, setMovementNumParcela] = useState('1');
+    
     const [movementParcelasFirst, setMovementParcelasFirst] = useState('1');
     const [movementParcelasDatas, setMovementParcelasDatas] = useState('M');
     const [showParcelasDatas, setShowParcelasDatas] = useState<boolean>(false);
@@ -240,14 +241,29 @@ const handleSelectAll = () => {
  useEffect(() => {
     const loadData = async () => {
         if (movementId !== '' && movementId !== '0') {
-            await LoadMovement(movementId);
             await LoadBillingInvoicing(movementId);
+            await LoadMovement(movementId);
+       
         }
     };
 
     loadData();
 }, [movementId]);
 
+
+
+    
+    useEffect(() => {
+      
+        //alert('movementNumParcela: ' + movementNumParcela + ' invoiceId: ' + invoiceId);
+        if ( Number(movementNumParcela) > 1 && Number(invoiceId) === 0 )  
+        {
+            addToast({ type: "info", title: "Operação não realizada", description: "Para faturar um parcelamento realize a operação a partir da primeira parcela"})
+            history.push(`/financeiro`)
+        }  
+    
+    }, [movementNumParcela, invoiceId])
+        
 
     const LoadMovement = async (movementId) => {
         try {
@@ -259,12 +275,8 @@ const handleSelectAll = () => {
             setMovementValue(response.data.vlr_Movimento)
             setMovementParcelas(response.data.num_Parcela.toString() + '/' + response.data.qtd_Parcelamento.toString())
 
-            if ( Number(response.data.num_Parcela) > 1 )
-            {
-                setIsLoading(false)
-                addToast({ type: "info", title: "Operação não realizada", description: "Só é possivel faturar na primeira parcela" })
-                history.push(`/financeiro`)
-            }
+            setMovementNumParcela(response.data.num_Parcela)
+
 
             const selectedItem = response.data.UserList.find(item =>
                 item.label.toLowerCase().includes("cliente")
@@ -335,7 +347,7 @@ const LoadBillingInvoicing = async (instalmentId) => {
         const data = response.data;
 
         if (data && Object.keys(data).length > 0) {
-
+            
             setInvoiceId(data.invoiceId);
             setInvoiceNumber(data.invoiceNumber);
 
@@ -361,6 +373,7 @@ const LoadBillingInvoicing = async (instalmentId) => {
 
              setButtonFatura('Alterar Fatura');
 
+          
             // Lista de movimentos da fatura
             //if (data.billingIssuingInvoices) {
             //    setBillingMovementList(data.billingIssuingInvoices);
@@ -497,7 +510,6 @@ const CustomHeaderCell = (props: any) => {
                       <button
                             className="buttonLinkClick"
                             type='button'
-                            onClick={() => handleSave()}
                         >
 
                             Gerar Boleto
@@ -520,7 +532,8 @@ const CustomHeaderCell = (props: any) => {
                             type='button'
                         >
 
-                            Editar
+                           <FiEdit/>
+                           
                         </button>
                     
                 </Table.Cell>
@@ -545,8 +558,14 @@ const CustomHeaderCell = (props: any) => {
         { columnName: 'Forma Pagto', width: '8%' },
         { columnName: 'Status', width: '8%' },
         { columnName: 'Observacao', width: '8%' },
-        { columnName: 'acoes', width: '8%' },
-        { columnName: 'Editar', width: '8%' }
+       
+         ...(buttonFatura === 'Alterar Fatura'
+        ? [{ columnName: 'acoes', width: '8%' }]
+        : []),
+        
+         ...(buttonFatura === 'Alterar Fatura'
+        ? [{ columnName: 'Editar', width: '8%' }]
+        : [])
         
 
     ]);
@@ -562,8 +581,14 @@ const CustomHeaderCell = (props: any) => {
         { name: 'des_FormaPagamento', title: 'Forma Pagto' },
         { name: 'flg_Efetivado', title: 'Status' },
         { name: 'des_Observacao', title: 'Observação' },
-        { name: 'acoes', title: 'Ações' },
-        { name: 'editar', title: 'Editar' }
+        
+       ...(buttonFatura === 'Alterar Fatura'
+        ? [{ name: 'acoes', title: 'Ações' }]
+        : []),
+        
+       ...(buttonFatura === 'Alterar Fatura'
+        ? [{ name: 'editar', title: 'Editar' }]
+        : [])
        
     ];
 
@@ -625,8 +650,7 @@ const [hiddenColumnNames, setHiddenColumnNames] = useState<string[]>([
         companyId: companyId,
         invoiceId: invoiceId || 0,  
         movementID: Number(item.cod_Movimento),
-        descriptionObservation: item.des_Movimento || '',
-        flg_ExcludedMovement: item.flg_MovimentoExccluido || "N"
+        descriptionObservation: item.des_Movimento || ''
       }))
     };
 
@@ -959,7 +983,7 @@ const LoadTotalByPeriod = async () => {
             </Content>
 
             {(showPaymentModal) && <OverlayFinancial /> }
-            {(showPaymentModal) && <FinancialInvoicingModal callbackFunction={{movementIdEdit, invoice, visualizeType, movementList, ClosePaymentModal, LoadMovementsByPeriod, LoadTotalByPeriod, LoadMovementsByExtract, LoadTotalByExtract }} /> }
+            {(showPaymentModal) && <FinancialInvoicingModal callbackFunction={{movementId, movementIdEdit, invoice, visualizeType, movementList, ClosePaymentModal, LoadMovement }} /> }
 
             {showModalOptions && (
                 <ModalOptions

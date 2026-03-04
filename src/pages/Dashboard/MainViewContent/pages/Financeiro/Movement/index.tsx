@@ -602,7 +602,7 @@ const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
         token
       })
 
-      addToast({type: "success", title: "Operação realizada com sucess", description: `${  movementType == 'R'? 'Receita': 'Despesa'  } salva com sucesso`})
+      addToast({type: "success", title: "Operação realizada com sucesso", description: `${  movementType == 'R'? 'Receita': 'Despesa'  } salva com sucesso`})
 
       handleStateType('Inactive')
 
@@ -716,7 +716,7 @@ const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
     }
 
     
-
+/*
     if (invoiceNumber !== 0)
     {  
         
@@ -742,6 +742,7 @@ const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
 
         }
     }
+*/
 
     if (categoryId == '')
     {
