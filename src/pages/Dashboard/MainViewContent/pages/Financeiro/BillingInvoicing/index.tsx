@@ -51,6 +51,8 @@ import FinancialDocumentModal from '../DocumentModal';
 import { ModalDeleteOptions, OverlayFinancial } from '../styles';
 import { Container, Content, Process, GridSubContainer, ModalPaymentInformation, HamburguerHeader } from './styles';
 import { IBillingRuler, IBillingRulerWarning } from '../BillingRule/Interfaces/IBillingRuler';
+import { ListCustomerPersonData, ListLawyerData, ListOpossingData, ListPartsData, ListThirdyData } from '../../Matter/EditComponents/Services/PeopleData';
+
 
 interface IOption {
     value: number;
@@ -65,32 +67,32 @@ interface IPaymentFormData {
 }
 
 interface IFinancial {
-  cod_Movimento: string;
-  dta_Movimento: string;
-  dta_Liquidacao: string;
-  des_Movimento: string;
-  nom_Categoria: string;
-  tpo_Movimento: string;
-  cod_FormaPagamento: string;
-  vlr_Movimento_Contabil: string;
-  vlr_Liquidacao_Contabil: string;
-  qtd_Parcelamento: string;
-  num_Parcela: string;
-  matterCustomerDesc: string;
-  matterOpposingDesc: string;
-  userNames: string;
-  num_Processo: string;
-  totalRecords: number;
-  cod_FaturaParcela: number;
-  cod_Acordo: string;
-  parcelaFormatada?: string;
-  cod_Fatura2Movimento?:string;
-  des_Observacao?: string;  
+    cod_Movimento: string;
+    dta_Movimento: string;
+    dta_Liquidacao: string;
+    des_Movimento: string;
+    nom_Categoria: string;
+    tpo_Movimento: string;
+    cod_FormaPagamento: string;
+    vlr_Movimento_Contabil: string;
+    vlr_Liquidacao_Contabil: string;
+    qtd_Parcelamento: string;
+    num_Parcela: string;
+    matterCustomerDesc: string;
+    matterOpposingDesc: string;
+    userNames: string;
+    num_Processo: string;
+    totalRecords: number;
+    cod_FaturaParcela: number;
+    cod_Acordo: string;
+    parcelaFormatada?: string;
+    cod_Fatura2Movimento?: string;
+    des_Observacao?: string;
 }
 
- interface ISelectData {
-  id: string;
-  label: string;
+interface ISelectData {
+    id: string;
+    label: string;
 }
 
 const BillingInvoicing: React.FC = () => {
@@ -98,7 +100,7 @@ const BillingInvoicing: React.FC = () => {
     const { isConfirmMessage, isCancelMessage, handleCancelMessage, handleConfirmMessage, caller } = useConfirmBox();
     const { handleStateType } = useStateContext();
     const token = localStorage.getItem('@GoJur:token');
-     const companyId = localStorage.getItem('@GoJur:companyId');
+    const companyId = localStorage.getItem('@GoJur:companyId');
     const { pathname } = useLocation();
     const history = useHistory();
     const { addToast } = useToast();
@@ -108,7 +110,7 @@ const BillingInvoicing: React.FC = () => {
     const [accountId, setAccountId] = useState('');
     const [movementId, setMovementId] = useState('');
     const [movementIdEdit, setMovementIdEdit] = useState('');
-    
+
     const [movementType, setMovementType] = useState('');
     //const [paymentFormList, setPaymentFormList] = useState<ISelectData[]>([]);
     const [paymentFormId, setPaymentFormId] = useState('');
@@ -134,7 +136,7 @@ const BillingInvoicing: React.FC = () => {
     const [movementValue, setMovementValue] = useState<number>();
     const [movementParcelas, setMovementParcelas] = useState('1');
     const [movementNumParcela, setMovementNumParcela] = useState('1');
-    
+
     const [movementParcelasFirst, setMovementParcelasFirst] = useState('1');
     const [movementParcelasDatas, setMovementParcelasDatas] = useState('M');
     const [showParcelasDatas, setShowParcelasDatas] = useState<boolean>(false);
@@ -143,6 +145,8 @@ const BillingInvoicing: React.FC = () => {
     const [movementDescription, setMovementDescription] = useState('');
     const [selectedPeopleList, setSelectedPeopleList] = useState<ISelectData[]>([]);
     const [selectedPeople, setSelectedPeople] = useState<ISelectData>();
+    const [selectedPeopleOld, setSelectedPeopleOld] = useState<ISelectData>();
+    
     const [showNotifyPeople, setShowNotifyPeople] = useState<boolean>(false);
     const [checkPeopleList, setCheckPeopleList] = useState<boolean>(false);
     const [reminders, setReminders] = useState('00');
@@ -164,7 +168,7 @@ const BillingInvoicing: React.FC = () => {
     const [blockAssociateMatter, setBlockAssociateMatter] = useState(false);
     const [appointmentMatter, setAppointmentMatter] = useState<MatterData | undefined>({} as MatterData);
     const [matterAttachedModal, setMatterAttachedModal] = useState(false);
-      const [enablePayments, setEnablePayments] = useState<boolean>(true);
+    const [enablePayments, setEnablePayments] = useState<boolean>(true);
     const [showPayments, setShowPayments] = useState<boolean>(false);
     const [showChangeInstallments, setShowChangeInstallments] = useState<boolean>(false);
     const [changeInstallments, setChangeInstallments] = useState<boolean>(false);
@@ -185,41 +189,42 @@ const BillingInvoicing: React.FC = () => {
         <DataTypeProvider formatterComponent={DateFormatter} {...props} />
     )
 
-const [isOpen, setIsOpen] = useState(false);
-const [invoiceId, setInvoiceId] = useState<number>(0);
-const [invoiceNumber, setInvoiceNumber] = useState<string>('000000');
-const [movementList, setMovementList] = useState<IFinancial[]>([]);
-const [billingRulerList, setBillingRulerList] = useState<IOption[]>([]);
-const [paymentFormList, setPaymentFormList] = useState<IPaymentFormData[]>([]);
-const [selectedRows, setSelectedRows] = useState<number[]>([]);
-const [selectedBillingRuler, setSelectedBillingRuler] = useState<ISelectData | null>(null);
-const [buttonFatura, setButtonFatura] = useState<string>('Gerar Fatura');
-const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
-const [visualizeType, setVisualizeType] = useState('V');
+    const [isOpen, setIsOpen] = useState(false);
+    const [invoiceId, setInvoiceId] = useState<number>(0);
+    const [invoiceNumber, setInvoiceNumber] = useState<string>('000000');
+    const [movementList, setMovementList] = useState<IFinancial[]>([]);
+    const [billingRulerList, setBillingRulerList] = useState<IOption[]>([]);
+    const [paymentFormList, setPaymentFormList] = useState<IPaymentFormData[]>([]);
+    const [selectedRows, setSelectedRows] = useState<number[]>([]);
+    const [selectedBillingRuler, setSelectedBillingRuler] = useState<ISelectData | null>(null);
+    const [buttonFatura, setButtonFatura] = useState<string>('Gerar Fatura');
+    const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
+    const [visualizeType, setVisualizeType] = useState('V');
+    const [customerList, setCustomerList] = useState<ISelectData[]>([])
 
 
 
-const handleSelectRow = (rowId: number) => {
-    setSelectedRows(prev =>
-        prev.includes(rowId)
-            ? prev.filter(id => id !== rowId)
-            : [...prev, rowId]
-    );
-};
+    const handleSelectRow = (rowId: number) => {
+        setSelectedRows(prev =>
+            prev.includes(rowId)
+                ? prev.filter(id => id !== rowId)
+                : [...prev, rowId]
+        );
+    };
 
-const handleSelectAll = () => {
-    if (selectedRows.length === movementList.length) {
-        setSelectedRows([]);
-    } else {
-        setSelectedRows(movementList.map(item => item.parcelaFormatada)); 
-   
-    }
-};
+    const handleSelectAll = () => {
+        if (selectedRows.length === movementList.length) {
+            setSelectedRows([]);
+        } else {
+            setSelectedRows(movementList.map(item => item.parcelaFormatada));
+
+        }
+    };
 
     const Initialize = async () => {
         await PaymentFormList();
         await LoadStates()
-    
+        setCustomerList(await ListCustomerPersonData(""))
     }
 
 
@@ -238,32 +243,31 @@ const handleSelectAll = () => {
     }, [])
 
 
- useEffect(() => {
-    const loadData = async () => {
-        if (movementId !== '' && movementId !== '0') {
-            await LoadBillingInvoicing(movementId);
-            await LoadMovement(movementId);
-       
-        }
-    };
-
-    loadData();
-}, [movementId]);
-
-
-
-    
     useEffect(() => {
-      
+        const loadData = async () => {
+            if (movementId !== '' && movementId !== '0') {
+                await LoadBillingInvoicing(movementId);
+                await LoadMovement(movementId);
+
+            }
+        };
+
+        loadData();
+    }, [movementId]);
+
+
+
+
+    useEffect(() => {
+
         //alert('movementNumParcela: ' + movementNumParcela + ' invoiceId: ' + invoiceId);
-        if ( Number(movementNumParcela) > 1 && Number(invoiceId) === 0 )  
-        {
-            addToast({ type: "info", title: "Operação não realizada", description: "Para faturar um parcelamento realize a operação a partir da primeira parcela"})
+        if (Number(movementNumParcela) > 1 && Number(invoiceId) === 0) {
+            addToast({ type: "info", title: "Operação não realizada", description: "Para faturar um parcelamento realize a operação a partir da primeira parcela" })
             history.push(`/financeiro`)
-        }  
-    
+        }
+
     }, [movementNumParcela, invoiceId])
-        
+
 
     const LoadMovement = async (movementId) => {
         try {
@@ -283,7 +287,7 @@ const handleSelectAll = () => {
             );
 
             setSelectedPeople(selectedItem)
-
+            setSelectedPeopleOld(selectedItem)
 
             const response1 = await api.get<IFinancial[]>('/Financeiro/ListarMovimentoPorParcelamento',
                 {
@@ -298,19 +302,19 @@ const handleSelectAll = () => {
 
             const dadosFormatados = response1.data.map(item => {
 
-            const forma = paymentFormList.find(
-                f => Number(f.paymentFormId) === Number(item.cod_FormaPagamento)
-            );
+                const forma = paymentFormList.find(
+                    f => Number(f.paymentFormId) === Number(item.cod_FormaPagamento)
+                );
 
-            return {
-                ...item,
-                parcelaFormatada: `${item.num_Parcela}/${item.qtd_Parcelamento}`,
-                des_FormaPagamento: forma?.paymentFormDescription || '',
-                flg_Efetivado: item.flg_Efetivado === 'S' ? 'RECEBIDO' : 'PENDENTE'
-            };
+                return {
+                    ...item,
+                    parcelaFormatada: `${item.num_Parcela}/${item.qtd_Parcelamento}`,
+                    des_FormaPagamento: forma?.paymentFormDescription || '',
+                    flg_Efetivado: item.flg_Efetivado === 'S' ? 'RECEBIDO' : 'PENDENTE'
+                };
             });
-           
-            setMovementList(dadosFormatados);                        
+
+            setMovementList(dadosFormatados);
 
             const primeiraParcela = dadosFormatados.find(
                 item => Number(item.num_Parcela) === 1
@@ -333,75 +337,76 @@ const handleSelectAll = () => {
 
 
 
-const LoadBillingInvoicing = async (instalmentId) => {
-    try {
-        setIsLoading(true);
+    const LoadBillingInvoicing = async (instalmentId) => {
+        try {
+            setIsLoading(true);
 
-        const response = await api.get('/Financeiro/Faturamento2/Editar', {
-            params: {
-                instalmentId: Number(instalmentId),
-                token
+            const response = await api.get('/Financeiro/Faturamento2/Editar', {
+                params: {
+                    instalmentId: Number(instalmentId),
+                    token
+                }
+            });
+
+            const data = response.data;
+
+            if (data && Object.keys(data).length > 0) {
+
+                setInvoiceId(data.invoiceId);
+                setInvoiceNumber(data.invoiceNumber);
+
+                const selectedItem: ISelectData = {
+                    id: data.personId?.toString() || '',
+                    label: data.personName || ''
+                };
+
+                setSelectedPeople(selectedItem);
+                setDescription(data.invoiceDescription);
+
+                const selectedItem1: ISelectData = {
+                    value: data.billingRulerId?.toString() || '',
+                    label: data.billingRulerName || ''
+                };
+
+                console.log(selectedItem1);
+                setSelectedBillingRuler(selectedItem1);
+
+                setMovementDate(
+                    format(new Date(data.issueDate), "yyyy-MM-dd")
+                );
+
+                setButtonFatura('Alterar Fatura');
+
+
+                // Lista de movimentos da fatura
+                //if (data.billingIssuingInvoices) {
+                //    setBillingMovementList(data.billingIssuingInvoices);
+                //}
+
+
             }
-        });
+            /*
+            else {
+                addToast({
+                    type: "info",
+                    title: "Nenhum registro encontrado",
+                    description: "Não foi encontrada nenhuma fatura para esse ID."
+                });
+            }
+            */
 
-        const data = response.data;
+            setIsLoading(false);
 
-        if (data && Object.keys(data).length > 0) {
-            
-            setInvoiceId(data.invoiceId);
-            setInvoiceNumber(data.invoiceNumber);
-
-            const selectedItem: ISelectData = {
-                id: data.personId?.toString() || '',
-                label: data.personName || ''
-            };
-
-            setSelectedPeople(selectedItem);
-            setDescription(data.invoiceDescription);
-
-            const selectedItem1: ISelectData = {
-                value: data.billingRulerId?.toString() || '',
-                label: data.billingRulerName || ''
-            };
-
-            console.log(selectedItem1);
-            setSelectedBillingRuler(selectedItem1);
-
-            setMovementDate(
-            format(new Date(data.issueDate), "yyyy-MM-dd")
-            );
-
-             setButtonFatura('Alterar Fatura');
-
-          
-            // Lista de movimentos da fatura
-            //if (data.billingIssuingInvoices) {
-            //    setBillingMovementList(data.billingIssuingInvoices);
-            //}
-
-
-        } 
-        /*
-        else {
+        } catch (err: any) {
+            setIsLoading(false);
+       
             addToast({
                 type: "info",
-                title: "Nenhum registro encontrado",
-                description: "Não foi encontrada nenhuma fatura para esse ID."
+                title: "Operação não realizada",
+                description: err.response?.data?.Message
             });
         }
-        */
-
-        setIsLoading(false);
-
-    } catch (err: any) {
-        setIsLoading(false);
-        addToast({
-            type: "info",
-            title: "Operação não realizada",
-            description: err.response?.data?.Message
-        });
-    }
-};
+    };
 
 
 
@@ -443,26 +448,26 @@ const LoadBillingInvoicing = async (instalmentId) => {
     }, []);
 
 
-const CustomHeaderCell = (props: any) => {
-    const { column } = props;
+    const CustomHeaderCell = (props: any) => {
+        const { column } = props;
 
-    if (column.name === '') {
-        return (
-            <TableHeaderRow.Cell {...props}>
-                <input
-                    type="checkbox"
-                    checked={
-                        movementList.length > 0 &&
-                        selectedRows.length === movementList.length
-                    }
-                    onChange={handleSelectAll}
-                />
-            </TableHeaderRow.Cell>
-        );
-    }
+        if (column.name === '') {
+            return (
+                <TableHeaderRow.Cell {...props}>
+                    <input
+                        type="checkbox"
+                        checked={
+                            movementList.length > 0 &&
+                            selectedRows.length === movementList.length
+                        }
+                        onChange={handleSelectAll}
+                    />
+                </TableHeaderRow.Cell>
+            );
+        }
 
-    return <TableHeaderRow.Cell {...props} />;
-};
+        return <TableHeaderRow.Cell {...props} />;
+    };
 
     const CustomCell = (props) => {
         const { column } = props;
@@ -477,7 +482,7 @@ const CustomHeaderCell = (props: any) => {
         }
 
         if (column.title === '') {
-            const rowId = props.row.parcelaFormatada; 
+            const rowId = props.row.parcelaFormatada;
 
             return (
                 <Table.Cell {...props}>
@@ -503,20 +508,19 @@ const CustomHeaderCell = (props: any) => {
 
             const rowFp = props.row.des_FormaPagamento;
 
-            if(rowFp == 'BOLETO')
-            {
-            return (
-                <Table.Cell onClick={(e) => handleClick(props)} {...props}>
-                      <button
+            if (rowFp == 'BOLETO') {
+                return (
+                    <Table.Cell onClick={(e) => handleClick(props)} {...props}>
+                        <button
                             className="buttonLinkClick"
                             type='button'
                         >
 
                             Gerar Boleto
                         </button>
-                    
-                </Table.Cell>
-            );
+
+                    </Table.Cell>
+                );
 
             }
 
@@ -524,18 +528,18 @@ const CustomHeaderCell = (props: any) => {
 
 
 
-         if (column.title === 'Editar') {
+        if (column.title === 'Editar') {
             return (
                 <Table.Cell onClick={(e) => handleClick(props)} {...props}>
-                      <button
-                            className="buttonLinkClick"
-                            type='button'
-                        >
+                    <button
+                        className="buttonLinkClick"
+                        type='button'
+                    >
 
-                           <FiEdit/>
-                           
-                        </button>
-                    
+                        <FiEdit />
+
+                    </button>
+
                 </Table.Cell>
             );
 
@@ -547,7 +551,7 @@ const CustomHeaderCell = (props: any) => {
     };
 
 
-   
+
 
 
     const [tableColumnExtensions] = useState([
@@ -558,22 +562,22 @@ const CustomHeaderCell = (props: any) => {
         { columnName: 'Forma Pagto', width: '8%' },
         { columnName: 'Status', width: '8%' },
         { columnName: 'Observacao', width: '8%' },
-       
-         ...(buttonFatura === 'Alterar Fatura'
-        ? [{ columnName: 'acoes', width: '8%' }]
-        : []),
-        
-         ...(buttonFatura === 'Alterar Fatura'
-        ? [{ columnName: 'Editar', width: '8%' }]
-        : [])
-        
+
+        ...(buttonFatura === 'Alterar Fatura'
+            ? [{ columnName: 'acoes', width: '8%' }]
+            : []),
+
+        ...(buttonFatura === 'Alterar Fatura'
+            ? [{ columnName: 'Editar', width: '8%' }]
+            : [])
+
 
     ]);
 
 
     const [dateColumns] = useState(['dateUpload']);
     const columns = [
-        { name: 'cod_Movimento', title: 'Código' }, 
+        { name: 'cod_Movimento', title: 'Código' },
         { name: '', title: '' },
         { name: 'parcelaFormatada', title: 'Parcela' },
         { name: 'dta_Movimento', title: 'Vencimento' },
@@ -581,20 +585,20 @@ const CustomHeaderCell = (props: any) => {
         { name: 'des_FormaPagamento', title: 'Forma Pagto' },
         { name: 'flg_Efetivado', title: 'Status' },
         { name: 'des_Observacao', title: 'Observação' },
-        
-       ...(buttonFatura === 'Alterar Fatura'
-        ? [{ name: 'acoes', title: 'Ações' }]
-        : []),
-        
-       ...(buttonFatura === 'Alterar Fatura'
-        ? [{ name: 'editar', title: 'Editar' }]
-        : [])
-       
+
+        ...(buttonFatura === 'Alterar Fatura'
+            ? [{ name: 'acoes', title: 'Ações' }]
+            : []),
+
+        ...(buttonFatura === 'Alterar Fatura'
+            ? [{ name: 'editar', title: 'Editar' }]
+            : [])
+
     ];
 
-const [hiddenColumnNames, setHiddenColumnNames] = useState<string[]>([
-  'cod_Movimento'
-]);
+    const [hiddenColumnNames, setHiddenColumnNames] = useState<string[]>([
+        'cod_Movimento'
+    ]);
 
     useEffect(() => {
         ListBillingRuler("")
@@ -606,8 +610,8 @@ const [hiddenColumnNames, setHiddenColumnNames] = useState<string[]>([
     const PaymentFormList = useCallback(async () => {
         try {
 
-     
-             const response = await api.get<IPaymentFormData[]>("/FormaDePagamento/Listar", {
+
+            const response = await api.get<IPaymentFormData[]>("/FormaDePagamento/Listar", {
                 params: {
                     page: 0,
                     rows: 200,
@@ -616,8 +620,8 @@ const [hiddenColumnNames, setHiddenColumnNames] = useState<string[]>([
                 },
             });
 
-          
-            setPaymentFormList(response.data)   
+
+            setPaymentFormList(response.data)
 
 
         } catch (err) {
@@ -629,97 +633,98 @@ const [hiddenColumnNames, setHiddenColumnNames] = useState<string[]>([
 
 
 
- const handleSave = async () => {
-  try {
-    setIsLoading(true);
+    const handleSave = async () => {
+        try {
+            setIsLoading(true);
+
+            const payload = {
+                invoiceId: invoiceId || 0,
+                companyId: companyId,
+                invoiceNumber: invoiceNumber,
+                personId: selectedPeople?.id,
+                personName: selectedPeople?.label,
+                personIdOld: selectedPeopleOld?.id,
+                billingRulerId: selectedBillingRuler?.value ?? null,
+                invoiceDescription: description,
+                issueDate: new Date(),
+                movementId: movementId,
+                token: token,
+
+                billingIssuingInvoices: movementList.map(item => ({
+                    invoiceMovimentId: item.cod_Fatura2Movimento || 0,
+                    companyId: companyId,
+                    invoiceId: invoiceId || 0,
+                    movementID: Number(item.cod_Movimento),
+                    descriptionObservation: item.des_Movimento || ''
+                }))
+            };
+
+            const response = await api.post(
+                "/Financeiro/Faturamento2/Salvar",
+                payload
+            );
 
 
-    const payload = {
-      invoiceId: invoiceId || 0,
-      companyId: companyId,
-      invoiceNumber: invoiceNumber,
-      personId: selectedPeople?.id,
-      personName: selectedPeople?.label,
-      billingRulerId: selectedBillingRuler?.value ?? null,
-      invoiceDescription: description,
-      issueDate: new Date(),
-      token: token,
+            await LoadMovement(movementId)
+            await LoadBillingInvoicing(movementId)
 
-      billingIssuingInvoices: movementList.map(item => ({
-        invoiceMovimentId: item.cod_Fatura2Movimento || 0,
-        companyId: companyId,
-        invoiceId: invoiceId || 0,  
-        movementID: Number(item.cod_Movimento),
-        descriptionObservation: item.des_Movimento || ''
-      }))
+
+            addToast({
+                type: "success",
+                title: "Sucesso",
+                description: "Faturamento salvo com sucesso"
+            });
+
+            setIsLoading(false);
+
+        } catch (err: any) {
+            setIsLoading(false);
+    
+            addToast({
+                type: "error",
+                title: "Operação não realizada",
+                description: err.response?.data?.Message
+            });
+        }
     };
 
-    const response = await api.post(
-      "/Financeiro/Faturamento2/Salvar",
-      payload
-    );
+
+    const handleClick = useCallback(async (props: any) => {
+        if (props.column.name === 'editar') {
+
+            const id = props.row.cod_Movimento;
+
+            setMovementIdEdit(id);
+
+            setShowPaymentModal(true)
+        }
 
 
-    await LoadMovement(movementId)
-    await LoadBillingInvoicing(movementId)
+    }, [accountId, currentPage, pageSize]);
 
 
-    addToast({
-      type: "success",
-      title: "Sucesso",
-      description: "Faturamento salvo com sucesso"
-    });
-
-    setIsLoading(false);
-
-  } catch (err: any) {
-    setIsLoading(false);
-
-    addToast({
-      type: "error",
-      title: "Operação não realizada",
-      description: err.response?.data?.Message
-    });
-  }
-};
-    
-
-const handleClick = useCallback(async (props: any) => {
-    if (props.column.name === 'editar'){
-
-        const id = props.row.cod_Movimento;
-
-        setMovementIdEdit(id);
-
-        setShowPaymentModal(true)
+    const ClosePaymentModal = async () => {
+        //setInvoice('')
+        setMovementType('')
+        setShowPaymentModal(false)
+        setIsLoading(false)
     }
 
-   
-  }, [accountId, currentPage, pageSize]);
+    const LoadMovementsByPeriod = useCallback(async () => {
+
+    }, [])
 
 
-const ClosePaymentModal = async () => {
-    //setInvoice('')
-    setMovementType('')
-    setShowPaymentModal(false)
-    setIsLoading(false)
-  }
+    const LoadTotalByPeriod = async () => {
+    }
 
-const LoadMovementsByPeriod = useCallback(async () => {
-   
-  },[])
+    const LoadMovementsByExtract = useCallback(async () => {
+    }, [])
 
 
-const LoadTotalByPeriod = async () => {
-}
+    const LoadTotalByExtract = async () => {
 
- const LoadMovementsByExtract = useCallback(async () => {
-  },[])
-
-
- const LoadTotalByExtract = async () => {
-
-  };
+    };
 
 
     return (
@@ -771,13 +776,32 @@ const LoadTotalByPeriod = async () => {
 
                             <label htmlFor="valor">
                                 Cliente
-                                <input
-                                    type="text"
-                                    className='inputField'
-                                    maxLength={20}
-                                    value={selectedPeople?.label || ''}
-                                    onChange={(e: ChangeEvent<HTMLInputElement>) => setTaxInvoice(e.target.value)}
-                                />
+                                    
+                                    <Select
+                                    isClearable
+                                    isSearchable
+                                    placeholder="Selecione"
+                                    options={customerList}
+                                    value={selectedPeople}
+                                    name="cliente"
+                                    styles={selectStyles}
+
+                                    onChange={(selected) => {
+                                        setSelectedPeople(selected);
+                                    }}
+
+                                    onInputChange={(inputValue, { action }) => {
+
+                                        if (action === "input-change" && inputValue.length >= 2) {
+                                        ListCustomerPersonData(inputValue).then((data) => {
+                                            setCustomerList(data);
+                                        });
+                                        }
+
+                                        return inputValue;
+                                    }}
+                                    />
+
                             </label>
 
                             <label htmlFor='Data'>
@@ -877,7 +901,7 @@ const LoadTotalByPeriod = async () => {
                             onPageSizeChange={setPageSize}
                         />
                         <IntegratedPaging />
-                        
+
                         <DateTypeProvider for={dateColumns} />
                         <Table
                             cellComponent={CustomCell}
@@ -885,10 +909,10 @@ const LoadTotalByPeriod = async () => {
                             messages={languageGridEmpty}
                         />
                         <TableHeaderRow cellComponent={CustomHeaderCell} />
-                                                <TableColumnVisibility
-  hiddenColumnNames={hiddenColumnNames}
-  onHiddenColumnNamesChange={setHiddenColumnNames}
-/>
+                        <TableColumnVisibility
+                            hiddenColumnNames={hiddenColumnNames}
+                            onHiddenColumnNamesChange={setHiddenColumnNames}
+                        />
                         <PagingPanel
                             messages={languageGridPagination}
                         />
@@ -917,7 +941,7 @@ const LoadTotalByPeriod = async () => {
                             {buttonFatura}
                         </button>
 
-                     
+
                         {(!isMOBILE && movementId != '0' && invoice == 0) && (
                             <button
                                 className="buttonClick"
@@ -982,8 +1006,8 @@ const LoadTotalByPeriod = async () => {
                 &nbsp;
             </Content>
 
-            {(showPaymentModal) && <OverlayFinancial /> }
-            {(showPaymentModal) && <FinancialInvoicingModal callbackFunction={{movementId, movementIdEdit, invoice, visualizeType, movementList, ClosePaymentModal, LoadMovement }} /> }
+            {(showPaymentModal) && <OverlayFinancial />}
+            {(showPaymentModal) && <FinancialInvoicingModal callbackFunction={{ movementId, movementIdEdit, invoice, visualizeType, movementList, ClosePaymentModal, LoadMovement }} />}
 
             {showModalOptions && (
                 <ModalOptions
