@@ -508,12 +508,13 @@ const FinancialInvoicingModal = (props) => {
 
         <div id='Elements' style={{ marginLeft: '4.5%', height: '40px' }}>
 
-          <div style={{ float: 'left', width: '35%' }}>
+          <div style={{ float: 'left', width: '35%', marginRight:'10px' }}>
             <input
               type="date"
               value={movementDate}
               onChange={(e) => setMovementDate(e.target.value)}
-              style={{ width: '90%' }}
+              style={{ width: '100%' }}
+              className='inputField'
             />
           </div>
 
@@ -525,6 +526,7 @@ const FinancialInvoicingModal = (props) => {
               onChange={(event, value) => {
                 setMovementValue(value);
               }}
+              className='inputField'
             />
           </div>
         </div>
@@ -545,7 +547,7 @@ const FinancialInvoicingModal = (props) => {
 
         <div id='Elements' style={{ marginLeft: '4.5%', height: '40px' }}>
 
-          <div style={{ float: 'left', width: '35%' }}>
+          <div style={{ float: 'left', width: '35%', marginRight:'10px' }}>
             <Select
               isSearchable
               isClearable
@@ -586,6 +588,7 @@ const FinancialInvoicingModal = (props) => {
               value={observation}
               onChange={(e) => setObservation(e.target.value)}
               style={{ width: '100%' }}
+              className='inputField'
             />
           </div>
 

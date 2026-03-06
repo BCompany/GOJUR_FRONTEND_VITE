@@ -4,9 +4,10 @@
 /* eslint no-unneeded-ternary: "error" */
 /* eslint-disable react/jsx-one-expression-per-line */
 
-import React, { useEffect, useState, useCallback, ChangeEvent, useRef } from 'react';
+import React, { useEffect, useState, useCallback, ChangeEvent, useRef, useMemo  } from 'react';
 import api from 'services/api';
 import DatePicker from 'components/DatePicker';
+import { RiMailSendLine } from "react-icons/ri";
 import IntlCurrencyInput from "react-intl-currency-input";
 import Select from 'react-select';
 import ModalOptions from 'components/ModalOptions';
@@ -15,6 +16,7 @@ import { languageGridEmpty } from 'Shared/utils/commonConfig';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
 import { useConfirmBox } from 'context/confirmBox';
 import { useStateContext } from 'context/statesContext';
+import { FaBarcode } from "react-icons/fa";
 import { useDelay, currencyConfig, selectStyles, FormatCurrency, FormatFileName, AmazonPost } from 'Shared/utils/commonFunctions';
 import { useModal } from 'context/modal';
 import { IoIosPaper } from 'react-icons/io';
@@ -472,15 +474,7 @@ const BillingInvoicing: React.FC = () => {
     const CustomCell = (props) => {
         const { column } = props;
 
-        if (column.title === 'Download') {
-            return (
-                <Table.Cell onClick={(e) => handleClick(props)} {...props}>
-                    &nbsp;&nbsp;
-                    <FiDownloadCloud title="Clique para fazer o download do arquivo" />
-                </Table.Cell>
-            );
-        }
-
+       
         if (column.title === '') {
             const rowId = props.row.parcelaFormatada;
 
@@ -491,14 +485,6 @@ const BillingInvoicing: React.FC = () => {
                         checked={selectedRows.includes(rowId)}
                         onChange={() => handleSelectRow(rowId)}
                     />
-                </Table.Cell>
-            );
-        }
-
-        if (column.title === 'Excluir') {
-            return (
-                <Table.Cell onClick={(e) => handleClick(props)} {...props}>
-                    <FiTrash title="Clique para remover o arquivo" />
                 </Table.Cell>
             );
         }
@@ -515,8 +501,7 @@ const BillingInvoicing: React.FC = () => {
                             className="buttonLinkClick"
                             type='button'
                         >
-
-                            Gerar Boleto
+                          <FaBarcode title="Clique aqui para gerar boleto."/>
                         </button>
 
                     </Table.Cell>
@@ -536,7 +521,7 @@ const BillingInvoicing: React.FC = () => {
                         type='button'
                     >
 
-                        <FiEdit />
+                        <FiEdit title="Clique aqui para editar movimento."/>
 
                     </button>
 
@@ -550,29 +535,43 @@ const BillingInvoicing: React.FC = () => {
         return <Table.Cell {...props} />;
     };
 
+/*
+const [tableColumnExtensions] = useState([
+  { columnName: '', width: '5%' },
+  { columnName: 'parcelaFormatada', width: '10%' },
+  { columnName: 'dta_Movimento', width: '10%' },
+  { columnName: 'vlr_Movimento_Contabil', width: '10%' },
+  { columnName: 'des_FormaPagamento', width: '10%' },
+  { columnName: 'flg_Efetivado', width: '10%' },
+  { columnName: 'des_Observacao', width: '25%' },
 
+  ...(buttonFatura === 'Alterar Fatura'
+    ? [{ columnName: 'acoes', width: '10%' }]
+    : []),
 
+  ...(buttonFatura === 'Alterar Fatura'
+    ? [{ columnName: 'editar', width: '100%' }]
+    : [])
+]);
+*/
 
+const tableColumnExtensions = useMemo(() => [
+  { columnName: '', width: '5%' },
+  { columnName: 'parcelaFormatada', width: '10%' },
+  { columnName: 'dta_Movimento', width: '10%' },
+  { columnName: 'vlr_Movimento', width: '10%' },
+  { columnName: 'des_FormaPagamento', width: '15%' },
+  { columnName: 'flg_Efetivado', width: '15%' },
+  { columnName: 'des_Observacao', width: '25%' },
 
-    const [tableColumnExtensions] = useState([
-        { columnName: '', width: '8%' },
-        { columnName: 'Parcela', width: '30%' },
-        { columnName: 'Vencimento', width: '30%' },
-        { columnName: 'Valor', width: '8%' },
-        { columnName: 'Forma Pagto', width: '8%' },
-        { columnName: 'Status', width: '8%' },
-        { columnName: 'Observacao', width: '8%' },
+  ...(buttonFatura === 'Alterar Fatura'
+    ? [{ columnName: 'acoes', width: '5%' }]
+    : []),
 
-        ...(buttonFatura === 'Alterar Fatura'
-            ? [{ columnName: 'acoes', width: '8%' }]
-            : []),
-
-        ...(buttonFatura === 'Alterar Fatura'
-            ? [{ columnName: 'Editar', width: '8%' }]
-            : [])
-
-
-    ]);
+  ...(buttonFatura === 'Alterar Fatura'
+    ? [{ columnName: 'editar', width: '5%' }]
+    : [])
+], [buttonFatura]);
 
 
     const [dateColumns] = useState(['dateUpload']);
@@ -581,7 +580,12 @@ const BillingInvoicing: React.FC = () => {
         { name: '', title: '' },
         { name: 'parcelaFormatada', title: 'Parcela' },
         { name: 'dta_Movimento', title: 'Vencimento' },
-        { name: 'vlr_Movimento_Contabil', title: 'Valor' },
+        { name: 'vlr_Movimento', title: 'Valor',
+        getCellValue: row =>
+            row.vlr_Movimento?.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        }) },
         { name: 'des_FormaPagamento', title: 'Forma Pagto' },
         { name: 'flg_Efetivado', title: 'Status' },
         { name: 'des_Observacao', title: 'Observação' },
@@ -763,15 +767,6 @@ const BillingInvoicing: React.FC = () => {
                 <div style={{ height: '200px' }}>
                     <div style={{ float: 'left', width: '60%' }}>
 
-                        {/*
-                        <div>
-                            <span>FATURAMENTO</span>
-                        </div>
-                         <br />
-                         */}
-
-
-
                         <section id='FirstElements'>
 
                             <label htmlFor="valor">
@@ -909,6 +904,7 @@ const BillingInvoicing: React.FC = () => {
                             messages={languageGridEmpty}
                         />
                         <TableHeaderRow cellComponent={CustomHeaderCell} />
+ 
                         <TableColumnVisibility
                             hiddenColumnNames={hiddenColumnNames}
                             onHiddenColumnNamesChange={setHiddenColumnNames}
@@ -919,6 +915,8 @@ const BillingInvoicing: React.FC = () => {
                     </Grid>
 
                 </GridSubContainer>
+
+
                 <br />
 
                 <div id='Buttons'>
@@ -937,7 +935,7 @@ const BillingInvoicing: React.FC = () => {
                             type='button'
                             onClick={() => handleSave()}
                         >
-
+                            <BiSave />
                             {buttonFatura}
                         </button>
 
@@ -948,7 +946,7 @@ const BillingInvoicing: React.FC = () => {
                                 type='button'
                                 onClick={() => GenerateDocument()}
                             >
-
+                                <CgFileDocument />
                                 Emitir Fatura
                             </button>
                         )}
@@ -959,7 +957,7 @@ const BillingInvoicing: React.FC = () => {
                                 type='button'
                                 onClick={() => CheckDeleteType(paymentQtd)}
                             >
-
+                                <RiMailSendLine />
                                 Enviar Fatura Email
                             </button>
                         )}
@@ -983,7 +981,7 @@ const BillingInvoicing: React.FC = () => {
                             <FaRegTimesCircle />
                             Fechar
                         </button>
-
+                        
                         {isOpen && (
                             <div className="dropdownMenu">
                                 <button className="dropdownItem">Gerar Boletos Selecionados</button>

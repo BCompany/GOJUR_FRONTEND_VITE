@@ -33,6 +33,22 @@ import styled from 'styled-components';
     }
   }
 
+
+ 
+         .inputField {
+            font-size: 0.675rem;
+            background-color: #FFFFFF;
+            width: 100%;
+            //height:40px;
+            padding: 0.40rem;
+            border-bottom: 1px solid rgba(0,0,0,0.15);
+            color: var(--secondary);
+            margin-top:0px;
+            &:focus {
+                border-bottom: 1px solid var(--orange);
+            }
+        }
+
   .menuTitle {
     font-size: 0.65rem;
     padding: 0.25rem 0.5rem;
