@@ -68,6 +68,7 @@ const FinancialInvoicingModal = (props) => {
   const [paymentFormId, setPaymentFormId] = useState('');
   const [paymentFormDescription, setPaymentFormDescription] = useState<string>("")
   const [movementParcelas, setMovementParcelas] = useState('1');
+  const [movementNumParcelas, setMovementNumParcelas] = useState('1');
   const [movement, setMovement] = useState<IFinancial>();
   const [movementDate, setMovementDate] = useState<string>('');
   const [movementValue, setMovementValue] = useState<number | null>(null);
@@ -298,6 +299,7 @@ const FinancialInvoicingModal = (props) => {
         setMovementParcelasDatas(response.data.Periodicidade)
         setCodParcelamento(response.data.cod_Parcelamento)
   
+        setMovementNumParcelas(response.data.num_Parcela.toString())
         setCurrentInstallment(response.data.num_Parcela.toString() + '/' + response.data.qtd_Parcelamento.toString())
   
         setPaymentFormId(response.data.cod_FormaPagamento)
@@ -433,6 +435,7 @@ const FinancialInvoicingModal = (props) => {
         vlr_Movimento: movementValue,
         tpo_Movimento : movementType,
         qtd_Parcelamento: movementParcelas,
+        num_Parcela: movementNumParcelas,
         Periodicidade: movementParcelasDatas,
         cod_FormaPagamento: paymentFormId,
         cod_Categoria: categoryId,
@@ -582,14 +585,14 @@ const FinancialInvoicingModal = (props) => {
 
         <div id='Elements' style={{ marginLeft: '4.5%', height: '40px' }}>
 
-          <div style={{ float: 'left', width: '70%' }}>
-            <input
-              type="text"
+          <div style={{ float: 'left', width: '94%' }}>
+             <textarea
               value={observation}
               onChange={(e) => setObservation(e.target.value)}
               style={{ width: '100%' }}
               className='inputField'
-            />
+               rows={4}
+             />
           </div>
 
 

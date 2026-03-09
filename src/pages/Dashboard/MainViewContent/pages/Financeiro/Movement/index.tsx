@@ -49,6 +49,8 @@ import FinancialPaymentModal from '../PaymentModal';
 import FinancialDocumentModal from '../DocumentModal';
 import { ModalDeleteOptions, OverlayFinancial } from '../styles';
 import { Container, Content, Process, GridSubContainer, ModalPaymentInformation, HamburguerHeader } from './styles';
+import { FiEye } from "react-icons/fi";
+
 
 const FinancialMovement: React.FC = () => {
   const { isMenuOpen, handleIsMenuOpen, isOpenMenuDealDefaultCategory, handleIsOpenMenuDealDefaultCategory } = useMenuHamburguer();
@@ -1725,7 +1727,7 @@ const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
               type='button'
               onClick={() => { handleFaturar() }}
             >  
-      
+              <FiEye />
               {buttonFatura}
             </button>
             )}

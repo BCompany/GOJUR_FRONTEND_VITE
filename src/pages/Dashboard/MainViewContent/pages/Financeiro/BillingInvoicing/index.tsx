@@ -172,7 +172,7 @@ const BillingInvoicing: React.FC = () => {
     const [matterAttachedModal, setMatterAttachedModal] = useState(false);
     const [enablePayments, setEnablePayments] = useState<boolean>(true);
     const [showPayments, setShowPayments] = useState<boolean>(false);
-    const [showChangeInstallments, setShowChangeInstallments] = useState<boolean>(false);
+     const [changeCustomer, setChangeCustomer] = useState<boolean>(false);
     const [changeInstallments, setChangeInstallments] = useState<boolean>(false);
     const [invoice, setInvoice] = useState<number>(0);
     const [sequence, setSequence] = useState<string>('');
@@ -203,7 +203,26 @@ const BillingInvoicing: React.FC = () => {
     const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
     const [visualizeType, setVisualizeType] = useState('V');
     const [customerList, setCustomerList] = useState<ISelectData[]>([])
+    const [showChangeCustomer, setShowChangeCustomer] = useState<boolean>(false);
 
+
+useEffect(() => {
+    if (isCancelMessage)
+    {
+    setShowChangeCustomer(false)
+    //setShowChangeCustomer(false)
+    handleCancelMessage(false)
+    }
+}, [isCancelMessage, caller]);
+
+useEffect(() => {
+    if(isConfirmMessage)
+    {
+        handleSave();
+        setShowChangeCustomer(false)
+        handleConfirmMessage(false)
+    }
+}, [isConfirmMessage, caller]);
 
 
     const handleSelectRow = (rowId: number) => {
@@ -288,6 +307,7 @@ const BillingInvoicing: React.FC = () => {
                 item.label.toLowerCase().includes("cliente")
             );
 
+         
             setSelectedPeople(selectedItem)
             setSelectedPeopleOld(selectedItem)
 
@@ -316,6 +336,19 @@ const BillingInvoicing: React.FC = () => {
                 };
             });
 
+            
+            const totalMovimento = response1.data.reduce((total, item) => {
+                return total + Number(item.vlr_Movimento || 0);
+            }, 0);
+
+
+           setMovementValue(
+                totalMovimento.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })
+            );
+                        
             setMovementList(dadosFormatados);
 
             const primeiraParcela = dadosFormatados.find(
@@ -636,9 +669,33 @@ const tableColumnExtensions = useMemo(() => [
     }, []);
 
 
+const Validate =() => {
+    let isValid = true;
+
+    // avoid click many times
+    if (isSaving){
+      return;
+    }
+
+    if ( (selectedPeople.id !== selectedPeopleOld.id) && showChangeCustomer === false )
+    {
+      setShowChangeCustomer(true)
+      isValid = false;
+    }
+    else
+      setShowChangeCustomer(false) 
+ 
+    return isValid;
+  }
+
+
+
 
     const handleSave = async () => {
         try {
+
+            if (!Validate()) return;
+
             setIsLoading(true);
 
             const payload = {
@@ -1007,151 +1064,13 @@ const tableColumnExtensions = useMemo(() => [
             {(showPaymentModal) && <OverlayFinancial />}
             {(showPaymentModal) && <FinancialInvoicingModal callbackFunction={{ movementId, movementIdEdit, invoice, visualizeType, movementList, ClosePaymentModal, LoadMovement }} />}
 
-            {showModalOptions && (
-                <ModalOptions
-                    description="Este movimento está parcelado, deseja atualizar também as outras parcelas ?"
-                    close={() => setShowModalOptions(false)}
-                    callback={handleCallback}
-                />
-            )}
-
-            {(showDeleteOptions) && <OverlayFinancial />}
-            {showDeleteOptions && (
-                <ModalDeleteOptions>
-                    <div className='menuSection'>
-                        <FiX onClick={(e) => { setShowDeleteOptions(false) }} />
-                    </div>
-                    <div style={{ marginLeft: '5%' }}>
-                        Este movimento está parcelado, deseja excluir também as outras parcelas ?
-                        <br />
-                        <br />
-                        <br />
-                        <div style={{ float: 'right', marginRight: '7%', bottom: 0 }}>
-                            <div style={{ float: 'left' }}>
-                                <button
-                                    className="buttonClick"
-                                    type='button'
-                                    onClick={() => Delete(false)}
-                                    style={{ width: '120px' }}
-                                >
-                                    Excluir este
-                                </button>
-                            </div>
-
-                            <div style={{ float: 'left' }}>
-                                <button
-                                    className="buttonClick"
-                                    type='button'
-                                    onClick={() => Delete(true)}
-                                    style={{ width: '120px' }}
-                                >
-                                    Excluir todos
-                                </button>
-                            </div>
-
-                            <div style={{ float: 'left', width: '100px' }}>
-                                <button
-                                    type='button'
-                                    className="buttonClick"
-                                    onClick={() => { setShowDeleteOptions(false) }}
-                                    style={{ width: '100px' }}
-                                >
-                                    <FaRegTimesCircle />
-                                    Cancelar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                </ModalDeleteOptions>
-            )}
-
-            {(showConfirmDelete) && <OverlayFinancial />}
-            {showConfirmDelete && (
-                <ModalDeleteOptions>
-                    <div className='menuSection'>
-                        <FiX onClick={(e) => { setShowConfirmDelete(false) }} />
-                    </div>
-                    <div style={{ marginLeft: '5%' }}>
-                        Confirma a Exclusão ?
-                        <br />
-                        <br />
-                        <div style={{ float: 'right', marginRight: '7%', bottom: 0 }}>
-                            <div style={{ float: 'left' }}>
-                                <button
-                                    className="buttonClick"
-                                    type='button'
-                                    onClick={() => Delete(false)}
-                                    style={{ width: '100px' }}
-                                >
-                                    <FaCheck />
-                                    Sim
-                                </button>
-                            </div>
-
-                            <div style={{ float: 'left', width: '100px' }}>
-                                <button
-                                    type='button'
-                                    className="buttonClick"
-                                    onClick={() => { setShowConfirmDelete(false) }}
-                                    style={{ width: '100px' }}
-                                >
-                                    <FaRegTimesCircle />
-                                    Não
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                </ModalDeleteOptions>
-            )}
-
-            {(showPaymentInformation) && <OverlayFinancial />}
-            {showPaymentInformation && (
-                <ModalPaymentInformation>
-                    <div className='menuSection'>
-                        <FiX onClick={(e) => { setShowPaymentInformation(false) }} />
-                    </div>
-                    <div style={{ marginLeft: '5%' }}>
-                        Você esta em um processo de inclusão do registo, para prosseguir é necessário salva-lo, deseja realizar este processo agora ?
-                        <br />
-                        <br />
-                        <div style={{ float: 'right', marginRight: '7%', bottom: 0 }}>
-                            <div style={{ float: 'left' }}>
-                                <button
-                                    className="buttonClick"
-                                    type='button'
-                                    onClick={() => SaveByPaymentInformation()}
-                                    style={{ width: '100px' }}
-                                >
-                                    <FaCheck />
-                                    Sim
-                                </button>
-                            </div>
-
-                            <div style={{ float: 'left', width: '100px' }}>
-                                <button
-                                    type='button'
-                                    className="buttonClick"
-                                    onClick={() => { setShowPaymentInformation(false) }}
-                                    style={{ width: '100px' }}
-                                >
-                                    <FaRegTimesCircle />
-                                    Não
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                </ModalPaymentInformation>
-            )}
-
-            {showChangeInstallments && (
+          
+            {showChangeCustomer && (
                 <ConfirmBoxModal
-                    title="Alterar parcelas do movimento"
+                    title="Alterar cliente da fatura"
                     caller="changeDefaultHeader"
                     useCheckBoxConfirm
-                    message="Foi alterado o número de parcelas do movimento, o reparcelamento implica em alterar todas as parcelas considerando os dados do movimento atual. Eventuais liquidações serão mantidas desde que a parcela não seja removida (no caso de redução de parcelas)."
+                    message="Você esta alterando o cliente através da fatura, todos os movimentos serão alterados"
                 />
             )}
 
@@ -1165,38 +1084,7 @@ const tableColumnExtensions = useMemo(() => [
                 </>
             )}
 
-            {/* warning uploading file */}
-            {(uploadingStatus != 'none') && (
-                <>
-                    <OverlayFinancial />
-                    <div className='waitingMessage'>
-                        <LoaderWaiting size={15} color="var(--blue-twitter)" />
-                        &nbsp;&nbsp;
-                        Carregando Arquivos...
-                    </div>
-                </>
-            )}
-
-            {/* warning uploading file */}
-            {(isDeletingFile) && (
-                <>
-                    <OverlayFinancial />
-                    <div className='waitingMessage'>
-                        <LoaderWaiting size={15} color="var(--blue-twitter)" />
-                        &nbsp;&nbsp;
-                        Deletando Arquivo...
-                    </div>
-                </>
-            )}
-
-            {showLog && (
-                <LogModal
-                    idRecord={Number(movementId)}
-                    handleCloseModalLog={handleCloseLog}
-                    logType="movementLog"
-                />
-            )}
-
+        
         </Container>
     );
 };

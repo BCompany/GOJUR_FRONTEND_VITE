@@ -46,6 +46,8 @@ import FinancialDocumentModal from './DocumentModal';
 import FinancialPaymentModal from './PaymentModal';
 import { Container, Content, GridContainerFinancial, ModalDeleteOptions, OverlayFinancial, HamburguerHeader } from './styles';
 import DealDefaultModal from './Category/Modal/DealDefaultModal';
+import { TableColumnVisibility } from '@devexpress/dx-react-grid-material-ui';
+import { FiEye } from "react-icons/fi";
 
 const Financeiro: React.FC = () => {
   const { addToast } = useToast();
@@ -805,6 +807,34 @@ const Financeiro: React.FC = () => {
       );
     }
 
+
+
+    
+    if (column.name === 'invoice') {
+   
+        const invoiceNumber = props.row.cod_Fatura2;
+       
+
+        if (Number(invoiceNumber) > 0 ) {
+            return (
+                <Table.Cell onClick={(e) => handleClickInvoice(props)} {...props}>
+                    <button
+                        className="buttonLinkClick"
+                        type='button'
+                    >
+                      <FiEye  title="Clique aqui para visualizar o faturamento."/>
+                    </button>
+
+                </Table.Cell>
+            );
+
+        }
+
+    }
+
+
+
+
     if (column.name === 'document') {
       return (
         <Table.Cell onClick={(e) => handleClick(props)} {...props}>
@@ -844,6 +874,15 @@ const Financeiro: React.FC = () => {
     // save object filter
     handleJsonStateObject(JSON.stringify(dataState))
   }
+
+
+const handleClickInvoice = useCallback(async (props: any) => {
+  setMovementId(props.row.cod_Movimento)
+  history.push(`/financeiro/billinginvoicing?instalmentId=${props.row.cod_Movimento}`);
+
+
+}, []);
+
 
 
   const handleClick = useCallback(async (props: any) => {
@@ -980,6 +1019,7 @@ const Financeiro: React.FC = () => {
 
 
   const columnsPeriod = [
+    { name: 'cod_Fatura2',             title: 'cod_Fatura2' },
     { name: 'dta_Movimento',           title: 'Vencimento'},
     { name: 'des_Movimento',           title: 'Descrição'},
     { name: 'nom_Categoria',           title: 'Categoria'},
@@ -988,24 +1028,28 @@ const Financeiro: React.FC = () => {
     { name: 'paid',                    title: ' '},
     { name: 'edit',                    title: ' '},
     { name: 'document',                title: ' '},
-    { name: 'remove',                  title: ' '}
+    { name: 'remove',                  title: ' '},
+    { name: 'invoice',                 title: ' '}
   ];
 
 
   const [tableColumnExtensionsPeriod] = useState([
+    { columnName: 'cod_Fatura2',             width: '12%' },
     { columnName: 'dta_Movimento',           width: '12%' },
-    { columnName: 'des_Movimento',           width: '33%' },
-    { columnName: 'nom_Categoria',           width: '15%' },
+    { columnName: 'des_Movimento',           width: '30%' },
+    { columnName: 'nom_Categoria',           width: '13%' },
     { columnName: 'vlr_Movimento_Contabil',  width: '10%' },
     { columnName: 'vlr_Liquidacao_Contabil', width: '10%' },
     { columnName: 'paid',                    width: '5%' },
     { columnName: 'edit',                    width: '5%' },
     { columnName: 'document',                width: '5%' },
     { columnName: 'remove',                  width: '5%' },
+    { columnName: 'invoice',                 width: '5%' }
   ]);
 
 
   const columnsExtract = [
+    { name: 'cod_Fatura2',             title: 'cod_Fatura2' },
     { name: 'dta_Liquidacao',          title: 'Data'},
     { name: 'des_Movimento',           title: 'Descrição'},
     { name: 'nom_Categoria',           title: 'Categoria'},
@@ -1013,22 +1057,29 @@ const Financeiro: React.FC = () => {
     { name: 'paid',                    title: ' '},
     { name: 'edit',                    title: ' '},
     { name: 'document',                title: ' '},
-    { name: 'remove',                  title: ' '}
+    { name: 'remove',                  title: ' '},
+    { name: 'invoice',                 title: ' '}
   ];
 
 
   const [tableColumnExtensionsExtract] = useState([
+    { columnName: 'cod_Fatura2',             width: '12%' },
     { columnName: 'dta_Liquidacao',          width: '12%' },
-    { columnName: 'des_Movimento',           width: '35%' },
+    { columnName: 'des_Movimento',           width: '33%' },
     { columnName: 'nom_Categoria',           width: '20%' },
     { columnName: 'vlr_Liquidacao_Contabil', width: '10%' },
     { columnName: 'paid',                    width: '5%' },
     { columnName: 'edit',                    width: '5%' },
     { columnName: 'document',                width: '5%' },
     { columnName: 'remove',                  width: '5%' },
+    { columnName: 'invoice',                 width: '5%' }
   ]);
 
 
+  const [hiddenColumnNames, setHiddenColumnNames] = useState<string[]>([
+      'cod_Fatura2'
+  ]);
+  
   const handleCurrentPage = (value) => {
     setIsLoading(true)
     setCurrentPage(value)
@@ -1668,6 +1719,10 @@ const Financeiro: React.FC = () => {
                     messages={isLoading? languageGridLoading: languageGridEmpty}
                   />
                   <TableHeaderRow />
+                  <TableColumnVisibility
+                      hiddenColumnNames={hiddenColumnNames}
+                      onHiddenColumnNamesChange={setHiddenColumnNames}
+                  />
                   <PagingPanel
                     messages={languageGridPagination}
                     pageSizes={pageSizes}
@@ -1699,6 +1754,10 @@ const Financeiro: React.FC = () => {
                     messages={isLoading? languageGridLoading: languageGridEmpty}
                   />
                   <TableHeaderRow />
+                    <TableColumnVisibility
+                      hiddenColumnNames={hiddenColumnNames}
+                      onHiddenColumnNamesChange={setHiddenColumnNames}
+                  />
                   <PagingPanel
                     messages={languageGridPagination}
                     pageSizes={pageSizes}
