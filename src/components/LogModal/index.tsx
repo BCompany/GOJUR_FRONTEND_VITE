@@ -16,7 +16,7 @@ interface LogTypeProps
 {
     idRecord: number,
     handleCloseModalLog: () => void,
-    logType: 'eventLog' | 'publicationLog' | 'billingInvoiceLog' | 'publicationLogByBC01' | 'movementLog' | 'dealLog' | 'matterEventLog',
+    logType: 'eventLog' | 'publicationLog' | 'billingInvoiceLog' | 'publicationLogByBC01' | 'movementLog' | 'invoicingLog' | 'dealLog' | 'matterEventLog',
     companyId?: number
 }
 
@@ -57,6 +57,10 @@ export default function LogModal (props: LogTypeProps) {
 
       if (props.logType == "movementLog"){
         uri = `/Financeiro/ListarLogs`;
+      }
+
+      if (props.logType == "invoicingLog"){
+        uri = `/Financeiro/Faturamento2/ListarLogs`;
       }
 
       if (props.logType == "dealLog"){

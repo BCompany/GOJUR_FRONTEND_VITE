@@ -216,7 +216,7 @@ useEffect(() => {
 }, [isCancelMessage, caller]);
 
 useEffect(() => {
-    if(isConfirmMessage)
+    if(isConfirmMessage && caller === 'changeDefaultHeade1')
     {
         handleSave();
         setShowChangeCustomer(false)
@@ -389,6 +389,9 @@ useEffect(() => {
 
                 setInvoiceId(data.invoiceId);
                 setInvoiceNumber(data.invoiceNumber);
+
+                setMovementDate(data.issueDate);
+                
 
                 const selectedItem: ISelectData = {
                     id: data.personId?.toString() || '',
@@ -568,25 +571,7 @@ useEffect(() => {
         return <Table.Cell {...props} />;
     };
 
-/*
-const [tableColumnExtensions] = useState([
-  { columnName: '', width: '5%' },
-  { columnName: 'parcelaFormatada', width: '10%' },
-  { columnName: 'dta_Movimento', width: '10%' },
-  { columnName: 'vlr_Movimento_Contabil', width: '10%' },
-  { columnName: 'des_FormaPagamento', width: '10%' },
-  { columnName: 'flg_Efetivado', width: '10%' },
-  { columnName: 'des_Observacao', width: '25%' },
 
-  ...(buttonFatura === 'Alterar Fatura'
-    ? [{ columnName: 'acoes', width: '10%' }]
-    : []),
-
-  ...(buttonFatura === 'Alterar Fatura'
-    ? [{ columnName: 'editar', width: '100%' }]
-    : [])
-]);
-*/
 
 const tableColumnExtensions = useMemo(() => [
   { columnName: '', width: '5%' },
@@ -689,11 +674,9 @@ const Validate =() => {
   }
 
 
-
-
     const handleSave = async () => {
         try {
-
+          
             if (!Validate()) return;
 
             setIsLoading(true);
@@ -707,7 +690,7 @@ const Validate =() => {
                 personIdOld: selectedPeopleOld?.id,
                 billingRulerId: selectedBillingRuler?.value ?? null,
                 invoiceDescription: description,
-                issueDate: new Date(),
+                issueDate: movementDate,
                 movementId: movementId,
                 token: token,
 
@@ -788,6 +771,20 @@ const Validate =() => {
     };
 
 
+    const handleMovementDate = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    setMovementDate(event.target.value)
+    }, []);
+
+
+    const handleLogOnDisplay = useCallback(async () => {
+        setShowLog(true);
+    }, []);
+
+
+    const handleCloseLog = () => {
+        setShowLog(false)
+    }
+
     return (
 
         <Container>
@@ -859,7 +856,9 @@ const Validate =() => {
                             <label htmlFor='Data'>
                                 <DatePicker
                                     title="Emissão"
+                                    onChange={handleMovementDate}
                                     value={movementDate}
+                                    
                                 />
                             </label>
 
@@ -979,7 +978,7 @@ const Validate =() => {
                 <div id='Buttons'>
                     <div className='log'>
                         {movementId != "0" && (
-                            <button type="button" id="log">
+                            <button type="button" id="log" onClick={handleLogOnDisplay}>
                                 <div style={{ float: 'left' }}><IoIosPaper title="Ver Historico" /></div>
                                 <div style={{ float: 'left' }}>&nbsp;Ver Histórico</div>
                             </button>
@@ -1068,7 +1067,7 @@ const Validate =() => {
             {showChangeCustomer && (
                 <ConfirmBoxModal
                     title="Alterar cliente da fatura"
-                    caller="changeDefaultHeader"
+                    caller="changeDefaultHeade1"
                     useCheckBoxConfirm
                     message="Você esta alterando o cliente através da fatura, todos os movimentos serão alterados"
                 />
@@ -1085,6 +1084,14 @@ const Validate =() => {
             )}
 
         
+          {showLog && (
+                <LogModal
+                  idRecord={Number(invoiceNumber)}
+                  handleCloseModalLog={handleCloseLog}
+                  logType="invoicingLog"
+                />
+              )}
+
         </Container>
     );
 };

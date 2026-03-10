@@ -120,7 +120,8 @@ const FinancialInvoicingModal = (props) => {
   
   
     useEffect(() => {
-      if(isConfirmMessage)
+
+      if(isConfirmMessage && caller === 'changeDefaultHeader')
       {
         handleConfirmChangeInstallments()
         setShowChangeInstallments(false)
