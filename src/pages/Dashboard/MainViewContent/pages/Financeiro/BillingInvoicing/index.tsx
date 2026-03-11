@@ -135,7 +135,9 @@ const BillingInvoicing: React.FC = () => {
     const [paymentList, setPaymentList] = useState<IPayments[]>([]);
     const [paymentMessage, setPaymentMessage] = useState<string>('');
     const [movementDate, setMovementDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
+    const [invoiceDate, setInvoiceDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
     const [movementValue, setMovementValue] = useState<number>();
+    const [invoiceValue, setInvoiceValue] = useState<number>();
     const [movementParcelas, setMovementParcelas] = useState('1');
     const [movementNumParcela, setMovementNumParcela] = useState('1');
 
@@ -296,12 +298,19 @@ useEffect(() => {
 
             const response = await api.get('/Financeiro/Editar', { params: { id: Number(movementId), token } })
 
-
+          
             setMovementValue(response.data.vlr_Movimento)
+        
+            setMovementDate(
+                format(new Date(response.data.dta_Movimento), "yyyy-MM-dd")
+            );
+
             setMovementParcelas(response.data.num_Parcela.toString() + '/' + response.data.qtd_Parcelamento.toString())
 
             setMovementNumParcela(response.data.num_Parcela)
 
+            setPaymentFormId(response.data.cod_FormaPagamento)
+            setPaymentFormDescription(response.data.des_FormaPagamento)
 
             const selectedItem = response.data.UserList.find(item =>
                 item.label.toLowerCase().includes("cliente")
@@ -342,7 +351,7 @@ useEffect(() => {
             }, 0);
 
 
-           setMovementValue(
+           setInvoiceValue(
                 totalMovimento.toLocaleString('pt-BR', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
@@ -389,8 +398,6 @@ useEffect(() => {
 
                 setInvoiceId(data.invoiceId);
                 setInvoiceNumber(data.invoiceNumber);
-
-                setMovementDate(data.issueDate);
                 
 
                 const selectedItem: ISelectData = {
@@ -409,7 +416,7 @@ useEffect(() => {
                 console.log(selectedItem1);
                 setSelectedBillingRuler(selectedItem1);
 
-                setMovementDate(
+                setInvoiceDate(
                     format(new Date(data.issueDate), "yyyy-MM-dd")
                 );
 
@@ -690,9 +697,16 @@ const Validate =() => {
                 personIdOld: selectedPeopleOld?.id,
                 billingRulerId: selectedBillingRuler?.value ?? null,
                 invoiceDescription: description,
-                issueDate: movementDate,
+                issueDate: invoiceDate,
                 movementId: movementId,
                 token: token,
+
+                financialDTO: {
+                    editChild: selectedPeople?.id == selectedPeopleOld?.id ? 'justOne' : 'all',
+                    dta_Movimento: movementDate,
+                    vlr_Movimento:movementValue,
+                    cod_FormaPagamento: paymentFormId
+                },
 
                 billingIssuingInvoices: movementList.map(item => ({
                     invoiceMovimentId: item.cod_Fatura2Movimento || 0,
@@ -772,7 +786,7 @@ const Validate =() => {
 
 
     const handleMovementDate = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    setMovementDate(event.target.value)
+    setInvoiceDate(event.target.value)
     }, []);
 
 
@@ -857,7 +871,7 @@ const Validate =() => {
                                 <DatePicker
                                     title="Emissão"
                                     onChange={handleMovementDate}
-                                    value={movementDate}
+                                    value={invoiceDate}
                                     
                                 />
                             </label>
@@ -925,7 +939,7 @@ const Validate =() => {
                             </div>
                                 */}
                             <div className="mini-value">
-                                R$ {movementValue}
+                                R$ {invoiceValue}
 
                             </div>
                         </div>
