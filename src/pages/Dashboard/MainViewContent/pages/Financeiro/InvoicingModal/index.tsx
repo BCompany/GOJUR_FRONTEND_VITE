@@ -54,9 +54,10 @@ interface IFinancial {
   des_Observacao?: string;
 }
 
+
 const FinancialInvoicingModal = (props) => {
 
-  const { movementId, movementIdEdit, invoice, movementList, ClosePaymentModal, LoadMovement } = props.callbackFunction
+  const { movementId, movementIdEdit, invoiceId, billingInvoicing, movementList, ClosePaymentModal, LoadMovement } = props.callbackFunction
   const token = localStorage.getItem('@GoJur:token');
   const { addToast } = useToast();
    const {isConfirmMessage, isCancelMessage, handleCancelMessage, handleConfirmMessage, caller} = useConfirmBox();
@@ -104,16 +105,23 @@ const FinancialInvoicingModal = (props) => {
   const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
   const [actionSave, setActionSave] = useState<string>('');
   const [changeInstallments, setChangeInstallments] = useState<boolean>(false);
-  const [changeCustomer, setChangeCustomer] = useState<boolean>(false);
+  const [changeCustomer, setChangeCustomer] = useState<boolean>(true);
  const [showChangeInstallments, setShowChangeInstallments] = useState<boolean>(false);
   const [showModalOptions, setShowModalOptions] = useState<boolean>(false);
+ const companyId = localStorage.getItem('@GoJur:companyId');
+   const [showChangeCustomer, setShowChangeCustomer] = useState<boolean>(false);
 
 
   useEffect(() => {
-      if (isCancelMessage)
+      if (isCancelMessage && caller === 'changeDefaultHeader')
       {
         setShowChangeInstallments(false)
-        //setShowChangeCustomer(false)
+        handleCancelMessage(false)
+      }
+ 
+      if (isCancelMessage && caller === 'changeDefaultHeader2')
+      {
+        setShowChangeCustomer(false)
         handleCancelMessage(false)
       }
     }, [isCancelMessage, caller]);
@@ -125,14 +133,27 @@ const FinancialInvoicingModal = (props) => {
       {
         handleConfirmChangeInstallments()
         setShowChangeInstallments(false)
-        //setShowChangeCustomer(false)
         handleConfirmMessage(false)
       }
+      
+      if(isConfirmMessage && caller === 'changeDefaultHeader2')
+      {
+        handleConfirmChangeCustomer()
+        setShowChangeCustomer(false)
+        handleConfirmMessage(false)
+      }
+
+
     }, [isConfirmMessage, caller]);
   
 
   const handleConfirmChangeInstallments = async () => {
     setChangeInstallments(false);
+    setChangeCustomer(false);
+    setActionSave('all');
+  }
+
+  const handleConfirmChangeCustomer = async () => {
     setChangeCustomer(false);
     setActionSave('all');
   }
@@ -392,18 +413,24 @@ const FinancialInvoicingModal = (props) => {
       isValid = false;
     }
 
-    if(invoice != 0)
+    /*
+    if(invoiceId != 0)
     {
       addToast({ type: "info", title: "AVISO", description: "Esta movimentação esta vinculada diretamente a uma fatura, as alterações devem ser realizadas em sua fatura de origem." })
       isValid = false;
     }
-
+    */
   
     if (changeInstallments)
     {
       setShowChangeInstallments(true)
       isValid = false;
     }
+    //else if ( ( billingInvoicing.personId != billingInvoicing.personIdOld ) && changeCustomer == true)
+    //{
+    //  setShowChangeCustomer(true);
+    //  isValid = false;
+    //}
     else if (movementParcelas !=  '1' && actionSave.length == 0 && movementIdEdit.toString() != '0')
     {
       setShowModalOptions(true)
@@ -430,30 +457,51 @@ const FinancialInvoicingModal = (props) => {
         return peopleIdsItems += `${people.id},`
       })
 
-      const response = await api.post('/Financeiro/Faturamento2/Movimento/Salvar', {
-        cod_Movimento: movementIdEdit,
-        dta_Movimento: movementDate,
-        vlr_Movimento: movementValue,
-        tpo_Movimento : movementType,
-        qtd_Parcelamento: movementParcelas,
-        num_Parcela: movementNumParcelas,
-        Periodicidade: movementParcelasDatas,
-        cod_FormaPagamento: paymentFormId,
-        cod_Categoria: categoryId,
-        cod_CentroCusto: centerCostId,
-        num_NotaFiscal: taxInvoice,
-        des_Movimento: observation,
-        peopleIds: peopleIdsItems,
-        flg_NotificaPessoa: flgNotifyPeople,
-        flg_NotificaEmail: flgNotifyEmail,
-        flg_NotificaWhatsApp: flgNotifyWhatsApp,
-        flg_Status: flgStatus,
-        Lembrete: reminders,
-        editChild: actionSave.length == 0? "justOne": actionSave, // Action save is used to define if is save one, all or next, when is empty consider only one
-        flg_Reembolso: flgReembolso,
-        cod_Processo: matterId,
-        cod_Conta: accountId,
-        token
+      const response = await api.post('/Financeiro/Faturamento2/Salvar', {
+        invoiceId: billingInvoicing.invoiceId || 0,
+        companyId: billingInvoicing.companyId,
+        invoiceNumber: billingInvoicing.invoiceNumber,
+        personId: billingInvoicing.personId,
+        personName: billingInvoicing.personName,
+        personIdOld: billingInvoicing.personIdOld,
+        billingRulerId: billingInvoicing.billingRulerId ?? null,
+        invoiceDescription: billingInvoicing.invoiceDescription,
+        issueDate: billingInvoicing.issueDate,
+        movementId: movementIdEdit,
+        token: token,
+        financialDTO: {
+          cod_Movimento: movementIdEdit,
+          dta_Movimento: movementDate,
+          vlr_Movimento: movementValue,
+          tpo_Movimento : movementType,
+          qtd_Parcelamento: movementParcelas,
+          num_Parcela: movementNumParcelas,
+          Periodicidade: movementParcelasDatas,
+          cod_FormaPagamento: paymentFormId,
+          cod_Categoria: categoryId,
+          cod_CentroCusto: centerCostId,
+          num_NotaFiscal: taxInvoice,
+          des_Movimento: observation,
+          peopleIds: peopleIdsItems,
+          flg_NotificaPessoa: flgNotifyPeople,
+          flg_NotificaEmail: flgNotifyEmail,
+          flg_NotificaWhatsApp: flgNotifyWhatsApp,
+          flg_Status: flgStatus,
+          Lembrete: reminders,
+          editChild: actionSave.length == 0? "justOne": actionSave, // Action save is used to define if is save one, all or next, when is empty consider only one
+          flg_Reembolso: flgReembolso,
+          cod_Processo: matterId,
+          cod_Conta: accountId,
+          token
+        },
+        billingIssuingInvoices: movementList.map(item => ({
+            invoiceMovimentId: item.cod_Fatura2Movimento || 0,
+            companyId: companyId,
+            invoiceId: invoiceId || 0,
+            movementID: Number(item.cod_Movimento),
+            descriptionObservation: item.des_Movimento || ''
+        }))
+
       })
 
       addToast({type: "success", title: "Operação realizada com sucesso", description: `${  movementType == 'R'? 'Receita': 'Despesa'  } salva com sucesso`})
@@ -471,7 +519,7 @@ const FinancialInvoicingModal = (props) => {
       setIsSaving(false)
       setShowChangeInstallments(false)
     }
-  }, [isSaving, selectedPeopleList, movementIdEdit, invoiceNumber, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, changeCustomer, invoice, flgNotifyEmail, flgNotifyWhatsApp]);
+  }, [isSaving, selectedPeopleList, movementIdEdit, invoiceNumber, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, changeCustomer, invoiceId, flgNotifyEmail, flgNotifyWhatsApp]);
 
 
   const handleCallback = (actionSave: string) => {
@@ -648,6 +696,15 @@ const FinancialInvoicingModal = (props) => {
         />
       )}
       
+      {showChangeCustomer && (
+          <ConfirmBoxModal
+              title="Alterar cliente da fatura"
+              caller="changeDefaultHeader2"
+              useCheckBoxConfirm
+              message="Você esta alterando o cliente através da fatura, todos os movimentos serão alterados"
+          />
+      )}
+
 
       {(showPostBackValidation) && <OverlayFinancialPayment />}
       {showPostBackValidation && (

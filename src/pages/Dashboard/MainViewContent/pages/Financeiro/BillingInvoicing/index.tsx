@@ -97,6 +97,20 @@ interface ISelectData {
     label: string;
 }
 
+interface BillingInvoicingPayload {
+  invoiceId: number;
+  companyId: number;
+  invoiceNumber: number;
+  personId?: number;
+  personName?: string;
+  personIdOld?: number;
+  billingRulerId?: number | null;
+  invoiceDescription: string;
+  issueDate: string;
+  movementId: number;
+  token: string;
+}
+
 const BillingInvoicing: React.FC = () => {
     const { isMenuOpen, handleIsMenuOpen, isOpenMenuDealDefaultCategory, handleIsOpenMenuDealDefaultCategory } = useMenuHamburguer();
     const { isConfirmMessage, isCancelMessage, handleCancelMessage, handleConfirmMessage, caller } = useConfirmBox();
@@ -206,7 +220,19 @@ const BillingInvoicing: React.FC = () => {
     const [visualizeType, setVisualizeType] = useState('V');
     const [customerList, setCustomerList] = useState<ISelectData[]>([])
     const [showChangeCustomer, setShowChangeCustomer] = useState<boolean>(false);
-
+    const [billingInvoicing, setBillingInvoicing] = useState<BillingInvoicingPayload>({
+        invoiceId: 0,
+        companyId: 0,
+        invoiceNumber: 0,
+        personId: undefined,
+        personName: "",
+        personIdOld: undefined,
+        billingRulerId: null,
+        invoiceDescription: "",
+        issueDate: "",
+        movementId: 0,
+        token: ""
+    });
 
 useEffect(() => {
     if (isCancelMessage)
@@ -283,7 +309,6 @@ useEffect(() => {
 
     useEffect(() => {
 
-        //alert('movementNumParcela: ' + movementNumParcela + ' invoiceId: ' + invoiceId);
         if (Number(movementNumParcela) > 1 && Number(invoiceId) === 0) {
             addToast({ type: "info", title: "Operação não realizada", description: "Para faturar um parcelamento realize a operação a partir da primeira parcela" })
             history.push(`/financeiro`)
@@ -422,23 +447,7 @@ useEffect(() => {
 
                 setButtonFatura('Alterar Fatura');
 
-
-                // Lista de movimentos da fatura
-                //if (data.billingIssuingInvoices) {
-                //    setBillingMovementList(data.billingIssuingInvoices);
-                //}
-
-
             }
-            /*
-            else {
-                addToast({
-                    type: "info",
-                    title: "Nenhum registro encontrado",
-                    description: "Não foi encontrada nenhuma fatura para esse ID."
-                });
-            }
-            */
 
             setIsLoading(false);
 
@@ -702,7 +711,8 @@ const Validate =() => {
                 token: token,
 
                 financialDTO: {
-                    editChild: selectedPeople?.id == selectedPeopleOld?.id ? 'justOne' : 'all',
+                    //editChild: selectedPeople?.id == selectedPeopleOld?.id ? 'justOne' : 'all',
+                    editChild: 'none',
                     dta_Movimento: movementDate,
                     vlr_Movimento:movementValue,
                     cod_FormaPagamento: paymentFormId
@@ -750,6 +760,21 @@ const Validate =() => {
     const handleClick = useCallback(async (props: any) => {
         if (props.column.name === 'editar') {
 
+            setBillingInvoicing(prev => ({
+                ...prev,
+                invoiceId: invoiceId || 0,
+                companyId: companyId,
+                invoiceNumber: invoiceNumber,
+                personId: selectedPeople?.id,
+                personName: selectedPeople?.label,
+                personIdOld: selectedPeopleOld?.id,
+                billingRulerId: selectedBillingRuler?.value ?? null,
+                invoiceDescription: description,
+                issueDate: invoiceDate,
+                movementId: movementId,
+                token: token
+            }));
+            
             const id = props.row.cod_Movimento;
 
             setMovementIdEdit(id);
@@ -758,7 +783,7 @@ const Validate =() => {
         }
 
 
-    }, [accountId, currentPage, pageSize]);
+    }, [accountId, currentPage, pageSize, selectedPeople, selectedPeopleOld]);
 
 
     const ClosePaymentModal = async () => {
@@ -1075,7 +1100,7 @@ const Validate =() => {
             </Content>
 
             {(showPaymentModal) && <OverlayFinancial />}
-            {(showPaymentModal) && <FinancialInvoicingModal callbackFunction={{ movementId, movementIdEdit, invoice, visualizeType, movementList, ClosePaymentModal, LoadMovement }} />}
+            {(showPaymentModal) && <FinancialInvoicingModal callbackFunction={{ movementId, movementIdEdit, invoiceId, billingInvoicing, visualizeType, movementList, ClosePaymentModal, LoadMovement }} />}
 
           
             {showChangeCustomer && (
