@@ -295,8 +295,8 @@ useEffect(() => {
     useEffect(() => {
         const loadData = async () => {
             if (movementId !== '' && movementId !== '0') {
-                await LoadBillingInvoicing(movementId);
-                await LoadMovement(movementId);
+                const responseBilling = await LoadBillingInvoicing(movementId);
+                await LoadMovement(movementId, responseBilling?.invoiceDescription);
 
             }
         };
@@ -317,7 +317,7 @@ useEffect(() => {
     }, [movementNumParcela, invoiceId])
 
 
-    const LoadMovement = async (movementId) => {
+    const LoadMovement = async (movementId, invoiceDescription) => {
         try {
             setIsLoading(true);
 
@@ -389,10 +389,9 @@ useEffect(() => {
                 item => Number(item.num_Parcela) === 1
             );
 
-            if (primeiraParcela) {
+            if (primeiraParcela && !invoiceDescription ) {
                 setDescription(primeiraParcela.des_Movimento);
             }
-
 
 
             setIsLoading(false);
@@ -406,13 +405,13 @@ useEffect(() => {
 
 
 
-    const LoadBillingInvoicing = async (instalmentId) => {
+    const LoadBillingInvoicing = async (movementId) => {
         try {
             setIsLoading(true);
 
             const response = await api.get('/Financeiro/Faturamento2/Editar', {
                 params: {
-                    instalmentId: Number(instalmentId),
+                    instalmentId: Number(movementId),
                     token
                 }
             });
@@ -438,7 +437,6 @@ useEffect(() => {
                     label: data.billingRulerName || ''
                 };
 
-                console.log(selectedItem1);
                 setSelectedBillingRuler(selectedItem1);
 
                 setInvoiceDate(
@@ -451,6 +449,8 @@ useEffect(() => {
 
             setIsLoading(false);
 
+            return data;
+            
         } catch (err: any) {
             setIsLoading(false);
        
@@ -723,7 +723,7 @@ const Validate =() => {
                     companyId: companyId,
                     invoiceId: invoiceId || 0,
                     movementID: Number(item.cod_Movimento),
-                    descriptionObservation: item.des_Movimento || ''
+                    descriptionObservation: item.des_Observacao || ''
                 }))
             };
 
@@ -1100,7 +1100,7 @@ const Validate =() => {
             </Content>
 
             {(showPaymentModal) && <OverlayFinancial />}
-            {(showPaymentModal) && <FinancialInvoicingModal callbackFunction={{ movementId, movementIdEdit, invoiceId, billingInvoicing, visualizeType, movementList, ClosePaymentModal, LoadMovement }} />}
+            {(showPaymentModal) && <FinancialInvoicingModal callbackFunction={{ movementId, movementIdEdit, invoiceId, billingInvoicing, visualizeType, movementList, ClosePaymentModal, LoadMovement, LoadBillingInvoicing }} />}
 
           
             {showChangeCustomer && (

@@ -22,7 +22,7 @@ import { useToast } from 'context/toast';
 import { Overlay } from 'Shared/styles/GlobalStyle';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import IntlCurrencyInput from "react-intl-currency-input";
-import { currencyConfig } from 'Shared/utils/commonFunctions';
+import { currencyConfig, selectStyles } from 'Shared/utils/commonFunctions';
 import { IPayments } from '../Interfaces/IPayments';
 import { Modal, ModalPostBackValidation, OverlayFinancialPayment } from './styles';
 import { ISelectData, MatterData, IMovementUploadFile } from '../Interfaces/IFinancial';
@@ -57,7 +57,7 @@ interface IFinancial {
 
 const FinancialInvoicingModal = (props) => {
 
-  const { movementId, movementIdEdit, invoiceId, billingInvoicing, movementList, ClosePaymentModal, LoadMovement } = props.callbackFunction
+  const { movementId, movementIdEdit, invoiceId, billingInvoicing, movementList, ClosePaymentModal, LoadMovement, LoadBillingInvoicing } = props.callbackFunction
   const token = localStorage.getItem('@GoJur:token');
   const { addToast } = useToast();
    const {isConfirmMessage, isCancelMessage, handleCancelMessage, handleConfirmMessage, caller} = useConfirmBox();
@@ -457,6 +457,10 @@ const FinancialInvoicingModal = (props) => {
         return peopleIdsItems += `${people.id},`
       })
 
+      let codFatura2Movimento = movementList.find(
+          item => item.cod_Movimento === movementIdEdit
+      )?.cod_Fatura2Movimento;
+
       const response = await api.post('/Financeiro/Faturamento2/Salvar', {
         invoiceId: billingInvoicing.invoiceId || 0,
         companyId: billingInvoicing.companyId,
@@ -495,12 +499,15 @@ const FinancialInvoicingModal = (props) => {
           token
         },
         billingIssuingInvoices: movementList.map(item => ({
-            invoiceMovimentId: item.cod_Fatura2Movimento || 0,
-            companyId: companyId,
-            invoiceId: invoiceId || 0,
-            movementID: Number(item.cod_Movimento),
-            descriptionObservation: item.des_Movimento || ''
-        }))
+          invoiceMovimentId: item.cod_Fatura2Movimento || 0,
+          companyId,
+          invoiceId: invoiceId || 0,
+          movementID: Number(item.cod_Movimento),
+          descriptionObservation:
+              item.cod_Movimento === movementIdEdit
+                  ? observation || ''
+                  : item.des_Observacao || ''
+      }))
 
       })
 
@@ -510,7 +517,8 @@ const FinancialInvoicingModal = (props) => {
 
       CloseModal();
 
-      await LoadMovement(movementId.toString());
+      const responseBilling = await LoadBillingInvoicing(movementId.toString());
+      await LoadMovement(movementId.toString(), responseBilling?.invoiceDescription);
 
    
       
@@ -608,16 +616,31 @@ const FinancialInvoicingModal = (props) => {
               onInputChange={(term) => setPaymentFormTerm(term)}
               required
               placeholder=""
+              styles={{
+                ...selectStyles, 
+                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                menu: (base) => ({ ...base, fontSize: '12px' }),
+              }}
               options={paymentFormList}
+              menuPortalTarget={document.body}
+              menuPosition="fixed"
+              
             />
           </div>
 
           <div style={{ float: 'left', width: '35%' }}>
             <Select
               autoComplete="off"
+              styles={{
+                ...selectStyles, 
+                menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+                menu: (base) => ({ ...base, fontSize: '12px' }),
+              }}
               value={parcelas.filter(options => options.id === movementParcelas)}
               onChange={(item) => handleChangeParcelas(item ? item.id : '')}
               options={parcelas}
+               menuPortalTarget={document.body}
+              menuPosition="fixed"
             />
           </div>
         </div>
