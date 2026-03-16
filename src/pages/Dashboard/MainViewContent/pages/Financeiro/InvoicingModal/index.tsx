@@ -554,6 +554,7 @@ const FinancialInvoicingModal = (props) => {
           </div>
         </div>
 
+
         <div id='Labels' style={{ marginLeft: '5%', marginTop: '5px', height: '30px' }}>
           <div style={{ float: 'left', width: '40%' }}>
             Vencimento:
@@ -644,6 +645,54 @@ const FinancialInvoicingModal = (props) => {
             />
           </div>
         </div>
+
+
+        <div id='Labels' style={{ marginLeft: '5%', marginTop: '5px', height: '30px' }}>
+          <div style={{ float: 'left', width: '40%' }}>
+            (+)Desconto:
+          </div>
+          <div style={{ float: 'left', width: '42%' }}>
+            Valor Liquido:
+          </div>
+          <div style={{ float: 'left', width: '18%' }}>
+
+          </div>
+        </div>
+
+
+        <div id='Elements' style={{ marginLeft: '4.5%', height: '40px' }}>
+
+          <div style={{ float: 'left', width: '35%', marginRight:'10px' }}>
+           
+  <IntlCurrencyInput
+              currency="BRL"
+              config={currencyConfig}
+              value={movementValue}
+              onChange={(event, value) => {
+                setMovementValue(value);
+              }}
+              className='inputField'
+            />
+
+          </div>
+
+          <div style={{ float: 'left', width: '35%' }}>
+           
+
+  <IntlCurrencyInput
+              currency="BRL"
+              config={currencyConfig}
+              value={movementValue}
+              onChange={(event, value) => {
+                setMovementValue(value);
+              }}
+              className='inputField'
+            />
+
+          </div>
+        </div>
+
+
 
 
 

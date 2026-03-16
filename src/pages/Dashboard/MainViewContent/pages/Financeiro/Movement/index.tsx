@@ -21,7 +21,7 @@ import { IoIosPaper } from 'react-icons/io';
 import { BiSave } from 'react-icons/bi'
 import { BsImage } from 'react-icons/bs';
 import { CgFileDocument } from 'react-icons/cg';
-import { FaCheck, FaRegTimesCircle, FaRegCopy, FaFileAlt, FaFilePdf, FaWhatsapp } from 'react-icons/fa';
+import { FaCheck, FaRegTimesCircle, FaRegCopy, FaFileAlt, FaFilePdf, FaWhatsapp, FaFileInvoiceDollar } from 'react-icons/fa';
 import { FiTrash, FiEdit, FiX, FiDownloadCloud, FiMail } from 'react-icons/fi';
 import { HiDocumentText } from 'react-icons/hi';
 import { ImMenu3, ImMenu4 } from 'react-icons/im';
@@ -67,7 +67,8 @@ const FinancialMovement: React.FC = () => {
   const [movementId, setMovementId] = useState('');
   const [movementType, setMovementType] = useState('');
   const [paymentFormList, setPaymentFormList] = useState<ISelectData[]>([]);
-  const [paymentFormId, setPaymentFormId] = useState('');
+  const [paymentFormIdCurrent, setPaymentFormIdCurrent] = useState('');
+   const [paymentFormId, setPaymentFormId] = useState('');
   const [paymentFormDescription, setPaymentFormDescription] = useState<string>("")
   const [paymentFormTerm, setPaymentFormTerm] = useState('');
   const [categoryList, setCategoryList] = useState<ISelectData[]>([]);
@@ -87,6 +88,10 @@ const FinancialMovement: React.FC = () => {
   const [paymentMessage, setPaymentMessage] = useState<string>('');
   const [movementDate, setMovementDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [movementValue, setMovementValue] = useState<number>();
+ const [movementdiscount, setMovementDiscount] = useState<number>();
+ const [movementNetValue, setMovementNetValue] = useState<number>();
+
+
   const [movementParcelas, setMovementParcelas] = useState('1');
   const [currentInstallment, setCurrentInstallment] = useState('1');
 
@@ -285,6 +290,8 @@ const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
       setCurrentInstallment(response.data.num_Parcela.toString() + '/' + response.data.qtd_Parcelamento.toString())
 
       setPaymentFormId(response.data.cod_FormaPagamento)
+      setPaymentFormIdCurrent(response.data.cod_FormaPagamento)
+      
       setPaymentFormDescription(response.data.des_FormaPagamento)
       setCategoryId(response.data.cod_Categoria)
       setCategoryDescription(response.data.nom_Categoria)
@@ -310,6 +317,11 @@ const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
       setPaymentQtd(response.data.qtd_Parcelamento)
       setInvoice(response.data.cod_FaturaParcela)
       setSequence(response.data.num_SequenciaFatura)
+
+
+      setMovementDiscount(response.data.pct_Desconto)
+      setMovementNetValue(response.data.vlr_Liquido)
+
 
       if(response.data.qtd_Parcelamento != "1"){
         setEnablePayments(false)
@@ -462,7 +474,19 @@ const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
   const handleValue = (event, value, maskedValue) => {
     event.preventDefault();
     setMovementValue(value)
+
+    calculateNetValue(value, movementdiscount);
+
   };
+
+  const handleDiscount = (event, value, maskedValue) => {
+    event.preventDefault();
+    setMovementDiscount(value)
+
+    calculateNetValue(movementValue, value);
+  };
+
+
 
 
   const handleChangeParcelas = (id: string) => {
@@ -601,6 +625,8 @@ const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
         flg_Reembolso: flgReembolso,
         cod_Processo: matterId,
         cod_Conta: accountId,
+        pct_Desconto:movementdiscount,
+        vlr_Liquido:movementNetValue,
         token
       })
 
@@ -1233,12 +1259,41 @@ const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
       return;
     }
 
+    if (!paymentFormIdCurrent)
+    {
+      addToast({type: "info", title: "Operação NÃO realizada", description: "Não é possível faturar. Selecione uma forma de pagamento."})
+      return;
+    } 
+   
     history.push(`/financeiro/billinginvoicing?instalmentId=${movementId}`);
 
   } catch (error) {
     console.error(error);
     addToast({type: "error", title: "Operação NÃO realizada", description: "Erro ao validar clientes."})
   }
+};
+
+
+const fourDecimalPlacesConfig = {
+  locale: "pt-BR",
+  formats: {
+    number: {
+      BRL: {
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4
+      }
+    }
+  }
+};
+
+
+const calculateNetValue = (value, discount) => {
+  const val = Number(value || 0);
+  const desc = Number(discount || 0);
+
+  const result = val - (val * (desc / 100));
+
+  setMovementNetValue(parseFloat(result.toFixed(4)));
 };
 
 
@@ -1323,24 +1378,64 @@ const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
             />
           </label>
 
-          <label htmlFor="parcela">
-            Parcelas ?
+
+         
+      <label htmlFor="desconto">
+           
+        <div style={{ display: "flex"}}>
+            <div style={{width: '50%'}} className="fieldGroup">
+            <span>(%)Desconto</span>
+            <IntlCurrencyInput
+                  currency="BRL"
+                  config={fourDecimalPlacesConfig}
+                  value={movementdiscount}
+                  className='inputField'
+                  onChange={handleDiscount}
+                />
+          </div>
+       &nbsp;&nbsp;&nbsp;
+            <div
+              className="fieldGroup"
+              style={{pointerEvents: ((!enablePayments && movementId != '0')? 'none': 'auto'), width: '50%', opacity:((!enablePayments && movementId != '0')? '0.5': '1')}}
+            >
+           <span>Valor Liquido</span>
+              <IntlCurrencyInput
+                  currency="BRL"
+                  config={fourDecimalPlacesConfig}
+                  value={movementNetValue}
+                  className='inputField'
+                  onChange={handleValue}
+                  disabled={true}
+                />
+            </div>
+
+    </div>  
+  </label>
+
+
+
+
+      <label htmlFor="parcela">
+           
+        <div style={{ display: "flex" }}>
+            <div style={{width: '50%'}}>
+               Parcelas ?
             <Select
               autoComplete="off"
               styles={selectStyles}
               value={parcelas.filter(options => options.id === movementParcelas)}
               onChange={(item) => handleChangeParcelas(item? item.id: '')}
               options={parcelas}
+            
             />
-          </label>
+          </div>
+          &nbsp; &nbsp; &nbsp;
 
-          {showParcelasDatas && (
-            <div
-              className='disableDiv'
-              style={{pointerEvents: ((!enablePayments && movementId != '0')? 'none': 'auto'), opacity:((!enablePayments && movementId != '0')? '0.5': '1')}}
+      {showParcelasDatas && (
+          <div
+              style={{pointerEvents: ((!enablePayments && movementId != '0')? 'none': 'auto'), width: '50%', opacity:((!enablePayments && movementId != '0')? '0.5': '1')}}
             >
-              <label htmlFor="parcelaData">
-                &nbsp;
+         &nbsp;
                 <Select
                   disabled={enablePayments}
                   autoComplete="off"
@@ -1350,11 +1445,19 @@ const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
                   onChange={(item) => setMovementParcelasDatas(item? item.id: '')}
                   options={parcelasDatas}
                 />
-              </label>
+         
             </div>
           )}
 
+
+    </div>  
+  </label>
+
+            {/*
           {!showParcelasDatas && <label />}
+                */}
+
+
         </section>
 
         <section id='SecondElements'>
@@ -1727,7 +1830,7 @@ const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
               type='button'
               onClick={() => { handleFaturar() }}
             >  
-              <FiEye />
+              <FaFileInvoiceDollar />
               {buttonFatura}
             </button>
             )}

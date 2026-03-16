@@ -17,6 +17,33 @@ export const Content = styled.div`
   box-shadow: 1px 1px 4px 0.5px rgba(0,0,0,0.15);
   overflow: auto;
 
+.fieldGroup span{
+  display:block;
+  color: var(--primary);
+  font-size: 0.675rem;
+  font-weight: 400;
+}
+
+.fieldGroup:focus-within span{
+  color: var(--orange);
+  font-size: 0.675rem;
+  font-weight: 400;
+}
+
+.parcelasContainer{
+  flex:1;
+  display:flex;
+  gap:10px;
+}
+
+.parcelasContainer label:first-child{
+  flex:0.5;
+}
+
+.parcelasContainer label:last-child{
+  flex:0.5;
+}
+
   .log {
     float: left;
     margin-top: 10px;
@@ -50,7 +77,7 @@ export const Content = styled.div`
   
   section {
     width:100%;
-    flex:1;
+    flex:2;
     column-gap:1.5rem;
 
     .infoMessage {

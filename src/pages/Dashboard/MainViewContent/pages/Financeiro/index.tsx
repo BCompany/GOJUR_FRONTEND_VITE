@@ -49,6 +49,8 @@ import DealDefaultModal from './Category/Modal/DealDefaultModal';
 import { TableColumnVisibility } from '@devexpress/dx-react-grid-material-ui';
 import { FiEye } from "react-icons/fi";
 
+
+
 const Financeiro: React.FC = () => {
   const { addToast } = useToast();
   const { signOut } = useAuth();
@@ -204,6 +206,7 @@ const Financeiro: React.FC = () => {
     // get parameters object JSON
     const parameters = CreateParameterList();
 
+ 
     if(captureType == "2")
     {
       LoadDealsByPeriod(parameters);
@@ -413,15 +416,19 @@ const Financeiro: React.FC = () => {
 
   // WHEN CALLBACK REDIRECT EDIT RETURN AND FLAG AS SAVE BUILD PARAMTER USING FILTER SAVED
   useEffect(() => {
+   
     if (stateType == 'Inactive' && jsonStateObject.length > 0)
+    {
       handleLoadByFilter()
+  
+    }
   }, [stateType, jsonStateObject])
 
 
   // HANDLE FILTER SAVED BY FILL STATE OF LAST PAGE
   const handleLoadByFilter = useCallback(async () => {
     const jsonFilter = JSON.parse(jsonStateObject);
-
+    
     setMonth(jsonFilter.month)
     setYear(jsonFilter.year)
     setCurrentPage(jsonFilter.page)
@@ -674,13 +681,16 @@ const Financeiro: React.FC = () => {
       );
     }
 
-    if (column.name === 'vlr_Movimento_Contabil') {
+    if (column.name === 'vlr_Liquido') {
       if(props.row.tpo_Movimento == "R")
       {
         return (
           <Table.Cell onClick={(e) => (e)} {...props}>
-            <div title={props.row.vlr_Movimento_Contabil} style={{fontSize:'12px', color:'green'}}>
-              {props.row.vlr_Movimento_Contabil}
+            <div title={props.row.vlr_Liquido} style={{fontSize:'12px', color:'green'}}>
+               {new Intl.NumberFormat('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL'
+                }).format(props.row.vlr_Liquido)}
             </div>
           </Table.Cell>
         );
@@ -690,8 +700,11 @@ const Financeiro: React.FC = () => {
       {
         return (
           <Table.Cell onClick={(e) => (e)} {...props}>
-            <div title={props.row.vlr_Movimento_Contabil} style={{fontSize:'12px', color:'red'}}>
-              {props.row.vlr_Movimento_Contabil}
+            <div title={props.row.vlr_Liquido} style={{fontSize:'12px', color:'red'}}>
+              {new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+              }).format(props.row.vlr_Liquido)}
             </div>
           </Table.Cell>
         );
@@ -822,7 +835,7 @@ const Financeiro: React.FC = () => {
                         className="buttonLinkClick"
                         type='button'
                     >
-                      <FiEye  title="Clique aqui para visualizar o faturamento."/>
+                      <FaFileInvoiceDollar  title="Clique aqui para visualizar o faturamento."/>
                     </button>
 
                 </Table.Cell>
@@ -858,7 +871,7 @@ const Financeiro: React.FC = () => {
   const handleSaveState = () => {
     // set type filter
     handleStateType('Finance')
-
+  
     const dataState = {
       token,
       month,
@@ -878,10 +891,12 @@ const Financeiro: React.FC = () => {
 
 const handleClickInvoice = useCallback(async (props: any) => {
   setMovementId(props.row.cod_Movimento)
+  
+  handleSaveState();
+
   history.push(`/financeiro/billinginvoicing?instalmentId=${props.row.cod_Movimento}`);
 
-
-}, []);
+ }, [accountId, year, month, captureText, captureType, visualizeType, currentPage, pageSize]);
 
 
 
@@ -1023,7 +1038,7 @@ const handleClickInvoice = useCallback(async (props: any) => {
     { name: 'dta_Movimento',           title: 'Vencimento'},
     { name: 'des_Movimento',           title: 'Descrição'},
     { name: 'nom_Categoria',           title: 'Categoria'},
-    { name: 'vlr_Movimento_Contabil',  title: 'Valor R$'},
+    { name: 'vlr_Liquido',  title: 'Valor R$'},
     { name: 'vlr_Liquidacao_Contabil', title: 'Pago/Recebido R$'},
     { name: 'paid',                    title: ' '},
     { name: 'edit',                    title: ' '},
@@ -1038,7 +1053,7 @@ const handleClickInvoice = useCallback(async (props: any) => {
     { columnName: 'dta_Movimento',           width: '12%' },
     { columnName: 'des_Movimento',           width: '30%' },
     { columnName: 'nom_Categoria',           width: '13%' },
-    { columnName: 'vlr_Movimento_Contabil',  width: '10%' },
+    { columnName: 'vlr_Liquido',  width: '10%' },
     { columnName: 'vlr_Liquidacao_Contabil', width: '10%' },
     { columnName: 'paid',                    width: '5%' },
     { columnName: 'edit',                    width: '5%' },

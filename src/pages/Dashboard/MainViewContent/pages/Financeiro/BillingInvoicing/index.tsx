@@ -1071,7 +1071,7 @@ const Validate =() => {
                         <button
                             type='button'
                             className="buttonClick"
-                            onClick={() => { history.push(`/financeiro`) }}
+                            onClick={() => { handleStateType('Inactive'); history.push(`/financeiro`) }}
                         >
                             <FaRegTimesCircle />
                             Fechar
