@@ -106,11 +106,12 @@ const FinancialInvoicingModal = (props) => {
   const [actionSave, setActionSave] = useState<string>('');
   const [changeInstallments, setChangeInstallments] = useState<boolean>(false);
   const [changeCustomer, setChangeCustomer] = useState<boolean>(true);
- const [showChangeInstallments, setShowChangeInstallments] = useState<boolean>(false);
+  const [showChangeInstallments, setShowChangeInstallments] = useState<boolean>(false);
   const [showModalOptions, setShowModalOptions] = useState<boolean>(false);
- const companyId = localStorage.getItem('@GoJur:companyId');
-   const [showChangeCustomer, setShowChangeCustomer] = useState<boolean>(false);
-
+  const companyId = localStorage.getItem('@GoJur:companyId');
+  const [showChangeCustomer, setShowChangeCustomer] = useState<boolean>(false);
+  const [movementdiscount, setMovementDiscount] = useState<number>();
+  const [movementNetValue, setMovementNetValue] = useState<number>();
 
   useEffect(() => {
       if (isCancelMessage && caller === 'changeDefaultHeader')
@@ -350,7 +351,10 @@ const FinancialInvoicingModal = (props) => {
         setPaymentQtd(response.data.qtd_Parcelamento)
         //setInvoice(response.data.cod_FaturaParcela)
         setSequence(response.data.num_SequenciaFatura)
-  
+
+        setMovementDiscount(response.data.pct_Desconto)
+        setMovementNetValue(response.data.vlr_Liquido)
+    
         if(response.data.qtd_Parcelamento != "1"){
           setEnablePayments(false)
         }
@@ -496,6 +500,8 @@ const FinancialInvoicingModal = (props) => {
           flg_Reembolso: flgReembolso,
           cod_Processo: matterId,
           cod_Conta: accountId,
+          pct_Desconto:movementdiscount,
+          vlr_Liquido:movementNetValue,
           token
         },
         billingIssuingInvoices: movementList.map(item => ({
@@ -527,7 +533,7 @@ const FinancialInvoicingModal = (props) => {
       setIsSaving(false)
       setShowChangeInstallments(false)
     }
-  }, [isSaving, selectedPeopleList, movementIdEdit, invoiceNumber, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, changeCustomer, invoiceId, flgNotifyEmail, flgNotifyWhatsApp]);
+  }, [isSaving, selectedPeopleList, movementIdEdit, invoiceNumber, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, movementdiscount, movementNetValue, token, flgStatus, changeInstallments, changeCustomer, invoiceId, flgNotifyEmail, flgNotifyWhatsApp]);
 
 
   const handleCallback = (actionSave: string) => {
@@ -539,6 +545,45 @@ const FinancialInvoicingModal = (props) => {
       Save('');
     }
   }, [actionSave])
+
+
+  const handleDiscount = (event, value, maskedValue) => {
+    event.preventDefault();
+    setMovementDiscount(value)
+
+    calculateNetValue(movementValue, value);
+  };
+
+  const calculateNetValue = (value, discount) => {
+  const val = Number(value || 0);
+  const desc = Number(discount || 0);
+
+  const result = val - (val * (desc / 100));
+
+  setMovementNetValue(parseFloat(result.toFixed(4)));
+};
+
+const handleValue = (event, value, maskedValue) => {
+  event.preventDefault();
+  setMovementValue(value)
+
+  calculateNetValue(value, movementdiscount);
+
+};
+
+
+const fourDecimalPlacesConfig = {
+  locale: "pt-BR",
+  formats: {
+    number: {
+      BRL: {
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4
+      }
+    }
+  }
+};
+
 
   return (
     <>
@@ -556,20 +601,19 @@ const FinancialInvoicingModal = (props) => {
 
 
         <div id='Labels' style={{ marginLeft: '5%', marginTop: '5px', height: '30px' }}>
-          <div style={{ float: 'left', width: '40%' }}>
+          <div style={{ float: 'left', width: '33%' }}>
             Vencimento:
           </div>
-          <div style={{ float: 'left', width: '42%' }}>
-            Valor:
+          <div style={{ float: 'left', width: '33%' }}>
+            Forma Pagto:
           </div>
-          <div style={{ float: 'left', width: '18%' }}>
-
+          <div style={{ float: 'left', width: '33%' }}>
+            Parcelas :
           </div>
         </div>
-
         <div id='Elements' style={{ marginLeft: '4.5%', height: '40px' }}>
 
-          <div style={{ float: 'left', width: '35%', marginRight:'10px' }}>
+          <div style={{ float: 'left', width: '30%', marginRight:'10px' }}>
             <input
               type="date"
               value={movementDate}
@@ -579,37 +623,9 @@ const FinancialInvoicingModal = (props) => {
             />
           </div>
 
-          <div style={{ float: 'left', width: '35%', marginTop: '3px' }}>
-            <IntlCurrencyInput
-              currency="BRL"
-              config={currencyConfig}
-              value={movementValue}
-              onChange={(event, value) => {
-                setMovementValue(value);
-              }}
-              className='inputField'
-            />
-          </div>
-        </div>
-
-
-        <div id='Labels' style={{ marginLeft: '5%', marginTop: '5px', height: '30px' }}>
-          <div style={{ float: 'left', width: '40%' }}>
-            Forma Pagto:
-          </div>
-          <div style={{ float: 'left', width: '42%' }}>
-            Parcelas:
-          </div>
-          <div style={{ float: 'left', width: '18%' }}>
-
-          </div>
-        </div>
-
-
-        <div id='Elements' style={{ marginLeft: '4.5%', height: '40px' }}>
-
-          <div style={{ float: 'left', width: '35%', marginRight:'10px' }}>
-            <Select
+          <div style={{ float: 'left', width: '30%', marginRight:'10px' }}>
+        
+          <Select
               isSearchable
               isClearable
               value={{ id: paymentFormId, label: paymentFormDescription }}
@@ -629,8 +645,8 @@ const FinancialInvoicingModal = (props) => {
             />
           </div>
 
-          <div style={{ float: 'left', width: '35%' }}>
-            <Select
+          <div style={{ float: 'left', width: '30%' }}>
+          <Select
               autoComplete="off"
               styles={{
                 ...selectStyles, 
@@ -643,57 +659,58 @@ const FinancialInvoicingModal = (props) => {
                menuPortalTarget={document.body}
               menuPosition="fixed"
             />
+            
           </div>
+
         </div>
+
 
 
         <div id='Labels' style={{ marginLeft: '5%', marginTop: '5px', height: '30px' }}>
-          <div style={{ float: 'left', width: '40%' }}>
-            (+)Desconto:
+          <div style={{ float: 'left', width: '33%' }}>
+            Valor:
           </div>
-          <div style={{ float: 'left', width: '42%' }}>
+          <div style={{ float: 'left', width: '33%' }}>
+            (%)Desconto:
+          </div>
+          <div style={{ float: 'left', width: '33%' }}>
             Valor Liquido:
           </div>
-          <div style={{ float: 'left', width: '18%' }}>
-
-          </div>
         </div>
-
 
         <div id='Elements' style={{ marginLeft: '4.5%', height: '40px' }}>
 
-          <div style={{ float: 'left', width: '35%', marginRight:'10px' }}>
-           
-  <IntlCurrencyInput
-              currency="BRL"
-              config={currencyConfig}
-              value={movementValue}
-              onChange={(event, value) => {
-                setMovementValue(value);
-              }}
-              className='inputField'
-            />
-
+          <div style={{ float: 'left', width: '30%', marginRight:'10px' }}>
+            <IntlCurrencyInput
+                currency="BRL"
+                config={currencyConfig}
+                value={movementValue}
+                onChange={handleValue}
+                className='inputField'
+              />
           </div>
 
-          <div style={{ float: 'left', width: '35%' }}>
-           
-
-  <IntlCurrencyInput
+          <div style={{ float: 'left', width: '30%', marginRight:'10px' }}>
+            <IntlCurrencyInput
               currency="BRL"
-              config={currencyConfig}
-              value={movementValue}
-              onChange={(event, value) => {
-                setMovementValue(value);
-              }}
+              config={fourDecimalPlacesConfig}
+              value={movementdiscount}
+              onChange={handleDiscount}
               className='inputField'
             />
-
           </div>
+
+          <div style={{ float: 'left', width: '30%' }}>
+            <IntlCurrencyInput
+              currency="BRL"
+              config={currencyConfig}
+              value={movementNetValue}
+              className='inputField'
+              disabled={true}
+            />
+          </div>
+
         </div>
-
-
-
 
 
         <div id='Labels' style={{ marginLeft: '5%', marginTop: '5px', height: '30px' }}>

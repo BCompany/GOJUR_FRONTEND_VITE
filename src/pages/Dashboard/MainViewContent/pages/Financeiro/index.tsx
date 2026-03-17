@@ -758,7 +758,7 @@ const Financeiro: React.FC = () => {
         }
       }
 
-      if(Number(props.row.vlr_Liquidacao) >= Number(props.row.vlr_Movimento))
+      if(Number(props.row.vlr_Liquidacao) >= Number(props.row.vlr_Liquido))
       {
         if(props.row.tpo_Movimento == "R"){
           return (
@@ -780,7 +780,7 @@ const Financeiro: React.FC = () => {
         }
       }
 
-      if(Number(props.row.vlr_Liquidacao) != Number(props.row.vlr_Movimento))
+      if(Number(props.row.vlr_Liquidacao) != Number(props.row.vlr_Liquido))
       {
         if(props.row.tpo_Movimento == "R"){
           return (
@@ -1001,6 +1001,11 @@ const handleClickInvoice = useCallback(async (props: any) => {
       setShowDeleteDealOptions(false)
       setShowConfirmDelete(false)
       console.log(err);
+
+      addToast({ type: "info", title: "Operação não realizada", description: err.response.data.Message })
+      setIsLoading(false)
+      setIsDeleting(false)
+
     }
   }, [movementId, token]);
 

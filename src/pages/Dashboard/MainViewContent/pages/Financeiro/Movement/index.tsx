@@ -650,7 +650,7 @@ const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
       setIsSaving(false)
       setShowChangeInstallments(false)
     }
-  }, [isSaving, selectedPeopleList, movementId, invoiceNumber, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, changeCustomer, invoice, flgNotifyEmail, flgNotifyWhatsApp]);
+  }, [isSaving, selectedPeopleList, movementId, invoiceNumber, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, movementdiscount, movementNetValue, token, flgStatus, changeInstallments, changeCustomer, invoice, flgNotifyEmail, flgNotifyWhatsApp]);
 
 
   const Copy = useCallback(async() => {
@@ -686,6 +686,8 @@ const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
         flg_Reembolso: flgReembolso,
         cod_Processo: matterId,
         cod_Conta: accountId,
+        pct_Desconto:movementdiscount,
+        vlr_Liquido:movementNetValue,
         token
       })
 
@@ -699,7 +701,7 @@ const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
       addToast({type: "info", title: "Falha ao copiar movimento.", description: err.response.data.Message})
       setIsSaving(false)
     }
-  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgNotifyEmail, flgNotifyWhatsApp]);
+  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, movementdiscount, movementNetValue, token, flgNotifyEmail, flgNotifyWhatsApp]);
 
 
   const CheckDeleteType = (qtd) => {
@@ -1245,16 +1247,27 @@ const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
       }
     });
 
-    const lista = response.data;
+    const listCustomer = response.data;
 
-    if (!lista || lista.length === 0) {
-      addToast({type: "info", title: "Operação NÃO realizada", description: "Nenhum cliente encontrado para este parcelamento."})
+    if (!listCustomer || listCustomer.length === 0) {
+      addToast({type: "info", title: "Operação NÃO realizada", description: "Para faturar é necessário selecionar um cliente para o movimento."})
       return;
     }
 
-    const codPessoas = new Set(lista.map(x => x.cod_Pessoa));
+    const personExists = listCustomer.some(x => x.cod_Pessoa === 0);
 
-    if (codPessoas.size > 1) {
+    if (personExists) {
+      addToast({
+        type: "info",
+        title: "Operação NÃO realizada",
+        description: "É necessário que todas as parcelas tenham o mesmo cliente."
+      });
+      return;
+    }
+
+    const personIds = new Set(listCustomer.map(x => x.cod_Pessoa));
+
+    if (personIds.size > 1) {
       addToast({type: "info", title: "Operação NÃO realizada", description: "Não é possível faturar. Existem clientes diferentes neste parcelamento."})
       return;
     }
@@ -1264,6 +1277,22 @@ const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
       addToast({type: "info", title: "Operação NÃO realizada", description: "Não é possível faturar. Selecione uma forma de pagamento."})
       return;
     } 
+
+
+   const response1 = await api.get('/Financeiro/ListarMovimentoPorParcelamento', {
+      params: {
+        installmentsId: codParcelamento,
+        page: 1,
+        rows: 500,
+        token
+      }
+    });
+
+    const listMovement = response1.data;
+
+    
+
+
    
     history.push(`/financeiro/billinginvoicing?instalmentId=${movementId}`);
 
@@ -1401,7 +1430,7 @@ const calculateNetValue = (value, discount) => {
            <span>Valor Liquido</span>
               <IntlCurrencyInput
                   currency="BRL"
-                  config={fourDecimalPlacesConfig}
+                  config={currencyConfig}
                   value={movementNetValue}
                   className='inputField'
                   onChange={handleValue}
@@ -1824,7 +1853,7 @@ const calculateNetValue = (value, discount) => {
 
           <div style={{float:'right'}}>
 
-          {movementId != "0" && (
+          {movementType == "R" && movementId != "0" && (
             <button
               className="buttonClick"
               type='button'

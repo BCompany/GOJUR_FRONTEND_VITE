@@ -372,7 +372,7 @@ useEffect(() => {
 
             
             const totalMovimento = response1.data.reduce((total, item) => {
-                return total + Number(item.vlr_Movimento || 0);
+                return total + Number(item.vlr_Liquido || 0);
             }, 0);
 
 
@@ -593,7 +593,7 @@ const tableColumnExtensions = useMemo(() => [
   { columnName: '', width: '5%' },
   { columnName: 'parcelaFormatada', width: '10%' },
   { columnName: 'dta_Movimento', width: '10%' },
-  { columnName: 'vlr_Movimento', width: '10%' },
+  { columnName: 'vlr_Liquido', width: '10%' },
   { columnName: 'des_FormaPagamento', width: '15%' },
   { columnName: 'flg_Efetivado', width: '15%' },
   { columnName: 'des_Observacao', width: '25%' },
@@ -614,9 +614,9 @@ const tableColumnExtensions = useMemo(() => [
         { name: '', title: '' },
         { name: 'parcelaFormatada', title: 'Parcela' },
         { name: 'dta_Movimento', title: 'Vencimento' },
-        { name: 'vlr_Movimento', title: 'Valor',
+        { name: 'vlr_Liquido', title: 'Valor',
         getCellValue: row =>
-            row.vlr_Movimento?.toLocaleString('pt-BR', {
+            row.vlr_Liquido?.toLocaleString('pt-BR', {
             style: 'currency',
             currency: 'BRL'
         }) },
