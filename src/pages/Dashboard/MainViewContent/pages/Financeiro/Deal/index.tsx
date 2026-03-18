@@ -854,7 +854,7 @@ const FinancialDeal: React.FC = () => {
       setDealValue2(Number(customerDealvalue));
       setDealValue3(Number(customerDealvalue));
     }
-
+   
     setDescription1(`ACORDO CLIENTE ${peopleValue} - Receita do escritório do acordo`);
     setDescription2(`ACORDO CLIENTE ${peopleValue} - Créditos transitórios para repasse ao cliente`);
     setDescription3(`ACORDO CLIENTE ${peopleValue} - Repasse de valores de acordo`);

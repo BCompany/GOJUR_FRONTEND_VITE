@@ -866,6 +866,7 @@ const handleDeleteInvoice = useCallback(async (invoiceId: number, confirmDelete:
         })
 
         
+        handleStateType('Inactive')
         history.push('/financeiro')
 
         setConfirmDeleteModal(false)

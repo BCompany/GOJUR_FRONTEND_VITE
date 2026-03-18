@@ -478,7 +478,7 @@ const handleGenerateReport = useCallback(async() => {
   if (isGeneratingReport){
     return;
   }
-
+ 
   if (period == "custom" && dtaCustomStart == "" && dtaCustomEnd == ""){
     addToast({
       type: "info",
