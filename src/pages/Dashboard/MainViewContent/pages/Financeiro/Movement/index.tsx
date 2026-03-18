@@ -1238,7 +1238,7 @@ const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
 
   const handleFaturar = async () => {
   try {
-    const response = await api.get('/Financeiro/ListarClientesPorParcelamento', {
+    const response = await api.get('/Financeiro/ValidarFatura', {
       params: {
         installmentsId: codParcelamento,
         page: 1,
@@ -1246,59 +1246,13 @@ const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
         token
       }
     });
-
-    const listCustomer = response.data;
-
-    if (!listCustomer || listCustomer.length === 0) {
-      addToast({type: "info", title: "Operação NÃO realizada", description: "Para faturar é necessário selecionar um cliente para o movimento."})
-      return;
-    }
-
-    const personExists = listCustomer.some(x => x.cod_Pessoa === 0);
-
-    if (personExists) {
-      addToast({
-        type: "info",
-        title: "Operação NÃO realizada",
-        description: "É necessário que todas as parcelas tenham o mesmo cliente."
-      });
-      return;
-    }
-
-    const personIds = new Set(listCustomer.map(x => x.cod_Pessoa));
-
-    if (personIds.size > 1) {
-      addToast({type: "info", title: "Operação NÃO realizada", description: "Não é possível faturar. Existem clientes diferentes neste parcelamento."})
-      return;
-    }
-
-    if (!paymentFormIdCurrent)
-    {
-      addToast({type: "info", title: "Operação NÃO realizada", description: "Não é possível faturar. Selecione uma forma de pagamento."})
-      return;
-    } 
-
-
-   const response1 = await api.get('/Financeiro/ListarMovimentoPorParcelamento', {
-      params: {
-        installmentsId: codParcelamento,
-        page: 1,
-        rows: 500,
-        token
-      }
-    });
-
-    const listMovement = response1.data;
-
-    
-
 
    
     history.push(`/financeiro/billinginvoicing?instalmentId=${movementId}`);
 
   } catch (error) {
     console.error(error);
-    addToast({type: "error", title: "Operação NÃO realizada", description: "Erro ao validar clientes."})
+    addToast({type: "info", title: "Operação NÃO realizada", description: error.response.data.Message})
   }
 };
 

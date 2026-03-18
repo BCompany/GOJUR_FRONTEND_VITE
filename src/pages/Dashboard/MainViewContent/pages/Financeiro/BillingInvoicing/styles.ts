@@ -17,16 +17,7 @@ export const Content = styled.div`
   box-shadow: 1px 1px 4px 0.5px rgba(0,0,0,0.15);
   overflow: auto;
 
-.dropdownContainer {
-  position: relative;
-  display: inline-block;
-}
 
-.dropdownButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
 
 .dropdownIcon {
   font-size: 16px;
@@ -56,7 +47,7 @@ export const Content = styled.div`
   border: none;
   padding: 10px 15px;
   text-align: left;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
 }
 

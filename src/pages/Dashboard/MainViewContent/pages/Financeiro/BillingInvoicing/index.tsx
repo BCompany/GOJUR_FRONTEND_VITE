@@ -233,15 +233,24 @@ const BillingInvoicing: React.FC = () => {
         movementId: 0,
         token: ""
     });
+    const [confirmDeleteModal, setConfirmDeleteModal] = useState<boolean>(false);
 
 useEffect(() => {
-    if (isCancelMessage)
+    if (isCancelMessage && caller === 'changeDefaultHeade1')
     {
     setShowChangeCustomer(false)
     //setShowChangeCustomer(false)
     handleCancelMessage(false)
     }
+
+    if (isCancelMessage && caller == "invoiceDelete") {
+        setConfirmDeleteModal(false)
+        handleCancelMessage(false)
+    }
+
 }, [isCancelMessage, caller]);
+
+
 
 useEffect(() => {
     if(isConfirmMessage && caller === 'changeDefaultHeade1')
@@ -250,6 +259,13 @@ useEffect(() => {
         setShowChangeCustomer(false)
         handleConfirmMessage(false)
     }
+
+  
+    if (isConfirmMessage && caller == "invoiceDelete") {
+        handleDeleteInvoice(invoiceId, true)
+        handleConfirmMessage(false)
+    }
+
 }, [isConfirmMessage, caller]);
 
 
@@ -311,6 +327,7 @@ useEffect(() => {
 
         if (Number(movementNumParcela) > 1 && Number(invoiceId) === 0) {
             addToast({ type: "info", title: "Operação não realizada", description: "Para faturar um parcelamento realize a operação a partir da primeira parcela" })
+            handleStateType('Inactive');
             history.push(`/financeiro`)
         }
 
@@ -689,7 +706,6 @@ const Validate =() => {
     return isValid;
   }
 
-
     const handleSave = async () => {
         try {
           
@@ -823,6 +839,45 @@ const Validate =() => {
     const handleCloseLog = () => {
         setShowLog(false)
     }
+
+
+    
+const handleDeleteInvoice = useCallback(async (invoiceId: number, confirmDelete: boolean) => {
+    try{
+
+        if (confirmDelete == false) {
+            //setCurrentWorkflowId(workflowId)
+            setConfirmDeleteModal(true)
+            return;
+        }
+
+        
+        await api.delete('Financeiro/Faturamento2/Deletar', {
+        params: {
+            id: invoiceId,
+            token
+        }
+        })
+
+        addToast({
+        type: "success",
+        title: "Fatura",
+        description: "A fatura foi deletada"
+        })
+
+        
+        history.push('/financeiro')
+
+        setConfirmDeleteModal(false)
+
+    }
+    catch (err: any) {
+
+    }
+
+  }, [addToast, history]);
+
+
 
     return (
 
@@ -1080,8 +1135,8 @@ const Validate =() => {
                         {isOpen && (
                             <div className="dropdownMenu">
                                 <button className="dropdownItem">Gerar Boletos Selecionados</button>
-                                <button className="dropdownItem">Excluir Todos os Boletos</button>
-                                <button className="dropdownItem">Excluir Fatura</button>
+                                <button className="dropdownItem"><FiTrash /> Excluir Todos os Boletos</button>
+                                <button className="dropdownItem" onClick={() => handleDeleteInvoice(invoiceId, false)}> <FiTrash /> Excluir Fatura</button>
                             </div>
                         )}
 
@@ -1112,6 +1167,14 @@ const Validate =() => {
                 />
             )}
 
+            {confirmDeleteModal && (
+                <ConfirmBoxModal
+                title="Excluir Registro"
+                caller="invoiceDelete"
+                message="Confirma a exclusão desta fatura ?"
+                />
+            )}
+
             {isLoading && (
                 <>
                     <Overlay />
@@ -1130,6 +1193,8 @@ const Validate =() => {
                   logType="invoicingLog"
                 />
               )}
+
+
 
         </Container>
     );
