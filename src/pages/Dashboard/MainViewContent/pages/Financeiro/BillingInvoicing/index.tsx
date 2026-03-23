@@ -4,7 +4,7 @@
 /* eslint no-unneeded-ternary: "error" */
 /* eslint-disable react/jsx-one-expression-per-line */
 
-import React, { useEffect, useState, useCallback, ChangeEvent, useRef, useMemo  } from 'react';
+import React, { useEffect, useState, useCallback, ChangeEvent, useRef, useMemo } from 'react';
 import api from 'services/api';
 import DatePicker from 'components/DatePicker';
 import { RiMailSendLine } from "react-icons/ri";
@@ -49,12 +49,13 @@ import GridSelectProcess from '../../Dashboard/resorces/DashboardComponents/Crea
 import { IPayments } from '../Interfaces/IPayments';
 import FinancialPaymentModal from '../PaymentModal';
 import FinancialInvoicingModal from '../InvoicingModal';
+import FinancialBankSlipModal from '../BankSlipModal';
 import FinancialDocumentModal from '../DocumentModal';
 import { ModalDeleteOptions, OverlayFinancial } from '../styles';
 import { Container, Content, Process, GridSubContainer, ModalPaymentInformation, HamburguerHeader } from './styles';
 import { IBillingRuler, IBillingRulerWarning } from '../BillingRule/Interfaces/IBillingRuler';
 import { ListCustomerPersonData, ListLawyerData, ListOpossingData, ListPartsData, ListThirdyData } from '../../Matter/EditComponents/Services/PeopleData';
-
+import { MdCreateNewFolder } from "react-icons/md";
 
 interface IOption {
     value: number;
@@ -98,17 +99,17 @@ interface ISelectData {
 }
 
 interface BillingInvoicingPayload {
-  invoiceId: number;
-  companyId: number;
-  invoiceNumber: number;
-  personId?: number;
-  personName?: string;
-  personIdOld?: number;
-  billingRulerId?: number | null;
-  invoiceDescription: string;
-  issueDate: string;
-  movementId: number;
-  token: string;
+    invoiceId: number;
+    companyId: number;
+    invoiceNumber: number;
+    personId?: number;
+    personName?: string;
+    personIdOld?: number;
+    billingRulerId?: number | null;
+    invoiceDescription: string;
+    issueDate: string;
+    movementId: number;
+    token: string;
 }
 
 const BillingInvoicing: React.FC = () => {
@@ -126,6 +127,7 @@ const BillingInvoicing: React.FC = () => {
     const [accountId, setAccountId] = useState('');
     const [movementId, setMovementId] = useState('');
     const [movementIdEdit, setMovementIdEdit] = useState('');
+    const [bankSlipURL, setBankSlipURL] = useState('');
 
     const [movementType, setMovementType] = useState('');
     //const [paymentFormList, setPaymentFormList] = useState<ISelectData[]>([]);
@@ -164,7 +166,7 @@ const BillingInvoicing: React.FC = () => {
     const [selectedPeopleList, setSelectedPeopleList] = useState<ISelectData[]>([]);
     const [selectedPeople, setSelectedPeople] = useState<ISelectData>();
     const [selectedPeopleOld, setSelectedPeopleOld] = useState<ISelectData>();
-    
+
     const [showNotifyPeople, setShowNotifyPeople] = useState<boolean>(false);
     const [checkPeopleList, setCheckPeopleList] = useState<boolean>(false);
     const [reminders, setReminders] = useState('00');
@@ -188,7 +190,7 @@ const BillingInvoicing: React.FC = () => {
     const [matterAttachedModal, setMatterAttachedModal] = useState(false);
     const [enablePayments, setEnablePayments] = useState<boolean>(true);
     const [showPayments, setShowPayments] = useState<boolean>(false);
-     const [changeCustomer, setChangeCustomer] = useState<boolean>(false);
+    const [changeCustomer, setChangeCustomer] = useState<boolean>(false);
     const [changeInstallments, setChangeInstallments] = useState<boolean>(false);
     const [invoice, setInvoice] = useState<number>(0);
     const [sequence, setSequence] = useState<string>('');
@@ -217,6 +219,7 @@ const BillingInvoicing: React.FC = () => {
     const [selectedBillingRuler, setSelectedBillingRuler] = useState<ISelectData | null>(null);
     const [buttonFatura, setButtonFatura] = useState<string>('Gerar Fatura');
     const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
+    const [showBankSlipModal, setShowBankSlipModal] = useState<boolean>(false);
     const [visualizeType, setVisualizeType] = useState('V');
     const [customerList, setCustomerList] = useState<ISelectData[]>([])
     const [showChangeCustomer, setShowChangeCustomer] = useState<boolean>(false);
@@ -235,38 +238,36 @@ const BillingInvoicing: React.FC = () => {
     });
     const [confirmDeleteModal, setConfirmDeleteModal] = useState<boolean>(false);
 
-useEffect(() => {
-    if (isCancelMessage && caller === 'changeDefaultHeade1')
-    {
-    setShowChangeCustomer(false)
-    //setShowChangeCustomer(false)
-    handleCancelMessage(false)
-    }
+    useEffect(() => {
+        if (isCancelMessage && caller === 'changeDefaultHeade1') {
+            setShowChangeCustomer(false)
+            //setShowChangeCustomer(false)
+            handleCancelMessage(false)
+        }
 
-    if (isCancelMessage && caller == "invoiceDelete") {
-        setConfirmDeleteModal(false)
-        handleCancelMessage(false)
-    }
+        if (isCancelMessage && caller == "invoiceDelete") {
+            setConfirmDeleteModal(false)
+            handleCancelMessage(false)
+        }
 
-}, [isCancelMessage, caller]);
-
+    }, [isCancelMessage, caller]);
 
 
-useEffect(() => {
-    if(isConfirmMessage && caller === 'changeDefaultHeade1')
-    {
-        handleSave();
-        setShowChangeCustomer(false)
-        handleConfirmMessage(false)
-    }
 
-  
-    if (isConfirmMessage && caller == "invoiceDelete") {
-        handleDeleteInvoice(invoiceId, true)
-        handleConfirmMessage(false)
-    }
+    useEffect(() => {
+        if (isConfirmMessage && caller === 'changeDefaultHeade1') {
+            handleSave();
+            setShowChangeCustomer(false)
+            handleConfirmMessage(false)
+        }
 
-}, [isConfirmMessage, caller]);
+
+        if (isConfirmMessage && caller == "invoiceDelete") {
+            handleDeleteInvoice(invoiceId, true)
+            handleConfirmMessage(false)
+        }
+
+    }, [isConfirmMessage, caller]);
 
 
     const handleSelectRow = (rowId: number) => {
@@ -340,9 +341,9 @@ useEffect(() => {
 
             const response = await api.get('/Financeiro/Editar', { params: { id: Number(movementId), token } })
 
-          
+
             setMovementValue(response.data.vlr_Movimento)
-        
+
             setMovementDate(
                 format(new Date(response.data.dta_Movimento), "yyyy-MM-dd")
             );
@@ -358,7 +359,7 @@ useEffect(() => {
                 item.label.toLowerCase().includes("cliente")
             );
 
-         
+
             setSelectedPeople(selectedItem)
             setSelectedPeopleOld(selectedItem)
 
@@ -387,26 +388,26 @@ useEffect(() => {
                 };
             });
 
-            
+
             const totalMovimento = response1.data.reduce((total, item) => {
                 return total + Number(item.vlr_Liquido || 0);
             }, 0);
 
 
-           setInvoiceValue(
+            setInvoiceValue(
                 totalMovimento.toLocaleString('pt-BR', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
                 })
             );
-                        
+
             setMovementList(dadosFormatados);
 
             const primeiraParcela = dadosFormatados.find(
                 item => Number(item.num_Parcela) === 1
             );
 
-            if (primeiraParcela && !invoiceDescription ) {
+            if (primeiraParcela && !invoiceDescription) {
                 setDescription(primeiraParcela.des_Movimento);
             }
 
@@ -439,7 +440,7 @@ useEffect(() => {
 
                 setInvoiceId(data.invoiceId);
                 setInvoiceNumber(data.invoiceNumber);
-                
+
 
                 const selectedItem: ISelectData = {
                     id: data.personId?.toString() || '',
@@ -467,10 +468,10 @@ useEffect(() => {
             setIsLoading(false);
 
             return data;
-            
+
         } catch (err: any) {
             setIsLoading(false);
-       
+
             addToast({
                 type: "info",
                 title: "Operação não realizada",
@@ -519,6 +520,72 @@ useEffect(() => {
     }, []);
 
 
+const formatDate = (date) => {
+  if (!date) return null;
+
+  // se vier no formato dd/MM/yyyy
+  if (typeof date === 'string' && date.includes('/')) {
+    const [day, month, year] = date.split('/');
+    return `${year}-${month}-${day}`;
+  }
+
+  const d = new Date(date);
+
+  if (isNaN(d.getTime())) {
+    console.error('Data inválida:', date);
+    return null;
+  }
+
+  return d.toISOString().split('T')[0];
+};
+
+                
+const handleBankSlip = async (row) => {
+
+     const bankSlipURL = row.des_BoletoURL;
+
+    setBankSlipURL(bankSlipURL);
+
+    setShowBankSlipModal(true)
+
+};
+
+
+const handleGenerateBankSlip = async (row) => {
+  try {
+
+    const payload = {
+      token: token,
+      companyId,
+      customerId: "cus_000007508520",
+      bankType: "ASAAS",
+      amount: row.vlr_Liquido,
+      dueDate: formatDate(row.dta_Movimento),
+      documentNumber: row.parcelaFormatada,
+      invoice2MovementId: row.cod_Fatura2Movimento
+    };
+
+    const response = await api.post("/BankSlip/Generate", payload);
+
+    const data = response.data;
+
+    alert(`Boleto gerado! ID: ${data}`);
+
+  } catch (error) {
+    console.error(error);
+
+    // mensagem mais útil
+    const message =
+      error.response?.data?.message ||
+      error.response?.data ||
+      error.message;
+
+    alert(`Erro ao gerar boleto: ${message}`);
+  }
+};
+
+
+
     const CustomHeaderCell = (props: any) => {
         const { column } = props;
 
@@ -543,7 +610,7 @@ useEffect(() => {
     const CustomCell = (props) => {
         const { column } = props;
 
-       
+
         if (column.title === '') {
             const rowId = props.row.parcelaFormatada;
 
@@ -561,22 +628,46 @@ useEffect(() => {
 
         if (column.title === 'Ações') {
 
+            const rowId = props.row.cod_BoletoBancario;
             const rowFp = props.row.des_FormaPagamento;
 
-            if (rowFp == 'BOLETO') {
+            if (rowFp == 'BOLETO' && rowId == 0 ) {
                 return (
-                    <Table.Cell onClick={(e) => handleClick(props)} {...props}>
+                    <Table.Cell {...props}>
                         <button
                             className="buttonLinkClick"
                             type='button'
+                            onClick={() => handleGenerateBankSlip(props.row)}
                         >
-                          <FaBarcode title="Clique aqui para gerar boleto."/>
+                            
+                            <MdCreateNewFolder title="Clique aqui para gerar boleto." />
                         </button>
 
                     </Table.Cell>
                 );
 
             }
+
+
+            if (rowFp == 'BOLETO' && rowId > 0 ) {
+                return (
+                    <Table.Cell {...props}>
+                        <button
+                            className="buttonLinkClick"
+                            type='button'
+                             onClick={() => handleBankSlip(props.row) }
+                        >
+
+              
+                            <FaBarcode title="Clique aqui para visualizar e excluir boleto." />
+                        </button>
+
+                    </Table.Cell>
+                );
+
+            }
+
+
 
         }
 
@@ -590,7 +681,7 @@ useEffect(() => {
                         type='button'
                     >
 
-                        <FiEdit title="Clique aqui para editar movimento."/>
+                        <FiEdit title="Clique aqui para editar movimento." />
 
                     </button>
 
@@ -606,37 +697,45 @@ useEffect(() => {
 
 
 
-const tableColumnExtensions = useMemo(() => [
-  { columnName: '', width: '5%' },
-  { columnName: 'parcelaFormatada', width: '10%' },
-  { columnName: 'dta_Movimento', width: '10%' },
-  { columnName: 'vlr_Liquido', width: '10%' },
-  { columnName: 'des_FormaPagamento', width: '15%' },
-  { columnName: 'flg_Efetivado', width: '15%' },
-  { columnName: 'des_Observacao', width: '25%' },
+    const tableColumnExtensions = useMemo(() => [
+        { columnName: '', width: '5%' },
+        { columnName: '', width: '5%' },
+        { columnName: '', width: '5%' },
+        { columnName: '', width: '5%' },
+        { columnName: 'parcelaFormatada', width: '10%' },
+        { columnName: 'dta_Movimento', width: '10%' },
+        { columnName: 'vlr_Liquido', width: '10%' },
+        { columnName: 'des_FormaPagamento', width: '15%' },
+        { columnName: 'flg_Efetivado', width: '15%' },
+        { columnName: 'des_Observacao', width: '25%' },
 
-  ...(buttonFatura === 'Alterar Fatura'
-    ? [{ columnName: 'acoes', width: '5%' }]
-    : []),
+        ...(buttonFatura === 'Alterar Fatura'
+            ? [{ columnName: 'acoes', width: '5%' }]
+            : []),
 
-  ...(buttonFatura === 'Alterar Fatura'
-    ? [{ columnName: 'editar', width: '5%' }]
-    : [])
-], [buttonFatura]);
+        ...(buttonFatura === 'Alterar Fatura'
+            ? [{ columnName: 'editar', width: '5%' }]
+            : [])
+    ], [buttonFatura]);
 
 
     const [dateColumns] = useState(['dateUpload']);
     const columns = [
+        { name: 'cod_BoletoBancario', title: 'Código Boleto Bancário' },
+        { name: 'des_BoletoURL', title: 'URL Boleto Bancário' },
+        { name: 'cod_Fatura2Movimento', title: 'Código Fatura Movimento' },
         { name: 'cod_Movimento', title: 'Código' },
         { name: '', title: '' },
         { name: 'parcelaFormatada', title: 'Parcela' },
         { name: 'dta_Movimento', title: 'Vencimento' },
-        { name: 'vlr_Liquido', title: 'Valor',
-        getCellValue: row =>
-            row.vlr_Liquido?.toLocaleString('pt-BR', {
-            style: 'currency',
-            currency: 'BRL'
-        }) },
+        {
+            name: 'vlr_Liquido', title: 'Valor',
+            getCellValue: row =>
+                row.vlr_Liquido?.toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                })
+        },
         { name: 'des_FormaPagamento', title: 'Forma Pagto' },
         { name: 'flg_Efetivado', title: 'Status' },
         { name: 'des_Observacao', title: 'Observação' },
@@ -652,7 +751,7 @@ const tableColumnExtensions = useMemo(() => [
     ];
 
     const [hiddenColumnNames, setHiddenColumnNames] = useState<string[]>([
-        'cod_Movimento'
+        'cod_BoletoBancario','des_BoletoURL','cod_Fatura2Movimento', 'cod_Movimento'
     ]);
 
     useEffect(() => {
@@ -687,28 +786,27 @@ const tableColumnExtensions = useMemo(() => [
     }, []);
 
 
-const Validate =() => {
-    let isValid = true;
+    const Validate = () => {
+        let isValid = true;
 
-    // avoid click many times
-    if (isSaving){
-      return;
-    }
+        // avoid click many times
+        if (isSaving) {
+            return;
+        }
 
-    if ( (selectedPeople.id !== selectedPeopleOld.id) && showChangeCustomer === false )
-    {
-      setShowChangeCustomer(true)
-      isValid = false;
+        if ((selectedPeople.id !== selectedPeopleOld.id) && showChangeCustomer === false) {
+            setShowChangeCustomer(true)
+            isValid = false;
+        }
+        else
+            setShowChangeCustomer(false)
+
+        return isValid;
     }
-    else
-      setShowChangeCustomer(false) 
- 
-    return isValid;
-  }
 
     const handleSave = async () => {
         try {
-          
+
             if (!Validate()) return;
 
             setIsLoading(true);
@@ -730,7 +828,7 @@ const Validate =() => {
                     //editChild: selectedPeople?.id == selectedPeopleOld?.id ? 'justOne' : 'all',
                     editChild: 'none',
                     dta_Movimento: movementDate,
-                    vlr_Movimento:movementValue,
+                    vlr_Movimento: movementValue,
                     cod_FormaPagamento: paymentFormId
                 },
 
@@ -763,7 +861,7 @@ const Validate =() => {
 
         } catch (err: any) {
             setIsLoading(false);
-    
+
             addToast({
                 type: "error",
                 title: "Operação não realizada",
@@ -790,14 +888,13 @@ const Validate =() => {
                 movementId: movementId,
                 token: token
             }));
-            
+
             const id = props.row.cod_Movimento;
 
             setMovementIdEdit(id);
 
             setShowPaymentModal(true)
         }
-
 
     }, [accountId, currentPage, pageSize, selectedPeople, selectedPeopleOld]);
 
@@ -806,6 +903,13 @@ const Validate =() => {
         //setInvoice('')
         setMovementType('')
         setShowPaymentModal(false)
+        setIsLoading(false)
+    }
+
+
+    const CloseBankSlipModal = async () => {
+    
+        setShowBankSlipModal(false)
         setIsLoading(false)
     }
 
@@ -827,7 +931,7 @@ const Validate =() => {
 
 
     const handleMovementDate = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    setInvoiceDate(event.target.value)
+        setInvoiceDate(event.target.value)
     }, []);
 
 
@@ -841,42 +945,42 @@ const Validate =() => {
     }
 
 
-    
-const handleDeleteInvoice = useCallback(async (invoiceId: number, confirmDelete: boolean) => {
-    try{
 
-        if (confirmDelete == false) {
-            //setCurrentWorkflowId(workflowId)
-            setConfirmDeleteModal(true)
-            return;
+    const handleDeleteInvoice = useCallback(async (invoiceId: number, confirmDelete: boolean) => {
+        try {
+
+            if (confirmDelete == false) {
+                //setCurrentWorkflowId(workflowId)
+                setConfirmDeleteModal(true)
+                return;
+            }
+
+
+            await api.delete('Financeiro/Faturamento2/Deletar', {
+                params: {
+                    id: invoiceId,
+                    token
+                }
+            })
+
+            addToast({
+                type: "success",
+                title: "Fatura",
+                description: "A fatura foi deletada"
+            })
+
+
+            handleStateType('Inactive')
+            history.push('/financeiro')
+
+            setConfirmDeleteModal(false)
+
+        }
+        catch (err: any) {
+
         }
 
-        
-        await api.delete('Financeiro/Faturamento2/Deletar', {
-        params: {
-            id: invoiceId,
-            token
-        }
-        })
-
-        addToast({
-        type: "success",
-        title: "Fatura",
-        description: "A fatura foi deletada"
-        })
-
-        
-        handleStateType('Inactive')
-        history.push('/financeiro')
-
-        setConfirmDeleteModal(false)
-
-    }
-    catch (err: any) {
-
-    }
-
-  }, [addToast, history]);
+    }, [addToast, history]);
 
 
 
@@ -920,8 +1024,8 @@ const handleDeleteInvoice = useCallback(async (invoiceId: number, confirmDelete:
 
                             <label htmlFor="valor">
                                 Cliente
-                                    
-                                    <Select
+
+                                <Select
                                     isClearable
                                     isSearchable
                                     placeholder="Selecione"
@@ -937,14 +1041,14 @@ const handleDeleteInvoice = useCallback(async (invoiceId: number, confirmDelete:
                                     onInputChange={(inputValue, { action }) => {
 
                                         if (action === "input-change" && inputValue.length >= 2) {
-                                        ListCustomerPersonData(inputValue).then((data) => {
-                                            setCustomerList(data);
-                                        });
+                                            ListCustomerPersonData(inputValue).then((data) => {
+                                                setCustomerList(data);
+                                            });
                                         }
 
                                         return inputValue;
                                     }}
-                                    />
+                                />
 
                             </label>
 
@@ -953,7 +1057,7 @@ const handleDeleteInvoice = useCallback(async (invoiceId: number, confirmDelete:
                                     title="Emissão"
                                     onChange={handleMovementDate}
                                     value={invoiceDate}
-                                    
+
                                 />
                             </label>
 
@@ -1055,7 +1159,7 @@ const handleDeleteInvoice = useCallback(async (invoiceId: number, confirmDelete:
                             messages={languageGridEmpty}
                         />
                         <TableHeaderRow cellComponent={CustomHeaderCell} />
- 
+
                         <TableColumnVisibility
                             hiddenColumnNames={hiddenColumnNames}
                             onHiddenColumnNamesChange={setHiddenColumnNames}
@@ -1132,7 +1236,7 @@ const handleDeleteInvoice = useCallback(async (invoiceId: number, confirmDelete:
                             <FaRegTimesCircle />
                             Fechar
                         </button>
-                        
+
                         {isOpen && (
                             <div className="dropdownMenu">
                                 <button className="dropdownItem">Gerar Boletos Selecionados</button>
@@ -1157,8 +1261,13 @@ const handleDeleteInvoice = useCallback(async (invoiceId: number, confirmDelete:
 
             {(showPaymentModal) && <OverlayFinancial />}
             {(showPaymentModal) && <FinancialInvoicingModal callbackFunction={{ movementId, movementIdEdit, invoiceId, billingInvoicing, visualizeType, movementList, ClosePaymentModal, LoadMovement, LoadBillingInvoicing }} />}
+            
+            
+            {(showBankSlipModal) && <OverlayFinancial />}
+            {(showBankSlipModal) && <FinancialBankSlipModal callbackFunction={{ movementId, movementIdEdit, invoiceId, bankSlipURL, CloseBankSlipModal }} />}
 
-          
+
+
             {showChangeCustomer && (
                 <ConfirmBoxModal
                     title="Alterar cliente da fatura"
@@ -1170,9 +1279,9 @@ const handleDeleteInvoice = useCallback(async (invoiceId: number, confirmDelete:
 
             {confirmDeleteModal && (
                 <ConfirmBoxModal
-                title="Excluir Registro"
-                caller="invoiceDelete"
-                message="Confirma a exclusão desta fatura ?"
+                    title="Excluir Registro"
+                    caller="invoiceDelete"
+                    message="Confirma a exclusão desta fatura ?"
                 />
             )}
 
@@ -1186,14 +1295,14 @@ const handleDeleteInvoice = useCallback(async (invoiceId: number, confirmDelete:
                 </>
             )}
 
-        
-          {showLog && (
+
+            {showLog && (
                 <LogModal
-                  idRecord={Number(invoiceNumber)}
-                  handleCloseModalLog={handleCloseLog}
-                  logType="invoicingLog"
+                    idRecord={Number(invoiceNumber)}
+                    handleCloseModalLog={handleCloseLog}
+                    logType="invoicingLog"
                 />
-              )}
+            )}
 
 
 
