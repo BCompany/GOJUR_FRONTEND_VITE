@@ -482,7 +482,7 @@ export default function WorkflowPage() {
       if (status !== 500) {
 
         addToast({
-          type: "error",
+          type: "info",
           title: "Falha ao Executar Workflow",
           description: message
         })
@@ -632,7 +632,7 @@ const handleSimularWorkflow = async () => {
     if (Object.keys(triggerActionsMap).length === 0) {
 
       addToast({
-        type: "error",
+        type: "info",
         title: "Campos Obrigatórios",
         description: "É necessário simular Workflow"
       })
@@ -655,7 +655,7 @@ const handleSimularWorkflow = async () => {
 
     if (invalido) {
       addToast({
-        type: "error",
+        type: "info",
         title: "Campos Obrigatórios",
         description: "Existem ações sem usuário selecionado"
       })
@@ -825,7 +825,7 @@ const handleSimularWorkflow = async () => {
       if (status !== 500) {
 
         addToast({
-          type: "error",
+          type: "info",
           title: "Falha ao Executar Workflow",
           description: message
         })
