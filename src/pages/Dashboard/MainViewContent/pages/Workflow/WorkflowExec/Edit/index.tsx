@@ -194,7 +194,7 @@ export default function WorkflowPage() {
   useEffect(() => {
     LoadPerson()
     ListWorkflow("")
-    LoadSubject();
+    // LoadSubject("");
     LoadUserList();
 
   }, [])
@@ -504,6 +504,37 @@ export default function WorkflowPage() {
   };
 
 
+const handleSelectSubject = async (subjectId: number) => {
+  try {
+    const response = await api.get('/Assunto/Selecionar', {
+      params: {
+        subjectId,
+        token: token
+      }
+    });
+
+    const item = response.data;
+
+    const newOption: ISelectValues = {
+      id: item.id,
+      label: item.value
+    };
+
+    setOptionsSubject((prev) => {
+      // evita duplicado
+      const exists = prev.some((x) => x.id === newOption.id);
+
+      if (exists) return prev;
+
+      return [...prev, newOption];
+    });
+
+  } catch (error) {
+    console.error('Erro ao buscar assuntos:', error);
+  }
+};
+
+
 const handleSimularWorkflow = async () => {
   try {
     setTriggerActionsMap({});
@@ -523,23 +554,6 @@ const handleSimularWorkflow = async () => {
 
       if (actions === "error") return;
 
-  
-      const invalidSubjects: number[] = [];
-      actions.forEach((action: ITriggerAction) => {
-        const label = getSubjectLabel(action.subjectId);
-        if (label.startsWith("ID") && label.includes("não encontrado")) {
-          invalidSubjects.push(action.subjectId);
-        }
-      });
-
-      if (invalidSubjects.length > 0) {
-        addToast({
-          type: "info",
-          title: "Assunto não encontrado",
-          description: `Os seguinte Assunto não foram encontrados: ${invalidSubjects.join(", ")}. Entre em configuração de Workflow e atribua um assunto para a ação`
-        });
-      }
-
       setTriggerActionsMap((prev) => ({ ...prev, [triggerId]: actions }));
     }
 
@@ -550,11 +564,11 @@ const handleSimularWorkflow = async () => {
 };
 
 
-  const LoadSubject = useCallback(async () => {
+  const LoadSubject = useCallback(async (description: string) => {
     try {
 
       const response = await api.post(`/Assunto/Listar`, {
-        description: '',
+        description: description,
         token
       });
 
@@ -578,9 +592,12 @@ const handleSimularWorkflow = async () => {
 
   const getSubjectLabel = (id?: number | string, maxLength: number = 15) => {
     if (!id) return "";
+
+    handleSelectSubject(id);
     const subject = optionsSubject.find(s => String(s.id) === String(id));
 
     if (!subject) {
+      
       return `ID ${id} não encontrado`;
     }
     const label = subject.label;
