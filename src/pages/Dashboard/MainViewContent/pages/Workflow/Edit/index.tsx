@@ -1711,6 +1711,7 @@ export default function Workflow() {
         return;
       }
 
+      
       if (!action.configuration?.subject) {
         addToast({
           type: "error",
@@ -1719,9 +1720,11 @@ export default function Workflow() {
         })
         return false;
       }
+      
 
       const hora = action.configuration?.starttime;
 
+      
       if (!hora || hora.trim() === "") {
         addToast({
           type: "error",
@@ -1742,7 +1745,7 @@ export default function Workflow() {
         })
         return false;
       }
-
+      
 
 
       const config = {
