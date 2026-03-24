@@ -1577,14 +1577,11 @@ export default function Workflow() {
         (trigger) => trigger.configuration?.label?.trim() === nameTrigger
       );
       if (!trigger) {
-        //alert("Trigger não encontrada");
+     
         return false;
       }
 
 
-
-      console.log(trigger);
-      // encontra a action específica
       const action = trigger.actions?.find(a => a.workflowactionId === actionId);
       if (!action) {
         alert("Action não encontrada");
@@ -1630,8 +1627,25 @@ export default function Workflow() {
         ...action.configuration,
         privacy: action.configuration?.privacy ?? "N",
         responsible: action.configuration?.responsible ?? "U",
+        typeOfDays:action.configuration?.typeOfDays ?? "C",
         reminders: action.configuration?.reminders ?? []
       };
+
+
+      const orderConfig = (config: any) => {
+        return {
+          when: config.when,
+          typeOfDays: config.typeOfDays,
+          starttime: config.starttime,
+          subject: config.subject,
+          description: config.description,
+          responsible: config.responsible,
+          privacy: config.privacy,
+          reminders: config.reminders
+        };
+      };
+
+   
 
       console.log('Config action ' + JSON.stringify(config));
       console.log('Dias antes e depois ' + action.daysbeforeandafter);
@@ -1646,7 +1660,7 @@ export default function Workflow() {
           action.configuration?.when === "antes"
             ? -Math.abs(action.daysbeforeandafter ?? 1)
             : Math.abs(action.daysbeforeandafter ?? 1),
-        configDescription: action.configuration ? JSON.stringify(config) : "{}",
+        configDescription: action.configuration ? JSON.stringify(orderConfig(config))  : "{}",
         token,
         apiKey,
       };
@@ -1735,7 +1749,23 @@ export default function Workflow() {
         ...action.configuration,
         privacy: action.configuration?.privacy ?? "N",
         responsible: action.configuration?.responsible ?? "U",
+        typeOfDays:action.configuration?.typeOfDays ?? "C"
       };
+
+
+      const orderConfig = (config: any) => {
+        return {
+          when: config.when,
+          typeOfDays: config.typeOfDays,
+          starttime: config.starttime,
+          subject: config.subject,
+          description: config.description,
+          responsible: config.responsible,
+          privacy: config.privacy,
+          reminders: config.reminders
+        };
+      };
+
 
       console.log('Config action ' + JSON.stringify(config));
       console.log('Dias antes e depois ' + action.daysbeforeandafter);
@@ -1750,7 +1780,7 @@ export default function Workflow() {
           action.configuration?.when === "antes"
             ? -Math.abs(action.daysbeforeandafter ?? 1)
             : Math.abs(action.daysbeforeandafter ?? 1),
-        configDescription: action.configuration ? JSON.stringify(config) : "{}",
+        configDescription: action.configuration ? JSON.stringify(orderConfig(config))  : "{}",
         token,
         apiKey,
       };
