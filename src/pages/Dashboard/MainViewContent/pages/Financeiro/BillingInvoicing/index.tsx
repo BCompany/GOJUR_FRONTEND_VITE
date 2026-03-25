@@ -237,6 +237,9 @@ const BillingInvoicing: React.FC = () => {
         token: ""
     });
     const [confirmDeleteModal, setConfirmDeleteModal] = useState<boolean>(false);
+    const [confirmCreateBankSlipModal, setConfirmCreateBankSlipModal] = useState<boolean>(false);
+    const [selectedRow, setSelectedRow] = useState(null);
+    
 
     useEffect(() => {
         if (isCancelMessage && caller === 'changeDefaultHeade1') {
@@ -247,6 +250,12 @@ const BillingInvoicing: React.FC = () => {
 
         if (isCancelMessage && caller == "invoiceDelete") {
             setConfirmDeleteModal(false)
+            handleCancelMessage(false)
+        }
+
+
+        if (isCancelMessage && caller == "createbankslip") {
+             setConfirmCreateBankSlipModal(false)
             handleCancelMessage(false)
         }
 
@@ -266,6 +275,13 @@ const BillingInvoicing: React.FC = () => {
             handleDeleteInvoice(invoiceId, true)
             handleConfirmMessage(false)
         }
+
+       
+        if (isConfirmMessage && caller == "createbankslip") {
+            handleGenerateBankSlip(selectedRow, true)
+            handleConfirmMessage(false)
+        }
+
 
     }, [isConfirmMessage, caller]);
 
@@ -551,13 +567,21 @@ const handleBankSlip = async (row) => {
 };
 
 
-const handleGenerateBankSlip = async (row) => {
+
+const handleGenerateBankSlip = async (row, confirmDelete: boolean) => {
   try {
+
+    
+    if (confirmDelete == false) {
+        setSelectedRow(row);
+        setConfirmCreateBankSlipModal(true);
+        return;
+    }
 
     const payload = {
       token: token,
       companyId,
-      customerId: "cus_000007508520",
+      customerId: selectedPeople.id,
       bankType: "ASAAS",
       amount: row.vlr_Liquido,
       dueDate: formatDate(row.dta_Movimento),
@@ -569,7 +593,17 @@ const handleGenerateBankSlip = async (row) => {
 
     const data = response.data;
 
-    alert(`Boleto gerado! ID: ${data}`);
+    
+    const responseBilling = await LoadBillingInvoicing(movementId);
+    await LoadMovement(movementId, responseBilling?.invoiceDescription);       
+
+     setConfirmCreateBankSlipModal(false);
+
+    addToast({
+                type: 'info',
+                title: 'Boleto gerado',
+                description: 'Seu boleto foi gerado com sucesso',
+            });
 
   } catch (error) {
     console.error(error);
@@ -580,7 +614,12 @@ const handleGenerateBankSlip = async (row) => {
       error.response?.data ||
       error.message;
 
-    alert(`Erro ao gerar boleto: ${message}`);
+    addToast({
+                type: 'error',
+                title: 'Permissão negada',
+                description: message,
+            });
+
   }
 };
 
@@ -637,7 +676,7 @@ const handleGenerateBankSlip = async (row) => {
                         <button
                             className="buttonLinkClick"
                             type='button'
-                            onClick={() => handleGenerateBankSlip(props.row)}
+                            onClick={() => handleGenerateBankSlip(props.row, false)}
                         >
                             
                             <MdCreateNewFolder title="Clique aqui para gerar boleto." />
@@ -847,8 +886,11 @@ const handleGenerateBankSlip = async (row) => {
             );
 
 
-            await LoadMovement(movementId)
-            await LoadBillingInvoicing(movementId)
+            //await LoadMovement(movementId)
+            //await LoadBillingInvoicing(movementId)
+
+            const responseBilling = await LoadBillingInvoicing(movementId);
+            await LoadMovement(movementId, responseBilling?.invoiceDescription);
 
 
             addToast({
@@ -950,7 +992,7 @@ const handleGenerateBankSlip = async (row) => {
         try {
 
             if (confirmDelete == false) {
-                //setCurrentWorkflowId(workflowId)
+               
                 setConfirmDeleteModal(true)
                 return;
             }
@@ -1284,6 +1326,16 @@ const handleGenerateBankSlip = async (row) => {
                     message="Confirma a exclusão desta fatura ?"
                 />
             )}
+
+
+            {confirmCreateBankSlipModal && (
+                <ConfirmBoxModal
+                    title="Gerar Boleto"
+                    caller="createbankslip"
+                    message="Confirma a geração do boleto ?"
+                />
+            )}
+
 
             {isLoading && (
                 <>
