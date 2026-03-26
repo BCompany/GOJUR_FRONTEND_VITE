@@ -56,7 +56,10 @@ const FinanceOptionsMenu = () => {
 
   const billingContract = permissionsSecurity.find(item => item.name === "FATCTTO");
 
-  const checkBillingRuler = permissionsSecurity.find(item => item.name === "FINREGCOx");
+  const checkBillingRuler = permissionsSecurity.find(item => item.name === "FINREGCO");
+
+  const checkFinancialIntegrator = permissionsSecurity.find(item => item.name === "FININTEG");
+
 
   const [checkBillingContract, setCheckBillingContract] = useState<boolean>(false);
 
@@ -204,6 +207,15 @@ const FinanceOptionsMenu = () => {
     handleRedirect(`financeiro/billingrule/list`)
   }, []);
 
+
+  const handleFinancialIntegrator = useCallback(() => {
+    handleIsOpenMenuConfig(true)
+    setShowConfigMenu(false)
+    handleIsMenuOpen(false)
+    handleRedirect(`financeiro/financialintegrator/list`)
+  }, []);
+
+
   return(
     <>
       {!isMOBILE &&(
@@ -344,6 +356,24 @@ const FinanceOptionsMenu = () => {
                   }}
                 >
                   Régua de Cobrança
+                </button>
+              </div>
+            </>
+          )}
+
+          
+          {checkFinancialIntegrator &&(
+            <>
+              <div style={{display:(showConfigMenu?'grid':'none')}}>
+                <hr />
+                <button
+                  type="button"
+                  className="menuLink"
+                  onClick={() => {
+                    handleFinancialIntegrator();
+                  }}
+                >
+                  Integrador Financeiro
                 </button>
               </div>
             </>
