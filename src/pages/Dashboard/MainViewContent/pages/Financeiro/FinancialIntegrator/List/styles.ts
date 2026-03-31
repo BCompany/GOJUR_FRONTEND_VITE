@@ -15,7 +15,6 @@ export const Container = styled.div`
      }
   }
 
-
   .cell-wrap {
     white-space: pre-wrap;   /* mantém \n como quebra de linha */
     word-break: break-word;  /* quebra palavras muito grandes */

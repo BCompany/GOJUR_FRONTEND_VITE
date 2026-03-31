@@ -375,123 +375,6 @@ export const Content = styled.div`
       width: 130px;
     }
   }
-
-`;
-
-export const GridContainerFinancial = styled.div`
-  
-  width: 94.8%;
-  font-size:0.3rem;
-  margin-left:1%;
-  font-family: Montserrat;
-  
-  #gridContainer .dx-row{
-    height: 100px;
-    font-size: 12px;
-  }
-  
-  span {
-    font-size:0.675rem;   
-    color: var(--blue-twitter);
-  }
-
-  big {
-    font-size:0.675rem;
-    color: var(--blue-twitter);
-  }
-
-  svg {
-      width: 1rem;
-      height: 1rem;
-      margin-left: 0.8rem;
-      color: var(--blue-light);
-      cursor:pointer;
-
-      &:hover {
-        color: var(--orange)
-      }
-  }
-  & tbody tr:nth-of-type(odd){
-    background-color: #D9ECEC
-  }
-`;
-
-export const ModalDeleteOptions = styled.div`
-  border: 1px solid var(--blue-twitter);
-  font-size: 0.7rem;
-  box-shadow: 1px 1px 4px 0.5px rgba(0,0,0,0.15);
-  width: 630px;
-  height: 150px;
-  background-color: var(--white);
-  position: absolute;
-  z-index: 2;
-  justify-content: center;
-  left: 35%;
-  margin-top: 10%;
-
-  .menuSection {
-    font-size:0.65rem;
-    padding: 0.25rem 0.5rem;
-    color:var(--blue-twitter);
-    text-align:right;
-    cursor:pointer;
-
-    > svg {
-      width:0.85rem;
-      height:0.85rem; 
-    }
-
-    &:hover {
-      color: var(--orange);
-    }
-  }
-`;
-
-export const OverlayFinancial = styled.div `
-    background-color: rgba(0, 0, 0, 0.4);
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index:1;
-
-    /* text inside overlay */
-    >div{
-      background: var(--white-card);
-      height:3rem;
-      color:var(--blue-twitter);
-      font-size:0.765rem;
-      text-align:center;
-      padding:1rem;
-      margin-left:30vw;
-      margin-right:25vw;
-      margin-top:20%;
-      border-radius: 0.25rem;
-      box-shadow: 1px 1px 4px 0.5px rgba(0,0,0,0.15);
-    }
-`;
-
-export const HamburguerHeader = styled.div`
-  width: 95vw;
-
-  .buttonHamburguer {
-    justify-content:end;  
-    text-align:center;
-    padding-right:1rem;
-    padding-top:0.5rem;
-    position:relative;
-    >div{
-      margin-right:-1rem;
-      margin-top:-4.5rem;
-      position:absolute;
-    }    
-    .iconMenu {
-      color: var(--blue);
-      width: 1.5rem;
-      height: 1.5rem;
-    }
-  }
 `;
 
 
@@ -518,4 +401,17 @@ export const FormActions = styled.div`
   display: flex;
   justify-content: flex-end;
   margin-top: 1.5rem;
+`;
+
+export const SectionRow = styled.section`
+  display: flex;
+  gap: 20px;
+  padding-top: 10px;
+
+  label {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
 `;

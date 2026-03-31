@@ -130,6 +130,11 @@
       { label: 'DUAS SEMANAS', id: '2S'},
     ]
 
+   export const integratorTypes = [
+      { label: 'ASAAS', id: 'ASAAS'},
+    ]
+
+
     export const matterSecurityList = [
       {
         id: 'U',

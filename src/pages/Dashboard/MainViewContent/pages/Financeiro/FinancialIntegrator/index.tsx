@@ -17,43 +17,19 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import api from 'services/api';
 import IntlCurrencyInput from "react-intl-currency-input";
-import { ImMenu3, ImMenu4 } from 'react-icons/im';
-import { GoDash, GoPlus } from 'react-icons/go';
 import { FiTrash, FiEdit, FiX, FiMail, FiSave, FiAlertTriangle } from 'react-icons/fi';
-import { FaRegTimesCircle, FaCheck, FaFileContract, FaFileInvoiceDollar, FaHandshake, FaWhatsapp, FaPencilAlt } from 'react-icons/fa';
-import { CgFileDocument } from 'react-icons/cg';
-import { RiMoneyDollarBoxFill } from 'react-icons/ri';
 import { MdBlock } from 'react-icons/md';
 import { useDevice } from "react-use-device";
 import { useToast } from 'context/toast';
-import { envProvider } from 'services/hooks/useEnv';
-import { useStateContext } from 'context/statesContext';
+import { integratorTypes } from 'Shared/utils/commonListValues';
 import { useHistory } from 'react-router-dom';
 import { HeaderPage } from 'components/HeaderPage';
 import { useAuth } from 'context/AuthContext';
-import { useHeader } from 'context/headerContext';
-import { AutoCompleteSelect, Overlay } from 'Shared/styles/GlobalStyle';
-import { useMenuHamburguer } from 'context/menuHamburguer'
-import MenuHamburguer from 'components/MenuHamburguer';
 import Select from 'react-select';
-import { Grid, Table, TableHeaderRow, PagingPanel } from '@devexpress/dx-react-grid-material-ui';
-import { loadingMessage, noOptionsMessage } from 'Shared/utils/commonConfig';
 import { selectStyles, FormatDate, currencyConfig, FormatCurrency, useDelay } from 'Shared/utils/commonFunctions';
-import { months, financialYears } from 'Shared/utils/commonListValues';
-import { languageGridEmpty, languageGridLoading, languageGridPagination } from 'Shared/utils/commonConfig';
-import { DataTypeProvider, PagingState, CustomPaging } from '@devexpress/dx-react-grid';
-import LoaderWaiting from 'react-spinners/ClipLoader';
-import { format } from 'date-fns';
-import { IFinancialTotal, IAccount, ISelectData, IFinancial, IFinancialDeal } from '../Interfaces/IFinancial';
-import FinancialDocumentModal from '../DocumentModal';
-import FinancialPaymentModal from '../PaymentModal';
-import { Container, Content, FormCenter, FormCard, FormActions, GridContainerFinancial, FormTitle, ModalDeleteOptions, OverlayFinancial, HamburguerHeader } from './styles';
-import DealDefaultModal from '../Category/Modal/DealDefaultModal';
-import { trigger } from 'swr';
-import { Form } from '../BillingContract/styles';
-import { IFinancialIntegrator} from './Interfaces/IFinancialIntegrator';
+import { Container, Content, FormCenter, FormCard, FormActions, FormTitle, SectionRow } from './styles';
+import { IFinancialIntegrator } from './Interfaces/IFinancialIntegrator';
 
-import { FcAlarmClock, FcCalendar } from "react-icons/fc";
 
 const FinancialIntegrator: React.FC = () => {
   const { addToast } = useToast();
@@ -71,28 +47,29 @@ const FinancialIntegrator: React.FC = () => {
   const [flgNotifyEmail3, setFlgNotifyEmail3] = useState<boolean>(true);
   const [flgNotifyWhatsApp3, setFlgNotifyWhatsApp3] = useState<boolean>(false);
 
-  const [previoId, setPrevioId] = useState<Number>(0);
-  const [vencimentoId, setVencimentoId] = useState<Number>(0);
-  const [posteriorId, setPosteriorId] = useState<Number>(0);
+  const [previoId, setPrevioId] = useState<number>(0);
+  const [vencimentoId, setVencimentoId] = useState<number>(0);
+  const [posteriorId, setPosteriorId] = useState<number>(0);
+  const [integratorsTypeId, setInegratorTypeId] = useState("ASAAS");
 
-  const [financialIntegratorId, setFinancialIntegratorId] = useState<Number>(0);
+  const [financialIntegratorId, setFinancialIntegratorId] = useState<number>(0);
   const [originalWarnings, setOriginalWarnings] = useState<IBillingRulerWarning[]>([]);
-const [penalty, setPenalty] = useState("0");
-const [lateInterest, setLateInterest] = useState("0");
+  const [penalty, setPenalty] = useState("0");
+  const [lateInterest, setLateInterest] = useState("0");
 
 
 
   type NotificationType = 'EMAIL' | 'WHATS' | 'EMAILWHATS' | 'NONE';
 
 
-  const { handleSubmit, register, reset, setValue  } = useForm<IFinancialIntegrator>({
+  const { handleSubmit, register, reset, setValue } = useForm<IFinancialIntegrator>({
     defaultValues: {
-        descriptionBillingRuler: '',
-        financialIntegratorName: '',
-        financialPartnerType: '',
-        financialToken: '',
-        penaltyPercentage: '0',
-        lateInterestPercentage: '0'
+      descriptionBillingRuler: '',
+      financialIntegratorName: '',
+      financialPartnerType: '',
+      financialToken: '',
+      penaltyPercentage: '0',
+      lateInterestPercentage: '0'
     }
   });
 
@@ -175,15 +152,15 @@ const [lateInterest, setLateInterest] = useState("0");
       const data = response.data;
 
       reset(data);
-        
-        setValue('penaltyPercentage', data.penaltyPercentage);
-        setValue('lateInterestPercentage', data.lateInterestPercentage);
 
-        setPenalty(data.penaltyPercentage);
+      setValue('penaltyPercentage', data.penaltyPercentage);
+      setValue('lateInterestPercentage', data.lateInterestPercentage);
 
-        setLateInterest(data.lateInterestPercentage);
+      setPenalty(data.penaltyPercentage);
 
-     console.log(data);
+      setLateInterest(data.lateInterestPercentage);
+
+      console.log(data);
 
       return data;
 
@@ -217,10 +194,9 @@ const [lateInterest, setLateInterest] = useState("0");
 
               <form onSubmit={handleSubmit(handleSubmitFinancialIntegrator)}>
                 {/* DESCRIÇÃO */}
-                <div className="autoComplete">
-              
-                   <label >
-                    Nome
+
+                <label >
+                  Nome
                   <input
                     type="text"
                     name="financialIntegratorName"
@@ -231,14 +207,14 @@ const [lateInterest, setLateInterest] = useState("0");
                     placeholder='Digite o nome do integrador'
 
                   />
-                  </label>
+                </label>
 
-                </div>
 
-                <div className="autoComplete">
-              
-                   <label >
-                    API Key
+
+
+
+                <label >
+                  API Key
                   <input
                     type="text"
                     name="financialToken"
@@ -249,71 +225,63 @@ const [lateInterest, setLateInterest] = useState("0");
                     placeholder='Digite p Token do integrador'
 
                   />
-                  </label>
+                </label>
 
-                </div>
 
-                 <div className="autoComplete">
-              
-                   <label >
-                    Tipo de parceiro
-                  <input
-                    type="text"
-                    name="financialPartnerType"
-                    ref={register}
-                    className="inputField"
-                    maxLength={100}
-                    required
-                    placeholder='Digite o tipo de parceiro ex: Itaú, Bradesco, Asaas'
 
+
+
+                <label htmlFor="Integrador">
+                  Integrador / Banco
+                  <Select
+                    autoComplete="off"
+                    isClearable
+                    styles={selectStyles}
+                    value={integratorTypes.filter(options => options.id === integratorsTypeId)}
+                    onChange={(item) => setInegratorTypeId(item ? item.id : '')}
+                    options={integratorTypes}
+                    placeholder="Selecione"
                   />
+                </label>
+
+                <SectionRow>
+                  <label htmlFor="Multa">
+                    Multa
+                    <IntlCurrencyInput
+                      currency="BRL"
+                      config={currencyConfig}
+                      name="penaltyPercentage"
+                      className="inputField"
+                      value={penalty}
+                      onChange={(event, value) => {
+                        setPenalty(value);
+                        setValue('penaltyPercentage', value);
+                      }}
+                    />
+
+                  </label>
+                  <label htmlFor="Juros">
+                    Juros
+
+                    <IntlCurrencyInput
+                      currency="BRL"
+                      config={currencyConfig}
+                      name="lateInterestPercentage"
+                      className="inputField"
+                      value={lateInterest}
+                      onChange={(event, value) => {
+                        setLateInterest(value);
+                        setValue('lateInterestPercentage', value);
+                      }}
+                    />
                   </label>
 
-                </div>
+                  <input type="hidden" name="penaltyPercentage" ref={register} />
+                  <input type="hidden" name="lateInterestPercentage" ref={register} />
 
-                <br />
 
-                <div className="section">
-                 
-                  <div className="row">
+                </SectionRow>
 
-                    <span>Multa</span>
-
-                        <IntlCurrencyInput
-                        currency="BRL"
-                        config={currencyConfig}
-                        name="penaltyPercentage"
-                        className="inputField"
-                        value={penalty}
-                        style={{ flex: '0 0 80px' }}
-                        onChange={(event, value) => {
-                            setPenalty(value);
-                            setValue('penaltyPercentage', value);
-                        }}
-                        />
-                                            
-                    <span>Juros</span>
-
-                   <IntlCurrencyInput
-                        currency="BRL"
-                        config={currencyConfig}
-                        name="lateInterestPercentage"
-                        className="inputField"
-                        value={lateInterest}
-                        style={{ flex: '0 0 80px' }}
-                        onChange={(event, value) => {
-                            setLateInterest(value);
-                            setValue('lateInterestPercentage', value);
-                        }}
-                        />
-                 
-
-<input type="hidden" name="penaltyPercentage" ref={register} />
-<input type="hidden" name="lateInterestPercentage" ref={register} />
-
-                  </div>
-
-                </div>
 
 
 
@@ -324,7 +292,7 @@ const [lateInterest, setLateInterest] = useState("0");
                     Salvar
                   </button>
 
-                  <button className="buttonClick" type="button"  onClick={() => history.push('/financeiro/financialintegrator/list')}>
+                  <button className="buttonClick" type="button" onClick={() => history.push('/financeiro/financialintegrator/list')}>
                     <MdBlock />
                     Fechar
                   </button>
