@@ -1,62 +1,38 @@
-/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
-/* eslint-disable no-constant-condition */
-/* eslint-disable no-nested-ternary */
-/* eslint-disable no-multi-assign */
-/* eslint-disable no-alert */
-/* eslint-disable no-param-reassign */
-/* eslint-disable array-callback-return */
-/* eslint-disable import/extensions */
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable jsx-a11y/label-has-associated-control */
-/* eslint-disable no-lonely-if */
-/* eslint-disable react/jsx-one-expression-per-line */
-
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import api from 'services/api';
-import IntlCurrencyInput from "react-intl-currency-input";
-import { FiTrash, FiEdit, FiX, FiMail, FiSave, FiAlertTriangle } from 'react-icons/fi';
-import { MdBlock } from 'react-icons/md';
-import { useDevice } from "react-use-device";
-import { useToast } from 'context/toast';
-import { financialIntegratorTypes } from 'Shared/utils/commonListValues';
-import { useHistory } from 'react-router-dom';
 import { HeaderPage } from 'components/HeaderPage';
 import { useAuth } from 'context/AuthContext';
+import { useToast } from 'context/toast';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { FiSave } from 'react-icons/fi';
+import { MdBlock } from 'react-icons/md';
+import IntlCurrencyInput from "react-intl-currency-input";
+import { useHistory } from 'react-router-dom';
 import Select from 'react-select';
-import { selectStyles, FormatDate, currencyConfig, FormatCurrency, useDelay } from 'Shared/utils/commonFunctions';
-import { Container, Content, FormCenter, FormCard, FormActions, FormTitle, SectionRow } from './styles';
+import { useDevice } from "react-use-device";
+import api from 'services/api';
+import { currencyConfig, selectStyles } from 'Shared/utils/commonFunctions';
+import { financialIntegratorTypes } from 'Shared/utils/commonListValues';
 import { IFinancialIntegrator } from './Interfaces/IFinancialIntegrator';
+import { Container, Content, FormActions, FormCard, FormCenter, FormTitle, SectionRow } from './styles';
 
 
 const FinancialIntegrator: React.FC = () => {
 
   const { addToast } = useToast();
   const history = useHistory()
-  const { signOut } = useAuth();
-  const formRef = useRef<HTMLFormElement>(null);
   const { isMOBILE } = useDevice();
   const token = localStorage.getItem('@GoJur:token');
   const companyId = localStorage.getItem('@GoJur:companyId');
-  const [integratorType, setIntegratorType] = useState('');
   const [financialIntegratorId, setFinancialIntegratorId] = useState<number>(0);
-  const [penalty, setPenalty] = useState("0");
-  const [lateInterest, setLateInterest] = useState("0");
 
 
-
-  type NotificationType = 'EMAIL' | 'WHATS' | 'EMAILWHATS' | 'NONE';
-
-
-  const { handleSubmit, register, reset, setValue } = useForm<IFinancialIntegrator>({
+  const { handleSubmit, register, reset, setValue, control } = useForm<IFinancialIntegrator>({
     defaultValues: {
       financialIntegratorName: '',
       integratorType: '',
       financialToken: '',
-      penaltyPercentage: '0',
-      lateInterestPercentage: '0'
+      penaltyPercentage: 0,
+      lateInterestPercentage: 0
     }
   });
 
@@ -79,7 +55,6 @@ const FinancialIntegrator: React.FC = () => {
 
     const payload: IFinancialIntegrator = {
       ...data,
-      integratorType: integratorType,
       financialIntegratorId: finalfinancialIntegratorId,
       token,
       companyId: Number(companyId),
@@ -139,14 +114,9 @@ const FinancialIntegrator: React.FC = () => {
 
       const data = response.data;
 
+
       reset(data);
 
-      //setValue('penaltyPercentage', data.penaltyPercentage);
-      //setValue('lateInterestPercentage', data.lateInterestPercentage);
-
-      setIntegratorType(data.integratorType);
-      setPenalty(data.penaltyPercentage);
-      setLateInterest(data.lateInterestPercentage);
 
       console.log(data);
 
@@ -210,17 +180,31 @@ const FinancialIntegrator: React.FC = () => {
 
                   />
                 </label>
+
                 <label htmlFor="Integrador">
                   Integrador / Banco
-                  <Select
-                    autoComplete="off"
+
+                  <Controller
                     name="integratorType"
-                    isClearable
-                    styles={selectStyles}
-                    value={financialIntegratorTypes.filter(options => options.id === integratorType)}
-                    onChange={(item) => setIntegratorType(item ? item.id : '')}
-                    options={financialIntegratorTypes}
-                    placeholder="Selecione"
+                    control={control}
+                    defaultValue=""
+                    render={(props) => (
+                      <Select
+                        autoComplete="off"
+                        isClearable
+                        styles={selectStyles}
+                        options={financialIntegratorTypes}
+                        placeholder="Selecione"
+
+                        value={financialIntegratorTypes.find(
+                          option => option.id === props.value
+                        )}
+
+                        onChange={(item) => {
+                          props.onChange(item ? item.id : '');
+                        }}
+                      />
+                    )}
                   />
                 </label>
 
@@ -228,43 +212,43 @@ const FinancialIntegrator: React.FC = () => {
 
                   <label htmlFor="Multa">
                     Multa
-                    <IntlCurrencyInput
-                      currency="BRL"
-                      config={currencyConfig}
+                    <Controller
                       name="penaltyPercentage"
-                      className="inputField"
-                      value={penalty}
-                      onChange={(event, value) => {
-                        setPenalty(value);
-                        setValue('penaltyPercentage', value);
-                      }}
+                      control={control}
+                      defaultValue={0}
+                      render={(props) => (
+                        <IntlCurrencyInput
+                          currency="BRL"
+                          className="inputField"
+                          config={currencyConfig}
+                          value={Number(props.value) || 0}
+                          onChange={(event, value) => {
+                            props.onChange(Number(value) || 0);
+                          }}
+                        />
+                      )}
                     />
-
                   </label>
-                  <label htmlFor="Juros">
+                  <label htmlFor="Multa">
                     Juros
-
-                    <IntlCurrencyInput
-                      currency="BRL"
-                      config={currencyConfig}
+                    <Controller
                       name="lateInterestPercentage"
-                      className="inputField"
-                      value={lateInterest}
-                      onChange={(event, value) => {
-                        setLateInterest(value);
-                        setValue('lateInterestPercentage', value);
-                      }}
+                      control={control}
+                      defaultValue={0}
+                      render={(props) => (
+                        <IntlCurrencyInput
+                          currency="BRL"
+                          className="inputField"
+                          config={currencyConfig}
+                          value={Number(props.value) || 0}
+                          onChange={(event, value) => {
+                            props.onChange(Number(value) || 0);
+                          }}
+                        />
+                      )}
                     />
-                  </label>
-
-                  <input type="hidden" name="penaltyPercentage" ref={register} />
-                  <input type="hidden" name="lateInterestPercentage" ref={register} />
-
-
+                  </label>                  
                 </SectionRow>
-
-
-
 
                 {/* AÇÕES */}
                 <FormActions>

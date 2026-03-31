@@ -4,7 +4,7 @@ export interface IFinancialIntegrator {
     financialIntegratorName: string;
     integratorType: string;
     financialToken: string;
-    penaltyPercentage: string;
-    lateInterestPercentage: string;
+    penaltyPercentage: number;
+    lateInterestPercentage: number;
     token: string;
 }

@@ -132,6 +132,7 @@
 
    export const financialIntegratorTypes = [
       { label: 'ASAAS', id: 'ASAAS'},
+      { label: 'SANTANDER', id: 'SANTANDER'},
     ]
 
 
