@@ -130,7 +130,7 @@
       { label: 'DUAS SEMANAS', id: '2S'},
     ]
 
-   export const integratorTypes = [
+   export const financialIntegratorTypes = [
       { label: 'ASAAS', id: 'ASAAS'},
     ]
 

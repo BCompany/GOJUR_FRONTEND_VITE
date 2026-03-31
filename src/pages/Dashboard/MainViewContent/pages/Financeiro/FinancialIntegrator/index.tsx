@@ -14,14 +14,14 @@
 /* eslint-disable react/jsx-one-expression-per-line */
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import api from 'services/api';
 import IntlCurrencyInput from "react-intl-currency-input";
 import { FiTrash, FiEdit, FiX, FiMail, FiSave, FiAlertTriangle } from 'react-icons/fi';
 import { MdBlock } from 'react-icons/md';
 import { useDevice } from "react-use-device";
 import { useToast } from 'context/toast';
-import { integratorTypes } from 'Shared/utils/commonListValues';
+import { financialIntegratorTypes } from 'Shared/utils/commonListValues';
 import { useHistory } from 'react-router-dom';
 import { HeaderPage } from 'components/HeaderPage';
 import { useAuth } from 'context/AuthContext';
@@ -32,6 +32,7 @@ import { IFinancialIntegrator } from './Interfaces/IFinancialIntegrator';
 
 
 const FinancialIntegrator: React.FC = () => {
+
   const { addToast } = useToast();
   const history = useHistory()
   const { signOut } = useAuth();
@@ -39,21 +40,8 @@ const FinancialIntegrator: React.FC = () => {
   const { isMOBILE } = useDevice();
   const token = localStorage.getItem('@GoJur:token');
   const companyId = localStorage.getItem('@GoJur:companyId');
-  const MDLFAT = localStorage.getItem('@GoJur:moduleCode');
-  const [flgNotifyEmail1, setFlgNotifyEmail1] = useState<boolean>(true);
-  const [flgNotifyWhatsApp1, setFlgNotifyWhatsApp1] = useState<boolean>(false);
-  const [flgNotifyEmail2, setFlgNotifyEmail2] = useState<boolean>(true);
-  const [flgNotifyWhatsApp2, setFlgNotifyWhatsApp2] = useState<boolean>(false);
-  const [flgNotifyEmail3, setFlgNotifyEmail3] = useState<boolean>(true);
-  const [flgNotifyWhatsApp3, setFlgNotifyWhatsApp3] = useState<boolean>(false);
-
-  const [previoId, setPrevioId] = useState<number>(0);
-  const [vencimentoId, setVencimentoId] = useState<number>(0);
-  const [posteriorId, setPosteriorId] = useState<number>(0);
-  const [integratorsTypeId, setInegratorTypeId] = useState("ASAAS");
-
+  const [integratorType, setIntegratorType] = useState('');
   const [financialIntegratorId, setFinancialIntegratorId] = useState<number>(0);
-  const [originalWarnings, setOriginalWarnings] = useState<IBillingRulerWarning[]>([]);
   const [penalty, setPenalty] = useState("0");
   const [lateInterest, setLateInterest] = useState("0");
 
@@ -64,9 +52,8 @@ const FinancialIntegrator: React.FC = () => {
 
   const { handleSubmit, register, reset, setValue } = useForm<IFinancialIntegrator>({
     defaultValues: {
-      descriptionBillingRuler: '',
       financialIntegratorName: '',
-      financialPartnerType: '',
+      integratorType: '',
       financialToken: '',
       penaltyPercentage: '0',
       lateInterestPercentage: '0'
@@ -92,6 +79,7 @@ const FinancialIntegrator: React.FC = () => {
 
     const payload: IFinancialIntegrator = {
       ...data,
+      integratorType: integratorType,
       financialIntegratorId: finalfinancialIntegratorId,
       token,
       companyId: Number(companyId),
@@ -153,11 +141,11 @@ const FinancialIntegrator: React.FC = () => {
 
       reset(data);
 
-      setValue('penaltyPercentage', data.penaltyPercentage);
-      setValue('lateInterestPercentage', data.lateInterestPercentage);
+      //setValue('penaltyPercentage', data.penaltyPercentage);
+      //setValue('lateInterestPercentage', data.lateInterestPercentage);
 
+      setIntegratorType(data.integratorType);
       setPenalty(data.penaltyPercentage);
-
       setLateInterest(data.lateInterestPercentage);
 
       console.log(data);
@@ -209,10 +197,6 @@ const FinancialIntegrator: React.FC = () => {
                   />
                 </label>
 
-
-
-
-
                 <label >
                   API Key
                   <input
@@ -226,25 +210,22 @@ const FinancialIntegrator: React.FC = () => {
 
                   />
                 </label>
-
-
-
-
-
                 <label htmlFor="Integrador">
                   Integrador / Banco
                   <Select
                     autoComplete="off"
+                    name="integratorType"
                     isClearable
                     styles={selectStyles}
-                    value={integratorTypes.filter(options => options.id === integratorsTypeId)}
-                    onChange={(item) => setInegratorTypeId(item ? item.id : '')}
-                    options={integratorTypes}
+                    value={financialIntegratorTypes.filter(options => options.id === integratorType)}
+                    onChange={(item) => setIntegratorType(item ? item.id : '')}
+                    options={financialIntegratorTypes}
                     placeholder="Selecione"
                   />
                 </label>
 
                 <SectionRow>
+
                   <label htmlFor="Multa">
                     Multa
                     <IntlCurrencyInput
