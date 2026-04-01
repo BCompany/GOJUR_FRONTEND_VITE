@@ -255,12 +255,12 @@ export function formatField(
   }
   if (type === "cnpj") {
     return value
-      .replace(/\D+/g, "")
-      .replace(/(\d{2})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d)/, "$1/$2")
-      .replace(/(\d{4})(\d)/, "$1-$2")
-      .replace(/(-\d{2})\d+?$/, "$1");
+      .replace(/[^a-zA-Z0-9]+/g, "").toUpperCase()
+      .replace(/([a-zA-Z0-9]{2})([a-zA-Z0-9])/, "$1.$2")
+      .replace(/([a-zA-Z0-9]{3})([a-zA-Z0-9])/, "$1.$2")
+      .replace(/([a-zA-Z0-9]{3})([a-zA-Z0-9])/, "$1/$2")
+      .replace(/([a-zA-Z0-9]{4})([a-zA-Z0-9])/, "$1-$2")
+      .replace(/([-][a-zA-Z0-9]{2}).+?$/, "$1");
   }
   if (type === "cep") {
     return value
