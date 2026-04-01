@@ -7,4 +7,5 @@ export interface IFinancialIntegrator {
     penaltyPercentage: number;
     lateInterestPercentage: number;
     token: string;
+    apiKey: string;
 }

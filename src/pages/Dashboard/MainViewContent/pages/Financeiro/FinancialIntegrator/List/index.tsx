@@ -45,6 +45,8 @@ const FinancialIntegratorList = () => {
   const { handleUserPermission } = useDefaultSettings();
   const [financialIntegratorList, setFinancialIntegratorList] = useState<IFinancialIntegrator[]>([]);
   const token = localStorage.getItem('@GoJur:token');
+  const companyId = localStorage.getItem('@GoJur:companyId');
+  const apiKey = localStorage.getItem('@GoJur:apiKey');
   const [totalPageCount, setTotalPageCount] = useState<number>(0);
   const [isLoadingSearch, setIsLoadingSearch] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -182,7 +184,9 @@ useEffect(() => {
               page,
               rows:20,
               filterClause:captureText,
-              token
+              token,
+              companyId,
+              apiKey
               }
           })
       

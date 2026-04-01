@@ -1,7 +1,6 @@
 import { HeaderPage } from 'components/HeaderPage';
-import { useAuth } from 'context/AuthContext';
 import { useToast } from 'context/toast';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { FiSave } from 'react-icons/fi';
 import { MdBlock } from 'react-icons/md';
@@ -22,6 +21,7 @@ const FinancialIntegrator: React.FC = () => {
   const history = useHistory()
   const { isMOBILE } = useDevice();
   const token = localStorage.getItem('@GoJur:token');
+  const apiKey = localStorage.getItem('@GoJur:apiKey');
   const companyId = localStorage.getItem('@GoJur:companyId');
   const [financialIntegratorId, setFinancialIntegratorId] = useState<number>(0);
 
@@ -57,6 +57,7 @@ const FinancialIntegrator: React.FC = () => {
       ...data,
       financialIntegratorId: finalfinancialIntegratorId,
       token,
+      apiKey,
       companyId: Number(companyId),
     };
 
@@ -107,7 +108,9 @@ const FinancialIntegrator: React.FC = () => {
         {
           params: {
             id: financialIntegratorId,
+            companyId,
             token,
+            apiKey
           },
         }
       );
