@@ -130,6 +130,12 @@
       { label: 'DUAS SEMANAS', id: '2S'},
     ]
 
+   export const financialIntegratorTypes = [
+      { label: 'ASAAS', id: 'ASAAS'},
+      { label: 'SANTANDER', id: 'SANTANDER'},
+    ]
+
+
     export const matterSecurityList = [
       {
         id: 'U',
