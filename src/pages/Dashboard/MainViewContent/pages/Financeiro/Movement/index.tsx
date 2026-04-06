@@ -57,6 +57,8 @@ const FinancialMovement: React.FC = () => {
   const {isConfirmMessage, isCancelMessage, handleCancelMessage, handleConfirmMessage, caller} = useConfirmBox();
   const { handleStateType }  = useStateContext();
   const token = localStorage.getItem('@GoJur:token');
+   const companyId = localStorage.getItem('@GoJur:companyId');
+    const apiKey = localStorage.getItem('@GoJur:apiKey');
   const { pathname } = useLocation();
   const history = useHistory();
   const { addToast } = useToast();
@@ -353,7 +355,9 @@ const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
           const response = await api.get('/Financeiro/Faturamento2/Editar', {
               params: {
                   instalmentId: Number(instalmentId),
-                  token
+                  token,
+                  companyId,
+                  apiKey
               }
           });
   

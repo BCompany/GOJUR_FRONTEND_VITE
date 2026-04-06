@@ -54,9 +54,9 @@ import FinancialDocumentModal from '../DocumentModal';
 import { ModalDeleteOptions, OverlayFinancial } from '../styles';
 import { Container, Content, Process, GridSubContainer, ModalPaymentInformation, HamburguerHeader } from './styles';
 import { IBillingRuler, IBillingRulerWarning } from '../BillingRule/Interfaces/IBillingRuler';
-import { ListCustomerPersonData, ListLawyerData, ListOpossingData, ListPartsData, ListThirdyData } from '../../Matter/EditComponents/Services/PeopleData';
+import { ListCustomerPersonData, ListFinancialIntegratorData, ListLawyerData, ListOpossingData, ListPartsData, ListThirdyData } from '../../Matter/EditComponents/Services/PeopleData';
 import { MdCreateNewFolder } from "react-icons/md";
-
+  
 interface IOption {
     value: number;
     label: string;
@@ -167,6 +167,10 @@ const BillingInvoicing: React.FC = () => {
     const [selectedPeople, setSelectedPeople] = useState<ISelectData>();
     const [selectedPeopleOld, setSelectedPeopleOld] = useState<ISelectData>();
 
+    const [selectedIntegrator, setSelectedIntegrator] = useState<ISelectData>();
+
+    
+
     const [showNotifyPeople, setShowNotifyPeople] = useState<boolean>(false);
     const [checkPeopleList, setCheckPeopleList] = useState<boolean>(false);
     const [reminders, setReminders] = useState('00');
@@ -222,6 +226,8 @@ const BillingInvoicing: React.FC = () => {
     const [showBankSlipModal, setShowBankSlipModal] = useState<boolean>(false);
     const [visualizeType, setVisualizeType] = useState('V');
     const [customerList, setCustomerList] = useState<ISelectData[]>([])
+    const [integratorList, setIntegratorList] = useState<ISelectData[]>([])
+
     const [showChangeCustomer, setShowChangeCustomer] = useState<boolean>(false);
     const [billingInvoicing, setBillingInvoicing] = useState<BillingInvoicingPayload>({
         invoiceId: 0,
@@ -239,7 +245,8 @@ const BillingInvoicing: React.FC = () => {
     const [confirmDeleteModal, setConfirmDeleteModal] = useState<boolean>(false);
     const [confirmCreateBankSlipModal, setConfirmCreateBankSlipModal] = useState<boolean>(false);
     const [selectedRow, setSelectedRow] = useState(null);
-    
+    const apiKey = localStorage.getItem('@GoJur:apiKey');
+  
 
     useEffect(() => {
         if (isCancelMessage && caller === 'changeDefaultHeade1') {
@@ -307,6 +314,8 @@ const BillingInvoicing: React.FC = () => {
         await PaymentFormList();
         await LoadStates()
         setCustomerList(await ListCustomerPersonData(""))
+        setIntegratorList(await ListFinancialIntegratorData(""))
+
     }
 
 
@@ -446,7 +455,9 @@ const BillingInvoicing: React.FC = () => {
             const response = await api.get('/Financeiro/Faturamento2/Editar', {
                 params: {
                     instalmentId: Number(movementId),
-                    token
+                    token,
+                    companyId,
+                    apiKey
                 }
             });
 
@@ -466,12 +477,21 @@ const BillingInvoicing: React.FC = () => {
                 setSelectedPeople(selectedItem);
                 setDescription(data.invoiceDescription);
 
-                const selectedItem1: ISelectData = {
+                const selectedBillingRuler1: ISelectData = {
                     value: data.billingRulerId?.toString() || '',
                     label: data.billingRulerName || ''
                 };
 
-                setSelectedBillingRuler(selectedItem1);
+                setSelectedBillingRuler(selectedBillingRuler1);
+
+
+                const selectedIntegrator1: ISelectData = {
+                    id: data.financialIntegratorId?.toString() || '',
+                    label: data.financialIntegratorName || ''
+                };
+
+                setSelectedIntegrator(selectedIntegrator1);
+
 
                 setInvoiceDate(
                     format(new Date(data.issueDate), "yyyy-MM-dd")
@@ -581,8 +601,10 @@ const handleGenerateBankSlip = async (row, confirmDelete: boolean) => {
     const payload = {
       token: token,
       companyId,
+      apiKey,
       customerId: selectedPeople.id,
       bankType: "ASAAS",
+      FinancialIntegratorId: selectedIntegrator?.id,
       amount: row.vlr_Liquido,
       dueDate: formatDate(row.dta_Movimento),
       documentNumber: row.parcelaFormatada,
@@ -605,22 +627,17 @@ const handleGenerateBankSlip = async (row, confirmDelete: boolean) => {
                 description: 'Seu boleto foi gerado com sucesso',
             });
 
-  } catch (error) {
-    console.error(error);
+  } 
+  
+  catch (err: any) {
+   
+        addToast({
+            type: "error",
+            title: "Operação não realizada",
+            description: err.response?.data?.Message
+        });
+    }
 
-    // mensagem mais útil
-    const message =
-      error.response?.data?.message ||
-      error.response?.data ||
-      error.message;
-
-    addToast({
-                type: 'error',
-                title: 'Permissão negada',
-                description: message,
-            });
-
-  }
 };
 
 
@@ -861,7 +878,9 @@ const handleGenerateBankSlip = async (row, confirmDelete: boolean) => {
                 invoiceDescription: description,
                 issueDate: invoiceDate,
                 movementId: movementId,
+                FinancialIntegratorId: selectedIntegrator?.id,
                 token: token,
+                apiKey,
 
                 financialDTO: {
                     //editChild: selectedPeople?.id == selectedPeopleOld?.id ? 'justOne' : 'all',
@@ -1150,7 +1169,46 @@ const handleGenerateBankSlip = async (row, confirmDelete: boolean) => {
 
                         </section>
 
+
+                        <section id='SecondElements'>
+
+                         <label htmlFor="valor">
+                                Integrador / Banco
+                               
+                               <Select
+                                    isClearable
+                                    isSearchable
+                                    placeholder="Selecione"
+                                    options={integratorList}
+                                    value={selectedIntegrator}
+                                    name="integrator"
+                                    styles={selectStyles}
+
+                                    onChange={(selected) => {
+                                        setSelectedIntegrator(selected);
+                                    }}
+
+                                    onInputChange={(inputValue, { action }) => {
+
+                                        if (action === "input-change" ) {
+                                            ListFinancialIntegratorData(inputValue).then((data) => {
+                                                setIntegratorList(data);
+                                            });
+                                        }
+
+                                        return inputValue;
+                                    }}
+                                />
+
+
+
+                            </label>
+
+                        </section>
+
                     </div>
+
+
 
 
                     <div style={{ float: 'left', width: '30%', marginLeft: '5%' }}>
@@ -1160,11 +1218,7 @@ const handleGenerateBankSlip = async (row, confirmDelete: boolean) => {
                                 <span className="mini-number">Fat. {invoiceNumber?.toString().padStart(6, '0')}</span>
                                 <span className="mini-status aberta">ABERTA</span>
                             </div>
-                            {/*
-                            <div className="mini-installment">
-                                Parcela {movementParcelas}
-                            </div>
-                                */}
+                         
                             <div className="mini-value">
                                 R$ {invoiceValue}
 

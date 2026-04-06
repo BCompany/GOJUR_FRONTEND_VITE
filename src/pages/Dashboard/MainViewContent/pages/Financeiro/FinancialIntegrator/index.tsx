@@ -177,9 +177,9 @@ const FinancialIntegrator: React.FC = () => {
                     name="financialToken"
                     ref={register}
                     className="inputField"
-                    maxLength={100}
+                    maxLength={150}
                     required
-                    placeholder='Digite p Token do integrador'
+                    placeholder='Digite o Token do integrador'
 
                   />
                 </label>

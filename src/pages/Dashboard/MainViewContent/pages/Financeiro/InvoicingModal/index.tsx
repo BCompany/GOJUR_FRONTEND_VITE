@@ -112,6 +112,7 @@ const FinancialInvoicingModal = (props) => {
   const [showChangeCustomer, setShowChangeCustomer] = useState<boolean>(false);
   const [movementdiscount, setMovementDiscount] = useState<number>();
   const [movementNetValue, setMovementNetValue] = useState<number>();
+  const apiKey = localStorage.getItem('@GoJur:apiKey');
 
   useEffect(() => {
       if (isCancelMessage && caller === 'changeDefaultHeader')
@@ -477,7 +478,8 @@ const FinancialInvoicingModal = (props) => {
         issueDate: billingInvoicing.issueDate,
         movementId: movementIdEdit,
         token: token,
-        financialDTO: {
+        apiKey,
+        financialDTO: { 
           cod_Movimento: movementIdEdit,
           dta_Movimento: movementDate,
           vlr_Movimento: movementValue,
