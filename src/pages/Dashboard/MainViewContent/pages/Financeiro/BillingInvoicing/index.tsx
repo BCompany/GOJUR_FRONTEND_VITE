@@ -598,12 +598,21 @@ const handleGenerateBankSlip = async (row, confirmDelete: boolean) => {
         return;
     }
 
+    if (!selectedIntegrator?.id) {
+        addToast({
+                type: 'info',
+                title: 'Campo Obrigatório',
+                description: 'Selecione o Integrador Financeiro para gerar o boleto',
+            });
+        return;
+    }
+
+
     const payload = {
       token: token,
       companyId,
       apiKey,
       customerId: selectedPeople.id,
-      bankType: "ASAAS",
       FinancialIntegratorId: selectedIntegrator?.id,
       amount: row.vlr_Liquido,
       dueDate: formatDate(row.dta_Movimento),
