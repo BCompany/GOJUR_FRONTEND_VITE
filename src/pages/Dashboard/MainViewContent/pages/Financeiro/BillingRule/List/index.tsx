@@ -45,6 +45,9 @@ const BillingRuleList = () => {
   const { handleUserPermission } = useDefaultSettings();
   const [billingRulerList, setBillingRulerList] = useState<IBillingRuler[]>([]);
   const token = localStorage.getItem('@GoJur:token');
+  const apiKey = localStorage.getItem('@GoJur:apiKey');
+  const companyId = localStorage.getItem('@GoJur:companyId');
+
   const [totalPageCount, setTotalPageCount] = useState<number>(0);
   const [isLoadingSearch, setIsLoadingSearch] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -126,7 +129,9 @@ useEffect(() => {
       await api.delete('/Financeiro/ReguaCobranca/Deletar', {
         params: {
           id: billingRulerId,
-          token
+          token,
+          companyId,
+          apiKey
         }
       })
 
@@ -180,8 +185,10 @@ useEffect(() => {
               page,
               rows:20,
               filterClause:captureText,
-              token
-              }
+              token,
+              companyId,
+              apiKey
+              } 
           })
       
           

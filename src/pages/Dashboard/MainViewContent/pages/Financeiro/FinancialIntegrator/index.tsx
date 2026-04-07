@@ -13,10 +13,12 @@ import { currencyConfig, selectStyles } from 'Shared/utils/commonFunctions';
 import { financialIntegratorTypes } from 'Shared/utils/commonListValues';
 import { IFinancialIntegrator } from './Interfaces/IFinancialIntegrator';
 import { Container, Content, FormActions, FormCard, FormCenter, FormTitle, SectionRow } from './styles';
+import { useAuth } from 'context/AuthContext';
 
 
 const FinancialIntegrator: React.FC = () => {
 
+  const { signOut } = useAuth();
   const { addToast } = useToast();
   const history = useHistory()
   const { isMOBILE } = useDevice();
@@ -126,6 +128,16 @@ const FinancialIntegrator: React.FC = () => {
       return data;
 
     } catch (err) {
+
+      if (err.response.data.statusCode == 1002){
+        addToast({
+          type: 'info',
+          title: 'Permissão negada',
+          description: 'Seu usuário não tem permissão para acessar esse módulo, contate o administrador do sistema',
+        });
+        signOut()
+      }
+
       console.error(err);
       return null;
     }

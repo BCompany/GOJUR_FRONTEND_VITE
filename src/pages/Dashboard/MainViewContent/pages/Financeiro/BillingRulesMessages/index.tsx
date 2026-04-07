@@ -77,7 +77,8 @@ const [whatsBody, setWhatsBody] = useState('');
 const [warningType, setWarningType] = useState('');
 const [daysOfWarning, setDaysOfWarning] = useState('');
 const [notificationType, setNotificationType] = useState('');
-
+const companyId = localStorage.getItem('@GoJur:companyId');
+const apiKey = localStorage.getItem('@GoJur:apiKey');
 
 
     const handleComboChange = (e: any) => {
@@ -425,6 +426,8 @@ const LoadMessages = useCallback(async () => {
             const response = await api.get<IBillingRulerWarning>('/Financeiro/ReguaCobranca/SelecionarAviso', {
                                     params: {
                                         id: Number(parambillingRulerWarningId),
+                                        companyId,
+                                        apiKey,
                                         token
                                     }
                                 })
@@ -463,6 +466,8 @@ const handleSaveMessage = async () => {
       emailNotificationTitle: emailTitle,
       emailNotificationDescription: emailBody,
       whatsAppNotificationDescription: whatsBody,
+      companyId,
+      apiKey,
       token
     });
 

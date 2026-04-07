@@ -56,9 +56,9 @@ const FinanceOptionsMenu = () => {
 
   const billingContract = permissionsSecurity.find(item => item.name === "FATCTTO");
 
-  const checkBillingRuler = permissionsSecurity.find(item => item.name === "FINREGCO");
+  const checkBillingRuler = permissionsSecurity.find(item => item.name === "FINRGCB");
 
-  const checkFinancialIntegrator = permissionsSecurity.find(item => item.name === "FININTEG");
+  const checkFinancialIntegrator = permissionsSecurity.find(item => item.name === "FININTF");
 
 
   const [checkBillingContract, setCheckBillingContract] = useState<boolean>(false);
@@ -204,7 +204,7 @@ const FinanceOptionsMenu = () => {
     handleIsOpenMenuConfig(true)
     setShowConfigMenu(false)
     handleIsMenuOpen(false)
-    handleRedirect(`financeiro/billingrule/list`)
+    handleRedirect(`/financeiro/billingrule/list`)
   }, []);
 
 
@@ -212,7 +212,7 @@ const FinanceOptionsMenu = () => {
     handleIsOpenMenuConfig(true)
     setShowConfigMenu(false)
     handleIsMenuOpen(false)
-    handleRedirect(`financeiro/financialintegrator/list`)
+    handleRedirect(`/financeiro/financialintegrator/list`)
   }, []);
 
 

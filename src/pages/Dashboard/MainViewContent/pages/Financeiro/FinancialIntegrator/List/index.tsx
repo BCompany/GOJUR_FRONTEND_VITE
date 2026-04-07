@@ -130,6 +130,8 @@ useEffect(() => {
       await api.delete('/IntegradorFinanceiro/Deletar', {
         params: {
           id: financialIntegratorId,
+          companyId,
+          apiKey,
           token
         }
       })
