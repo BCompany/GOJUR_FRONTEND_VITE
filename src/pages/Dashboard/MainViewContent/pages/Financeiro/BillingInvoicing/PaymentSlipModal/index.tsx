@@ -155,7 +155,6 @@ const parseBRDate = (dateString: string) => {
 
     const today = new Date();
 
-
     const dueDate = new Date(dtaVencimentoBoleto + "T00:00:00");
 
     const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
