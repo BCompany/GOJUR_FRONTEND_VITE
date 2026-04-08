@@ -200,6 +200,9 @@ const BillingInvoicing: React.FC = () => {
     const [paymentSlipValue, setPaymentSlipValue] = useState<string>("0");
     const [dtaVencimentoBoleto, setDtaVencimentoBoleto] = useState("");
     const [dtaVencimentoFatura, setDtaVencimentoFatura] = useState("")
+    const [invoice2MovementId, setInvoice2MovementId] = useState<string>("0");
+    const [formattedInstallment, setFormattedInstallment] = useState("")
+   
 
     useEffect(() => {
         if (isCancelMessage && caller === 'changeDefaultHeade1') {
@@ -555,6 +558,8 @@ const BillingInvoicing: React.FC = () => {
         return new Date(Number(ano), Number(mes) - 1, Number(dia));
     };
 
+
+
     const handleOpenPaymentSlipModal = async (row) => {
 
         if (!selectedIntegrator?.id) {
@@ -580,7 +585,12 @@ const BillingInvoicing: React.FC = () => {
             FormatDate(dataVencimento, 'yyyy-MM-dd')
         );
 
-        setDtaVencimentoFatura(row.dta_Movimento);
+        
+        setDtaVencimentoFatura(FormatDate(dataMovimento, 'yyyy-MM-dd'));
+
+        setInvoice2MovementId(row.cod_Fatura2Movimento);
+
+        setFormattedInstallment(row.parcelaFormatada);
 
         setShowPaymentSlipModal(true);
     };
@@ -1379,7 +1389,7 @@ const BillingInvoicing: React.FC = () => {
             {(showPaymentModal) && <FinancialInvoicingModal callbackFunction={{ movementId, movementIdEdit, invoiceId, billingInvoicing, visualizeType, movementList, ClosePaymentModal, LoadMovement, LoadBillingInvoicing }} />}
 
             {(showPaymentSlipModal) && <OverlayPaymentModal />}
-            {(showPaymentSlipModal) && <PaymentSlipModal callbackFunction={{ setDtaVencimentoBoleto, dtaVencimentoBoleto, paymentSlipValue, dtaVencimentoFatura, selectedIntegrator,setShowPaymentSlipModal, ClosePaymentSlipModal }} />}
+            {(showPaymentSlipModal) && <PaymentSlipModal callbackFunction={{ setDtaVencimentoBoleto, dtaVencimentoBoleto, paymentSlipValue, dtaVencimentoFatura, selectedIntegrator, selectedPeople, invoice2MovementId, formattedInstallment, movementId, LoadMovement, LoadBillingInvoicing,setShowPaymentSlipModal, ClosePaymentSlipModal }} />}
 
 
             {(showBankSlipModal) && <OverlayFinancial />}
