@@ -166,15 +166,15 @@ const CompanyInformation: React.FC = () => {
 
       if(documentNumber != null && documentNumber != ""){
 
-        if (companyType == "J" && isValidCNPJ(documentNumber) == false){
-          addToast({
-            type: "info",
-            title: "Operação NÃO realizada",
-            description: `O número do CNPJ não é válido`
-          })
+        // if (companyType == "J" && isValidCNPJ(documentNumber) == false){
+        //   addToast({
+        //     type: "info",
+        //     title: "Operação NÃO realizada",
+        //     description: `O número do CNPJ não é válido`
+        //   })
     
-          return;
-        }
+        //   return;
+        // }
   
         if (companyType == "F" && isValidCPF(documentNumber) == false){
           addToast({

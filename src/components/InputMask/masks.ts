@@ -29,22 +29,24 @@ export function TEL_Mask(e: React.FormEvent<HTMLInputElement>) {
   return e
 }
 
+
 export function CNPJ_Mask(e: React.FormEvent<HTMLInputElement>) {
   e.currentTarget.maxLength = 18;
     
-  let {value} = e.currentTarget;
+  let { value } = e.currentTarget;
 
-  value = value.replace(/\D+/g, '')
-  value = value.replace(/(\d{2})(\d)/, '$1.$2')
-  value = value.replace(/(\d{3})(\d)/, '$1.$2')
-  value = value.replace(/(\d{3})(\d)/, '$1/$2')
-  value = value.replace(/(\d{4})(\d)/, '$1-$2')
-  value = value.replace(/(-\d{2})\d+?$/, '$1')        // Coloca um hífen depois do bloco de quatro dígitos
+  value = value.replace(/[^a-zA-Z0-9]+/g, '').toUpperCase()
+  value = value.replace(/([a-zA-Z0-9]{2})([a-zA-Z0-9])/, '$1.$2')
+  value = value.replace(/([a-zA-Z0-9]{3})([a-zA-Z0-9])/, '$1.$2')
+  value = value.replace(/([a-zA-Z0-9]{3})([a-zA-Z0-9])/, '$1/$2')
+  value = value.replace(/([a-zA-Z0-9]{4})([a-zA-Z0-9])/, '$1-$2')
+  value = value.replace(/(-[a-zA-Z0-9]{2})[a-zA-Z0-9]+?$/, '$1')
 
   e.currentTarget.value = value;
 
-  return e
+  return e;
 }
+
 
 export function CPF_Mask(e: React.FormEvent<HTMLInputElement>) {
   e.currentTarget.maxLength = 14;
