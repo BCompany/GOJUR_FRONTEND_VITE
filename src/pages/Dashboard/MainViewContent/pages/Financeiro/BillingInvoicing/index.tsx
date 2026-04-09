@@ -390,6 +390,8 @@ const BillingInvoicing: React.FC = () => {
                 })
             );
 
+            console.log(dadosFormatados);
+
             setMovementList(dadosFormatados);
 
             const primeiraParcela = dadosFormatados.find(
@@ -556,11 +558,51 @@ const BillingInvoicing: React.FC = () => {
 
     const handleDeleteBankSlip = async (row) => {
 
-        //const bankSlipURL = row.des_BoletoURL;
+        try {
+ 
+            if ( row.cod_IntegradorFinanceiro == 0 ) 
+            {
+                addToast({
+                    type: "info",
+                    title: "Operação não realizada",
+                    description: "Selecione o Integrador Financeiro para excluir o boleto"
+                });
+                return;
+            }
 
-        //setBankSlipURL(bankSlipURL);
+            await api.delete('BankSlip/Deletar', {
+                params: {
+                    FinancialIntegratorId: row.cod_IntegradorFinanceiro,
+                    bankSlipId: row.cod_BoletoBancario,
+                    partnerBankSlipId: row.cod_BoletoParceiro,
+                    companyId,
+                    apiKey,
+                    token
+                }
+            })
 
-        //setShowBankSlipModal(true)
+            addToast({
+                type: "success",
+                title: "Fatura",
+                description: "A fatura foi deletada"
+            })
+
+
+            handleStateType('Inactive')
+            history.push('/financeiro')
+
+            setConfirmDeleteModal(false)
+
+        }
+        catch (err: any) {
+
+             addToast({
+                type: "error",
+                title: "Operação não realizada",
+                description: err.response?.data?.Message
+            });
+
+        }
 
     };
 
@@ -792,6 +834,7 @@ const BillingInvoicing: React.FC = () => {
 
 
     const tableColumnExtensions = useMemo(() => [
+        //{ columnName: 'cod_IntegradorFinanceiro', width: '50%' },
         { columnName: '', width: '5%' },
         { columnName: '', width: '5%' },
         { columnName: '', width: '5%' },
@@ -815,6 +858,7 @@ const BillingInvoicing: React.FC = () => {
 
     const [dateColumns] = useState(['dateUpload']);
     const columns = [
+        //{ name: 'cod_IntegradorFinanceiro', title: 'Código Integrador Financeiro' },
         { name: 'cod_BoletoBancario', title: 'Código Boleto Bancário' },
         { name: 'des_BoletoURL', title: 'URL Boleto Bancário' },
         { name: 'cod_Fatura2Movimento', title: 'Código Fatura Movimento' },
