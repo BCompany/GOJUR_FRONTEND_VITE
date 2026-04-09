@@ -233,8 +233,9 @@ const BillingInvoicing: React.FC = () => {
             handleConfirmMessage(false)
         }
 
-
+        
         if (isConfirmMessage && caller == "invoiceDelete") {
+           
             handleDeleteInvoice(invoiceId, true)
             handleConfirmMessage(false)
         }
@@ -553,6 +554,17 @@ const BillingInvoicing: React.FC = () => {
 
 
 
+    const handleDeleteBankSlip = async (row) => {
+
+        //const bankSlipURL = row.des_BoletoURL;
+
+        //setBankSlipURL(bankSlipURL);
+
+        //setShowBankSlipModal(true)
+
+    };
+
+
     const parseBRDate = (dateStr: string) => {
         const [dia, mes, ano] = dateStr.split('/');
         return new Date(Number(ano), Number(mes) - 1, Number(dia));
@@ -709,7 +721,7 @@ const BillingInvoicing: React.FC = () => {
 
             if (rowFp == 'BOLETO' && rowId == 0) {
                 return (
-                    <Table.Cell {...props}>
+                    <Table.Cell {...props} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                         <button
                             className="buttonLinkClick"
                             type='button'
@@ -728,7 +740,7 @@ const BillingInvoicing: React.FC = () => {
 
             if (rowFp == 'BOLETO' && rowId > 0) {
                 return (
-                    <Table.Cell {...props}>
+                    <Table.Cell {...props} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                         <button
                             className="buttonLinkClick"
                             type='button'
@@ -736,8 +748,19 @@ const BillingInvoicing: React.FC = () => {
                         >
 
 
-                            <FaBarcode title="Clique aqui para visualizar e excluir boleto." />
+                            <FaBarcode title="Clique aqui para visualizar boleto." />
                         </button>
+
+                        <button
+                            className="buttonLinkClick"
+                            type='button'
+                            onClick={() => handleDeleteBankSlip(props.row)}
+                        >
+
+
+                            <FiTrash title="Clique aqui para excluir boleto." />
+                        </button>
+                        
 
                     </Table.Cell>
                 );
@@ -1025,12 +1048,12 @@ const BillingInvoicing: React.FC = () => {
     const handleDeleteInvoice = useCallback(async (invoiceId: number, confirmDelete: boolean) => {
         try {
 
+         
             if (confirmDelete == false) {
 
                 setConfirmDeleteModal(true)
                 return;
             }
-
 
             await api.delete('Financeiro/Faturamento2/Deletar', {
                 params: {
@@ -1053,6 +1076,12 @@ const BillingInvoicing: React.FC = () => {
 
         }
         catch (err: any) {
+
+             addToast({
+                type: "error",
+                title: "Operação não realizada",
+                description: err.response?.data?.Message
+            });
 
         }
 
