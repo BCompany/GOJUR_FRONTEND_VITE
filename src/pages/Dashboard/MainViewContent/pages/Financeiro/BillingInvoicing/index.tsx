@@ -565,7 +565,7 @@ const BillingInvoicing: React.FC = () => {
                 addToast({
                     type: "info",
                     title: "Operação não realizada",
-                    description: "Selecione o Integrador Financeiro para excluir o boleto"
+                    description: "Selecione e salve o Integrador Financeiro para excluir o boleto"
                 });
                 return;
             }
@@ -584,7 +584,7 @@ const BillingInvoicing: React.FC = () => {
             addToast({
                 type: "success",
                 title: "Fatura",
-                description: "A fatura foi deletada"
+                description: "O Boleto foi deletado"
             })
 
 
@@ -620,7 +620,7 @@ const BillingInvoicing: React.FC = () => {
             addToast({
                 type: 'info',
                 title: 'Campo Obrigatório',
-                description: 'Selecione o Integrador Financeiro para gerar o boleto',
+                description: 'Selecione e salve o Integrador Financeiro para gerar o boleto',
             });
             return;
         }
@@ -665,8 +665,8 @@ const BillingInvoicing: React.FC = () => {
                 addToast({
                     type: 'info',
                     title: 'Campo Obrigatório',
-                    description: 'Selecione o Integrador Financeiro para gerar o boleto',
-                });
+                    description: 'Selecione e salve o Integrador Financeiro para gerar o boleto',
+                }); 
                 return;
             }
 
@@ -1092,7 +1092,17 @@ const BillingInvoicing: React.FC = () => {
     const handleDeleteInvoice = useCallback(async (invoiceId: number, confirmDelete: boolean) => {
         try {
 
-         
+            
+           if (!selectedIntegrator?.id?.toString().trim()) {
+                addToast({
+                    type: 'info',
+                    title: 'Campo Obrigatório',
+                    description: 'Selecione e salve o Integrador Financeiro para excluir a fatura',
+                });
+                return;
+            }
+            
+          
             if (confirmDelete == false) {
 
                 setConfirmDeleteModal(true)
@@ -1129,7 +1139,7 @@ const BillingInvoicing: React.FC = () => {
 
         }
 
-    }, [addToast, history]);
+    }, [addToast, history, selectedIntegrator]);
 
 
     const ClosePaymentSlipModal = async () => {
