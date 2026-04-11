@@ -56,6 +56,7 @@ const BillingInvoicingModel: React.FC = () => {
   const faturaNumero    = '0001';
   const vencimento      = '30/04/2026';
   const clienteNome     = 'João da Silva';
+  const clienteCPFCNPJ  = '99.999.999/0000-00';
   const clienteEndereco = 'Praça da Sé, s/n – Centro, São Paulo – SP';
   const clienteEmail    = 'joaosilva@xxxx.com.br';
   const descricao       = 'Serviços jurídicos prestados conforme contrato';
@@ -91,6 +92,7 @@ const BillingInvoicingModel: React.FC = () => {
         <InvoiceCustomerSection>
           <p className="section-title">Dados do Cliente</p>
           <p className="field"><span>Nome: </span>{clienteNome}</p>
+          <p className="field"><span>CPF/CNPJ: </span>{clienteCPFCNPJ}</p>
           <p className="field"><span>Endereço: </span>{clienteEndereco}</p>
           <p className="field"><span>E-mail: </span>{clienteEmail}</p>
         </InvoiceCustomerSection>
