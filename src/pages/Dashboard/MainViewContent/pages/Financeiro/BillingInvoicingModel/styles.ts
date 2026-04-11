@@ -83,7 +83,6 @@ export const InvoicePaper = styled.div`
   display: flex;
   flex-direction: column;
   font-family: 'Montserrat', sans-serif;
-  overflow: hidden;
 `;
 
 export const InvoiceHeader = styled.div<{ bgColor: string }>`
@@ -357,4 +356,5 @@ export const InvoiceFooter = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 `;
