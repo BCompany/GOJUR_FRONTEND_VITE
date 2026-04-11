@@ -201,6 +201,38 @@ export const InvoiceCustomerSection = styled.div`
   }
 `;
 
+export const DraggableSectionWrap = styled.div<{ isDragging: boolean }>`
+  position: relative;
+  margin-bottom: 1.75rem;
+  border-radius: 0.25rem;
+  border: 1.5px dashed ${props => props.isDragging ? 'var(--blue-light)' : 'transparent'};
+  background-color: ${props => props.isDragging ? 'var(--blue-soft)' : 'transparent'};
+  box-shadow: ${props => props.isDragging ? '0 6px 20px rgba(0,0,0,0.1)' : 'none'};
+  transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
+  padding-left: 1.5rem;
+`;
+
+export const SectionDragHandle = styled.div`
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  cursor: grab;
+  color: var(--grey);
+  opacity: 0.4;
+  transition: opacity 0.15s;
+
+  &:hover { opacity: 1; }
+  &:active { cursor: grabbing; }
+
+  svg {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+`;
+
 export const InvoiceDescSection = styled.div`
   p.section-title {
     font-size: 0.6rem;

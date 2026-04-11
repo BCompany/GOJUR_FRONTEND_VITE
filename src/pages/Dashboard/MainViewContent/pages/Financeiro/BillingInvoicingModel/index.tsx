@@ -1,8 +1,9 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import React, { ChangeEvent, useRef, useState } from 'react';
 import { FiSave, FiImage, FiTrash2 } from 'react-icons/fi';
-import { MdBlock } from 'react-icons/md';
+import { MdBlock, MdDragHandle } from 'react-icons/md';
 import { IoColorPaletteOutline } from 'react-icons/io5';
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { useHistory } from 'react-router-dom';
 import { useToast } from 'context/toast';
 import { HeaderPage } from 'components/HeaderPage';
@@ -23,7 +24,20 @@ import {
   InvoiceDescSection,
   InvoiceFooter,
   ColorButtonWrap,
+  DraggableSectionWrap,
+  SectionDragHandle,
 } from './styles';
+
+type SectionId = 'customer' | 'description';
+
+interface ISection {
+  id: SectionId;
+}
+
+const INITIAL_SECTIONS: ISection[] = [
+  { id: 'customer' },
+  { id: 'description' },
+];
 
 const BillingInvoicingModel: React.FC = () => {
   const history = useHistory();
@@ -33,17 +47,18 @@ const BillingInvoicingModel: React.FC = () => {
 
   const [logoSrc, setLogoSrc] = useState<string>('');
   const [headerColor, setHeaderColor] = useState<string>('#0077c0');
+  const [sections, setSections] = useState<ISection[]>(INITIAL_SECTIONS);
 
-  const companyNome = 'Escritório Jurídico Exemplo';
+  const companyNome     = 'Escritório Jurídico Exemplo';
   const companyEndereco = 'Av. Paulista, 1000 – Bela Vista, São Paulo – SP';
-  const companyEmail = 'contato@escritorio.com.br';
+  const companyEmail    = 'contato@escritorio.com.br';
   const companyTelefone = '(11) 3000-0000';
-  const faturaNumero = '0001';
-  const vencimento = '30/04/2026';
-  const clienteNome = 'João da Silva';
+  const faturaNumero    = '0001';
+  const vencimento      = '30/04/2026';
+  const clienteNome     = 'João da Silva';
   const clienteEndereco = 'Praça da Sé, s/n – Centro, São Paulo – SP';
-  const clienteEmail = 'joaosilva@xxxx.com.br';
-  const descricao = 'Serviços jurídicos prestados conforme contrato';
+  const clienteEmail    = 'joaosilva@xxxx.com.br';
+  const descricao       = 'Serviços jurídicos prestados conforme contrato';
 
   const handleLogoSelect = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -54,12 +69,55 @@ const BillingInvoicingModel: React.FC = () => {
     e.target.value = '';
   };
 
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+    const reordered = Array.from(sections);
+    const [removed] = reordered.splice(result.source.index, 1);
+    reordered.splice(result.destination.index, 0, removed);
+    setSections(reordered);
+  };
+
   const handleSave = () => {
     addToast({
       type: 'success',
       title: 'Modelo de Fatura Salvo',
       description: 'As configurações do modelo de fatura foram salvas.',
     });
+  };
+
+  const renderSection = (id: SectionId) => {
+    if (id === 'customer') {
+      return (
+        <InvoiceCustomerSection>
+          <p className="section-title">Dados do Cliente</p>
+          <p className="field"><span>Nome: </span>{clienteNome}</p>
+          <p className="field"><span>Endereço: </span>{clienteEndereco}</p>
+          <p className="field"><span>E-mail: </span>{clienteEmail}</p>
+        </InvoiceCustomerSection>
+      );
+    }
+
+    return (
+      <InvoiceDescSection>
+        <p className="section-title">Descrição dos Serviços</p>
+        <table className="desc-table">
+          <thead>
+            <tr>
+              <th style={{ width: '60%' }}>Descrição</th>
+              <th>Quantidade</th>
+              <th>Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{descricao}</td>
+              <td>1</td>
+              <td>R$ 0,00</td>
+            </tr>
+          </tbody>
+        </table>
+      </InvoiceDescSection>
+    );
   };
 
   return (
@@ -105,7 +163,6 @@ const BillingInvoicingModel: React.FC = () => {
             type="color"
             value={headerColor}
             onChange={(e) => setHeaderColor(e.target.value)}
-            title="Selecione a cor"
           />
           <button
             className="buttonClick"
@@ -157,32 +214,33 @@ const BillingInvoicingModel: React.FC = () => {
               </InvoiceMetaItem>
             </InvoiceMetaRow>
 
-            <InvoiceCustomerSection>
-              <p className="section-title">Dados do Cliente</p>
-              <p className="field"><span>Nome: </span>{clienteNome}</p>
-              <p className="field"><span>Endereço: </span>{clienteEndereco}</p>
-              <p className="field"><span>E-mail: </span>{clienteEmail}</p>
-            </InvoiceCustomerSection>
-
-            <InvoiceDescSection>
-              <p className="section-title">Descrição dos Serviços</p>
-              <table className="desc-table">
-                <thead>
-                  <tr>
-                    <th style={{ width: '60%' }}>Descrição</th>
-                    <th>Quantidade</th>
-                    <th>Valor</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>{descricao}</td>
-                    <td>1</td>
-                    <td>R$ 0,00</td>
-                  </tr>
-                </tbody>
-              </table>
-            </InvoiceDescSection>
+            {/* ─── Draggable sections ─── */}
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="invoiceSections">
+                {(provided) => (
+                  <div ref={provided.innerRef} {...provided.droppableProps}>
+                    {sections.map((section, index) => (
+                      <Draggable key={section.id} draggableId={section.id} index={index}>
+                        {(provided, snapshot) => (
+                          <DraggableSectionWrap
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            isDragging={snapshot.isDragging}
+                            style={{ ...provided.draggableProps.style }}
+                          >
+                            <SectionDragHandle {...provided.dragHandleProps} title="Arraste para reordenar">
+                              <MdDragHandle />
+                            </SectionDragHandle>
+                            {renderSection(section.id)}
+                          </DraggableSectionWrap>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
 
           </InvoiceBody>
 
