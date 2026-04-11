@@ -4,6 +4,7 @@ import { FiSave, FiImage, FiTrash2 } from 'react-icons/fi';
 import { MdBlock } from 'react-icons/md';
 import { useHistory } from 'react-router-dom';
 import { useToast } from 'context/toast';
+import { HeaderPage } from 'components/HeaderPage';
 import {
   Container,
   TaskBar,
@@ -83,6 +84,7 @@ const InvoiceModel: React.FC = () => {
 
   return (
     <Container>
+      <HeaderPage />
       <TaskBar>
         <button className="buttonClick" type="button" onClick={handleSave}>
           <FiSave />
