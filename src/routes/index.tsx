@@ -151,7 +151,7 @@ const Routes: React.FC = () => {
       <Route path="/companyinformation" exact component={DashboardPath} isPrivate />
       <Route path="/companyfiles" exact component={DashboardPath} isPrivate />
       <Route path="/matter/monitoring" exact component={Matter} isPrivate />
-      <Route path="/financeiro/billinginvoicemodel" exact component={DashboardPath} isPrivate />
+      <Route path="/financeiro/billinginvoicingmodel" exact component={DashboardPath} isPrivate />
       <Route path="/apidocumentation" exact component={APIDocumentation} isPrivate />
 
     </Switch>
