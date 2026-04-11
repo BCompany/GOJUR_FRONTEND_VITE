@@ -102,6 +102,7 @@ import SearchCNJBatch from '../MainViewContent/pages/Matter/SearchCNJBatch';
 import CompanyInformation from '../MainViewContent/pages/AccountInformation/CompanyInformation';
 import CompanyFiles from '../MainViewContent/pages/CompanyFiles';
 import Monitoring from '../MainViewContent/pages/Matter/Monitoring';
+import InvoiceModel from '../MainViewContent/pages/Financeiro/InvoiceModel';
 // import TestCkEditor from '../MainViewContent/pages/DocumentModel/Edit/testeCkEditor'
 
 const Routes: React.FC = () => {
@@ -208,6 +209,7 @@ const Routes: React.FC = () => {
       <Route path="/companyinformation" exact component={CompanyInformation} isPrivate />
       <Route path="/companyfiles" exact component={CompanyFiles} isPrivate />
       <Route path="/matter/monitoring" exact component={Monitoring} isPrivate />
+      <Route path="/financeiro/invoicemodel" exact component={InvoiceModel} isPrivate />
     </Switch>
   );
 };
