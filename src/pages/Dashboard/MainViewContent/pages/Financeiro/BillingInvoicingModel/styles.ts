@@ -11,11 +11,16 @@ export const Container = styled.div`
 export const ActionBar = styled.div`
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.75rem;
   padding: 0.5rem 1.5rem;
   background-color: var(--white-card);
   border-bottom: 1px solid var(--gray-outline);
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+
+  & > * {
+    max-width: calc((700px - 1.5rem) / 3);
+  }
 `;
 
 export const ColorButtonWrap = styled.div`
@@ -59,6 +64,7 @@ export const InvoiceWrapper = styled.div`
 export const BottomBar = styled.div`
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.75rem;
   padding: 0.6rem 1.5rem;
   background-color: var(--white-card);
@@ -96,8 +102,8 @@ export const InvoiceHeaderLeft = styled.div`
   gap: 1rem;
 
   img {
-    height: 60px;
-    max-width: 140px;
+    height: 77px;
+    max-width: 180px;
     object-fit: contain;
     background: rgba(255,255,255,0.9);
     border-radius: 0.2rem;
@@ -268,6 +274,43 @@ export const InvoiceDescSection = styled.div`
 
     tbody tr:nth-child(odd) {
       background-color: #f7f9fc;
+    }
+  }
+`;
+
+export const InvoiceObservacao = styled.div`
+  p.section-title {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--blue);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--gray-outline);
+    padding-bottom: 0.4rem;
+  }
+
+  textarea {
+    width: 100%;
+    font-size: 0.75rem;
+    font-family: poppins, montserrat, sans-serif;
+    color: var(--secondary);
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--gray-outline);
+    border-radius: 0.25rem;
+    resize: vertical;
+    background-color: #fafafa;
+    line-height: 1.5;
+
+    &:focus {
+      border-color: var(--blue-light);
+      background-color: white;
+      outline: none;
+    }
+
+    &::placeholder {
+      color: var(--grey);
+      font-size: 0.7rem;
     }
   }
 `;

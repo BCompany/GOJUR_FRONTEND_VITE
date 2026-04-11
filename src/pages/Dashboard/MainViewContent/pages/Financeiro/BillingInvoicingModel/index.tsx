@@ -26,6 +26,7 @@ import {
   ColorButtonWrap,
   DraggableSectionWrap,
   SectionDragHandle,
+  InvoiceObservacao,
 } from './styles';
 
 type SectionId = 'customer' | 'description';
@@ -243,6 +244,11 @@ const BillingInvoicingModel: React.FC = () => {
                 )}
               </Droppable>
             </DragDropContext>
+
+            <InvoiceObservacao>
+              <p className="section-title">Observação</p>
+              <textarea rows={5} placeholder="Digite suas observações aqui..." />
+            </InvoiceObservacao>
 
           </InvoiceBody>
 
