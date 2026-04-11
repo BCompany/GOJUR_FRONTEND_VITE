@@ -27,14 +27,14 @@ import ConfirmBoxModal from 'components/ConfirmBoxModal';
 import { useConfirmBox } from 'context/confirmBox';
 import { format, parseISO } from "date-fns";
 import { ISelectData } from '../../../Interfaces/IMatter';
-import { IBillingRuler, IBillingRulerWarning } from '../Interfaces/IBillingRuler';
+import { IFinancialIntegrator } from '../Interfaces/IFinancialIntegrator';
 
 export interface IDefaultsProps {
   id: string;
   value: string;
 }
 
-const BillingRuleList = () => {
+const FinancialIntegratorList = () => {
   // STATES
   const { signOut } = useAuth();
   const { addToast } = useToast();
@@ -43,11 +43,10 @@ const BillingRuleList = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { captureText, captureType, handleLoadingData } = useHeader();
   const { handleUserPermission } = useDefaultSettings();
-  const [billingRulerList, setBillingRulerList] = useState<IBillingRuler[]>([]);
+  const [financialIntegratorList, setFinancialIntegratorList] = useState<IFinancialIntegrator[]>([]);
   const token = localStorage.getItem('@GoJur:token');
-  const apiKey = localStorage.getItem('@GoJur:apiKey');
   const companyId = localStorage.getItem('@GoJur:companyId');
-
+  const apiKey = localStorage.getItem('@GoJur:apiKey');
   const [totalPageCount, setTotalPageCount] = useState<number>(0);
   const [isLoadingSearch, setIsLoadingSearch] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -56,20 +55,21 @@ const BillingRuleList = () => {
   const [isPagination, setIsPagination] = useState(false);
   const { isMOBILE } = useDevice();
   const [isDeleting, setIsDeleting] = useState(false);
-  const [currentBillingRulerId, setCurrentBillingRulerId] = useState<number>(0);
+  const [currentFinancialIntegratorId, setCurrentFinancialIntegratorId] = useState<number>(0);
+
   const { isConfirmMessage, isCancelMessage, caller, handleCancelMessage, handleConfirmMessage, handleCheckConfirm, handleCaller } = useConfirmBox();
   const [filterName, setFilterName] = useState('');
   
   const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKFCD");
 
   const columns = [
-    { name: 'descriptionBillingRuler', title: 'Descrição '},
+    { name: 'financialIntegratorName', title: 'Descrição '},
     { name: 'edit',  title: ' '},
     { name: 'remove',title: ' '}
   ];
 
   const [tableColumnExtensions] = useState([
-    { columnName: 'descriptionBillingRuler', width: '70%' },
+    { columnName: 'financialIntegratorName', width: '70%' },
     { columnName: 'btnEditar', width: '5%' },
     { columnName: 'btnRemover',width: '5%' },
   ]);
@@ -78,13 +78,13 @@ const BillingRuleList = () => {
 useEffect(() => {
   const setup = async () => {
 
-    setBillingRulerList([]);
+    setFinancialIntegratorList([]);
     setIsLoadingSearch(true);
     setIsLoading(true);
     setPageNumber(1);
     setIsEndPage(false);
 
-    LoadBillingRuler('initialize');
+    LoadFinancialIntegrator('initialize');
 
 };
 
@@ -110,7 +110,7 @@ useEffect(() => {
         window.open(`${envProvider.redirectUrl}ReactRequest/Redirect?token=${token}&route=workflow`)
       }
       else {
-        handleDeleteBillingRuler(currentBillingRulerId)
+        handleDeleteFinancialIntegrator(currentFinancialIntegratorId)
       }
 
       setIsDeleting(false)
@@ -123,24 +123,25 @@ useEffect(() => {
 
 
 
-  const handleDeleteBillingRuler = async (billingRulerId: number) => {
+  const handleDeleteFinancialIntegrator = async (financialIntegratorId: number) => {
     try {
      
-      await api.delete('/Financeiro/ReguaCobranca/Deletar', {
+      
+      await api.delete('/IntegradorFinanceiro/Deletar', {
         params: {
-          id: billingRulerId,
-          token,
+          id: financialIntegratorId,
           companyId,
-          apiKey
+          apiKey,
+          token
         }
       })
 
 
-      const billingRuler = billingRulerList.find(wk => wk.billingRulerId === billingRulerId);
-      if (billingRuler) {
-        const billingRulerListRefresh = billingRulerList.filter(wk => wk.billingRulerId !== billingRulerId);
+      const financialIntegrator = financialIntegratorList.find(wk => wk.financialIntegratorId === financialIntegratorId);
+      if (financialIntegrator) {
+        const financialIntegratorListRefresh = financialIntegratorList.filter(wk => wk.financialIntegratorId !== financialIntegratorId);
       
-        setBillingRulerList(billingRulerListRefresh);   
+        setFinancialIntegratorList(financialIntegratorListRefresh);   
       }
 
       addToast({ 
@@ -151,7 +152,7 @@ useEffect(() => {
 
       setIsDeleting(false)
  
-      setCurrentBillingRulerId(0)
+      setCurrentFinancialIntegratorId(0)
 
     } catch (err) {
       addToast({
@@ -162,14 +163,14 @@ useEffect(() => {
 
  
       setIsDeleting(false)
-      setCurrentBillingRulerId(0)
+      setCurrentFinancialIntegratorId(0)
     }
   }
 
  
 
  // METHODS
-  const LoadBillingRuler = useCallback(async(state = '') => {
+  const LoadFinancialIntegrator = useCallback(async(state = '') => {
     try
     {
    
@@ -180,7 +181,7 @@ useEffect(() => {
       const page = state == 'initialize'? 1: pageNumber;
 
      
-       const response = await api.get<IBillingRuler[]>('/Financeiro/ReguaCobranca/Listar', { 
+       const response = await api.get<IFinancialIntegrator[]>('/IntegradorFinanceiro/Listar', { 
             params:{                            
               page,
               rows:20,
@@ -188,7 +189,7 @@ useEffect(() => {
               token,
               companyId,
               apiKey
-              } 
+              }
           })
       
           
@@ -207,11 +208,11 @@ useEffect(() => {
 
       if (!isPagination || state === 'initialize'){
         setIsEndPage(false)
-        setBillingRulerList(response.data)    
+        setFinancialIntegratorList(response.data)    
       }
       else{
-        response.data.map((item)=> billingRulerList.push(item))
-        setBillingRulerList(billingRulerList)    
+        response.data.map((item)=> financialIntegratorList.push(item))
+        setFinancialIntegratorList(financialIntegratorList)    
       }
 
       handleLoadingData(false)
@@ -237,9 +238,9 @@ useEffect(() => {
 
 
 
-  const handleCheckBoxDeleteBillingRuler = (billingRulerId: number) => {
+  const handleCheckBoxDeleteFinancialIntegrator = (financialIntegratorId: number) => {
     setIsDeleting(true)
-    setCurrentBillingRulerId(billingRulerId);
+    setCurrentFinancialIntegratorId(financialIntegratorId);
   }
   
  
@@ -259,7 +260,7 @@ const CustomCell = (props) => {
     return (
       <Table.Cell
         onClick={() =>
-          handleCheckBoxDeleteBillingRuler(row.billingRulerId)
+          handleCheckBoxDeleteFinancialIntegrator(row.financialIntegratorId)
         }
       >
         &nbsp;&nbsp;
@@ -290,14 +291,14 @@ const CustomCell = (props) => {
     console.log(props.row);
    
     if (props.column.name === 'edit') {
-       handleEdit(props.row.billingRulerId)
+       handleEdit(props.row.financialIntegratorId)
     }
 
   }
 
   // EDIT
   const handleEdit = async (id: number) => {
-    history.push(`/financeiro/billingrule?billingRulerId=${id}`)
+    history.push(`/financeiro/financialintegrator?financialIntegratorId=${id}`)
   };
 
 
@@ -346,9 +347,9 @@ const CustomCell = (props) => {
   }
 
 
-  const handleBillingRuler = () => {
+  const handleFinancialIntegrator = () => {
 
-    history.push('/financeiro/billingrule')
+    history.push('/financeiro/financialintegrator')
 
   };
 
@@ -366,7 +367,7 @@ const CustomCell = (props) => {
           <div style={{ width: '100%', marginTop: '20px' }}>
 
             <div style={{ float: 'left', marginLeft: '150px', marginTop: '12px', fontSize: '13px' }}>
-              Número de Régua de Cobrança:&nbsp;
+              Número de Integrador Financeiro:&nbsp;
               {totalPageCount}
             </div>
 
@@ -379,10 +380,10 @@ const CustomCell = (props) => {
                   className="buttonClick"
                   title="Clique para incluir um Workflow"
                   type="submit"
-                  onClick={() =>handleBillingRuler()}
+                  onClick={() =>handleFinancialIntegrator()}
                 >
                   <FaFileAlt />
-                  Incluir Nova Régua
+                  Incluir Novo Integrador
                 </button>
               </div>
 
@@ -415,7 +416,7 @@ const CustomCell = (props) => {
 
             <GridContainer>
               <Grid
-                rows={billingRulerList}
+                rows={financialIntegratorList}
                 columns={columns}
               >
                 <Table
@@ -443,7 +444,7 @@ const CustomCell = (props) => {
             <ConfirmBoxModal
             title="Excluir Registro"
             caller="WorkflowList"
-            message="Confirma a exclusão dessa Régua de Cobrança ?"
+            message="Confirma a exclusão desse integrador financeiro ?"
             />
                 
       )}
@@ -467,4 +468,4 @@ const CustomCell = (props) => {
   )
 
 }
-export default BillingRuleList;
+export default FinancialIntegratorList;

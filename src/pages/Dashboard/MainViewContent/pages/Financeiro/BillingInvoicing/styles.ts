@@ -17,31 +17,98 @@ export const Content = styled.div`
   box-shadow: 1px 1px 4px 0.5px rgba(0,0,0,0.15);
   overflow: auto;
 
-.fieldGroup span{
-  display:block;
-  color: var(--primary);
-  font-size: 0.675rem;
-  font-weight: 400;
+
+
+.dropdownIcon {
+  font-size: 16px;
+  transition: 0.2s ease;
 }
 
-.fieldGroup:focus-within span{
-  color: var(--orange);
-  font-size: 0.675rem;
-  font-weight: 400;
+.dropdownIcon.rotate {
+  transform: rotate(180deg);
 }
 
-.parcelasContainer{
-  flex:1;
-  display:flex;
-  gap:10px;
+.dropdownMenu {
+  position: relative;
+  top: 45px;
+  right: -360px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  padding: 8px 0;
+  width:280px;
+  min-width: 160px;
+  z-index: 1000;
 }
 
-.parcelasContainer label:first-child{
-  flex:0.5;
+.dropdownItem {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 10px 15px;
+  text-align: left;
+  font-size: 13px;
+  cursor: pointer;
 }
 
-.parcelasContainer label:last-child{
-  flex:0.5;
+.dropdownItem:hover {
+  background: #f1f5f9;
+}
+
+  .mini-invoice {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.mini-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mini-number {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.mini-installment {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+.mini-value {
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 10px;
+    color: #0f172a;
+}
+
+.mini-status {
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+/* status */
+.mini-status.aberta {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.mini-status.paga {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.mini-status.atrasada {
+    background: #fee2e2;
+    color: #991b1b;
 }
 
   .log {
@@ -77,7 +144,7 @@ export const Content = styled.div`
   
   section {
     width:100%;
-    flex:2;
+    flex:1;
     column-gap:1.5rem;
 
     .infoMessage {

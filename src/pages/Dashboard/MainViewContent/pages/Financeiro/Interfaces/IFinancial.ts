@@ -27,6 +27,7 @@ export interface IFinancial {
   des_Movimento: string;
   nom_Categoria: string;
   tpo_Movimento: string;
+  cod_FormaPagamento: string;
   vlr_Movimento_Contabil: string;
   vlr_Liquidacao_Contabil: string;
   qtd_Parcelamento: string;
@@ -38,6 +39,7 @@ export interface IFinancial {
   totalRecords: number;
   cod_FaturaParcela: number;
   cod_Acordo: string;
+   parcelaFormatada?: string; 
 }
 
 export interface IFinancialMovement {

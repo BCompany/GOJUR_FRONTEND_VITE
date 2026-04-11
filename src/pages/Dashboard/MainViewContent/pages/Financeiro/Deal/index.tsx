@@ -854,7 +854,7 @@ const FinancialDeal: React.FC = () => {
       setDealValue2(Number(customerDealvalue));
       setDealValue3(Number(customerDealvalue));
     }
-
+   
     setDescription1(`ACORDO CLIENTE ${peopleValue} - Receita do escritório do acordo`);
     setDescription2(`ACORDO CLIENTE ${peopleValue} - Créditos transitórios para repasse ao cliente`);
     setDescription3(`ACORDO CLIENTE ${peopleValue} - Repasse de valores de acordo`);
@@ -1128,6 +1128,7 @@ const FinancialDeal: React.FC = () => {
       }
 
       const financialDealDetailFilterList: MovementDetail[] = [];
+     
       financialDealDetailFilterList.push({cod_Acordo: dealId, cod_AcordoDetalhe: deal1Id, tpo_AcordoDetalhe: "VE", dta_AcordoDetalhe: dealDate1, vlr_AcordoDetalhe: dealValue1, des_AcordoDetalhe: description1, cod_Categoria: categoryId1, cod_FormaPagamento: paymentFormId1, cod_CentroCusto: centerCostId1, cod_Movimento: movement1Id});
       financialDealDetailFilterList.push({cod_Acordo: dealId, cod_AcordoDetalhe: deal2Id, tpo_AcordoDetalhe: "RC", dta_AcordoDetalhe: dealDate2, vlr_AcordoDetalhe: dealValue2, des_AcordoDetalhe: description2, cod_Categoria: categoryId2, cod_FormaPagamento: paymentFormId2, cod_CentroCusto: centerCostId2, cod_Movimento: movement2Id});
       financialDealDetailFilterList.push({cod_Acordo: dealId, cod_AcordoDetalhe: deal3Id, tpo_AcordoDetalhe: "PC", dta_AcordoDetalhe: dealDate3, vlr_AcordoDetalhe: dealValue3, des_AcordoDetalhe: description3, cod_Categoria: categoryId3, cod_FormaPagamento: paymentFormId3, cod_CentroCusto: centerCostId3, cod_Movimento: movement3Id});

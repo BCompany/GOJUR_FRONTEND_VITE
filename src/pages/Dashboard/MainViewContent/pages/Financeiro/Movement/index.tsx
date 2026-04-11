@@ -21,7 +21,7 @@ import { IoIosPaper } from 'react-icons/io';
 import { BiSave } from 'react-icons/bi'
 import { BsImage } from 'react-icons/bs';
 import { CgFileDocument } from 'react-icons/cg';
-import { FaCheck, FaRegTimesCircle, FaRegCopy, FaFileAlt, FaFilePdf, FaWhatsapp } from 'react-icons/fa';
+import { FaCheck, FaRegTimesCircle, FaRegCopy, FaFileAlt, FaFilePdf, FaWhatsapp, FaFileInvoiceDollar } from 'react-icons/fa';
 import { FiTrash, FiEdit, FiX, FiDownloadCloud, FiMail } from 'react-icons/fi';
 import { HiDocumentText } from 'react-icons/hi';
 import { ImMenu3, ImMenu4 } from 'react-icons/im';
@@ -49,12 +49,16 @@ import FinancialPaymentModal from '../PaymentModal';
 import FinancialDocumentModal from '../DocumentModal';
 import { ModalDeleteOptions, OverlayFinancial } from '../styles';
 import { Container, Content, Process, GridSubContainer, ModalPaymentInformation, HamburguerHeader } from './styles';
+import { FiEye } from "react-icons/fi";
+
 
 const FinancialMovement: React.FC = () => {
   const { isMenuOpen, handleIsMenuOpen, isOpenMenuDealDefaultCategory, handleIsOpenMenuDealDefaultCategory } = useMenuHamburguer();
   const {isConfirmMessage, isCancelMessage, handleCancelMessage, handleConfirmMessage, caller} = useConfirmBox();
   const { handleStateType }  = useStateContext();
   const token = localStorage.getItem('@GoJur:token');
+   const companyId = localStorage.getItem('@GoJur:companyId');
+    const apiKey = localStorage.getItem('@GoJur:apiKey');
   const { pathname } = useLocation();
   const history = useHistory();
   const { addToast } = useToast();
@@ -65,7 +69,8 @@ const FinancialMovement: React.FC = () => {
   const [movementId, setMovementId] = useState('');
   const [movementType, setMovementType] = useState('');
   const [paymentFormList, setPaymentFormList] = useState<ISelectData[]>([]);
-  const [paymentFormId, setPaymentFormId] = useState('');
+  const [paymentFormIdCurrent, setPaymentFormIdCurrent] = useState('');
+   const [paymentFormId, setPaymentFormId] = useState('');
   const [paymentFormDescription, setPaymentFormDescription] = useState<string>("")
   const [paymentFormTerm, setPaymentFormTerm] = useState('');
   const [categoryList, setCategoryList] = useState<ISelectData[]>([]);
@@ -77,6 +82,7 @@ const FinancialMovement: React.FC = () => {
   const [centerCostDescription, setCenterCostDescription] = useState<string>('')
   const [centerCostTerm, setCenterCostTerm] = useState('');
   const [peopleList, setPeopleList] = useState<ISelectData[]>([]);
+ 
   const [peopleId, setPeopleId] = useState('');
   const [peopleDescription, setPeopleDescription] = useState<string>('');
   const [peopleTerm, setPeopleTerm] = useState('');
@@ -84,13 +90,23 @@ const FinancialMovement: React.FC = () => {
   const [paymentMessage, setPaymentMessage] = useState<string>('');
   const [movementDate, setMovementDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [movementValue, setMovementValue] = useState<number>();
+ const [movementdiscount, setMovementDiscount] = useState<number>();
+ const [movementNetValue, setMovementNetValue] = useState<number>();
+
+
   const [movementParcelas, setMovementParcelas] = useState('1');
+  const [currentInstallment, setCurrentInstallment] = useState('1');
+
+  
   const [movementParcelasFirst, setMovementParcelasFirst] = useState('1');
   const [movementParcelasDatas, setMovementParcelasDatas] = useState('M');
+  const [codParcelamento, setCodParcelamento] = useState('0');
   const [showParcelasDatas, setShowParcelasDatas] = useState<boolean>(false);
   const [taxInvoice, setTaxInvoice] = useState<string>('');
   const [movementDescription, setMovementDescription] = useState('');
   const [selectedPeopleList, setSelectedPeopleList] = useState<ISelectData[]>([]);
+  const [selectedPeopleListOld, setSelectedPeopleListOld] = useState<ISelectData[]>([]);
+
   const [showNotifyPeople, setShowNotifyPeople] = useState<boolean>(false);
   const [checkPeopleList, setCheckPeopleList] = useState<boolean>(false);
   const [reminders, setReminders] = useState('00');
@@ -116,7 +132,11 @@ const FinancialMovement: React.FC = () => {
   const [enablePayments, setEnablePayments] = useState<boolean>(true);
   const [showPayments, setShowPayments] = useState<boolean>(false);
   const [showChangeInstallments, setShowChangeInstallments] = useState<boolean>(false);
+  const [showChangeCustomer, setShowChangeCustomer] = useState<boolean>(false);
+  
   const [changeInstallments, setChangeInstallments] = useState<boolean>(false);
+  const [changeCustomer, setChangeCustomer] = useState<boolean>(false);
+  
   const [invoice, setInvoice] = useState<number>(0);
   const [sequence, setSequence] = useState<string>('');
   const [uploadingStatus, setUploadingStatus] = useState<string>('none');
@@ -134,11 +154,16 @@ const FinancialMovement: React.FC = () => {
     <DataTypeProvider formatterComponent={DateFormatter} {...props} />
   )
 
+ const [buttonFatura, setButtonFatura] = useState<string>('Faturar');
+const [invoiceNumber, setInvoiceNumber] = useState<number>(0);
+ 
+
   
   useEffect(() => {
     if (isCancelMessage)
     {
       setShowChangeInstallments(false)
+      setShowChangeCustomer(false)
       handleCancelMessage(false)
     }
   }, [isCancelMessage, caller]);
@@ -149,6 +174,7 @@ const FinancialMovement: React.FC = () => {
     {
       handleConfirmChangeInstallments()
       setShowChangeInstallments(false)
+      setShowChangeCustomer(false)
       handleConfirmMessage(false)
     }
   }, [isConfirmMessage, caller]);
@@ -183,6 +209,7 @@ const FinancialMovement: React.FC = () => {
     if(movementId != '' && movementId != '0')
     {
       LoadMovement(movementId)
+      
     }
   }, [movementId])
 
@@ -260,7 +287,13 @@ const FinancialMovement: React.FC = () => {
       setMovementParcelas(response.data.qtd_Parcelamento.toString())
       setMovementParcelasFirst(response.data.qtd_Parcelamento.toString())
       setMovementParcelasDatas(response.data.Periodicidade)
+      setCodParcelamento(response.data.cod_Parcelamento)
+
+      setCurrentInstallment(response.data.num_Parcela.toString() + '/' + response.data.qtd_Parcelamento.toString())
+
       setPaymentFormId(response.data.cod_FormaPagamento)
+      setPaymentFormIdCurrent(response.data.cod_FormaPagamento)
+      
       setPaymentFormDescription(response.data.des_FormaPagamento)
       setCategoryId(response.data.cod_Categoria)
       setCategoryDescription(response.data.nom_Categoria)
@@ -268,7 +301,12 @@ const FinancialMovement: React.FC = () => {
       setCenterCostDescription(response.data.des_CentroCusto)
       setTaxInvoice(response.data.num_NotaFiscal)
       setMovementDescription(response.data.des_Movimento)
-      setSelectedPeopleList(response.data.UserList)
+      //setSelectedPeopleList(response.data.UserList)
+      //setSelectedPeopleListOld(response.data.UserList)
+
+      setSelectedPeopleList(response.data.UserList.map(item => ({ ...item })));
+      setSelectedPeopleListOld(response.data.UserList.map(item => ({ ...item })));
+
       setFlgNotifyPeople(response.data.flg_NotificaPessoa)
       setFlgNotifyEmail(response.data.flg_NotificaEmail)
       setFlgNotifyWhatsApp(response.data.flg_NotificaWhatsApp)
@@ -282,6 +320,11 @@ const FinancialMovement: React.FC = () => {
       setInvoice(response.data.cod_FaturaParcela)
       setSequence(response.data.num_SequenciaFatura)
 
+
+      setMovementDiscount(response.data.pct_Desconto)
+      setMovementNetValue(response.data.vlr_Liquido)
+
+
       if(response.data.qtd_Parcelamento != "1"){
         setEnablePayments(false)
       }
@@ -294,6 +337,7 @@ const FinancialMovement: React.FC = () => {
 
       await LoadPayments()
       await LoadDocuments()
+      await LoadBillingInvoicing(movementId);
 
       setIsLoading(false);
     }
@@ -302,6 +346,44 @@ const FinancialMovement: React.FC = () => {
       addToast({type: "info", title: "Operação não realizada", description: err.response.data.Message})
     }
   }
+
+
+  const LoadBillingInvoicing = async (instalmentId) => {
+      try {
+          setIsLoading(true);
+  
+          const response = await api.get('/Financeiro/Faturamento2/Editar', {
+              params: {
+                  instalmentId: Number(instalmentId),
+                  token,
+                  companyId,
+                  apiKey
+              }
+          });
+  
+          const data = response.data;
+  
+          if (data && Object.keys(data).length > 0) {
+
+            setButtonFatura('Ver Fatura');
+            setInvoiceNumber(Number(data.invoiceNumber));
+         
+
+          } 
+  
+          setIsLoading(false);
+  
+      } catch (err: any) {
+          setIsLoading(false);
+          addToast({
+              type: "info",
+              title: "Operação não realizada",
+              description: err.response?.data?.Message
+          });
+      }
+  };
+  
+  
 
 
   const LoadPayments = async () => {
@@ -396,7 +478,19 @@ const FinancialMovement: React.FC = () => {
   const handleValue = (event, value, maskedValue) => {
     event.preventDefault();
     setMovementValue(value)
+
+    calculateNetValue(value, movementdiscount);
+
   };
+
+  const handleDiscount = (event, value, maskedValue) => {
+    event.preventDefault();
+    setMovementDiscount(value)
+
+    calculateNetValue(movementValue, value);
+  };
+
+
 
 
   const handleChangeParcelas = (id: string) => {
@@ -455,6 +549,8 @@ const FinancialMovement: React.FC = () => {
       setPeopleDescription(item.label)
       setShowNotifyPeople(reminders != '00' && reminders != null)
       handleListItemPeople(item)
+      setChangeCustomer(true);
+    
     }else{
       setPeopleId('')
       setPeopleDescription('')
@@ -533,10 +629,12 @@ const FinancialMovement: React.FC = () => {
         flg_Reembolso: flgReembolso,
         cod_Processo: matterId,
         cod_Conta: accountId,
+        pct_Desconto:movementdiscount,
+        vlr_Liquido:movementNetValue,
         token
       })
 
-      addToast({type: "success", title: "Operação realizada com sucess", description: `${  movementType == 'R'? 'Receita': 'Despesa'  } salva com sucesso`})
+      addToast({type: "success", title: "Operação realizada com sucesso", description: `${  movementType == 'R'? 'Receita': 'Despesa'  } salva com sucesso`})
 
       handleStateType('Inactive')
 
@@ -556,7 +654,7 @@ const FinancialMovement: React.FC = () => {
       setIsSaving(false)
       setShowChangeInstallments(false)
     }
-  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgStatus, changeInstallments, invoice, flgNotifyEmail, flgNotifyWhatsApp]);
+  }, [isSaving, selectedPeopleList, movementId, invoiceNumber, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, movementdiscount, movementNetValue, token, flgStatus, changeInstallments, changeCustomer, invoice, flgNotifyEmail, flgNotifyWhatsApp]);
 
 
   const Copy = useCallback(async() => {
@@ -592,6 +690,8 @@ const FinancialMovement: React.FC = () => {
         flg_Reembolso: flgReembolso,
         cod_Processo: matterId,
         cod_Conta: accountId,
+        pct_Desconto:movementdiscount,
+        vlr_Liquido:movementNetValue,
         token
       })
 
@@ -605,7 +705,7 @@ const FinancialMovement: React.FC = () => {
       addToast({type: "info", title: "Falha ao copiar movimento.", description: err.response.data.Message})
       setIsSaving(false)
     }
-  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, token, flgNotifyEmail, flgNotifyWhatsApp]);
+  }, [isSaving, selectedPeopleList, movementId, movementDate, movementValue, movementType, movementParcelas, movementParcelasDatas, paymentFormId, categoryId, centerCostId, taxInvoice, movementDescription, flgNotifyPeople, reminders, actionSave, flgReembolso, matterId, accountId, movementdiscount, movementNetValue, token, flgNotifyEmail, flgNotifyWhatsApp]);
 
 
   const CheckDeleteType = (qtd) => {
@@ -640,6 +740,7 @@ const FinancialMovement: React.FC = () => {
   }, [movementId]);
 
 
+
   const Validate =() => {
     let isValid = true;
 
@@ -647,6 +748,35 @@ const FinancialMovement: React.FC = () => {
     if (isSaving){
       return;
     }
+
+    
+/*
+    if (invoiceNumber !== 0)
+    {  
+        
+      if(changeCustomer)
+      {
+          const newCustomers = selectedPeopleList.filter(item =>
+            item.label.toLowerCase().includes('cliente')
+          );
+        
+          const formerCustomers = selectedPeopleListOld.filter(item1 =>
+            item1.label.toLowerCase().includes('cliente')
+          );
+        
+          const thereWasAChange =
+            newCustomers.some(novo =>
+              !formerCustomers.some(antigo => antigo.id === novo.id)
+            );
+
+          if (thereWasAChange) {
+            setShowChangeCustomer(true)
+            isValid = false;
+          }
+
+        }
+    }
+*/
 
     if (categoryId == '')
     {
@@ -688,6 +818,7 @@ const FinancialMovement: React.FC = () => {
       setShowModalOptions(true)
       isValid = false;
     }
+
 
     return isValid;
   }
@@ -1069,6 +1200,7 @@ const FinancialMovement: React.FC = () => {
 
   const handleConfirmChangeInstallments = async () => {
     setChangeInstallments(false);
+    setChangeCustomer(false);
     setActionSave('all');
   }
 
@@ -1106,6 +1238,51 @@ const FinancialMovement: React.FC = () => {
   const handleCloseLog = () => {
     setShowLog(false)
   }
+
+
+  const handleFaturar = async () => {
+  try {
+    const response = await api.get('/Financeiro/ValidarFatura', {
+      params: {
+        installmentsId: codParcelamento,
+        page: 1,
+        rows: 500,
+        token
+      }
+    });
+
+   
+    history.push(`/financeiro/billinginvoicing?instalmentId=${movementId}`);
+
+  } catch (error) {
+    console.error(error);
+    addToast({type: "info", title: "Operação NÃO realizada", description: error.response.data.Message})
+  }
+};
+
+
+const fourDecimalPlacesConfig = {
+  locale: "pt-BR",
+  formats: {
+    number: {
+      BRL: {
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4
+      }
+    }
+  }
+};
+
+
+const calculateNetValue = (value, discount) => {
+  const val = Number(value || 0);
+  const desc = Number(discount || 0);
+
+  const result = val - (val * (desc / 100));
+
+  setMovementNetValue(parseFloat(result.toFixed(4)));
+};
+
 
 
   return (
@@ -1163,7 +1340,10 @@ const FinancialMovement: React.FC = () => {
             </span>
           )}
         </div>
-        <br />
+      
+         <div style={{ textAlign: 'right' }}>
+          <span>Parcela {currentInstallment}</span>
+         </div>
 
         <section id='FirstElements'>
           <label htmlFor='Data'>
@@ -1185,24 +1365,64 @@ const FinancialMovement: React.FC = () => {
             />
           </label>
 
-          <label htmlFor="parcela">
-            Parcelas ?
+
+         
+      <label htmlFor="desconto">
+           
+        <div style={{ display: "flex"}}>
+            <div style={{width: '50%'}} className="fieldGroup">
+            <span>(%)Desconto</span>
+            <IntlCurrencyInput
+                  currency="BRL"
+                  config={fourDecimalPlacesConfig}
+                  value={movementdiscount}
+                  className='inputField'
+                  onChange={handleDiscount}
+                />
+          </div>
+       &nbsp;&nbsp;&nbsp;
+            <div
+              className="fieldGroup"
+              style={{pointerEvents: ((!enablePayments && movementId != '0')? 'none': 'auto'), width: '50%', opacity:((!enablePayments && movementId != '0')? '0.5': '1')}}
+            >
+           <span>Valor Liquido</span>
+              <IntlCurrencyInput
+                  currency="BRL"
+                  config={currencyConfig}
+                  value={movementNetValue}
+                  className='inputField'
+                  onChange={handleValue}
+                  disabled={true}
+                />
+            </div>
+
+    </div>  
+  </label>
+
+
+
+
+      <label htmlFor="parcela">
+           
+        <div style={{ display: "flex" }}>
+            <div style={{width: '50%'}}>
+               Parcelas ?
             <Select
               autoComplete="off"
               styles={selectStyles}
               value={parcelas.filter(options => options.id === movementParcelas)}
               onChange={(item) => handleChangeParcelas(item? item.id: '')}
               options={parcelas}
+            
             />
-          </label>
+          </div>
+          &nbsp; &nbsp; &nbsp;
 
-          {showParcelasDatas && (
-            <div
-              className='disableDiv'
-              style={{pointerEvents: ((!enablePayments && movementId != '0')? 'none': 'auto'), opacity:((!enablePayments && movementId != '0')? '0.5': '1')}}
+      {showParcelasDatas && (
+          <div
+              style={{pointerEvents: ((!enablePayments && movementId != '0')? 'none': 'auto'), width: '50%', opacity:((!enablePayments && movementId != '0')? '0.5': '1')}}
             >
-              <label htmlFor="parcelaData">
-                &nbsp;
+         &nbsp;
                 <Select
                   disabled={enablePayments}
                   autoComplete="off"
@@ -1212,11 +1432,19 @@ const FinancialMovement: React.FC = () => {
                   onChange={(item) => setMovementParcelasDatas(item? item.id: '')}
                   options={parcelasDatas}
                 />
-              </label>
+         
             </div>
           )}
 
+
+    </div>  
+  </label>
+
+            {/*
           {!showParcelasDatas && <label />}
+                */}
+
+
         </section>
 
         <section id='SecondElements'>
@@ -1582,6 +1810,19 @@ const FinancialMovement: React.FC = () => {
           </div>
 
           <div style={{float:'right'}}>
+
+          {movementType == "R" && movementId != "0" && (
+            <button
+              className="buttonClick"
+              type='button'
+              onClick={() => { handleFaturar() }}
+            >  
+              <FaFileInvoiceDollar />
+              {buttonFatura}
+            </button>
+            )}
+
+
             <button
               className="buttonClick"
               type='button'
@@ -1793,6 +2034,16 @@ const FinancialMovement: React.FC = () => {
           caller="changeDefaultHeader"
           useCheckBoxConfirm
           message="Foi alterado o número de parcelas do movimento, o reparcelamento implica em alterar todas as parcelas considerando os dados do movimento atual. Eventuais liquidações serão mantidas desde que a parcela não seja removida (no caso de redução de parcelas)."
+        />
+      )}
+
+
+      {showChangeCustomer && (
+        <ConfirmBoxModal
+          title="Alterar cliente do movimento"
+          caller="changeDefaultHeaderCustomer"
+          useCheckBoxConfirm
+          message="Foi alterado o cliente do movimento, a alteração de cliente implica em alterar todas as parcelas considerando os dados do movimento atual. Eventuais liquidações serão mantidas desde que a parcela não seja removida (no caso de redução de parcelas)."
         />
       )}
 

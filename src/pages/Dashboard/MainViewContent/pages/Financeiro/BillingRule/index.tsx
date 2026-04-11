@@ -61,6 +61,7 @@ const BillingRule: React.FC = () => {
   const { isMOBILE } = useDevice();
   const token = localStorage.getItem('@GoJur:token');
   const companyId = localStorage.getItem('@GoJur:companyId');
+  const apiKey = localStorage.getItem('@GoJur:apiKey');
   const MDLFAT = localStorage.getItem('@GoJur:moduleCode');
   const [flgNotifyEmail1, setFlgNotifyEmail1] = useState<boolean>(true);
   const [flgNotifyWhatsApp1, setFlgNotifyWhatsApp1] = useState<boolean>(false);
@@ -122,7 +123,7 @@ const BillingRule: React.FC = () => {
       billingRulerId: finalBillingRulerId,
       token,
       companyId: Number(companyId),
-
+      apiKey,
       billingRulerWarningDTOList: data.billingRulerWarningDTOList.map(
         (item, index) => {
 
@@ -221,7 +222,7 @@ const BillingRule: React.FC = () => {
       billingRulerId: finalBillingRulerId,
       token,
       companyId: Number(companyId),
-
+      apiKey,
       billingRulerWarningDTOList: data.billingRulerWarningDTOList.map(
         (item, index) => {
 
@@ -317,6 +318,8 @@ const BillingRule: React.FC = () => {
           params: {
             id: billingRulerIdParam,
             token,
+            companyId,
+            apiKey
           },
         }
       );
@@ -395,8 +398,19 @@ const BillingRule: React.FC = () => {
       return data;
 
     } catch (err) {
+
+      if (err.response.data.statusCode == 1002){
+        addToast({
+          type: 'info',
+          title: 'Permissão negada',
+          description: 'Seu usuário não tem permissão para acessar esse módulo, contate o administrador do sistema',
+        });
+        signOut()
+      }
+
       console.error(err);
       return null;
+
     }
   }, [token, reset]);
 

@@ -26,6 +26,63 @@ export async function ListCustomerData(term: string){
     return customerListData;
 }
 
+
+
+export async function ListCustomerPersonData(term: string){
+
+  const token = localStorage.getItem('@GoJur:token');
+
+    const customerListData: ISelectData[] =[]
+    const response = await api.post('/Clientes/Pessoa/ListarComboBox', {
+        token,
+        page:0,
+        rows:50,
+        filterClause:term
+      })
+
+    response.data.map((item) => {
+        customerListData.push({
+            id:item.id,
+            label:item.value
+        })
+
+        return customerListData;
+    })
+
+    return customerListData;
+}
+
+
+
+
+export async function ListFinancialIntegratorData(term: string){
+
+  const token = localStorage.getItem('@GoJur:token');
+
+    const IntegratorListData: ISelectData[] =[]
+    const response = await api.post('/IntegradorFinanceiro/ListarComboBox', {
+        token,
+        page:0,
+        rows:50,
+        filterClause:term
+      })
+
+    response.data.map((item) => {
+        IntegratorListData.push({
+            id:item.id,
+            label:item.value
+        })
+
+        return IntegratorListData;
+    })
+
+    return IntegratorListData;
+}
+
+
+
+
+
 export async function ListLawyerData(term: string){
     const token = localStorage.getItem('@GoJur:token');
 
