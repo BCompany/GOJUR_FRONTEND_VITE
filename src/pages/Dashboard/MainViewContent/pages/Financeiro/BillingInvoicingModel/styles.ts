@@ -278,6 +278,36 @@ export const InvoiceDescSection = styled.div`
   }
 `;
 
+export const SectionToggleRow = styled.div`
+  display: flex;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+
+  .toggle-btn {
+    font-size: 0.62rem;
+    font-family: Montserrat;
+    color: var(--grey);
+    border: 1px dashed var(--gray-outline);
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.65rem;
+    cursor: pointer;
+    background: transparent;
+    transition: color 0.15s, border-color 0.15s, background-color 0.15s;
+
+    &:hover {
+      color: var(--blue-twitter);
+      border-color: var(--blue-light);
+    }
+
+    &.active {
+      color: var(--blue-twitter);
+      border-color: var(--blue-twitter);
+      background-color: var(--blue-soft);
+      font-weight: 600;
+    }
+  }
+`;
+
 export const InvoiceObservacao = styled.div`
   p.section-title {
     font-size: 0.6rem;
@@ -317,10 +347,14 @@ export const InvoiceObservacao = styled.div`
 
 export const InvoiceFooter = styled.div`
   background-color: var(--gray);
-  padding: 0.85rem 2rem;
+  min-height: 56px;
+  padding: 0 2rem;
   font-size: 0.62rem;
   color: var(--grey);
   text-align: center;
   border-top: 1px solid var(--gray-outline);
   letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;

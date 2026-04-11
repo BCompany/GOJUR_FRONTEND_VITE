@@ -7,6 +7,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautif
 import { useHistory } from 'react-router-dom';
 import { useToast } from 'context/toast';
 import { HeaderPage } from 'components/HeaderPage';
+import { ToggleSwitch } from 'components/ToggleSwitch';
 import {
   Container,
   ActionBar,
@@ -27,6 +28,7 @@ import {
   DraggableSectionWrap,
   SectionDragHandle,
   InvoiceObservacao,
+  SectionToggleRow,
 } from './styles';
 
 type SectionId = 'customer' | 'description';
@@ -49,6 +51,7 @@ const BillingInvoicingModel: React.FC = () => {
   const [logoSrc, setLogoSrc] = useState<string>('');
   const [headerColor, setHeaderColor] = useState<string>('#0077c0');
   const [sections, setSections] = useState<ISection[]>(INITIAL_SECTIONS);
+  const [imprimirObsParcela, setImprimirObsParcela] = useState<boolean>(false);
 
   const companyNome     = 'Escritório Jurídico Exemplo';
   const companyEndereco = 'Av. Paulista, 1000 – Bela Vista, São Paulo – SP';
@@ -101,7 +104,8 @@ const BillingInvoicingModel: React.FC = () => {
     }
 
     return (
-      <InvoiceDescSection>
+      <>
+        <InvoiceDescSection>
         <p className="section-title">Descrição dos Serviços</p>
         <table className="desc-table">
           <thead>
@@ -119,7 +123,15 @@ const BillingInvoicingModel: React.FC = () => {
             </tr>
           </tbody>
         </table>
-      </InvoiceDescSection>
+        </InvoiceDescSection>
+        <SectionToggleRow>
+          <ToggleSwitch
+            toggle={imprimirObsParcela}
+            onClick={() => setImprimirObsParcela(prev => !prev)}
+            label="Imprimir Obs Parcela"
+          />
+        </SectionToggleRow>
+      </>
     );
   };
 
