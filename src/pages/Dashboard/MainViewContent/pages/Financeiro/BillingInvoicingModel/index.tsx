@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { FiSave, FiImage, FiTrash2 } from 'react-icons/fi';
+import LoaderWaiting from 'react-spinners/ClipLoader';
 import { MdBlock, MdDragHandle } from 'react-icons/md';
 import { IoColorPaletteOutline } from 'react-icons/io5';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
@@ -30,6 +31,7 @@ import {
   SectionDragHandle,
   InvoiceObservacao,
   SectionToggleRow,
+  InvoiceLoadingWrap,
 } from './styles';
 
 interface IParameterData {
@@ -69,6 +71,7 @@ const BillingInvoicingModel: React.FC = () => {
   const [headerColor, setHeaderColor] = useState<string>('#0077c0');
   const [sections, setSections] = useState<ISection[]>(INITIAL_SECTIONS);
   const [imprimirObsParcela, setImprimirObsParcela] = useState<boolean>(false);
+  const [isLoadingSettings, setIsLoadingSettings] = useState<boolean>(true);
 
   useEffect(() => {
     loadSettings();
@@ -93,6 +96,8 @@ const BillingInvoicingModel: React.FC = () => {
       }
     } catch {
       // keep defaults
+    } finally {
+      setIsLoadingSettings(false);
     }
   }, [token]);
 
@@ -263,6 +268,12 @@ const BillingInvoicingModel: React.FC = () => {
 
       {/* ─── Invoice (centered) ─── */}
       <InvoiceWrapper>
+        {isLoadingSettings && (
+          <InvoiceLoadingWrap>
+            <LoaderWaiting size={32} color="var(--blue-twitter)" />
+          </InvoiceLoadingWrap>
+        )}
+        {!isLoadingSettings && (
         <InvoicePaper>
 
           <InvoiceHeader bgColor={headerColor}>
@@ -338,6 +349,7 @@ const BillingInvoicingModel: React.FC = () => {
           </InvoiceFooter>
 
         </InvoicePaper>
+        )}
       </InvoiceWrapper>
 
       {/* ─── Save / Close (bottom) ─── */}

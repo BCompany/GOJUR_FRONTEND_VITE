@@ -46,6 +46,14 @@ export const ColorButtonWrap = styled.div`
   }
 `;
 
+export const InvoiceLoadingWrap = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  width: 100%;
+`;
+
 export const InvoiceWrapper = styled.div`
   flex: 1;
   overflow-y: auto;
