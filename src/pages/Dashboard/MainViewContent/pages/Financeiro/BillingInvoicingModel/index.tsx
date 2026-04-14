@@ -1,11 +1,12 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import React, { ChangeEvent, useRef, useState } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { FiSave, FiImage, FiTrash2 } from 'react-icons/fi';
 import { MdBlock, MdDragHandle } from 'react-icons/md';
 import { IoColorPaletteOutline } from 'react-icons/io5';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { useHistory } from 'react-router-dom';
 import { useToast } from 'context/toast';
+import api from 'services/api';
 import { HeaderPage } from 'components/HeaderPage';
 import { ToggleSwitch } from 'components/ToggleSwitch';
 import {
@@ -31,11 +32,26 @@ import {
   SectionToggleRow,
 } from './styles';
 
+interface IParameterData {
+  parameterId: number;
+  parameterName: string;
+  parameterValue: string;
+  message: string;
+}
+
+interface IInvoiceModelSettings {
+  headercolor: string;
+  printnotes: 'S' | 'N';
+  customersecposition: 1 | 2;
+}
+
 type SectionId = 'customer' | 'description';
 
 interface ISection {
   id: SectionId;
 }
+
+const PARAMETER_NAME = '#INVOICEMODEL';
 
 const INITIAL_SECTIONS: ISection[] = [
   { id: 'customer' },
@@ -47,11 +63,38 @@ const BillingInvoicingModel: React.FC = () => {
   const { addToast } = useToast();
   const logoInputRef = useRef<HTMLInputElement>(null);
   const colorInputRef = useRef<HTMLInputElement>(null);
+  const token = localStorage.getItem('@GoJur:token');
 
   const [logoSrc, setLogoSrc] = useState<string>('');
   const [headerColor, setHeaderColor] = useState<string>('#0077c0');
   const [sections, setSections] = useState<ISection[]>(INITIAL_SECTIONS);
   const [imprimirObsParcela, setImprimirObsParcela] = useState<boolean>(false);
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = useCallback(async () => {
+    try {
+      const response = await api.post<IParameterData[]>('/Parametro/Selecionar', {
+        token,
+        parametersName: PARAMETER_NAME,
+      });
+
+      if (response.data.length > 0 && response.data[0].parameterValue) {
+        const settings: IInvoiceModelSettings = JSON.parse(response.data[0].parameterValue);
+
+        if (settings.headercolor) setHeaderColor(settings.headercolor);
+        setImprimirObsParcela(settings.printnotes === 'S');
+
+        if (settings.customersecposition === 2) {
+          setSections([{ id: 'description' }, { id: 'customer' }]);
+        }
+      }
+    } catch {
+      // keep defaults
+    }
+  }, [token]);
 
   const companyNome     = 'Escritório Jurídico Exemplo';
   const companyEndereco = 'Av. Paulista, 1000 – Bela Vista, São Paulo – SP';
@@ -82,13 +125,39 @@ const BillingInvoicingModel: React.FC = () => {
     setSections(reordered);
   };
 
-  const handleSave = () => {
-    addToast({
-      type: 'success',
-      title: 'Modelo de Fatura Salvo',
-      description: 'As configurações do modelo de fatura foram salvas.',
-    });
-  };
+  const handleSave = useCallback(async () => {
+    try {
+      const customerIndex = sections.findIndex(s => s.id === 'customer');
+      const descriptionIndex = sections.findIndex(s => s.id === 'description');
+      const customerSecPosition: 1 | 2 = customerIndex < descriptionIndex ? 1 : 2;
+
+      const settings: IInvoiceModelSettings = {
+        headercolor: headerColor,
+        printnotes: imprimirObsParcela ? 'S' : 'N',
+        customersecposition: customerSecPosition,
+      };
+
+      await api.post('/Parametro/Salvar', {
+        token,
+        parametersName: PARAMETER_NAME,
+        parameterType: 'G',
+        allowNull: true,
+        parameterValue: JSON.stringify(settings),
+      });
+
+      addToast({
+        type: 'success',
+        title: 'Modelo de Fatura Salvo',
+        description: 'As configurações do modelo de fatura foram salvas.',
+      });
+    } catch {
+      addToast({
+        type: 'error',
+        title: 'Erro ao salvar',
+        description: 'Não foi possível salvar as configurações. Tente novamente.',
+      });
+    }
+  }, [token, headerColor, imprimirObsParcela, sections, addToast]);
 
   const renderSection = (id: SectionId) => {
     if (id === 'customer') {
