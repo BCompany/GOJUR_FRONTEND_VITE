@@ -274,7 +274,7 @@ const BillingInvoicingModel: React.FC = () => {
           </InvoiceLoadingWrap>
         )}
         {!isLoadingSettings && (
-        <InvoicePaper>
+        <InvoicePaper accentColor={headerColor}>
 
           <InvoiceHeader bgColor={headerColor}>
             <InvoiceHeaderLeft>

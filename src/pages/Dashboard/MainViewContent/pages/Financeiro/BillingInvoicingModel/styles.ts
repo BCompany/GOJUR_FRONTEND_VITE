@@ -82,7 +82,8 @@ export const BottomBar = styled.div`
 
 /* ─── Invoice Paper ─── */
 
-export const InvoicePaper = styled.div`
+export const InvoicePaper = styled.div<{ accentColor: string }>`
+  --invoice-accent: ${props => props.accentColor};
   width: 700px;
   min-height: 900px;
   background: white;
@@ -190,14 +191,14 @@ export const InvoiceMetaItem = styled.div`
 `;
 
 export const InvoiceCustomerSection = styled.div`
-  border-left: 3px solid var(--blue);
+  border-left: 3px solid var(--invoice-accent);
   padding-left: 0.85rem;
 
   p.section-title {
     font-size: 0.6rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--blue);
+    color: var(--invoice-accent);
     font-weight: 700;
     margin-bottom: 0.6rem;
   }
@@ -251,7 +252,7 @@ export const InvoiceDescSection = styled.div`
     font-size: 0.6rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--blue);
+    color: var(--invoice-accent);
     font-weight: 700;
     margin-bottom: 0.6rem;
     border-bottom: 1px solid var(--gray-outline);
@@ -263,7 +264,7 @@ export const InvoiceDescSection = styled.div`
     border-collapse: collapse;
 
     th {
-      background-color: var(--blue);
+      background-color: var(--invoice-accent);
       color: white;
       font-size: 0.65rem;
       padding: 0.5rem 0.75rem;
@@ -320,7 +321,7 @@ export const InvoiceObservacao = styled.div`
     font-size: 0.6rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--blue);
+    color: var(--invoice-accent);
     font-weight: 700;
     margin-bottom: 0.5rem;
     border-bottom: 1px solid var(--gray-outline);
