@@ -77,7 +77,7 @@ const BillingInvoicingModel: React.FC = () => {
     loadSettings();
   }, []);
 
-  const loadSettings = useCallback(async () => {
+  const loadSettings =async () => {
     try {
       const response = await api.post<IParameterData[]>('/Parametro/Selecionar', {
         token,
@@ -99,7 +99,7 @@ const BillingInvoicingModel: React.FC = () => {
     } finally {
       setIsLoadingSettings(false);
     }
-  }, [token]);
+  };
 
   const companyNome     = 'Escritório Jurídico Exemplo';
   const companyEndereco = 'Av. Paulista, 1000 – Bela Vista, São Paulo – SP';
@@ -162,7 +162,7 @@ const BillingInvoicingModel: React.FC = () => {
         description: 'Não foi possível salvar as configurações. Tente novamente.',
       });
     }
-  }, [token, headerColor, imprimirObsParcela, sections, addToast]);
+  }, [headerColor, imprimirObsParcela, sections]);
 
   const renderSection = (id: SectionId) => {
     if (id === 'customer') {
