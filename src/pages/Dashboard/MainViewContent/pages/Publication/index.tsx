@@ -106,6 +106,8 @@ const Publication: React.FC = () => {
     { value: 'itemSearch_withoutMatter', label: 'Sem Processo' },
     { value: 'itemSearch_read', label: 'Lidas' },
     { value: 'itemSearch_unread', label: 'Não Lidas' },
+    { value: 'itemSearch_publication', label: 'Publicações Diários Justiça' },
+    { value: 'itemSearch_matterEvent', label: 'Andamentos Processuais' }
   ];
 
   // Custom Dates
