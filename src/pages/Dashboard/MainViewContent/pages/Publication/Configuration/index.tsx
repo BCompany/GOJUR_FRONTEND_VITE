@@ -38,7 +38,7 @@ const PublicationConfiguration = () => {
   const visualizationTypeList = [
     { id:'CN', label: 'Central de Notificações' },
     { id:'PU', label: 'Publicações' },
-    { id:'ME', label: 'Acompanhamentos Processuais' }
+    { id:'ME', label: 'Andamentos Processuais' }
   ]
 
 
@@ -109,7 +109,7 @@ const PublicationConfiguration = () => {
               O tipo selecionado define como o modulo será apresentado. <br />
               A opção <b>Central de Notificações</b> é a mais completa, serão exibidas as publicações dos diários oficiais e os andamentos processuais capturados no site dos tribunais. <br />
               A opção <b>Publicações</b> exibe apenas as publicações capturados nos diários oficiais dos tribunais. <br />
-              A opção <b>Acompanhamentos Processuais</b> exibe apenas os andamentos processuais capturados no site dos tribunais. <br /><br />
+              A opção <b>Andamentos Processuais</b> exibe apenas os andamentos processuais capturados no site dos tribunais. <br /><br />
             </div>
 
             <div style={{width:'30%', marginLeft:'35%'}}>

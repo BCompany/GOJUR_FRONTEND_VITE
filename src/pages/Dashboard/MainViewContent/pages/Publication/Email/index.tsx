@@ -288,7 +288,7 @@ const PublicationEmail = () => {
                 />
               </div>
               <div style={{float:'left', marginLeft:'10px'}} title="Ao marcar a opção, também serão enviados no e-mail o conteúdo dos andamentos capturados nos sites dos tribunais">
-                Incluir Acompanhamentos <br />Site Tribunal
+                Incluir Andamentos <br />Site Tribunal
                 <FcAbout style={{height:'15px', width:'15px', marginLeft:'10px'}} title="Ao marcar a opção, também serão enviados no e-mail o conteúdo dos andamentos capturados nos sites dos tribunais" />
               </div>
             </div>
