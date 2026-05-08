@@ -341,7 +341,7 @@ const ChangePlanCustomerModal = (props) => {
   }
   
 
-  const calculateDays = () => {
+  const calculateDays2 = () => {
     const dias = 15;
     const hoje = new Date();
     const primeiroDia = hoje.getDate();
@@ -365,6 +365,34 @@ const ChangePlanCustomerModal = (props) => {
   
     setDaysListNumbers(listSelectData);
   };
+
+
+  const calculateDays = () => {
+    const dias = 15;
+    const hoje = new Date();
+
+    const uniqueDays = new Set<number>();
+
+    for (let i = 0; i < dias; i++) {
+      const data = new Date();
+      data.setDate(hoje.getDate() + i);
+
+      const dia = data.getDate();
+
+      // múltiplos de 5
+      if (dia % 5 === 0) {
+        uniqueDays.add(dia);
+      }
+    }
+
+    const listSelectData: ISelectData[] = Array.from(uniqueDays).map(item => ({
+      id: item.toString(),
+      label: item.toString()
+    }));
+
+    setDaysListNumbers(listSelectData);
+  };
+
 
   const handleChangeDay = (label: string) => {
     setSelectedDay(label)

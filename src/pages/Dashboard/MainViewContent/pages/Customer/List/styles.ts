@@ -123,7 +123,7 @@ export const ListCostumer = styled.div`
 export const CostumerCard = styled.div`
     /* border: 1px solid red; */
     flex: 1;
-    height: 16rem;
+    height: 17.5rem;
     display: flex;
     flex-direction: column;
     align-items: center;
