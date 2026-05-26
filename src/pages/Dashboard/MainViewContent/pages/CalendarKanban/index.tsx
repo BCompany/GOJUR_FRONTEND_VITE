@@ -1,11 +1,11 @@
 import React, { useCallback, useRef, useState } from 'react';
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { FiPlus, FiTrash2, FiClock, FiLayout, FiX, FiCheck, FiEdit2 } from 'react-icons/fi';
 import { HeaderPage } from 'components/HeaderPage';
 import { useHistory } from 'react-router-dom';
 import {
   AddCardButton,
   AddCardForm,
-  AddPanelForm,
   AddPhaseColumn,
   AppointmentCard,
   BoardLayout,
@@ -14,9 +14,10 @@ import {
   Content,
   EmptyState,
   KanbanArea,
+  ModalOverlay,
   PageHeader,
   PanelItem,
-  PanelSidebar,
+  PanelsModal,
   PhaseColumn,
   PhaseHeader,
 } from './styles';
@@ -110,6 +111,9 @@ export default function AgendaKanban() {
   const [cards, setCards] = useState<ICard[]>(INITIAL_CARDS);
 
   const [activePanelId, setActivePanelId] = useState<number>(INITIAL_PANELS[0].id);
+
+  // Panels modal
+  const [showPanelsModal, setShowPanelsModal] = useState(false);
 
   // New panel form
   const [showAddPanel, setShowAddPanel] = useState(false);
@@ -251,6 +255,32 @@ export default function AgendaKanban() {
     setCards((prev) => prev.filter((c) => c.id !== cardId));
   }, []);
 
+  const onDragEnd = useCallback((result: DropResult) => {
+    const { source, destination, draggableId } = result;
+    if (!destination) return;
+    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
+
+    const cardId = parseInt(draggableId, 10);
+    const destPhaseId = parseInt(destination.droppableId, 10);
+
+    setCards((prev) => {
+      // Remove card from its current position
+      const withoutCard = prev.filter((c) => c.id !== cardId);
+      const moved = prev.find((c) => c.id === cardId);
+      if (!moved) return prev;
+
+      const updated = { ...moved, phaseId: destPhaseId };
+
+      // Insert at the destination index within the target phase
+      const destPhaseCards = withoutCard.filter((c) => c.phaseId === destPhaseId);
+      const otherCards = withoutCard.filter((c) => c.phaseId !== destPhaseId);
+
+      destPhaseCards.splice(destination.index, 0, updated);
+
+      return [...otherCards, ...destPhaseCards];
+    });
+  }, []);
+
   /* ── Keyboard shortcuts ── */
   const onPanelKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleAddPanel();
@@ -284,74 +314,94 @@ export default function AgendaKanban() {
             </button>
           </div>
           <h3>{activePanel?.name ?? ''}</h3>
-          <div className="right" />
+          <div className="right">
+            <button
+              type="button"
+              className="buttonClick"
+              onClick={() => setShowPanelsModal(true)}
+            >
+              <FiLayout size={12} /> Painéis
+            </button>
+            <button
+              type="button"
+              className="buttonClick"
+              onClick={() => { setShowAddPanel(true); setShowPanelsModal(true); setTimeout(() => panelNameRef.current?.focus(), 50); }}
+            >
+              <FiPlus size={12} /> Novo Painel
+            </button>
+          </div>
         </PageHeader>
 
-        <BoardLayout>
-          {/* ── Panel sidebar ── */}
-          <PanelSidebar>
-            <h5>Painéis</h5>
+        {/* ── Panels modal ── */}
+        {showPanelsModal && (
+          <ModalOverlay onClick={() => { setShowPanelsModal(false); setShowAddPanel(false); setNewPanelName(''); }}>
+            <PanelsModal onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h4>Painéis</h4>
+                <FiX onClick={() => { setShowPanelsModal(false); setShowAddPanel(false); setNewPanelName(''); }} />
+              </div>
 
-            {panels.map((panel) => (
-              <PanelItem
-                key={panel.id}
-                active={panel.id === activePanelId}
-                onClick={() => { if (editingPanelId !== panel.id) setActivePanelId(panel.id); }}
-              >
-                {editingPanelId === panel.id ? (
-                  <input
-                    autoFocus
-                    value={editingPanelName}
-                    onChange={(e) => setEditingPanelName(e.target.value)}
-                    onKeyDown={onPanelEditKeyDown}
-                    onBlur={handleSavePanelEdit}
-                    onClick={(e) => e.stopPropagation()}
-                    style={{
-                      flex: 1,
-                      border: 'none',
-                      borderBottom: '1px solid var(--blue)',
-                      background: 'transparent',
-                      fontSize: '0.75rem',
-                      fontFamily: 'Poppins, Montserrat, sans-serif',
-                      outline: 'none',
-                      color: 'var(--secondary)',
-                    }}
-                  />
-                ) : (
-                  <span style={{ flex: 1 }}>{panel.name}</span>
-                )}
-                <span className="panel-actions">
-                  <FiEdit2
-                    title="Renomear painel"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditingPanelId(panel.id);
-                      setEditingPanelName(panel.name);
-                    }}
-                  />
-                  <FiTrash2
-                    title="Excluir painel"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeletePanel(panel.id);
-                    }}
-                  />
-                </span>
-              </PanelItem>
-            ))}
+              <div className="modal-body">
+                {panels.map((panel) => (
+                  <PanelItem
+                    key={panel.id}
+                    active={panel.id === activePanelId}
+                    onClick={() => { if (editingPanelId !== panel.id) { setActivePanelId(panel.id); setShowPanelsModal(false); } }}
+                  >
+                    {editingPanelId === panel.id ? (
+                      <input
+                        autoFocus
+                        value={editingPanelName}
+                        onChange={(e) => setEditingPanelName(e.target.value)}
+                        onKeyDown={onPanelEditKeyDown}
+                        onBlur={handleSavePanelEdit}
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                          flex: 1,
+                          border: 'none',
+                          borderBottom: '1px solid var(--blue)',
+                          background: 'transparent',
+                          fontSize: '0.8rem',
+                          fontFamily: 'Poppins, Montserrat, sans-serif',
+                          outline: 'none',
+                          color: 'var(--secondary)',
+                        }}
+                      />
+                    ) : (
+                      <span style={{ flex: 1 }}>{panel.name}</span>
+                    )}
+                    <span className="panel-actions">
+                      <FiEdit2
+                        title="Renomear painel"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingPanelId(panel.id);
+                          setEditingPanelName(panel.name);
+                        }}
+                      />
+                      <FiTrash2
+                        title="Excluir painel"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeletePanel(panel.id);
+                        }}
+                      />
+                    </span>
+                  </PanelItem>
+                ))}
+              </div>
 
-            <AddPanelForm>
-              {showAddPanel ? (
-                <>
-                  <input
-                    ref={panelNameRef}
-                    autoFocus
-                    placeholder="Nome do painel"
-                    value={newPanelName}
-                    onChange={(e) => setNewPanelName(e.target.value)}
-                    onKeyDown={onPanelKeyDown}
-                  />
-                  <div className="form-actions">
+              <div className="modal-footer">
+                {showAddPanel ? (
+                  <>
+                    <input
+                      ref={panelNameRef}
+                      autoFocus
+                      placeholder="Nome do novo painel"
+                      value={newPanelName}
+                      onChange={(e) => setNewPanelName(e.target.value)}
+                      onKeyDown={onPanelKeyDown}
+                    />
                     <button type="button" className="buttonClick" onClick={handleAddPanel}>
                       <FiCheck size={12} /> Salvar
                     </button>
@@ -360,25 +410,27 @@ export default function AgendaKanban() {
                       className="buttonLinkClick"
                       onClick={() => { setShowAddPanel(false); setNewPanelName(''); }}
                     >
-                      Cancelar
+                      <FiX size={12} />
                     </button>
-                  </div>
-                </>
-              ) : (
-                <button
-                  type="button"
-                  className="buttonClick"
-                  style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: '0.3rem', alignItems: 'center' }}
-                  onClick={() => { setShowAddPanel(true); setTimeout(() => panelNameRef.current?.focus(), 50); }}
-                >
-                  <FiPlus size={12} /> Novo Painel
-                </button>
-              )}
-            </AddPanelForm>
-          </PanelSidebar>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    className="buttonClick"
+                    style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: '0.3rem', alignItems: 'center' }}
+                    onClick={() => { setShowAddPanel(true); setTimeout(() => panelNameRef.current?.focus(), 50); }}
+                  >
+                    <FiPlus size={12} /> Novo Painel
+                  </button>
+                )}
+              </div>
+            </PanelsModal>
+          </ModalOverlay>
+        )}
 
-          {/* ── Kanban board ── */}
+        <BoardLayout>
           {activePanel ? (
+            <DragDropContext onDragEnd={onDragEnd}>
             <KanbanArea>
               {activePhases.map((phase) => {
                 const phaseCards = cards.filter((c) => c.phaseId === phase.id);
@@ -413,29 +465,53 @@ export default function AgendaKanban() {
                       />
                     </PhaseHeader>
 
-                    <CardsList>
-                      {phaseCards.map((card) => (
-                        <AppointmentCard key={card.id}>
-                          <div className="card-title">{card.title}</div>
-                          {card.description && (
-                            <div className="card-description">{card.description}</div>
-                          )}
-                          <div className="card-meta">
-                            {card.dateTime && (
-                              <>
-                                <FiClock />
-                                <span>{card.dateTime}</span>
-                              </>
-                            )}
-                            <FiTrash2
-                              style={{ marginLeft: 'auto', cursor: 'pointer', color: '#fca5a5' }}
-                              title="Excluir compromisso"
-                              onClick={() => handleDeleteCard(card.id)}
-                            />
-                          </div>
-                        </AppointmentCard>
-                      ))}
-                    </CardsList>
+                    <Droppable droppableId={String(phase.id)}>
+                      {(provided, snapshot) => (
+                        <CardsList
+                          ref={provided.innerRef}
+                          {...provided.droppableProps}
+                          style={{ background: snapshot.isDraggingOver ? '#f0f7ff' : undefined }}
+                        >
+                          {phaseCards.map((card, index) => (
+                            <Draggable key={card.id} draggableId={String(card.id)} index={index}>
+                              {(drag, dragSnapshot) => (
+                                <AppointmentCard
+                                  ref={drag.innerRef}
+                                  {...drag.draggableProps}
+                                  {...drag.dragHandleProps}
+                                  style={{
+                                    ...drag.draggableProps.style,
+                                    opacity: dragSnapshot.isDragging ? 0.85 : 1,
+                                    boxShadow: dragSnapshot.isDragging
+                                      ? '0 8px 24px rgba(2,6,23,0.18)'
+                                      : undefined,
+                                  }}
+                                >
+                                  <div className="card-title">{card.title}</div>
+                                  {card.description && (
+                                    <div className="card-description">{card.description}</div>
+                                  )}
+                                  <div className="card-meta">
+                                    {card.dateTime && (
+                                      <>
+                                        <FiClock />
+                                        <span>{card.dateTime}</span>
+                                      </>
+                                    )}
+                                    <FiTrash2
+                                      style={{ marginLeft: 'auto', cursor: 'pointer', color: '#fca5a5' }}
+                                      title="Excluir compromisso"
+                                      onClick={() => handleDeleteCard(card.id)}
+                                    />
+                                  </div>
+                                </AppointmentCard>
+                              )}
+                            </Draggable>
+                          ))}
+                          {provided.placeholder}
+                        </CardsList>
+                      )}
+                    </Droppable>
 
                     {isAddingHere ? (
                       <AddCardForm>
@@ -530,6 +606,7 @@ export default function AgendaKanban() {
                 )}
               </AddPhaseColumn>
             </KanbanArea>
+            </DragDropContext>
           ) : (
             <EmptyState>
               <FiLayout />

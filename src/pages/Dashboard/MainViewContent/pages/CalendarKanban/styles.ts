@@ -46,10 +46,84 @@ export const PageHeader = styled.header`
 `;
 
 export const BoardLayout = styled.div`
-  display: grid;
-  grid-template-columns: 220px 1fr;
-  gap: 1rem;
   height: calc(100vh - 140px);
+`;
+
+/* ── PANELS MODAL ── */
+export const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
+
+export const PanelsModal = styled.div`
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 32px rgba(2, 6, 23, 0.18);
+  width: 380px;
+  max-height: 520px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #e2e8f0;
+
+    h4 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    svg {
+      cursor: pointer;
+      color: #94a3b8;
+      width: 1rem;
+      height: 1rem;
+
+      &:hover { color: var(--red); }
+    }
+  }
+
+  .modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.75rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .modal-footer {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+
+    input {
+      flex: 1;
+      padding: 0.4rem 0.6rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.4rem;
+      font-size: 0.75rem;
+      font-family: Poppins, Montserrat, sans-serif;
+      color: var(--secondary);
+
+      &:focus {
+        outline: none;
+        border-color: var(--blue);
+      }
+    }
+  }
 `;
 
 /* ── PANEL SIDEBAR ── */
@@ -80,11 +154,11 @@ export const PanelItem = styled.div<{ active: boolean }>`
   padding: 0.5rem 0.75rem;
   border-radius: 0.5rem;
   cursor: pointer;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: ${({ active }) => (active ? '600' : '400')};
   background: ${({ active }) => (active ? 'var(--blue-soft)' : 'transparent')};
   color: ${({ active }) => (active ? 'var(--blue)' : 'var(--secondary)')};
-  border-left: 3px solid ${({ active }) => (active ? 'var(--blue)' : 'transparent')};
+  border: 1px solid ${({ active }) => (active ? 'var(--blue)' : '#e2e8f0')};
   transition: all 0.15s ease;
 
   &:hover {
