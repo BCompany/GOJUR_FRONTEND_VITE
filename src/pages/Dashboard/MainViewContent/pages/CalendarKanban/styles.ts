@@ -295,6 +295,66 @@ export const PhaseHeader = styled.div<{ color: string }>`
   }
 `;
 
+export const ColorPickerWrapper = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+`;
+
+export const ColorDot = styled.button<{ color: string }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  margin-left: 0.3rem;
+  flex-shrink: 0;
+  padding: 0;
+
+  svg {
+    width: 0.95rem;
+    height: 0.95rem;
+    color: #64748b;
+    transition: transform 0.15s ease;
+  }
+
+  &:hover svg {
+    transform: scale(1.25);
+    filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
+  }
+`;
+
+export const ColorPopover = styled.div`
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 16px rgba(2, 6, 23, 0.16);
+  padding: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  width: 130px;
+  z-index: 50;
+`;
+
+export const ColorSwatch = styled.button<{ color: string; selected: boolean }>`
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: ${({ color }) => color};
+  border: 2px solid ${({ selected }) => (selected ? '#1e293b' : 'transparent')};
+  cursor: pointer;
+  transition: transform 0.15s ease;
+
+  &:hover {
+    transform: scale(1.2);
+  }
+`;
+
 export const CardsList = styled.div`
   flex: 1;
   overflow-y: auto;

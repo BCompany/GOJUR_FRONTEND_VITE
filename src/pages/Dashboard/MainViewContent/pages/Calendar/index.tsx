@@ -43,7 +43,7 @@ import { useDefaultSettings } from 'context/defaultSettings';
 import { useModal } from 'context/modal';
 import { useAuth } from 'context/AuthContext';
 import { FaCalculator } from 'react-icons/fa';
-import { FcAbout, FcSearch, FcParallelTasks } from 'react-icons/fc';
+import { FcAbout, FcSearch, FcParallelTasks, FcTemplate } from 'react-icons/fc';
 import { useMenuHamburguer } from 'context/menuHamburguer';
 import MenuHamburguer from 'components/MenuHamburguer';
 import FilterCalendar from 'components/FilterCalendar'
@@ -1595,6 +1595,16 @@ const Calendar: React.FC = () => {
                   </button>
                 </>
               )}
+
+{               <button
+                className="buttonLinkClick"
+                onClick={() => history.push('/calendar/kanban')}
+                title="Clique para abrir o Kanban de Agenda"
+                type="button"
+              >
+                <FcParallelTasks />
+                Agenda Kanban
+              </button> }
 
             </div>
 

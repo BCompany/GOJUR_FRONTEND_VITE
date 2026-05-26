@@ -1,6 +1,7 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { FiPlus, FiTrash2, FiClock, FiLayout, FiX, FiCheck, FiEdit2 } from 'react-icons/fi';
+import { MdPalette } from 'react-icons/md';
 import { HeaderPage } from 'components/HeaderPage';
 import { useHistory } from 'react-router-dom';
 import {
@@ -10,6 +11,8 @@ import {
   AppointmentCard,
   BoardLayout,
   CardsList,
+  ColorDot,
+  ColorPickerWrapper,
   Container,
   Content,
   EmptyState,
@@ -112,6 +115,13 @@ export default function AgendaKanban() {
 
   const [activePanelId, setActivePanelId] = useState<number>(INITIAL_PANELS[0].id);
 
+  // Permission flags — connect to backend later
+  const [permissions] = useState({
+    canManagePanels: true,   // show "Painéis" button
+    canDeletePhase: true,    // show trash icon on phase header
+    canChangePhaseColor: true, // show palette icon on phase header
+  });
+
   // Panels modal
   const [showPanelsModal, setShowPanelsModal] = useState(false);
 
@@ -209,6 +219,11 @@ export default function AgendaKanban() {
     setCards((prev) => prev.filter((c) => c.phaseId !== phaseId));
   }, []);
 
+  const handleChangePhaseColor = useCallback((phaseId: number, color: string) => {
+    setPhases((prev) => prev.map((ph) => (ph.id === phaseId ? { ...ph, color } : ph)));
+    setColorPopoverPhaseId(null);
+  }, []);
+
   const handleStartEditPhase = useCallback((phase: IPhase) => {
     setEditingPhaseId(phase.id);
     setEditingPhaseName(phase.name);
@@ -256,30 +271,46 @@ export default function AgendaKanban() {
   }, []);
 
   const onDragEnd = useCallback((result: DropResult) => {
-    const { source, destination, draggableId } = result;
+    const { source, destination, draggableId, type } = result;
     if (!destination) return;
     if (source.droppableId === destination.droppableId && source.index === destination.index) return;
 
+    // ── Column reorder ──
+    if (type === 'COLUMN') {
+      const phaseId = parseInt(draggableId.replace('phase-', ''), 10);
+      setPhases((prev) => {
+        const panelPhases = prev
+          .filter((ph) => ph.panelId === activePanelId)
+          .sort((a, b) => a.order - b.order);
+        const others = prev.filter((ph) => ph.panelId !== activePanelId);
+
+        const reordered = [...panelPhases];
+        const [moved] = reordered.splice(source.index, 1);
+        reordered.splice(destination.index, 0, moved);
+
+        const updated = reordered.map((ph, i) => ({ ...ph, order: i }));
+        return [...others, ...updated];
+      });
+      return;
+    }
+
+    // ── Card move ──
     const cardId = parseInt(draggableId, 10);
     const destPhaseId = parseInt(destination.droppableId, 10);
 
     setCards((prev) => {
-      // Remove card from its current position
       const withoutCard = prev.filter((c) => c.id !== cardId);
       const moved = prev.find((c) => c.id === cardId);
       if (!moved) return prev;
 
       const updated = { ...moved, phaseId: destPhaseId };
-
-      // Insert at the destination index within the target phase
       const destPhaseCards = withoutCard.filter((c) => c.phaseId === destPhaseId);
       const otherCards = withoutCard.filter((c) => c.phaseId !== destPhaseId);
 
       destPhaseCards.splice(destination.index, 0, updated);
-
       return [...otherCards, ...destPhaseCards];
     });
-  }, []);
+  }, [activePanelId]);
 
   /* ── Keyboard shortcuts ── */
   const onPanelKeyDown = (e: React.KeyboardEvent) => {
@@ -304,30 +335,24 @@ export default function AgendaKanban() {
 
       <Content>
         <PageHeader>
-          <div className="left">
+          <div className="left" />
+          <h3>{activePanel?.name ?? ''}</h3>
+          <div className="right">
+            {permissions.canManagePanels && (
+              <button
+                type="button"
+                className="buttonClick"
+                onClick={() => setShowPanelsModal(true)}
+              >
+                <FiLayout size={12} /> Painéis
+              </button>
+            )}
             <button
               type="button"
               className="buttonClick"
               onClick={() => history.push('/calendar')}
             >
-              Retornar
-            </button>
-          </div>
-          <h3>{activePanel?.name ?? ''}</h3>
-          <div className="right">
-            <button
-              type="button"
-              className="buttonClick"
-              onClick={() => setShowPanelsModal(true)}
-            >
-              <FiLayout size={12} /> Painéis
-            </button>
-            <button
-              type="button"
-              className="buttonClick"
-              onClick={() => { setShowAddPanel(true); setShowPanelsModal(true); setTimeout(() => panelNameRef.current?.focus(), 50); }}
-            >
-              <FiPlus size={12} /> Novo Painel
+              Alternar Calendário/Kanban
             </button>
           </div>
         </PageHeader>
@@ -431,14 +456,25 @@ export default function AgendaKanban() {
         <BoardLayout>
           {activePanel ? (
             <DragDropContext onDragEnd={onDragEnd}>
-            <KanbanArea>
-              {activePhases.map((phase) => {
+              <Droppable droppableId="board" direction="horizontal" type="COLUMN">
+                {(boardProvided) => (
+            <KanbanArea ref={boardProvided.innerRef} {...boardProvided.droppableProps}>
+              {activePhases.map((phase, colIndex) => {
                 const phaseCards = cards.filter((c) => c.phaseId === phase.id);
                 const isAddingHere = addingCardInPhase === phase.id;
 
                 return (
-                  <PhaseColumn key={phase.id}>
-                    <PhaseHeader color={phase.color}>
+                  <Draggable key={phase.id} draggableId={`phase-${phase.id}`} index={colIndex}>
+                    {(colDrag, colSnapshot) => (
+                  <PhaseColumn
+                    ref={colDrag.innerRef}
+                    {...colDrag.draggableProps}
+                    style={{
+                      ...colDrag.draggableProps.style,
+                      opacity: colSnapshot.isDragging ? 0.88 : 1,
+                    }}
+                  >
+                    <PhaseHeader color={phase.color} {...colDrag.dragHandleProps}>
                       <span className="phase-title">
                         {editingPhaseId === phase.id ? (
                           <input
@@ -459,10 +495,32 @@ export default function AgendaKanban() {
                         )}
                       </span>
                       <span className="phase-count">{phaseCards.length}</span>
-                      <FiTrash2
-                        title="Excluir etapa"
-                        onClick={() => handleDeletePhase(phase.id)}
-                      />
+                      {permissions.canChangePhaseColor && (
+                        <ColorPickerWrapper>
+                          <ColorDot
+                            color={phase.color}
+                            title="Alterar cor"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              (e.currentTarget.nextElementSibling as HTMLInputElement)?.click();
+                            }}
+                          >
+                            <MdPalette />
+                          </ColorDot>
+                          <input
+                            type="color"
+                            value={phase.color}
+                            style={{ position: 'absolute', opacity: 0, width: 0, height: 0, pointerEvents: 'none' }}
+                            onChange={(e) => handleChangePhaseColor(phase.id, e.target.value)}
+                          />
+                        </ColorPickerWrapper>
+                      )}
+                      {permissions.canDeletePhase && (
+                        <FiTrash2
+                          title="Excluir etapa"
+                          onClick={() => handleDeletePhase(phase.id)}
+                        />
+                      )}
                     </PhaseHeader>
 
                     <Droppable droppableId={String(phase.id)}>
@@ -564,8 +622,11 @@ export default function AgendaKanban() {
                       </AddCardButton>
                     )}
                   </PhaseColumn>
+                    )}
+                  </Draggable>
                 );
               })}
+              {boardProvided.placeholder}
 
               {/* ── Add phase column ── */}
               <AddPhaseColumn>
@@ -606,6 +667,8 @@ export default function AgendaKanban() {
                 )}
               </AddPhaseColumn>
             </KanbanArea>
+                )}
+              </Droppable>
             </DragDropContext>
           ) : (
             <EmptyState>
