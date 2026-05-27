@@ -485,6 +485,31 @@ export const TaskBar = styled.div`
       min-width:9rem;
       margin-top:10px;
     }
+
+    .buttonIconClick {
+      cursor: pointer;
+      color: var(--blue-twitter);
+      margin-top: 10px;
+      margin-right: 0.3rem;
+      width: 5rem;
+      height: 2.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: background 0.15s, color 0.15s;
+
+      > svg {
+        width: 1.1rem;
+        height: 1.1rem;
+        flex-shrink: 0;
+      }
+
+      &:hover {
+        background-color: #f0f5ff;
+        color: var(--orange);
+      }
+    }
   }
 
   .buttonHamburguer {
@@ -707,54 +732,6 @@ export const ModalDateSelectMobile = styled.div`
 
     &:hover {
       color: var(--orange);
-    }
-  }
-`;
-
-
-export const ActionsDropdownMenu = styled.div`
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  background: var(--white);
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.13);
-  z-index: 9998;
-  min-width: 160px;
-  padding: 6px 0;
-  overflow: hidden;
-
-  button {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    width: 100%;
-    padding: 9px 16px;
-    background: none;
-    border: none;
-    border-bottom: 1px solid #f4f4f4;
-    cursor: pointer;
-    font-size: 0.7rem;
-    font-family: Montserrat, sans-serif;
-    color: var(--secondary);
-    text-align: left;
-    white-space: nowrap;
-    transition: background 0.15s, color 0.15s;
-
-    &:last-child {
-      border-bottom: none;
-    }
-
-    svg {
-      width: 1.1rem;
-      height: 1.1rem;
-      flex-shrink: 0;
-    }
-
-    &:hover {
-      background-color: #f0f5ff;
-      color: var(--blue-twitter);
     }
   }
 `;
