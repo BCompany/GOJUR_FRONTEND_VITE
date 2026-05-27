@@ -352,7 +352,7 @@ export default function AgendaKanban() {
               className="buttonClick"
               onClick={() => history.push('/calendar')}
             >
-              Alternar Calendário/Kanban
+              Retornar Calendário
             </button>
           </div>
         </PageHeader>

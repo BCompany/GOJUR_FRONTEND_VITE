@@ -489,13 +489,15 @@ export const TaskBar = styled.div`
     .buttonIconClick {
       cursor: pointer;
       color: var(--blue-twitter);
+      font-size: 0.625rem;
+      font-family: montserrat;
       margin-top: 10px;
       margin-right: 0.3rem;
-      width: 5rem;
       height: 2.2rem;
+      padding: 0 0.6rem;
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 0.25rem;
       border-radius: 6px;
       transition: background 0.15s, color 0.15s;
 

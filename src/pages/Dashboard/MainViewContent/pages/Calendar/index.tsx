@@ -1574,7 +1574,7 @@ const Calendar: React.FC = () => {
               <button
                 className="buttonIconClick"
                 onClick={() => handleOpenDeadLineCalculator()}
-                title="Prazos"
+                title="Calculadora de Prazos"
                 type="button"
               >
                 <FaCalculator />
@@ -1596,7 +1596,7 @@ const Calendar: React.FC = () => {
               <button
                 className="buttonIconClick"
                 onClick={() => history.push('/calendar/kanban')}
-                title="Kanban"
+                title="Agenda Modo Kanban"
                 type="button"
               >
                 
