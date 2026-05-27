@@ -25,11 +25,10 @@ import Loader from 'react-spinners/ClipLoader';
 import { AiOutlineReload, AiOutlineCheckCircle } from 'react-icons/ai';
 import { BiCalendarCheck, BiCalendarEdit, BiLoader } from 'react-icons/bi';
 import { FaRegTimesCircle } from 'react-icons/fa';
-import { FiX } from 'react-icons/fi';
+import { FiX, FiSave, FiChevronDown } from 'react-icons/fi';
 import { useAlert } from 'context/alert';
 import ProcessModal from 'components/HeaderPage/TopNavBar/EnvelopeNotificationList/ProcessModal';
 import ptbr from '@fullcalendar/core/locales/pt-br';
-import { FiSave } from 'react-icons/fi';
 import { envProvider } from 'services/hooks/useEnv';
 import { useDevice } from 'react-use-device';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -90,6 +89,7 @@ import {
   ModalDateSelect,
   ModalDateSelectMobile,
   ModalParametersMobile,
+  ActionsDropdownMenu,
 } from './styles';
 import CalendarReport from './Report';
 import CalendarExportConfig from './Export';
@@ -1424,6 +1424,8 @@ const Calendar: React.FC = () => {
 
   const [open, setOpen] = useState(false)
   const [multiFilter1, setMultiFilter1] = useState<string[]>([])
+  const [openActionsDropdown, setOpenActionsDropdown] = useState(false)
+  const actionsDropdownRef = useRef<HTMLDivElement>(null)
 
 
   const toggle = (value: string) => {
@@ -1482,6 +1484,17 @@ const Calendar: React.FC = () => {
 
   }, [appointmentSubject], 1000)
 
+
+  // Close actions dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (actionsDropdownRef.current && !actionsDropdownRef.current.contains(e.target as Node)) {
+        setOpenActionsDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
 //const handleEventsSet = (events: EventApi[]) => {
 //  console.log('Total de eventos visíveis:', events.length)
@@ -1572,39 +1585,58 @@ const Calendar: React.FC = () => {
 
 
 
-              <button
-                className="buttonLinkClick"
-                onClick={() => handleOpenDeadLineCalculator()}
-                title="Clique para abrir a calculadora de prazos"
-                type="submit"
-              >
-                <FaCalculator />
-                Calculadora de Prazos
-              </button>
+              <div ref={actionsDropdownRef} style={{ position: 'relative', marginTop: '10px' }}>
+                <button
+                  className="buttonLinkClick"
+                  style={{ marginTop: 0, display: 'flex', alignItems: 'center', gap: '4px' }}
+                  onClick={() => setOpenActionsDropdown(o => !o)}
+                  type="button"
+                  title="Atalhos rápidos"
+                >
+                  <FcTemplate />
+                  Atalhos
+                  <FiChevronDown
+                    style={{
+                      marginLeft: '2px',
+                      transition: 'transform 0.2s',
+                      transform: openActionsDropdown ? 'rotate(180deg)' : 'rotate(0deg)',
+                    }}
+                  />
+                </button>
 
-              {(checkWorkflow) && (
-                <>
-                  <button
-                    className="buttonLinkClick"
-                    onClick={() => handleWorkflow()}
-                    title="Clique para abrir o workflow"
-                    type="submit"
-                  >
-                    <FcParallelTasks />
-                    Workflow
-                  </button>
-                </>
-              )}
+                {openActionsDropdown && (
+                  <ActionsDropdownMenu>
+                    <button
+                      type="button"
+                      onClick={() => { handleOpenDeadLineCalculator(); setOpenActionsDropdown(false) }}
+                      title="Calculadora de prazos"
+                    >
+                      <FaCalculator style={{ color: '#e67e22' }} />
+                      Prazos
+                    </button>
 
-{               <button
-                className="buttonLinkClick"
-                onClick={() => history.push('/calendar/kanban')}
-                title="Clique para abrir o Kanban de Agenda"
-                type="button"
-              >
-                <FcParallelTasks />
-                Agenda Kanban
-              </button> }
+                    {checkWorkflow && (
+                      <button
+                        type="button"
+                        onClick={() => { handleWorkflow(); setOpenActionsDropdown(false) }}
+                        title="Abrir workflow"
+                      >
+                        <FcParallelTasks />
+                        Workflow
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => { history.push('/calendar/kanban'); setOpenActionsDropdown(false) }}
+                      title="Kanban de Agenda"
+                    >
+                      <FcTemplate />
+                      Kanban
+                    </button>
+                  </ActionsDropdownMenu>
+                )}
+              </div>
 
             </div>
 
