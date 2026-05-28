@@ -25,7 +25,7 @@ import { Container, Filter, Wrapper, PublicationItem, MatterEventItem, ContentIt
 import { HeaderPage } from 'components/HeaderPage';
 import VideoTrainningModal from 'components/Modals/VideoTrainning/Index';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
-import { CompromissosData, DefaultsProps, filterProps, PrintData, ProcessData, PublicationAICalculatorDTO, PublicationAIAnalyserDTO, PublicationData, PublicationDto, usernameListProps, PublicationAIDeadlinesDTO, PublicationAIAudienceDTO } from './Interfaces/IPublication';
+import { CompromissosData, DefaultsProps, filterProps, PrintData, ProcessData, courtNameData, PublicationAICalculatorDTO, PublicationAIAnalyserDTO, PublicationData, PublicationDto, usernameListProps, PublicationAIDeadlinesDTO, PublicationAIAudienceDTO } from './Interfaces/IPublication';
 import ReportModal from 'components/Modals/PublicationModal/ReportModal';
 import ReportModalPopUp from 'components/Modals/Report';
 import Coverages from '../../../../Coverages';
@@ -1086,22 +1086,45 @@ const Publication: React.FC = () => {
 
         const publi = publication.filter(item => item.id === publicationId);
 
-        // remove html format from publication text in order to send to 
-        // calendar appointment - Marcelo 10/2025
+        const matterNumber = publi.map(i => i.matterNumber).toString()
+
+        const responseCourt = await api.get<courtNameData>(`/Forum/ListarPorNumeroProcesso`, {
+          params: {
+            matterNumber: matterNumber,
+            token: localStorage.getItem('@GoJur:token')
+          }
+        })
+
+        const courtName = responseCourt.data.courtName
+
+        const publicationDateText = `${courtName}, Publicado em: ${format(new Date(publi.map(i => i.publicationDate).toString()), 'dd/MM/yyyy')} `
         const publicationText = publi.map(i => i.description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+        const publicationTextFinal = `${publicationDateText}\n\n ${publicationText}\n `
 
         handleMatterAssociated(hasMatter ? true : false);
 
-        handleCaptureTextPublication(`${matterText}\n\n${publicationText}`);
+        handleCaptureTextPublication(`${matterText}\n\n${publicationTextFinal}`);
       }
       else {
         const publi = publication.filter(item => item.id === publicationId);
-        // remove html format from publication text in order to send to 
-        // calendar appointment - Marcelo 10/2025
+
+        const matterNumber = publi.map(i => i.matterNumber).toString()
+
+        const responseCourt = await api.get<courtNameData>(`/Forum/ListarPorNumeroProcesso`, {
+          params: {
+            matterNumber: matterNumber,
+            token: localStorage.getItem('@GoJur:token')
+          }
+        })
+
+        const courtName = responseCourt.data.courtName
+
+        const publicationDateText = `${courtName}, Publicado em: ${format(new Date(publi.map(i => i.publicationDate).toString()), 'dd/MM/yyyy')} `
         const publicationText = publi.map(i => i.description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+        const publicationTextFinal = `${publicationDateText}\n\n ${publicationText}\n `
 
         localStorage.setItem('@GoJur:PublicationHasMatter', 'N')
-        handleCaptureTextPublication(`${publicationText}`);
+        handleCaptureTextPublication(`${publicationTextFinal}`);
       }
 
     } catch (err) {

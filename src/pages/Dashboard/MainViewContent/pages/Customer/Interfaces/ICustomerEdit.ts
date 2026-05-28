@@ -89,6 +89,7 @@ export interface ICustomerData {
   num_CTPS: string;
   flg_Status:string;
   num_SerieCTPS: string;
+  cod_SenhaGOVBR: string;
   vlr_UltimoSalario: number;
   num_BeneficioINSS: string;
   num_PIS: string;
