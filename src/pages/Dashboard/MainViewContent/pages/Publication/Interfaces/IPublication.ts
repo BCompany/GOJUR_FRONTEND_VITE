@@ -156,6 +156,10 @@ export interface ProcessCourtData{
   currentInstance: String;
 }
 
+export interface courtNameData {
+  courtName: string;
+}
+
 export interface filterProps {
   value: string;
   label: string;
