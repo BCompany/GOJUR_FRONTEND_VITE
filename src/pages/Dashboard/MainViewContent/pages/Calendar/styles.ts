@@ -482,36 +482,10 @@ export const TaskBar = styled.div`
     }
 
     .buttonLinkClick{
-      min-width:9rem;
       margin-top:10px;
+      margin-left:10px;
     }
 
-    .buttonIconClick {
-      cursor: pointer;
-      color: var(--blue-twitter);
-      font-size: 0.625rem;
-      font-family: montserrat;
-      margin-top: 10px;
-      margin-right: 0.3rem;
-      height: 2.2rem;
-      padding: 0 0.6rem;
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-      border-radius: 6px;
-      transition: background 0.15s, color 0.15s;
-
-      > svg {
-        width: 1.1rem;
-        height: 1.1rem;
-        flex-shrink: 0;
-      }
-
-      &:hover {
-        background-color: #f0f5ff;
-        color: var(--orange);
-      }
-    }
   }
 
   .buttonHamburguer {

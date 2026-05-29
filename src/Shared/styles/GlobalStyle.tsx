@@ -177,12 +177,13 @@ export default createGlobalStyle<AppProps>`
   //Example buttons: links see more or less, includes in modals, sub lists etc
   //Sidney 08/2021
   .buttonLinkClick {
+    display: inline-flex;
     cursor:pointer;
     color: var(--blue-twitter);
     font-size: 0.625rem;
     margin-right:0.5rem;
     font-family: montserrat;
-    justify-content: center;
+    align-items: center;
 
     > svg {
       color: var(--blue-twitter);

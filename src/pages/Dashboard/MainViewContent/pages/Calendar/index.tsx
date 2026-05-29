@@ -1572,7 +1572,7 @@ const Calendar: React.FC = () => {
 
 
               <button
-                className="buttonIconClick"
+                className="buttonLinkClick"
                 onClick={() => handleOpenDeadLineCalculator()}
                 title="Calculadora de Prazos"
                 type="button"
@@ -1583,7 +1583,7 @@ const Calendar: React.FC = () => {
 
               {checkWorkflow && (
                 <button
-                  className="buttonIconClick"
+                  className="buttonLinkClick"
                   onClick={() => handleWorkflow()}
                   title="Workflow"
                   type="button"
@@ -1594,7 +1594,7 @@ const Calendar: React.FC = () => {
               )}
 
               <button
-                className="buttonIconClick"
+                className="buttonLinkClick"
                 onClick={() => history.push('/calendar/kanban')}
                 title="Agenda Modo Kanban"
                 type="button"
