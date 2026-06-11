@@ -21,6 +21,7 @@ import {
   PageHeader,
   PanelItem,
   PanelsModal,
+  TaskBar,
   PhaseColumn,
   PhaseHeader,
 } from './styles';
@@ -337,7 +338,11 @@ export default function AgendaKanban() {
         <PageHeader>
           <div className="left" />
           <h3>{activePanel?.name ?? ''}</h3>
-          <div className="right">
+          <div className="right" />
+        </PageHeader>
+
+        <TaskBar>
+          <div>
             {permissions.canManagePanels && (
               <button
                 type="button"
@@ -355,7 +360,7 @@ export default function AgendaKanban() {
               Retornar Calendário
             </button>
           </div>
-        </PageHeader>
+        </TaskBar>
 
         {/* ── Panels modal ── */}
         {showPanelsModal && (

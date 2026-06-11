@@ -45,6 +45,24 @@ export const PageHeader = styled.header`
   }
 `;
 
+export const TaskBar = styled.div`
+  display: flex;
+  box-shadow: 1px 1px 4px 0.5px rgba(0, 0, 0, 0.15);
+  margin-bottom: 0.75rem;
+
+  > div {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-size: 0.65rem;
+    font-family: Montserrat;
+    background-color: var(--white);
+    width: 100%;
+    padding: 4px 8px 6px;
+    gap: 0.5rem;
+  }
+`;
+
 export const BoardLayout = styled.div`
   height: calc(100vh - 140px);
 `;
