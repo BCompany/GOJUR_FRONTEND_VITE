@@ -61,6 +61,33 @@ export const TaskBar = styled.div`
     padding: 10px 8px 12px;
     gap: 0.5rem;
   }
+
+  .date-range {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+
+    label {
+      font-size: 0.65rem;
+      color: var(--secondary);
+      white-space: nowrap;
+    }
+
+    input[type='date'] {
+      font-size: 0.65rem;
+      font-family: Montserrat;
+      color: var(--secondary);
+      border: 1px solid #cbd5e1;
+      border-radius: 0.4rem;
+      padding: 0.25rem 0.4rem;
+      outline: none;
+      cursor: pointer;
+
+      &:focus {
+        border-color: var(--blue);
+      }
+    }
+  }
 `;
 
 export const BoardLayout = styled.div`

@@ -130,8 +130,11 @@ export default function AgendaKanban() {
     { value: 'mes_atual', label: 'Mês Atual' },
     { value: 'semana', label: 'Semana' },
     { value: 'proxima_semana', label: 'Próxima Semana' },
+    { value: 'custom', label: 'Selecionar Período' },
   ];
   const [selectedPeriod, setSelectedPeriod] = useState<IComboData>(PERIOD_OPTIONS[0]);
+  const [periodStart, setPeriodStart] = useState('');
+  const [periodEnd, setPeriodEnd] = useState('');
 
   // Panels modal
   const [showPanelsModal, setShowPanelsModal] = useState(false);
@@ -358,9 +361,37 @@ export default function AgendaKanban() {
                 styles={selectStyles}
                 options={PERIOD_OPTIONS}
                 value={selectedPeriod}
-                onChange={(opt) => opt && setSelectedPeriod(opt)}
+                onChange={(opt) => {
+                  if (!opt) return;
+                  setSelectedPeriod(opt);
+                  if (opt.value === 'custom') {
+                    const today = new Date();
+                    const oneYearAgo = new Date(today);
+                    oneYearAgo.setFullYear(today.getFullYear() - 1);
+                    const fmt = (d: Date) => d.toISOString().slice(0, 10);
+                    setPeriodStart(fmt(oneYearAgo));
+                    setPeriodEnd(fmt(today));
+                  }
+                }}
               />
             </div>
+            {selectedPeriod.value === 'custom' && (
+              <div className="date-range">
+                <label>De</label>
+                <input
+                  type="date"
+                  value={periodStart}
+                  onChange={(e) => setPeriodStart(e.target.value)}
+                />
+                <label>Até</label>
+                <input
+                  type="date"
+                  value={periodEnd}
+                  min={periodStart}
+                  onChange={(e) => setPeriodEnd(e.target.value)}
+                />
+              </div>
+            )}
             {permissions.canManagePanels && (
               <button
                 type="button"
