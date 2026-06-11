@@ -58,7 +58,7 @@ export const TaskBar = styled.div`
     font-family: Montserrat;
     background-color: var(--white);
     width: 100%;
-    padding: 4px 8px 6px;
+    padding: 10px 8px 12px;
     gap: 0.5rem;
   }
 `;
