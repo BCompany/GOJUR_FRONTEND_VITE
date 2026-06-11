@@ -4,6 +4,9 @@ import { FiPlus, FiTrash2, FiClock, FiLayout, FiX, FiCheck, FiEdit2 } from 'reac
 import { MdPalette } from 'react-icons/md';
 import { HeaderPage } from 'components/HeaderPage';
 import { useHistory } from 'react-router-dom';
+import Select from 'react-select';
+import { selectStyles } from 'Shared/utils/commonFunctions';
+import { IComboData } from 'pages/Dashboard/MainViewContent/pages/Financeiro/Account/Modal';
 import {
   AddCardButton,
   AddCardForm,
@@ -122,6 +125,13 @@ export default function AgendaKanban() {
     canDeletePhase: true,    // show trash icon on phase header
     canChangePhaseColor: true, // show palette icon on phase header
   });
+
+  const PERIOD_OPTIONS: IComboData[] = [
+    { value: 'mes_atual', label: 'Mês Atual' },
+    { value: 'semana', label: 'Semana' },
+    { value: 'proxima_semana', label: 'Próxima Semana' },
+  ];
+  const [selectedPeriod, setSelectedPeriod] = useState<IComboData>(PERIOD_OPTIONS[0]);
 
   // Panels modal
   const [showPanelsModal, setShowPanelsModal] = useState(false);
@@ -343,6 +353,14 @@ export default function AgendaKanban() {
 
         <TaskBar>
           <div>
+            <div style={{ width: '180px' }}>
+              <Select
+                styles={selectStyles}
+                options={PERIOD_OPTIONS}
+                value={selectedPeriod}
+                onChange={(opt) => opt && setSelectedPeriod(opt)}
+              />
+            </div>
             {permissions.canManagePanels && (
               <button
                 type="button"
