@@ -1,13 +1,17 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { FiPlus, FiTrash2, FiClock, FiLayout, FiX, FiCheck, FiEdit2 } from 'react-icons/fi';
 import { MdPalette } from 'react-icons/md';
+import { FcSearch } from 'react-icons/fc';
+import Search from 'components/Search';
 import { HeaderPage } from 'components/HeaderPage';
 import { useHistory } from 'react-router-dom';
 import Select from 'react-select';
-import { selectStyles } from 'Shared/utils/commonFunctions';
+import { selectStyles, useDelay } from 'Shared/utils/commonFunctions';
 import { IComboData } from 'pages/Dashboard/MainViewContent/pages/Financeiro/Account/Modal';
 import { useModal } from 'context/modal';
+import FilterCalendar, { ISelectValues } from 'components/FilterCalendar';
+import api from 'services/api';
 import {
   AddCardButton,
   AddPhaseColumn,
@@ -126,6 +130,75 @@ export default function AgendaKanban() {
     handleModalActive(true);
     isOpenModal('0');
   }, [handleCaptureTextPublication, handleDeadLineCalculatorText, handleModalActive, isOpenModal]);
+
+  const optionsCalendarFilter = [
+    { value: 'S_A', label: 'Audiência' },
+    { value: 'S_P', label: 'Prazo' },
+    { value: 'U_R', label: 'Responsável' },
+    { value: 'U_RC', label: 'Responsável e Compartilhado' },
+    { value: 'PE', label: 'Apenas pendentes' },
+  ];
+
+  const token = localStorage.getItem('@GoJur:token');
+
+  const [multiFilter1, setMultiFilter1] = useState<string[]>([]);
+  const [multiFilter, setMultiFilter] = useState<{ value: string; label: string }[]>([]);
+  const [optionsSubject, setOptionsSubject] = useState<ISelectValues[]>([]);
+  const [appointmentSubject, setAppointmentSubject] = useState('');
+  const [appointmentSubjectId, setAppointmentSubjectId] = useState('');
+  const [filterTerm, setFilterTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingSearch, setIsLoadingSearch] = useState(false);
+  const [showSearchList] = useState(false);
+
+  const toggle = (value: string) => {
+    setMultiFilter1(prev =>
+      prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value],
+    );
+  };
+
+  useEffect(() => {
+    const mapped = optionsCalendarFilter
+      .filter(opt => multiFilter1.includes(opt.value))
+      .map(opt => ({ value: opt.value, label: opt.label }));
+    setMultiFilter(mapped);
+  }, [multiFilter1]);
+
+  const LoadSubject = useCallback(async (reload = false, termSearch = '') => {
+    try {
+      if (termSearch === '') termSearch = appointmentSubject;
+      if (reload) termSearch = '';
+
+      const response = await api.post('/Assunto/Listar', {
+        description: termSearch,
+        token,
+      });
+
+      const subjectList: ISelectValues[] = response.data.map(item => ({
+        id: item.id,
+        label: item.value,
+      }));
+
+      setOptionsSubject(subjectList);
+    } catch (err) {
+      console.log(err);
+    }
+  }, [appointmentSubject, token]);
+
+  useDelay(() => {
+    LoadSubject();
+  }, [appointmentSubject], 1000);
+
+  const handleSubjectChange = (item: ISelectValues | null) => {
+    if (item) {
+      setAppointmentSubject(item.label);
+      setAppointmentSubjectId(item.id);
+    } else {
+      setAppointmentSubject('');
+      setAppointmentSubjectId('');
+      LoadSubject(true);
+    }
+  };
 
   const [panels, setPanels] = useState<IPanel[]>(INITIAL_PANELS);
   const [phases, setPhases] = useState<IPhase[]>(INITIAL_PHASES);
@@ -338,6 +411,48 @@ export default function AgendaKanban() {
 
         <TaskBar>
           <div>
+            <Search
+              onKeyPress={(e: React.KeyboardEvent) => {
+                if (e.key === 'Delete' || e.key === 'Backspace' || e.which === 8) {
+                  e.preventDefault();
+                }
+                if (e.key === 'Enter') {
+                  setIsLoadingSearch(true);
+                  setIsLoading(true);
+                }
+              }}
+              placeholder="Pesquisar Compromissos"
+              className="search"
+              name="search"
+              value={!isLoadingSearch ? filterTerm : ''}
+              onChange={(e) => setFilterTerm(e.target.value)}
+            />
+
+            <FcSearch
+              className="icons"
+              title="Clique para realizar a pesquisa pelo termo digitado"
+              onClick={() => {
+                setIsLoadingSearch(true);
+                setIsLoading(true);
+              }}
+            />
+
+            <div style={{ zIndex: 9 }}>
+              <FilterCalendar
+                optionsCalendarFilter={optionsCalendarFilter}
+                multiFilter={multiFilter}
+                selectedFilterValues={multiFilter1}
+                onToggleFilter={toggle}
+                optionsSubject={optionsSubject}
+                appointmentSubjectId={appointmentSubjectId}
+                appointmentSubject={appointmentSubject}
+                onSubjectChange={handleSubjectChange}
+                setIsLoading={setIsLoading}
+                setIsLoadingSearch={setIsLoadingSearch}
+                showSearchList={showSearchList}
+              />
+            </div>
+
             <div style={{ width: '180px' }}>
               <Select
                 styles={selectStyles}

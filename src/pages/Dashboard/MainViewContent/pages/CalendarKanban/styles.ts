@@ -60,6 +60,9 @@ export const TaskBar = styled.div`
     width: 100%;
     padding: 10px 8px 12px;
     gap: 0.5rem;
+
+
+
   }
 
   .date-range {

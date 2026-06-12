@@ -1551,7 +1551,7 @@ const Calendar: React.FC = () => {
                 title="Pesquisa de compromissos por assunto, descrição e observação"
               />
 
-              <div className="calendar-filter-wrapper" style={{ zIndex: 9997 }}>
+              <div className="calendar-filter-wrapper" style={{ zIndex: 9 }}>
 
                 <FilterCalendar
                   optionsCalendarFilter={optionsCalendarFilter}
@@ -2223,7 +2223,7 @@ const Calendar: React.FC = () => {
                 </div>
               </div>
 
-              <div style={{ zIndex: 9997 }}>
+              <div style={{ zIndex: 9 }}>
               
              
 
