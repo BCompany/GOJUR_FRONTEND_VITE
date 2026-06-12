@@ -21,7 +21,7 @@ import { BiMenuAltLeft } from 'react-icons/bi';
 import { ImHammer2 } from "react-icons/im";
 import { CgDetailsMore } from 'react-icons/cg'
 import { format } from 'date-fns';
-import { Container, Filter, Wrapper, PublicationItem, MatterEventItem, ContentItem, MenuItem, Multi, Menu, EventList, ContentItemMatterEvent } from './styles';
+import { Container, Filter, Wrapper, PublicationItem, MatterEventItem, ContentItem, MenuItem, Menu, EventList, ContentItemMatterEvent, CustomMultiSelect } from './styles';
 import { HeaderPage } from 'components/HeaderPage';
 import VideoTrainningModal from 'components/Modals/VideoTrainning/Index';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
@@ -100,6 +100,18 @@ const Publication: React.FC = () => {
   const { permissionsSecurity, handleValidateSecurity } = useSecurity();
   const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKFEX");
   const [workflowView, setWorkflowView] = useState('')
+  const [justicaFilter, setJusticaFilter] = useState<string[]>([])
+  const [filtragemOpen, setFiltragemOpen] = useState(false)
+  const [justicaSubOpen, setJusticaSubOpen] = useState(false)
+  const filtragemRef = useRef<HTMLDivElement>(null)
+
+  const justicaOptions = [
+    { value: 'itemSearch_estadual', label: 'Estadual' },
+    { value: 'itemSearch_federal', label: 'Federal' },
+    { value: 'itemSearch_trabalhista', label: 'Trabalhista' },
+    { value: 'itemSearch_eleitoral', label: 'Eleitoral' },
+    { value: 'itemSearch_militar', label: 'Militar' },
+  ]
 
   const options = [
     { value: 'itemSearch_withMatter', label: 'Com Processo' },
@@ -118,6 +130,17 @@ const Publication: React.FC = () => {
       setFilterPeriod('')
     }
   }, [changeDates])
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filtragemRef.current && !filtragemRef.current.contains(event.target as Node)) {
+        setFiltragemOpen(false)
+        setJusticaSubOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
 
   // Load names publication when start page for first time
@@ -604,6 +627,21 @@ const Publication: React.FC = () => {
     setIsOpenMenu(false)
     setPageNumber(1)
     setMultiFilter(values)
+  }
+
+  const handleToggleMultiFilterItem = (item: filterProps) => {
+    setMultiFilter(prev => {
+      const exists = prev.some(f => f.value === item.value)
+      return exists ? prev.filter(f => f.value !== item.value) : [...prev, item]
+    })
+    setPageNumber(1)
+    setLoadingData(true)
+  }
+
+  const handleJusticaToggle = (value: string) => {
+    setJusticaFilter(prev =>
+      prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
+    )
   }
 
 
@@ -1883,19 +1921,59 @@ const Publication: React.FC = () => {
           {(showDateModal) && <DateModal callbackFunction={{ CloseDateModal, dtaCustomStart, setDtaCustomStart, dtaCustomEnd, setDtaCustomEnd, changeDates, setChangeDates, showCustomDates, setShowCustomDates }} />}
 
           <section id="filters">
-            <Multi
-              options={options}
-              value={multiFilter}
-              onChange={(values: []) => handleMultiFilter(values)}
-              labelledBy="Selecione"
-              selectAllLabel="Selecione"
-              hasSelectAll={false}
-              disableSearch
-              ClearIcon
-              overrideStrings={{
-                selectSomeItems: 'Filtragem Rápida',
-              }}
-            />
+            <CustomMultiSelect ref={filtragemRef}>
+              <button type="button" className="trigger" onClick={() => setFiltragemOpen(prev => !prev)}>
+                {multiFilter.length === 0 && justicaFilter.length === 0
+                  ? 'Filtragem Rápida'
+                  : [
+                      ...multiFilter.map(f => f.label),
+                      ...justicaOptions.filter(o => justicaFilter.includes(o.value)).map(o => o.label),
+                    ].join(', ')}
+                <span className="arrow">▾</span>
+              </button>
+
+              {filtragemOpen && (
+                <div className="dropdown">
+                  {options.map(opt => (
+                    <label key={opt.value}>
+                      <input
+                        type="checkbox"
+                        checked={multiFilter.some(f => f.value === opt.value)}
+                        onChange={() => handleToggleMultiFilterItem(opt)}
+                      />
+                      {opt.label}
+                    </label>
+                  ))}
+
+                  <div
+                    className="sub-item"
+                    onMouseEnter={() => setJusticaSubOpen(true)}
+                    onMouseLeave={() => setJusticaSubOpen(false)}
+                  >
+                    <span>
+                      Justiça
+                      {justicaFilter.length > 0 && <em> ({justicaFilter.length})</em>}
+                    </span>
+                    <span className="sub-arrow">▶</span>
+
+                    {justicaSubOpen && (
+                      <div className="sub-dropdown">
+                        {justicaOptions.map(opt => (
+                          <label key={opt.value}>
+                            <input
+                              type="checkbox"
+                              checked={justicaFilter.includes(opt.value)}
+                              onChange={() => handleJusticaToggle(opt.value)}
+                            />
+                            {opt.label}
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </CustomMultiSelect>
 
             <select
               name="name-filter"
