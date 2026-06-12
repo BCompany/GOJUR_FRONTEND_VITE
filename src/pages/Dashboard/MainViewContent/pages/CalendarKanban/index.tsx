@@ -432,6 +432,7 @@ export default function AgendaKanban() {
 
             <div style={{ zIndex: 9 }}>
               <FilterCalendar
+                width={300} 
                 optionsCalendarFilter={optionsCalendarFilter}
                 multiFilter={multiFilter}
                 selectedFilterValues={multiFilter1}
