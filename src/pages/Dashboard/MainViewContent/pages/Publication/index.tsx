@@ -45,7 +45,7 @@ export interface IDefaultsProps {
 }
 
 const justicaOptions = [
-  { value: 'itemSearch_estadfeder', label: 'Estadual/Federal' },
+  { value: 'itemSearch_estadualFederal', label: 'Estadual/Federal' },
   { value: 'itemSearch_trabalhista', label: 'Trabalhista' },
   { value: 'itemSearch_eleitoral', label: 'Eleitoral' },
   { value: 'itemSearch_militar', label: 'Militar' },
@@ -121,7 +121,6 @@ const Publication: React.FC = () => {
   const [justicaSubOpen, setJusticaSubOpen] = useState(false)
   const filtragemRef = useRef<HTMLDivElement>(null)
 
-
   // Custom Dates
   useEffect(() => {
     if (changeDates) {
@@ -130,6 +129,7 @@ const Publication: React.FC = () => {
       setFilterPeriod('')
     }
   }, [changeDates])
+
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -630,12 +630,6 @@ const Publication: React.FC = () => {
     setLoadingData(true)
   }
 
-  const handleJusticaToggle = (value: string) => {
-    setJusticaFilter(prev =>
-      prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
-    )
-  }
-
 
   const handleChangeFilterName = useCallback(
     async (event: ChangeEvent<HTMLSelectElement>) => {
@@ -808,6 +802,7 @@ const Publication: React.FC = () => {
     setCurrentPublicationId(publicationId)
   }
 
+
   const handleAssociateMatter = async (matterId: number, textComplement: string, textDeadlineRule: string) => {
     if (matterId > 0) {
       const response = await api.post<ProcessData>('/Processo/SelecionarProcesso', {
@@ -871,6 +866,7 @@ const Publication: React.FC = () => {
     }
   }
 
+
   const handleEvaluateIA = async (publicationId: Number, legalResumeId: Number, flag: string) => {
     setActionType('evaluateIA');
     var response = await api.post<PublicationAICalculatorDTO>('/PublicacoesIA/Avaliar',
@@ -915,15 +911,18 @@ const Publication: React.FC = () => {
     setActionType('none');
   }
 
+
   const handleDefinirDias = async (LegalResumeAI: PublicationAIAnalyserDTO, legalResumeActionId: number) => {
     setOpenModalDaysIA(true);
     setCurrentLegalResume(LegalResumeAI);
     setCurrentLegalResumeActionId(legalResumeActionId);
   }
 
+
   const handleDeadlineDays = (number) => {
     setDaysDeadline(number)
   };
+
 
   const handleSaveDays = async () => {
     try {
@@ -945,6 +944,7 @@ const Publication: React.FC = () => {
       console.log(err);
     }
   }
+
 
   const handlePublicationIAModalEvent = async (LegalResumeAI: PublicationAIAnalyserDTO, legalResumeActionId: number, ignoreConfirm: boolean = false) => {
     setActionType('deadLineCalculate');
@@ -1041,6 +1041,7 @@ const Publication: React.FC = () => {
     isOpenModal('0')
   }
 
+
   const handleCloseDaysModal = async () => {
     setOpenModalDaysIA(false);
     setCurrentLegalResume(null);
@@ -1049,6 +1050,7 @@ const Publication: React.FC = () => {
     setActionType('none');
     setItemType("");
   }
+
 
   const handleAppointmentModalInclude = async (matterId: number, publicationId: number, hasMatter: boolean) => {
     try {
@@ -1342,6 +1344,7 @@ const Publication: React.FC = () => {
       console.log(err);
     }
   }
+
 
   // Trigguer event when achieve end of scrool and active pagination for publication list
   function handleScroll(e: UIEvent<HTMLDivElement>) {
@@ -1639,6 +1642,7 @@ const Publication: React.FC = () => {
     }
   }
 
+
   const handlePublicationGojurAI = async (id: number, type: string) => {
     try {
 
@@ -1700,7 +1704,9 @@ const Publication: React.FC = () => {
     }
   }
 
+
   const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 
   const MatterEventLog = async (id: number) => {
     setCurrentPublicationId(id)
@@ -1725,6 +1731,7 @@ const Publication: React.FC = () => {
     handlePublicationModal('Calc')
   }
 
+
   const publicationWorkflow = async (id, publicationDate, matterNumber) => {
     localStorage.setItem('@Gojur:publicationRedirect', 'S')
 
@@ -1739,13 +1746,13 @@ const Publication: React.FC = () => {
       history.push(`/workflowexec/kanban`)
   }
 
-   useEffect(() => {
-      LoadDefaultProps();
-  
-    }, [workflowView]);
+
+  useEffect(() => {
+    LoadDefaultProps();
+  }, [workflowView]);
 
 
-    const followUpWorkflow = async (id, publicationDate, matterNumber) => {
+  const followUpWorkflow = async (id, publicationDate, matterNumber) => {
     localStorage.setItem('@Gojur:publicationRedirect', 'S')
 
     localStorage.setItem('@Gojur:followUpId', id.toString());
@@ -1759,35 +1766,33 @@ const Publication: React.FC = () => {
       history.push(`/workflowexec/kanban`)
   }
 
-   useEffect(() => {
-      LoadDefaultProps();
-  
-    }, [workflowView]);
-    
 
+  useEffect(() => {
+    LoadDefaultProps();
+  }, [workflowView]);
 
 
   const LoadDefaultProps = async () => {
-      try {
+    try {
+
+      const response = await api.post<IDefaultsProps[]>('/Defaults/Listar', {
+        token,
+      });
+
+      const workflowViewDefault = response.data.find(item => item.id === 'defaultWorkflowParameter' || item.id === 'adm')
   
-        const response = await api.post<IDefaultsProps[]>('/Defaults/Listar', {
-          token,
-        });
-  
-        const workflowViewDefault = response.data.find(item => item.id === 'defaultWorkflowParameter' || item.id === 'adm')
-    
-        // // default view workflow
-        if (workflowViewDefault) {
-          setWorkflowView(workflowViewDefault.value)
-        } else {
-          setWorkflowView('KANBAN')
-        }
-  
-  
-      } catch (err) {
-        console.log(err);
+      // // default view workflow
+      if (workflowViewDefault) {
+        setWorkflowView(workflowViewDefault.value)
+      } else {
+        setWorkflowView('KANBAN')
       }
+
+
+    } catch (err) {
+      console.log(err);
     }
+  }
 
 
   return (
@@ -1958,8 +1963,8 @@ const Publication: React.FC = () => {
                               <label key={opt.value}>
                                 <input
                                   type="checkbox"
-                                  checked={justicaFilter.includes(opt.value)}
-                                  onChange={() => handleJusticaToggle(opt.value)}
+                                  checked={multiFilter.some(f => f.value === opt.value)}
+                                  onChange={() => handleToggleMultiFilterItem(opt)}
                                 />
                                 {opt.label}
                               </label>
