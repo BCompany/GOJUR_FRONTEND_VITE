@@ -25,7 +25,6 @@ import {
   EmptyState,
   KanbanArea,
   ModalOverlay,
-  PageHeader,
   PanelItem,
   PanelsModal,
   TaskBar,
@@ -402,12 +401,6 @@ export default function AgendaKanban() {
       <HeaderPage />
 
       <Content>
-        <PageHeader>
-          <div className="left" />
-          <h3>{activePanel?.name ?? ''}</h3>
-          <div className="right" />
-        </PageHeader>
-
         <TaskBar>
           <div className="taskbar-left">
             <Search
@@ -423,7 +416,7 @@ export default function AgendaKanban() {
               placeholder="Pesquisar Compromissos"
               className="search"
               name="search"
-              style={{ borderRadius: '4px', marginTop: 0, marginLeft: 0 }}
+              style={{ marginTop: 0, marginLeft: 0 }}
               value={!isLoadingSearch ? filterTerm : ''}
               onChange={(e) => setFilterTerm(e.target.value)}
             />
@@ -510,6 +503,8 @@ export default function AgendaKanban() {
             </button>
           </div>
         </TaskBar>
+
+        <h3 style={{ textAlign: 'center', fontSize: '1.1rem', fontWeight: 600, color: 'var(--primary)', marginBottom: '0.75rem' }}>{activePanel?.name ?? ''}</h3>
 
         {/* ── Panels modal ── */}
         {showPanelsModal && (

@@ -15,35 +15,6 @@ export const Content = styled.div`
   height: 100%;
 `;
 
-export const PageHeader = styled.header`
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  margin-bottom: 1rem;
-
-  h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--primary);
-    text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .left {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .right {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 0.5rem;
-  }
-`;
 
 export const TaskBar = styled.div`
   display: flex;
