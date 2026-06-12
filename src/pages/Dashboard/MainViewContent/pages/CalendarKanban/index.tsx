@@ -416,7 +416,7 @@ export default function AgendaKanban() {
               placeholder="Pesquisar Compromissos"
               className="search"
               name="search"
-              style={{ marginTop: 0, marginLeft: 0 }}
+              style={{minWidth: '10rem', marginTop: 0, marginLeft: 0 }}
               value={!isLoadingSearch ? filterTerm : ''}
               onChange={(e) => setFilterTerm(e.target.value)}
             />

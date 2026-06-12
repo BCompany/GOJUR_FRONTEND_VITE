@@ -11,7 +11,7 @@ export const Container = styled.div`
 
 export const Content = styled.div`
   flex: 1;
-  padding: 0.4rem 2rem;
+  padding: 0.4rem 0;
   height: 100%;
 `;
 
@@ -89,6 +89,7 @@ export const TaskBar = styled.div`
 
 export const BoardLayout = styled.div`
   height: calc(100vh - 140px);
+  padding: 0 2rem;
 `;
 
 /* ── PANELS MODAL ── */
