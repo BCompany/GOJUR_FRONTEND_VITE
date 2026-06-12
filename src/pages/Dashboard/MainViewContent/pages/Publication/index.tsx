@@ -44,6 +44,23 @@ export interface IDefaultsProps {
   value: string;
 }
 
+const justicaOptions = [
+  { value: 'itemSearch_estadual', label: 'Estadual' },
+  { value: 'itemSearch_federal', label: 'Federal' },
+  { value: 'itemSearch_trabalhista', label: 'Trabalhista' },
+  { value: 'itemSearch_eleitoral', label: 'Eleitoral' },
+  { value: 'itemSearch_militar', label: 'Militar' },
+]
+
+const filtragemOptions = [
+  { value: 'itemSearch_withMatter', label: 'Com Processo' },
+  { value: 'itemSearch_withoutMatter', label: 'Sem Processo' },
+  { value: 'itemSearch_read', label: 'Lidas' },
+  { value: 'itemSearch_unread', label: 'Não Lidas' },
+  { value: 'itemSearch_publication', label: 'Publicações Diários Justiça' },
+  { value: 'itemSearch_matterEvent', label: 'Andamentos Processuais' },
+]
+
 const Publication: React.FC = () => {
   const { signOut } = useAuth();
   const { handlePublicationModal, handleSetFilterName, handleSetFilterChanged, filterName, isReportModalOpen, filterChanged, handleDetailsAnyType, handleOpenReportModal, handleCloseReportModal, handleReload, reloadTrigger } = usePublication();
@@ -105,22 +122,6 @@ const Publication: React.FC = () => {
   const [justicaSubOpen, setJusticaSubOpen] = useState(false)
   const filtragemRef = useRef<HTMLDivElement>(null)
 
-  const justicaOptions = [
-    { value: 'itemSearch_estadual', label: 'Estadual' },
-    { value: 'itemSearch_federal', label: 'Federal' },
-    { value: 'itemSearch_trabalhista', label: 'Trabalhista' },
-    { value: 'itemSearch_eleitoral', label: 'Eleitoral' },
-    { value: 'itemSearch_militar', label: 'Militar' },
-  ]
-
-  const options = [
-    { value: 'itemSearch_withMatter', label: 'Com Processo' },
-    { value: 'itemSearch_withoutMatter', label: 'Sem Processo' },
-    { value: 'itemSearch_read', label: 'Lidas' },
-    { value: 'itemSearch_unread', label: 'Não Lidas' },
-    { value: 'itemSearch_publication', label: 'Publicações Diários Justiça' },
-    { value: 'itemSearch_matterEvent', label: 'Andamentos Processuais' }
-  ];
 
   // Custom Dates
   useEffect(() => {
@@ -620,14 +621,6 @@ const Publication: React.FC = () => {
     handlePublicationModal('Email')
   }
 
-
-  // Save state multi filter
-  const handleMultiFilter = (values: Array<filterProps>) => {
-    setLoadingData(true)
-    setIsOpenMenu(false)
-    setPageNumber(1)
-    setMultiFilter(values)
-  }
 
   const handleToggleMultiFilterItem = (item: filterProps) => {
     setMultiFilter(prev => {
@@ -1937,7 +1930,7 @@ const Publication: React.FC = () => {
               {filtragemOpen && (
                 <div className="dropdown">
                   <div className="panel-content">
-                    {options.map(opt => (
+                    {filtragemOptions.map(opt => (
                       <label key={opt.value}>
                         <input
                           type="checkbox"

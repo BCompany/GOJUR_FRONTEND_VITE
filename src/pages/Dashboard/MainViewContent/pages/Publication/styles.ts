@@ -1,5 +1,4 @@
 import styled from 'styled-components';
-import { MultiSelect } from 'react-multi-select-component';
 
 interface MenuProps {
   open: boolean;
@@ -590,33 +589,6 @@ export const MenuItem = styled.div<MenuProps>`
   }
 `;
 
-export const Multi = styled(MultiSelect)`
-  font-size: 0.7rem;
-  background-color: var(--white);
-  color: var(--primary);
-  margin-right: 5px;
-
-  .dropdown-heading {
-    min-width: 13vw;
-    height: 1.6rem;
-  }
-
-  svg:first-child {
-    margin-left: 40px;
-    width: 21px;
-    height: 20px;
-    margin-top: -25px;
-    position: absolute;
-  }
-
-  &::placeholder {
-    color: var(--primary);
-  }
-
-  &:focus {
-    border: none;
-  }
-`;
 
 export const CustomMultiSelect = styled.div`
   position: relative;
