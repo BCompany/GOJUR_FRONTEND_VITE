@@ -45,8 +45,7 @@ export interface IDefaultsProps {
 }
 
 const justicaOptions = [
-  { value: 'itemSearch_estadual', label: 'Estadual' },
-  { value: 'itemSearch_federal', label: 'Federal' },
+  { value: 'itemSearch_estadfeder', label: 'Estadual/Federal' },
   { value: 'itemSearch_trabalhista', label: 'Trabalhista' },
   { value: 'itemSearch_eleitoral', label: 'Eleitoral' },
   { value: 'itemSearch_militar', label: 'Militar' },
