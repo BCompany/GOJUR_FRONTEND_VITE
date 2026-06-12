@@ -622,67 +622,82 @@ export const CustomMultiSelect = styled.div`
   position: relative;
   font-size: 0.7rem;
   margin-right: 5px;
+  outline: 0;
+  background-color: var(--white);
+  border: 1px solid #ccc;
+  border-radius: 4px;
+
+  &:focus-within {
+    box-shadow: #4285f4 0 0 0 1px;
+    border-color: #4285f4;
+  }
 
   .trigger {
-    background-color: var(--white);
     color: var(--primary);
-    border: 1px solid #ccc;
-    border-radius: 4px;
     height: 1.6rem;
     min-width: 13vw;
     max-width: 22vw;
-    padding: 0 0.5rem;
-    cursor: pointer;
+    padding: 0 10px;
+    cursor: default;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    width: 100%;
     font-size: 0.7rem;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
+    background: none;
+    border: none;
+    outline: 0;
 
-    &:focus {
-      outline: none;
+    .heading-value {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+      text-align: left;
     }
 
     .arrow {
       margin-left: 6px;
       font-size: 0.6rem;
       flex-shrink: 0;
+      color: #aaa;
     }
   }
 
   .dropdown {
     position: absolute;
-    top: calc(100% + 2px);
+    top: 100%;
     left: 0;
-    background-color: var(--white);
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 0.4rem 0.2rem;
+    padding-top: 8px;
     z-index: 200;
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
-    min-width: 100%;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    width: 100%;
+    min-width: max-content;
 
-    label {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      cursor: pointer;
-      white-space: nowrap;
-      color: var(--primary);
-      padding: 0.25rem 0.5rem;
-      border-radius: 3px;
+    .panel-content {
+      overflow: visible;
+      border-radius: 4px;
+      background: var(--white);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 4px 11px rgba(0, 0, 0, 0.1);
 
-      &:hover {
-        background-color: #f0f0f0;
-      }
-
-      input[type='checkbox'] {
+      label {
+        box-sizing: border-box;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 10px;
+        color: var(--primary);
+        white-space: nowrap;
+
+        &:hover {
+          background: #f1f3f5;
+        }
+
+        input[type='checkbox'] {
+          margin: 0;
+          cursor: pointer;
+        }
       }
     }
 
@@ -691,58 +706,61 @@ export const CustomMultiSelect = styled.div`
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.25rem 0.5rem;
+      padding: 10px;
       cursor: pointer;
       color: var(--primary);
-      border-radius: 3px;
       white-space: nowrap;
 
       &:hover {
-        background-color: #f0f0f0;
+        background: #f1f3f5;
       }
 
       em {
         font-style: normal;
         font-size: 0.65rem;
-        color: var(--secondary);
+        color: #aaa;
       }
 
       .sub-arrow {
         font-size: 0.55rem;
         margin-left: 8px;
         flex-shrink: 0;
+        color: #aaa;
       }
 
       .sub-dropdown {
         position: absolute;
         left: 100%;
         top: 0;
-        background-color: var(--white);
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        padding: 0.4rem 0.2rem;
+        padding-top: 0;
         z-index: 201;
-        display: flex;
-        flex-direction: column;
-        gap: 0.1rem;
         min-width: 140px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 
-        label {
-          display: flex;
-          align-items: center;
-          gap: 0.4rem;
-          cursor: pointer;
-          padding: 0.25rem 0.5rem;
-          border-radius: 3px;
+        .panel-content {
+          overflow: visible;
+          border-radius: 4px;
+          background: var(--white);
+          box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 4px 11px rgba(0, 0, 0, 0.1);
 
-          &:hover {
-            background-color: #f0f0f0;
-          }
-
-          input[type='checkbox'] {
+          label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
             cursor: pointer;
+            padding: 10px;
+            color: var(--primary);
+            white-space: nowrap;
+
+            &:hover {
+              background: #f1f3f5;
+            }
+
+            input[type='checkbox'] {
+              margin: 0;
+              cursor: pointer;
+            }
           }
+        }
         }
       }
     }

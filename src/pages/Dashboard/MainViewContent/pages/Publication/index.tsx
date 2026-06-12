@@ -1923,53 +1923,59 @@ const Publication: React.FC = () => {
           <section id="filters">
             <CustomMultiSelect ref={filtragemRef}>
               <button type="button" className="trigger" onClick={() => setFiltragemOpen(prev => !prev)}>
-                {multiFilter.length === 0 && justicaFilter.length === 0
-                  ? 'Filtragem Rápida'
-                  : [
-                      ...multiFilter.map(f => f.label),
-                      ...justicaOptions.filter(o => justicaFilter.includes(o.value)).map(o => o.label),
-                    ].join(', ')}
+                <span className="heading-value">
+                  {multiFilter.length === 0 && justicaFilter.length === 0
+                    ? 'Filtragem Rápida'
+                    : [
+                        ...multiFilter.map(f => f.label),
+                        ...justicaOptions.filter(o => justicaFilter.includes(o.value)).map(o => o.label),
+                      ].join(', ')}
+                </span>
                 <span className="arrow">▾</span>
               </button>
 
               {filtragemOpen && (
                 <div className="dropdown">
-                  {options.map(opt => (
-                    <label key={opt.value}>
-                      <input
-                        type="checkbox"
-                        checked={multiFilter.some(f => f.value === opt.value)}
-                        onChange={() => handleToggleMultiFilterItem(opt)}
-                      />
-                      {opt.label}
-                    </label>
-                  ))}
+                  <div className="panel-content">
+                    {options.map(opt => (
+                      <label key={opt.value}>
+                        <input
+                          type="checkbox"
+                          checked={multiFilter.some(f => f.value === opt.value)}
+                          onChange={() => handleToggleMultiFilterItem(opt)}
+                        />
+                        {opt.label}
+                      </label>
+                    ))}
 
-                  <div
-                    className="sub-item"
-                    onMouseEnter={() => setJusticaSubOpen(true)}
-                    onMouseLeave={() => setJusticaSubOpen(false)}
-                  >
-                    <span>
-                      Justiça
-                      {justicaFilter.length > 0 && <em> ({justicaFilter.length})</em>}
-                    </span>
-                    <span className="sub-arrow">▶</span>
+                    <div
+                      className="sub-item"
+                      onMouseEnter={() => setJusticaSubOpen(true)}
+                      onMouseLeave={() => setJusticaSubOpen(false)}
+                    >
+                      <span>
+                        Justiça
+                        {justicaFilter.length > 0 && <em> ({justicaFilter.length})</em>}
+                      </span>
+                      <span className="sub-arrow">▶</span>
 
-                    {justicaSubOpen && (
-                      <div className="sub-dropdown">
-                        {justicaOptions.map(opt => (
-                          <label key={opt.value}>
-                            <input
-                              type="checkbox"
-                              checked={justicaFilter.includes(opt.value)}
-                              onChange={() => handleJusticaToggle(opt.value)}
-                            />
-                            {opt.label}
-                          </label>
-                        ))}
-                      </div>
-                    )}
+                      {justicaSubOpen && (
+                        <div className="sub-dropdown">
+                          <div className="panel-content">
+                            {justicaOptions.map(opt => (
+                              <label key={opt.value}>
+                                <input
+                                  type="checkbox"
+                                  checked={justicaFilter.includes(opt.value)}
+                                  onChange={() => handleJusticaToggle(opt.value)}
+                                />
+                                {opt.label}
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
