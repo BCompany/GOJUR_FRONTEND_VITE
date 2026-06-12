@@ -47,22 +47,45 @@ export const PageHeader = styled.header`
 
 export const TaskBar = styled.div`
   display: flex;
+  justify-content: space-between;
+  align-items: center;
   box-shadow: 1px 1px 4px 0.5px rgba(0, 0, 0, 0.15);
   margin-bottom: 0.75rem;
+  background-color: var(--white);
+  padding: 10px 8px 12px;
+  font-size: 0.65rem;
+  font-family: Montserrat;
 
-  > div {
+  .taskbar-left {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    font-size: 0.65rem;
-    font-family: Montserrat;
-    background-color: var(--white);
-    width: 100%;
-    padding: 10px 8px 12px;
     gap: 0.5rem;
+    width: 70%;
 
+    .search {
+      flex: unset;
+      min-width: unset;
+    }
 
+    .icons {
+      width: 1rem;
+      height: 1rem;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+  }
 
+  .select {
+    > div {
+      border: 1px solid var(--grey);
+      border-radius: 4px;
+    }
+  }
+
+  .taskbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   .date-range {

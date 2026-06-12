@@ -315,7 +315,6 @@ export default function AgendaKanban() {
 
   const handleChangePhaseColor = useCallback((phaseId: number, color: string) => {
     setPhases((prev) => prev.map((ph) => (ph.id === phaseId ? { ...ph, color } : ph)));
-    setColorPopoverPhaseId(null);
   }, []);
 
   const handleStartEditPhase = useCallback((phase: IPhase) => {
@@ -410,7 +409,7 @@ export default function AgendaKanban() {
         </PageHeader>
 
         <TaskBar>
-          <div>
+          <div className="taskbar-left">
             <Search
               onKeyPress={(e: React.KeyboardEvent) => {
                 if (e.key === 'Delete' || e.key === 'Backspace' || e.which === 8) {
@@ -424,6 +423,7 @@ export default function AgendaKanban() {
               placeholder="Pesquisar Compromissos"
               className="search"
               name="search"
+              style={{ borderRadius: '4px', marginTop: 0, marginLeft: 0 }}
               value={!isLoadingSearch ? filterTerm : ''}
               onChange={(e) => setFilterTerm(e.target.value)}
             />
@@ -489,6 +489,9 @@ export default function AgendaKanban() {
                 />
               </div>
             )}
+          </div>
+
+          <div className="taskbar-right">
             {permissions.canManagePanels && (
               <button
                 type="button"
