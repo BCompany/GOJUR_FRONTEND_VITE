@@ -482,6 +482,8 @@ export const TaskBar = styled.div`
     }
 
     .buttonLinkClick{
+      display: inline-flex;
+      align-items: center;
       margin-top:10px;
       margin-left:10px;
     }
