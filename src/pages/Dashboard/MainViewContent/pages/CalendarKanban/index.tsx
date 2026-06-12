@@ -7,9 +7,9 @@ import { useHistory } from 'react-router-dom';
 import Select from 'react-select';
 import { selectStyles } from 'Shared/utils/commonFunctions';
 import { IComboData } from 'pages/Dashboard/MainViewContent/pages/Financeiro/Account/Modal';
+import { useModal } from 'context/modal';
 import {
   AddCardButton,
-  AddCardForm,
   AddPhaseColumn,
   AppointmentCard,
   BoardLayout,
@@ -113,6 +113,20 @@ const INITIAL_CARDS: ICard[] = [
 export default function AgendaKanban() {
   const history = useHistory();
 
+  const {
+    isOpenModal,
+    handleDeadLineCalculatorText,
+    handleCaptureTextPublication,
+    handleModalActive,
+  } = useModal();
+
+  const handleClickInclude = useCallback(() => {
+    handleCaptureTextPublication('');
+    handleDeadLineCalculatorText('');
+    handleModalActive(true);
+    isOpenModal('0');
+  }, [handleCaptureTextPublication, handleDeadLineCalculatorText, handleModalActive, isOpenModal]);
+
   const [panels, setPanels] = useState<IPanel[]>(INITIAL_PANELS);
   const [phases, setPhases] = useState<IPhase[]>(INITIAL_PHASES);
   const [cards, setCards] = useState<ICard[]>(INITIAL_CARDS);
@@ -155,15 +169,8 @@ export default function AgendaKanban() {
   const [editingPhaseId, setEditingPhaseId] = useState<number | null>(null);
   const [editingPhaseName, setEditingPhaseName] = useState('');
 
-  // New card form: keyed by phaseId
-  const [addingCardInPhase, setAddingCardInPhase] = useState<number | null>(null);
-  const [newCardTitle, setNewCardTitle] = useState('');
-  const [newCardDesc, setNewCardDesc] = useState('');
-  const [newCardDate, setNewCardDate] = useState('');
-
   const panelNameRef = useRef<HTMLInputElement>(null);
   const phaseNameRef = useRef<HTMLInputElement>(null);
-  const cardTitleRef = useRef<HTMLInputElement>(null);
 
   /* ── Derived ── */
   const activePanel = panels.find((p) => p.id === activePanelId);
@@ -260,26 +267,6 @@ export default function AgendaKanban() {
   };
 
   /* ── Card actions ── */
-  const handleAddCard = useCallback(() => {
-    const title = newCardTitle.trim();
-    if (!title || addingCardInPhase === null) return;
-    const phase = phases.find((ph) => ph.id === addingCardInPhase);
-    if (!phase) return;
-    const newCard: ICard = {
-      id: uid(),
-      phaseId: addingCardInPhase,
-      panelId: phase.panelId,
-      title,
-      description: newCardDesc.trim(),
-      dateTime: newCardDate,
-    };
-    setCards((prev) => [...prev, newCard]);
-    setNewCardTitle('');
-    setNewCardDesc('');
-    setNewCardDate('');
-    setAddingCardInPhase(null);
-  }, [newCardTitle, newCardDesc, newCardDate, addingCardInPhase, phases]);
-
   const handleDeleteCard = useCallback((cardId: number) => {
     setCards((prev) => prev.filter((c) => c.id !== cardId));
   }, []);
@@ -335,11 +322,6 @@ export default function AgendaKanban() {
   const onPhaseKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleAddPhase();
     if (e.key === 'Escape') { setAddingPhaseForPanel(null); setNewPhaseName(''); }
-  };
-
-  const onCardKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') handleAddCard();
-    if (e.key === 'Escape') { setAddingCardInPhase(null); setNewCardTitle(''); setNewCardDesc(''); setNewCardDate(''); }
   };
 
   /* ── Render ── */
@@ -515,7 +497,6 @@ export default function AgendaKanban() {
             <KanbanArea ref={boardProvided.innerRef} {...boardProvided.droppableProps}>
               {activePhases.map((phase, colIndex) => {
                 const phaseCards = cards.filter((c) => c.phaseId === phase.id);
-                const isAddingHere = addingCardInPhase === phase.id;
 
                 return (
                   <Draggable key={phase.id} draggableId={`phase-${phase.id}`} index={colIndex}>
@@ -625,56 +606,12 @@ export default function AgendaKanban() {
                       )}
                     </Droppable>
 
-                    {isAddingHere ? (
-                      <AddCardForm>
-                        <input
-                          ref={cardTitleRef}
-                          autoFocus
-                          placeholder="Título do compromisso"
-                          value={newCardTitle}
-                          onChange={(e) => setNewCardTitle(e.target.value)}
-                          onKeyDown={onCardKeyDown}
-                        />
-                        <textarea
-                          rows={2}
-                          placeholder="Descrição (opcional)"
-                          value={newCardDesc}
-                          onChange={(e) => setNewCardDesc(e.target.value)}
-                        />
-                        <input
-                          type="datetime-local"
-                          value={newCardDate}
-                          onChange={(e) => setNewCardDate(e.target.value)}
-                        />
-                        <div className="form-actions">
-                          <button type="button" className="buttonClick" onClick={handleAddCard}>
-                            <FiCheck size={12} /> Salvar
-                          </button>
-                          <button
-                            type="button"
-                            className="buttonLinkClick"
-                            onClick={() => {
-                              setAddingCardInPhase(null);
-                              setNewCardTitle('');
-                              setNewCardDesc('');
-                              setNewCardDate('');
-                            }}
-                          >
-                            <FiX size={12} />
-                          </button>
-                        </div>
-                      </AddCardForm>
-                    ) : (
-                      <AddCardButton
-                        type="button"
-                        onClick={() => {
-                          setAddingCardInPhase(phase.id);
-                          setTimeout(() => cardTitleRef.current?.focus(), 50);
-                        }}
-                      >
-                        <FiPlus /> Criar Compromisso
-                      </AddCardButton>
-                    )}
+                    <AddCardButton
+                      type="button"
+                      onClick={handleClickInclude}
+                    >
+                      <FiPlus /> Criar Compromisso
+                    </AddCardButton>
                   </PhaseColumn>
                     )}
                   </Draggable>
