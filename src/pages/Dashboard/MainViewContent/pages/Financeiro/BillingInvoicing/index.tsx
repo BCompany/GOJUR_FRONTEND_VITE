@@ -192,6 +192,7 @@ const BillingInvoicing: React.FC = () => {
         token: ""
     });
     const [confirmDeleteModal, setConfirmDeleteModal] = useState<boolean>(false);
+     const [confirmDeleteAllBankSlipModal, setConfirmDeleteAllBankSlipModal] = useState<boolean>(false);  
     const [confirmCreateBankSlipModal, setConfirmCreateBankSlipModal] = useState<boolean>(false);
     const [selectedRow, setSelectedRow] = useState(null);
     const apiKey = localStorage.getItem('@GoJur:apiKey');
@@ -216,6 +217,10 @@ const BillingInvoicing: React.FC = () => {
             handleCancelMessage(false)
         }
 
+        if (isCancelMessage && caller == "allBankSlipDelete") {
+            setConfirmDeleteAllBankSlipModal(false)
+            handleCancelMessage(false)
+        }
 
         if (isCancelMessage && caller == "createbankslip") {
             setConfirmCreateBankSlipModal(false)
@@ -237,6 +242,13 @@ const BillingInvoicing: React.FC = () => {
         if (isConfirmMessage && caller == "invoiceDelete") {
            
             handleDeleteInvoice(invoiceId, true)
+            handleConfirmMessage(false)
+        }
+
+
+        if (isConfirmMessage && caller == "allBankSlipDelete") {
+           
+            handleDeleteBankSlipAll(invoiceId, true)
             handleConfirmMessage(false)
         }
 
@@ -589,7 +601,10 @@ const BillingInvoicing: React.FC = () => {
 
 
             handleStateType('Inactive')
-            history.push('/financeiro')
+            //history.push('/financeiro')
+
+            const responseBilling = await LoadBillingInvoicing(movementId);
+            await LoadMovement(movementId, responseBilling?.invoiceDescription);
 
             setConfirmDeleteModal(false)
 
@@ -942,6 +957,86 @@ const BillingInvoicing: React.FC = () => {
         return isValid;
     }
 
+
+    const handleSaveIntegrator = async (selectedIntegrator: any) => {
+        try {
+
+            //if (!Validate()) return;
+
+        setIsLoading(true);
+
+            await api.get('/Financeiro/Faturamento2/ValidarIntegrador', 
+                { 
+                    params: { 
+                        invoiceId: invoiceNumber,
+                        IntegratorId: selectedIntegrator?.id,       
+                        token,
+                        companyId,
+                        apiKey 
+                    } 
+                })
+
+
+            const payload = {
+                invoiceId: invoiceId || 0,
+                companyId: companyId,
+                invoiceNumber: invoiceNumber,
+                personId: selectedPeople?.id,
+                personName: selectedPeople?.label,
+                personIdOld: selectedPeopleOld?.id,
+                billingRulerId: selectedBillingRuler?.value ?? null,
+                invoiceDescription: description,
+                issueDate: invoiceDate,
+                movementId: movementId,
+                FinancialIntegratorId: selectedIntegrator?.id,
+                token: token,
+                apiKey,
+
+                financialDTO: {
+                    //editChild: selectedPeople?.id == selectedPeopleOld?.id ? 'justOne' : 'all',
+                    editChild: 'none',
+                    dta_Movimento: movementDate,
+                    vlr_Movimento: movementValue,
+                    cod_FormaPagamento: paymentFormId
+                },
+
+                billingIssuingInvoices: movementList.map(item => ({
+                    invoiceMovimentId: item.cod_Fatura2Movimento || 0,
+                    companyId: companyId,
+                    invoiceId: invoiceId || 0,
+                    movementID: Number(item.cod_Movimento),
+                    descriptionObservation: item.des_Observacao || ''
+                }))
+            };
+
+            const response = await api.post(
+                "/Financeiro/Faturamento2/Salvar",
+                payload
+            );
+
+
+            const responseBilling = await LoadBillingInvoicing(movementId);
+            await LoadMovement(movementId, responseBilling?.invoiceDescription);
+
+            setIsLoading(false);
+
+            return true;
+
+        } catch (err: any) {
+            setIsLoading(false);
+
+            addToast({
+                type: "error",
+                title: "Operação não realizada",
+                description: err.response?.data?.Message
+            });
+
+            return false;
+        }
+    };
+
+
+
     const handleSave = async () => {
         try {
 
@@ -986,9 +1081,6 @@ const BillingInvoicing: React.FC = () => {
                 payload
             );
 
-
-            //await LoadMovement(movementId)
-            //await LoadBillingInvoicing(movementId)
 
             const responseBilling = await LoadBillingInvoicing(movementId);
             await LoadMovement(movementId, responseBilling?.invoiceDescription);
@@ -1056,22 +1148,6 @@ const BillingInvoicing: React.FC = () => {
         setIsLoading(false)
     }
 
-    const LoadMovementsByPeriod = useCallback(async () => {
-
-    }, [])
-
-
-    const LoadTotalByPeriod = async () => {
-    }
-
-    const LoadMovementsByExtract = useCallback(async () => {
-    }, [])
-
-
-    const LoadTotalByExtract = async () => {
-
-    };
-
 
     const handleMovementDate = useCallback((event: ChangeEvent<HTMLInputElement>) => {
         setInvoiceDate(event.target.value)
@@ -1087,12 +1163,66 @@ const BillingInvoicing: React.FC = () => {
         setShowLog(false)
     }
 
+   
+    const handleDeleteBankSlipAll = useCallback(async (invoiceId: number, confirmDelete: boolean) => {
+        try {
+
+            /*
+           if (!selectedIntegrator?.id?.toString().trim()) {
+                addToast({
+                    type: 'info',
+                    title: 'Campo Obrigatório',
+                    description: 'Selecione e salve o Integrador Financeiro para excluir os boletos',
+                });
+                return;
+            }
+            */
+
+            if (confirmDelete == false) {
+
+                setConfirmDeleteAllBankSlipModal(true)
+                return;
+            }
+
+            await api.delete('Financeiro/Faturamento2/Deletar', {
+                params: {
+                    id: invoiceId,
+                    deleteInvoice: false,
+                    token
+                }
+            })
+
+            addToast({
+                type: "success",
+                title: "Boletos",
+                description: "Os boletos foram deletados"
+            })
+
+
+            const responseBilling = await LoadBillingInvoicing(movementId);
+            await LoadMovement(movementId, responseBilling?.invoiceDescription);
+
+            setConfirmDeleteAllBankSlipModal(false)
+
+        }
+        catch (err: any) {
+
+             addToast({
+                type: "error",
+                title: "Operação não realizada",
+                description: err.response?.data?.Message
+            });
+
+        }
+
+    }, [addToast, history, selectedIntegrator]);
 
 
     const handleDeleteInvoice = useCallback(async (invoiceId: number, confirmDelete: boolean) => {
         try {
 
-            
+           
+        
            if (!selectedIntegrator?.id?.toString().trim()) {
                 addToast({
                     type: 'info',
@@ -1101,7 +1231,7 @@ const BillingInvoicing: React.FC = () => {
                 });
                 return;
             }
-            
+           
           
             if (confirmDelete == false) {
 
@@ -1112,6 +1242,7 @@ const BillingInvoicing: React.FC = () => {
             await api.delete('Financeiro/Faturamento2/Deletar', {
                 params: {
                     id: invoiceId,
+                    deleteInvoice: true,
                     token
                 }
             })
@@ -1142,16 +1273,42 @@ const BillingInvoicing: React.FC = () => {
     }, [addToast, history, selectedIntegrator]);
 
 
+
+
+const handleValidateBankSlip = useCallback(
+    async (invoiceId: number): Promise<boolean> => {
+        try {
+
+            await api.get('/Financeiro/Faturamento2/ValidarBoletos', 
+                    { 
+                        params: { 
+                            invoiceId: invoiceId, 
+                            token,
+                            companyId,
+                            apiKey 
+                        } 
+                    })
+
+            return true;
+        }
+        catch (err: any) {
+
+             addToast({
+                type: "error",
+                title: "Operação não realizada",
+                description: err.response?.data?.Message
+            });
+
+            return false;
+
+        }
+
+    }, [addToast, token, companyId, apiKey]);
+
+
+
     const ClosePaymentSlipModal = async () => {
-        //setPaymentId('0')
-        //setPaymentSlipValue("0")
-        //setDtaVencimentoBoleto("")
-        //setDtaVencimentoFatura("")
-        //setPct_Juros("")
-        //setPct_JurosMora("")
-        //setNum_PaymentSlip("")
         setShowPaymentSlipModal(false)
-        //SelectBillingInvoice()
     }
 
     return (
@@ -1204,7 +1361,14 @@ const BillingInvoicing: React.FC = () => {
                                     name="cliente"
                                     styles={selectStyles}
 
-                                    onChange={(selected) => {
+                                    onChange={async (selected) => {
+
+                                        const blnValidate = await handleValidateBankSlip(invoiceId);
+
+                                        if (!blnValidate) {
+                                            return;
+                                        }
+
                                         setSelectedPeople(selected);
                                     }}
 
@@ -1293,9 +1457,17 @@ const BillingInvoicing: React.FC = () => {
                                     name="integrator"
                                     styles={selectStyles}
 
-                                    onChange={(selected) => {
+                                     onChange={async (selected) => {
+
+                                        const blnValidate = await handleSaveIntegrator(selected);
+
+                                         if (!blnValidate) {
+                                            return;
+                                        }
+
                                         setSelectedIntegrator(selected);
                                     }}
+
 
                                     onInputChange={(inputValue, { action }) => {
 
@@ -1449,7 +1621,7 @@ const BillingInvoicing: React.FC = () => {
                         {isOpen && (
                             <div className="dropdownMenu">
                                 <button className="dropdownItem">Gerar Boletos Selecionados</button>
-                                <button className="dropdownItem"><FiTrash /> Excluir Todos os Boletos</button>
+                                <button className="dropdownItem" onClick={() => handleDeleteBankSlipAll(invoiceId, false)} ><FiTrash /> Excluir Todos os Boletos</button>
                                 <button className="dropdownItem" onClick={() => handleDeleteInvoice(invoiceId, false)}> <FiTrash /> Excluir Fatura</button>
                             </div>
                         )}
@@ -1497,6 +1669,13 @@ const BillingInvoicing: React.FC = () => {
                 />
             )}
 
+            {confirmDeleteAllBankSlipModal && (
+                <ConfirmBoxModal
+                    title="Excluir Registro"
+                    caller="allBankSlipDelete"
+                    message="Confirma a exclusão de todos os boletos desta fatura ?"
+                />
+            )}
 
             {confirmCreateBankSlipModal && (
                 <ConfirmBoxModal
