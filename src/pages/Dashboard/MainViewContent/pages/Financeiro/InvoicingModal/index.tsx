@@ -473,6 +473,7 @@ const FinancialInvoicingModal = (props) => {
         personId: billingInvoicing.personId,
         personName: billingInvoicing.personName,
         personIdOld: billingInvoicing.personIdOld,
+        financialIntegratorId: billingInvoicing.FinancialIntegratorId,
         billingRulerId: billingInvoicing.billingRulerId ?? null,
         invoiceDescription: billingInvoicing.invoiceDescription,
         issueDate: billingInvoicing.issueDate,

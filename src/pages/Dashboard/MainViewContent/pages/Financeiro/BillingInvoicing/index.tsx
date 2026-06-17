@@ -961,7 +961,9 @@ const BillingInvoicing: React.FC = () => {
     const handleSaveIntegrator = async (selectedIntegrator: any) => {
         try {
 
-            //if (!Validate()) return;
+        if (!selectedIntegrator?.id) {
+            return false;
+        }
 
         setIsLoading(true);
 
@@ -1121,6 +1123,7 @@ const BillingInvoicing: React.FC = () => {
                 invoiceDescription: description,
                 issueDate: invoiceDate,
                 movementId: movementId,
+                FinancialIntegratorId: selectedIntegrator?.id,
                 token: token
             }));
 
