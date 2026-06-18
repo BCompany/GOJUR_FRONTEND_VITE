@@ -571,16 +571,6 @@ const BillingInvoicing: React.FC = () => {
     const handleDeleteBankSlip = async (row) => {
 
         try {
- 
-            if ( row.cod_IntegradorFinanceiro == 0 ) 
-            {
-                addToast({
-                    type: "info",
-                    title: "Operação não realizada",
-                    description: "Selecione e salve o Integrador Financeiro para excluir o boleto"
-                });
-                return;
-            }
 
             await api.delete('BankSlip/Deletar', {
                 params: {
@@ -1096,15 +1086,23 @@ const BillingInvoicing: React.FC = () => {
 
             setIsLoading(false);
 
-        } catch (err: any) {
+        } 
+        
+      catch (err: any) {
             setIsLoading(false);
 
-            addToast({
+        if (err.response.data.typeError.warning == "awareness") {
+          addToast({ type: 'info', title: 'Falha ao gerar a fatura', description: err.response.data.Message });
+        }
+        else {
+               addToast({
                 type: "error",
                 title: "Operação não realizada",
                 description: err.response?.data?.Message
             });
         }
+      }        
+        
     };
 
 
@@ -1224,17 +1222,7 @@ const BillingInvoicing: React.FC = () => {
     const handleDeleteInvoice = useCallback(async (invoiceId: number, confirmDelete: boolean) => {
         try {
 
-           
-        
-           if (!selectedIntegrator?.id?.toString().trim()) {
-                addToast({
-                    type: 'info',
-                    title: 'Campo Obrigatório',
-                    description: 'Selecione e salve o Integrador Financeiro para excluir a fatura',
-                });
-                return;
-            }
-           
+          
           
             if (confirmDelete == false) {
 

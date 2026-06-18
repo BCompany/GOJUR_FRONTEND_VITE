@@ -95,6 +95,7 @@ const CustomerRobotModalEdit = (props) => {
       console.error('Erro na consulta:', err);
 
       if (err.response && err.response.data) {
+        
         const { typeError, Message } = err.response.data;
 
         if (typeError?.warning === 'awareness') {
