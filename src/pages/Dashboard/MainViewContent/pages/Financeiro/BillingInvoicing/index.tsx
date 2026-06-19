@@ -1354,12 +1354,6 @@ const handleValidateBankSlip = useCallback(
 
                                     onChange={async (selected) => {
 
-                                        const blnValidate = await handleValidateBankSlip(invoiceId);
-
-                                        if (!blnValidate) {
-                                            return;
-                                        }
-
                                         setSelectedPeople(selected);
                                     }}
 
@@ -1449,12 +1443,6 @@ const handleValidateBankSlip = useCallback(
                                     styles={selectStyles}
 
                                      onChange={async (selected) => {
-
-                                        const blnValidate = await handleSaveIntegrator(selected);
-
-                                         if (!blnValidate) {
-                                            return;
-                                        }
 
                                         setSelectedIntegrator(selected);
                                     }}
