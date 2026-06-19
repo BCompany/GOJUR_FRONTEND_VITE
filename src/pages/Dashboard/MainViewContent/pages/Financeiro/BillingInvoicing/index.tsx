@@ -187,7 +187,7 @@ const BillingInvoicing: React.FC = () => {
         personIdOld: undefined,
         billingRulerId: null,
         invoiceDescription: "",
-        issueDate: "",
+        issueDate: null,
         movementId: 0,
         token: ""
     });
@@ -1353,6 +1353,7 @@ const handleValidateBankSlip = useCallback(
                                     styles={selectStyles}
 
                                     onChange={async (selected) => {
+
 
                                         setSelectedPeople(selected);
                                     }}
