@@ -108,7 +108,6 @@ interface BillingInvoicingPayload {
     invoiceNumber: number;
     personId?: number;
     personName?: string;
-    personIdOld?: number;
     billingRulerId?: number | null;
     invoiceDescription: string;
     issueDate: string;
@@ -184,7 +183,6 @@ const BillingInvoicing: React.FC = () => {
         invoiceNumber: 0,
         personId: undefined,
         personName: "",
-        personIdOld: undefined,
         billingRulerId: null,
         invoiceDescription: "",
         issueDate: null,
@@ -975,7 +973,6 @@ const BillingInvoicing: React.FC = () => {
                 invoiceNumber: invoiceNumber,
                 personId: selectedPeople?.id,
                 personName: selectedPeople?.label,
-                personIdOld: selectedPeopleOld?.id,
                 billingRulerId: selectedBillingRuler?.value ?? null,
                 invoiceDescription: description,
                 issueDate: invoiceDate,
@@ -1042,7 +1039,6 @@ const BillingInvoicing: React.FC = () => {
                 invoiceNumber: invoiceNumber,
                 personId: selectedPeople?.id,
                 personName: selectedPeople?.label,
-                personIdOld: selectedPeopleOld?.id,
                 billingRulerId: selectedBillingRuler?.value ?? null,
                 invoiceDescription: description,
                 issueDate: invoiceDate,
@@ -1116,7 +1112,6 @@ const BillingInvoicing: React.FC = () => {
                 invoiceNumber: invoiceNumber,
                 personId: selectedPeople?.id,
                 personName: selectedPeople?.label,
-                personIdOld: selectedPeopleOld?.id,
                 billingRulerId: selectedBillingRuler?.value ?? null,
                 invoiceDescription: description,
                 issueDate: invoiceDate,
