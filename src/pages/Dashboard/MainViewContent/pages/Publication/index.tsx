@@ -21,7 +21,7 @@ import { BiMenuAltLeft } from 'react-icons/bi';
 import { ImHammer2 } from "react-icons/im";
 import { CgDetailsMore } from 'react-icons/cg'
 import { format } from 'date-fns';
-import { Container, Filter, Wrapper, PublicationItem, MatterEventItem, ContentItem, MenuItem, Multi, Menu, EventList, ContentItemMatterEvent } from './styles';
+import { Container, Filter, Wrapper, PublicationItem, MatterEventItem, ContentItem, MenuItem, Menu, EventList, ContentItemMatterEvent, CustomMultiSelect } from './styles';
 import { HeaderPage } from 'components/HeaderPage';
 import VideoTrainningModal from 'components/Modals/VideoTrainning/Index';
 import ConfirmBoxModal from 'components/ConfirmBoxModal';
@@ -43,6 +43,22 @@ export interface IDefaultsProps {
   id: string;
   value: string;
 }
+
+const justicaOptions = [
+  { value: 'itemSearch_estadualFederal', label: 'Estadual/Federal' },
+  { value: 'itemSearch_trabalhista', label: 'Trabalhista' },
+  { value: 'itemSearch_eleitoral', label: 'Eleitoral' },
+  { value: 'itemSearch_militar', label: 'Militar' },
+]
+
+const filtragemOptions = [
+  { value: 'itemSearch_withMatter', label: 'Com Processo' },
+  { value: 'itemSearch_withoutMatter', label: 'Sem Processo' },
+  { value: 'itemSearch_read', label: 'Lidas' },
+  { value: 'itemSearch_unread', label: 'Não Lidas' },
+  { value: 'itemSearch_publication', label: 'Publicações Diários Justiça' },
+  { value: 'itemSearch_matterEvent', label: 'Andamentos Processuais' },
+]
 
 const Publication: React.FC = () => {
   const { signOut } = useAuth();
@@ -100,15 +116,10 @@ const Publication: React.FC = () => {
   const { permissionsSecurity, handleValidateSecurity } = useSecurity();
   const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKFEX");
   const [workflowView, setWorkflowView] = useState('')
-
-  const options = [
-    { value: 'itemSearch_withMatter', label: 'Com Processo' },
-    { value: 'itemSearch_withoutMatter', label: 'Sem Processo' },
-    { value: 'itemSearch_read', label: 'Lidas' },
-    { value: 'itemSearch_unread', label: 'Não Lidas' },
-    { value: 'itemSearch_publication', label: 'Publicações Diários Justiça' },
-    { value: 'itemSearch_matterEvent', label: 'Andamentos Processuais' }
-  ];
+  const [justicaFilter, setJusticaFilter] = useState<string[]>([])
+  const [filtragemOpen, setFiltragemOpen] = useState(false)
+  const [justicaSubOpen, setJusticaSubOpen] = useState(false)
+  const filtragemRef = useRef<HTMLDivElement>(null)
 
   // Custom Dates
   useEffect(() => {
@@ -118,6 +129,18 @@ const Publication: React.FC = () => {
       setFilterPeriod('')
     }
   }, [changeDates])
+
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filtragemRef.current && !filtragemRef.current.contains(event.target as Node)) {
+        setFiltragemOpen(false)
+        setJusticaSubOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
 
   // Load names publication when start page for first time
@@ -598,12 +621,13 @@ const Publication: React.FC = () => {
   }
 
 
-  // Save state multi filter
-  const handleMultiFilter = (values: Array<filterProps>) => {
-    setLoadingData(true)
-    setIsOpenMenu(false)
+  const handleToggleMultiFilterItem = (item: filterProps) => {
+    setMultiFilter(prev => {
+      const exists = prev.some(f => f.value === item.value)
+      return exists ? prev.filter(f => f.value !== item.value) : [...prev, item]
+    })
     setPageNumber(1)
-    setMultiFilter(values)
+    setLoadingData(true)
   }
 
 
@@ -778,6 +802,7 @@ const Publication: React.FC = () => {
     setCurrentPublicationId(publicationId)
   }
 
+
   const handleAssociateMatter = async (matterId: number, textComplement: string, textDeadlineRule: string) => {
     if (matterId > 0) {
       const response = await api.post<ProcessData>('/Processo/SelecionarProcesso', {
@@ -841,6 +866,7 @@ const Publication: React.FC = () => {
     }
   }
 
+
   const handleEvaluateIA = async (publicationId: Number, legalResumeId: Number, flag: string) => {
     setActionType('evaluateIA');
     var response = await api.post<PublicationAICalculatorDTO>('/PublicacoesIA/Avaliar',
@@ -885,15 +911,18 @@ const Publication: React.FC = () => {
     setActionType('none');
   }
 
+
   const handleDefinirDias = async (LegalResumeAI: PublicationAIAnalyserDTO, legalResumeActionId: number) => {
     setOpenModalDaysIA(true);
     setCurrentLegalResume(LegalResumeAI);
     setCurrentLegalResumeActionId(legalResumeActionId);
   }
 
+
   const handleDeadlineDays = (number) => {
     setDaysDeadline(number)
   };
+
 
   const handleSaveDays = async () => {
     try {
@@ -915,6 +944,7 @@ const Publication: React.FC = () => {
       console.log(err);
     }
   }
+
 
   const handlePublicationIAModalEvent = async (LegalResumeAI: PublicationAIAnalyserDTO, legalResumeActionId: number, ignoreConfirm: boolean = false) => {
     setActionType('deadLineCalculate');
@@ -1011,6 +1041,7 @@ const Publication: React.FC = () => {
     isOpenModal('0')
   }
 
+
   const handleCloseDaysModal = async () => {
     setOpenModalDaysIA(false);
     setCurrentLegalResume(null);
@@ -1019,6 +1050,7 @@ const Publication: React.FC = () => {
     setActionType('none');
     setItemType("");
   }
+
 
   const handleAppointmentModalInclude = async (matterId: number, publicationId: number, hasMatter: boolean) => {
     try {
@@ -1312,6 +1344,7 @@ const Publication: React.FC = () => {
       console.log(err);
     }
   }
+
 
   // Trigguer event when achieve end of scrool and active pagination for publication list
   function handleScroll(e: UIEvent<HTMLDivElement>) {
@@ -1609,6 +1642,7 @@ const Publication: React.FC = () => {
     }
   }
 
+
   const handlePublicationGojurAI = async (id: number, type: string) => {
     try {
 
@@ -1670,7 +1704,9 @@ const Publication: React.FC = () => {
     }
   }
 
+
   const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 
   const MatterEventLog = async (id: number) => {
     setCurrentPublicationId(id)
@@ -1695,6 +1731,7 @@ const Publication: React.FC = () => {
     handlePublicationModal('Calc')
   }
 
+
   const publicationWorkflow = async (id, publicationDate, matterNumber) => {
     localStorage.setItem('@Gojur:publicationRedirect', 'S')
 
@@ -1709,13 +1746,13 @@ const Publication: React.FC = () => {
       history.push(`/workflowexec/kanban`)
   }
 
-   useEffect(() => {
-      LoadDefaultProps();
-  
-    }, [workflowView]);
+
+  useEffect(() => {
+    LoadDefaultProps();
+  }, [workflowView]);
 
 
-    const followUpWorkflow = async (id, publicationDate, matterNumber) => {
+  const followUpWorkflow = async (id, publicationDate, matterNumber) => {
     localStorage.setItem('@Gojur:publicationRedirect', 'S')
 
     localStorage.setItem('@Gojur:followUpId', id.toString());
@@ -1729,35 +1766,33 @@ const Publication: React.FC = () => {
       history.push(`/workflowexec/kanban`)
   }
 
-   useEffect(() => {
-      LoadDefaultProps();
-  
-    }, [workflowView]);
-    
 
+  useEffect(() => {
+    LoadDefaultProps();
+  }, [workflowView]);
 
 
   const LoadDefaultProps = async () => {
-      try {
+    try {
+
+      const response = await api.post<IDefaultsProps[]>('/Defaults/Listar', {
+        token,
+      });
+
+      const workflowViewDefault = response.data.find(item => item.id === 'defaultWorkflowParameter' || item.id === 'adm')
   
-        const response = await api.post<IDefaultsProps[]>('/Defaults/Listar', {
-          token,
-        });
-  
-        const workflowViewDefault = response.data.find(item => item.id === 'defaultWorkflowParameter' || item.id === 'adm')
-    
-        // // default view workflow
-        if (workflowViewDefault) {
-          setWorkflowView(workflowViewDefault.value)
-        } else {
-          setWorkflowView('KANBAN')
-        }
-  
-  
-      } catch (err) {
-        console.log(err);
+      // // default view workflow
+      if (workflowViewDefault) {
+        setWorkflowView(workflowViewDefault.value)
+      } else {
+        setWorkflowView('KANBAN')
       }
+
+
+    } catch (err) {
+      console.log(err);
     }
+  }
 
 
   return (
@@ -1883,19 +1918,65 @@ const Publication: React.FC = () => {
           {(showDateModal) && <DateModal callbackFunction={{ CloseDateModal, dtaCustomStart, setDtaCustomStart, dtaCustomEnd, setDtaCustomEnd, changeDates, setChangeDates, showCustomDates, setShowCustomDates }} />}
 
           <section id="filters">
-            <Multi
-              options={options}
-              value={multiFilter}
-              onChange={(values: []) => handleMultiFilter(values)}
-              labelledBy="Selecione"
-              selectAllLabel="Selecione"
-              hasSelectAll={false}
-              disableSearch
-              ClearIcon
-              overrideStrings={{
-                selectSomeItems: 'Filtragem Rápida',
-              }}
-            />
+            <CustomMultiSelect ref={filtragemRef}>
+              <button type="button" className="trigger" onClick={() => setFiltragemOpen(prev => !prev)}>
+                <span className="heading-value">
+                  {multiFilter.length === 0 && justicaFilter.length === 0
+                    ? 'Filtragem Rápida'
+                    : [
+                        ...multiFilter.map(f => f.label),
+                        ...justicaOptions.filter(o => justicaFilter.includes(o.value)).map(o => o.label),
+                      ].join(', ')}
+                </span>
+                <span className="arrow">▾</span>
+              </button>
+
+              {filtragemOpen && (
+                <div className="dropdown">
+                  <div className="panel-content">
+                    {filtragemOptions.map(opt => (
+                      <label key={opt.value}>
+                        <input
+                          type="checkbox"
+                          checked={multiFilter.some(f => f.value === opt.value)}
+                          onChange={() => handleToggleMultiFilterItem(opt)}
+                        />
+                        {opt.label}
+                      </label>
+                    ))}
+
+                    <div
+                      className="sub-item"
+                      onMouseEnter={() => setJusticaSubOpen(true)}
+                      onMouseLeave={() => setJusticaSubOpen(false)}
+                    >
+                      <span>
+                        Justiça
+                        {justicaFilter.length > 0 && <em> ({justicaFilter.length})</em>}
+                      </span>
+                      <span className="sub-arrow">▶</span>
+
+                      {justicaSubOpen && (
+                        <div className="sub-dropdown">
+                          <div className="panel-content">
+                            {justicaOptions.map(opt => (
+                              <label key={opt.value}>
+                                <input
+                                  type="checkbox"
+                                  checked={multiFilter.some(f => f.value === opt.value)}
+                                  onChange={() => handleToggleMultiFilterItem(opt)}
+                                />
+                                {opt.label}
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CustomMultiSelect>
 
             <select
               name="name-filter"
