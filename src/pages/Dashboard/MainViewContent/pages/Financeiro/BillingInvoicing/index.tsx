@@ -59,7 +59,11 @@ import { MdCreateNewFolder } from "react-icons/md";
 import PaymentSlipModal from '../BillingInvoicing/PaymentSlipModal';
 import { OverlayPaymentModal } from '../BillingInvoice/Edit/styles';
 
-
+interface SelectedRow  {
+    cod_Fatura2Movimento: string;
+    vlr_Liquido: string;
+    dta_Movimento: string;
+}
 
 interface IOption {
     value: number;
@@ -95,6 +99,10 @@ interface IFinancial {
     parcelaFormatada?: string;
     cod_Fatura2Movimento?: string;
     des_Observacao?: string;
+    flg_Efetivado?: string;
+    vlr_Liquido: string;
+    cod_BoletoBancario: string;
+    des_FormaPagamento: string;
 }
 
 interface ISelectData {
@@ -102,16 +110,22 @@ interface ISelectData {
     label: string;
 }
 
+interface ISelectData1 {
+    value: number | string;
+    label: string;
+}
+
+
 interface BillingInvoicingPayload {
-    invoiceId: number;
-    companyId: number;
-    invoiceNumber: number;
-    personId?: number;
+    invoiceId: number | string;
+    companyId: number | string;
+    invoiceNumber: number | string;
+    personId?: number | string;
     personName?: string;
-    billingRulerId?: number | null;
+    billingRulerId?: number | string | null;
     invoiceDescription: string;
     issueDate: string;
-    movementId: number;
+    movementId: number | string;
     token: string;
 }
 
@@ -138,7 +152,8 @@ const BillingInvoicing: React.FC = () => {
     const [movementDate, setMovementDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
     const [invoiceDate, setInvoiceDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
     const [movementValue, setMovementValue] = useState<number>();
-    const [invoiceValue, setInvoiceValue] = useState<number>();
+    //const [invoiceValue, setInvoiceValue] = useState<number>();
+    const [invoiceValue, setInvoiceValue] = useState<number | string>();
     const [movementParcelas, setMovementParcelas] = useState('1');
     const [movementNumParcela, setMovementNumParcela] = useState('1');
     const [description, setDescription] = useState<string>('');
@@ -165,10 +180,13 @@ const BillingInvoicing: React.FC = () => {
     const [invoiceId, setInvoiceId] = useState<number>(0);
     const [invoiceNumber, setInvoiceNumber] = useState<string>('000000');
     const [movementList, setMovementList] = useState<IFinancial[]>([]);
-    const [billingRulerList, setBillingRulerList] = useState<IOption[]>([]);
+    const [billingRulerList, setBillingRulerList] = useState<ISelectData1[]>([]);
     const [paymentFormList, setPaymentFormList] = useState<IPaymentFormData[]>([]);
-    const [selectedRows, setSelectedRows] = useState<number[]>([]);
-    const [selectedBillingRuler, setSelectedBillingRuler] = useState<ISelectData | null>(null);
+    //const [selectedRows, setSelectedRows] = useState<number[]>([]);
+    //const [selectedRows, setSelectedRows] = useState<(number | string)[]>([]);
+    const [selectedRows, setSelectedRows] = useState<SelectedRow[]>([]);
+
+    const [selectedBillingRuler, setSelectedBillingRuler] = useState<ISelectData1 | null>(null);
     const [buttonFatura, setButtonFatura] = useState<string>('Gerar Fatura');
     const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
     const [showBankSlipModal, setShowBankSlipModal] = useState<boolean>(false);
@@ -260,22 +278,73 @@ const BillingInvoicing: React.FC = () => {
     }, [isConfirmMessage, caller]);
 
 
-    const handleSelectRow = (rowId: number) => {
+    /*
+    const handleSelectRow = (rowId: number | string) => {
+   
         setSelectedRows(prev =>
             prev.includes(rowId)
                 ? prev.filter(id => id !== rowId)
                 : [...prev, rowId]
         );
     };
+    */
 
+    const handleSelectRow = (row: SelectedRow) => {
+     
+        setSelectedRows(prev => {
+            const exists = prev.some(
+                x => x.cod_Fatura2Movimento === row.cod_Fatura2Movimento
+            );
+
+            if (exists) {
+                return prev.filter(
+                    x => x.cod_Fatura2Movimento !== row.cod_Fatura2Movimento
+                );
+            }
+
+            return [...prev, row];
+        });
+    };
+
+/*
     const handleSelectAll = () => {
         if (selectedRows.length === movementList.length) {
             setSelectedRows([]);
-        } else {
-            setSelectedRows(movementList.map(item => item.parcelaFormatada));
-
+            return;
         }
+
+        const allSelected: SelectedRow[] = movementList.map(item => ({
+            cod_Fatura2Movimento: item.cod_Fatura2Movimento,
+            vlr_Liquido: item.vlr_Liquido,
+            dta_Movimento: item.dta_Movimento
+        }));
+
+        setSelectedRows(allSelected);
     };
+*/
+
+
+    const handleSelectAll = () => {
+    const eligibleRows = movementList.filter(
+        item =>
+            Number(item.cod_BoletoBancario) === 0 &&
+            item.des_FormaPagamento === 'BOLETO'
+    );
+
+    if (selectedRows.length === eligibleRows.length) {
+        setSelectedRows([]);
+        return;
+    }
+
+    const allSelected: SelectedRow[] = eligibleRows.map(item => ({
+        cod_Fatura2Movimento: item.cod_Fatura2Movimento,
+        vlr_Liquido: item.vlr_Liquido,
+        dta_Movimento: item.dta_Movimento
+    }));
+
+    setSelectedRows(allSelected);
+};
+
 
     const Initialize = async () => {
         await PaymentFormList();
@@ -453,7 +522,7 @@ const BillingInvoicing: React.FC = () => {
                 setSelectedPeople(selectedItem);
                 setDescription(data.invoiceDescription);
 
-                const selectedBillingRuler1: ISelectData = {
+                const selectedBillingRuler1: ISelectData1 = {
                     value: data.billingRulerId?.toString() || '',
                     label: data.billingRulerName || ''
                 };
@@ -745,17 +814,29 @@ const BillingInvoicing: React.FC = () => {
 
 
         if (column.title === '') {
-            const rowId = props.row.parcelaFormatada;
 
-            return (
-                <Table.Cell {...props}>
+            const rowCodBoleto = props.row.cod_BoletoBancario;
+            const rowFp = props.row.des_FormaPagamento;
+
+            const rowData = {
+                cod_Fatura2Movimento: props.row.cod_Fatura2Movimento,
+                vlr_Liquido: props.row.vlr_Liquido,
+                dta_Movimento: props.row.dta_Movimento
+            };
+
+             if (rowFp == 'BOLETO' && rowCodBoleto == 0) {
+                return (
+                    <Table.Cell {...props}>
                     <input
                         type="checkbox"
-                        checked={selectedRows.includes(rowId)}
-                        onChange={() => handleSelectRow(rowId)}
+                        checked={selectedRows.some(
+                            x => x.cod_Fatura2Movimento === props.row.cod_Fatura2Movimento
+                        )}
+                        onChange={() => handleSelectRow(rowData)}
                     />
-                </Table.Cell>
-            );
+                    </Table.Cell>
+                );
+             }
         }
 
 
@@ -1163,17 +1244,6 @@ const BillingInvoicing: React.FC = () => {
     const handleDeleteBankSlipAll = useCallback(async (invoiceId: number, confirmDelete: boolean) => {
         try {
 
-            /*
-           if (!selectedIntegrator?.id?.toString().trim()) {
-                addToast({
-                    type: 'info',
-                    title: 'Campo Obrigatório',
-                    description: 'Selecione e salve o Integrador Financeiro para excluir os boletos',
-                });
-                return;
-            }
-            */
-
             if (confirmDelete == false) {
 
                 setConfirmDeleteAllBankSlipModal(true)
@@ -1212,6 +1282,67 @@ const BillingInvoicing: React.FC = () => {
         }
 
     }, [addToast, history, selectedIntegrator]);
+
+
+    
+
+    const handleGenerateSelectedPaymentSlips = useCallback(async (invoiceId: number, confirmDelete: boolean) => {
+        try {
+
+            if (selectedRows.length === 0) {
+                addToast({
+                    type: 'info',
+                    title: 'Nenhum registro selecionado',
+                    description: 'Selecione pelo menos um registro para gerar os boletos.'
+                });
+
+                return;
+            }
+
+            setIsLoading(true);
+
+            const payloadList = selectedRows.map(row => ({
+                token: token,
+                companyId,
+                apiKey,
+                customerId: selectedPeople.id,
+                FinancialIntegratorId: selectedIntegrator?.id,
+                amount: row.vlr_Liquido,
+                dueDate: formatDate(row.dta_Movimento),
+                documentNumber: formattedInstallment,
+                invoice2MovementId: row.cod_Fatura2Movimento,
+                invoiceId: invoiceNumber
+            }));
+
+            const response = await api.post("/BankSlip/GenerateList", payloadList);
+
+            addToast({
+                type: 'info',
+                title: 'Boletos gerados',
+                description: 'Seus boletos foram gerados com sucesso',
+            });
+
+             setSelectedRows([]);
+
+        }
+        catch (err: any) {
+
+             setIsLoading(false);
+
+             addToast({
+                type: "error",
+                title: "Operação não realizada",
+                description: err.response?.data?.Message
+            });
+
+        }
+
+    
+        const responseBilling = await LoadBillingInvoicing(movementId);
+        await LoadMovement(movementId, responseBilling?.invoiceDescription);
+
+    }, [addToast, history, selectedIntegrator, selectedRows]);
+    
 
 
     const handleDeleteInvoice = useCallback(async (invoiceId: number, confirmDelete: boolean) => {
@@ -1555,7 +1686,7 @@ const handleValidateBankSlip = useCallback(
                             <button
                                 className="buttonClick"
                                 type='button'
-                                onClick={() => GenerateDocument()}
+                                //onClick={() => GenerateDocument()}
                             >
                                 <CgFileDocument />
                                 Emitir Fatura
@@ -1566,7 +1697,7 @@ const handleValidateBankSlip = useCallback(
                             <button
                                 className="buttonClick"
                                 type='button'
-                                onClick={() => CheckDeleteType(paymentQtd)}
+                                //onClick={() => CheckDeleteType(paymentQtd)}
                             >
                                 <RiMailSendLine />
                                 Enviar Fatura Email
@@ -1595,8 +1726,8 @@ const handleValidateBankSlip = useCallback(
 
                         {isOpen && (
                             <div className="dropdownMenu">
-                                <button className="dropdownItem">Gerar Boletos Selecionados</button>
-                                <button className="dropdownItem" onClick={() => handleDeleteBankSlipAll(invoiceId, false)} ><FiTrash /> Excluir Todos os Boletos</button>
+                                <button className="dropdownItem" onClick={() => handleGenerateSelectedPaymentSlips(invoiceId, false)}>Gerar Boletos Selecionados</button>
+                               {/* <button className="dropdownItem" onClick={() => handleDeleteBankSlipAll(invoiceId, false)} ><FiTrash /> Excluir Todos os Boletos</button> */}
                                 <button className="dropdownItem" onClick={() => handleDeleteInvoice(invoiceId, false)}> <FiTrash /> Excluir Fatura</button>
                             </div>
                         )}
