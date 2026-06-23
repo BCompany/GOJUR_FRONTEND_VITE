@@ -790,13 +790,20 @@ const BillingInvoicing: React.FC = () => {
         const { column } = props;
 
         if (column.name === '') {
+
+            const eligibleRows = movementList.filter(
+                item =>
+                    Number(item.cod_BoletoBancario) === 0 &&
+                    item.des_FormaPagamento === 'BOLETO'
+            );
+            
             return (
                 <TableHeaderRow.Cell {...props}>
                     <input
                         type="checkbox"
                         checked={
-                            movementList.length > 0 &&
-                            selectedRows.length === movementList.length
+                            eligibleRows.length > 0 &&
+                            selectedRows.length === eligibleRows.length
                         }
                         onChange={handleSelectAll}
                     />
@@ -1185,7 +1192,7 @@ const BillingInvoicing: React.FC = () => {
 
     const handleClick = useCallback(async (props: any) => {
         if (props.column.name === 'editar') {
-
+             
             setBillingInvoicing(prev => ({
                 ...prev,
                 invoiceId: invoiceId || 0,

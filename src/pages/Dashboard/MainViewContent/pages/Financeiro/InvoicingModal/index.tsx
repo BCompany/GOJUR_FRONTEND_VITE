@@ -526,8 +526,10 @@ const FinancialInvoicingModal = (props) => {
 
       CloseModal();
 
-      const responseBilling = await LoadBillingInvoicing(movementId.toString());
-      await LoadMovement(movementId.toString(), responseBilling?.invoiceDescription);
+      
+      //const responseBilling = await LoadBillingInvoicing(movementId.toString());
+      const responseBilling = await LoadBillingInvoicing(movementList[0]?.cod_Movimento.toString());
+      await LoadMovement(movementList[0]?.cod_Movimento.toString(), responseBilling?.invoiceDescription);
 
    
       
