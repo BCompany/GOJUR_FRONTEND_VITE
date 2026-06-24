@@ -33,8 +33,6 @@ import styled from 'styled-components';
     }
   }
 
-
-
          .inputField {
             font-size: 0.675rem;
             background-color: #FFFFFF;
@@ -80,6 +78,13 @@ import styled from 'styled-components';
     &:hover {
       color: var(--orange);
     }
+  }
+
+  .messageEmpty{
+      font-size:0.65rem;
+      justify-content:center;
+      padding-top:1rem;
+      color:var(--blue-twitter);
   }
 
   .paymentButtons {

@@ -62,7 +62,7 @@ const handleCloseModal = () => {
         <div id='Header' style={{ height: '30px' }}>
           <div className='menuTitle'>
 
-            Baixar Recebimentos
+            Processar Recebimentos
           </div>
           <div className='menuSection'>
             <FiX onClick={(e) => handleCloseModal()} />
@@ -71,6 +71,7 @@ const handleCloseModal = () => {
 
 
         <div style={{ padding: '8px 30px' }}>
+
           <div style={{ display: 'flex', gap: '16px' }}>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: '0.65rem', marginBottom: '3px' }}>Data Inicial:</div>
@@ -92,6 +93,10 @@ const handleCloseModal = () => {
                 className='inputField'
               />
             </div>
+          </div>
+
+         <div className="messageEmpty" >
+            Processa os pagamentos recebidos através de boletos
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '5px', marginTop: '55px' }}>

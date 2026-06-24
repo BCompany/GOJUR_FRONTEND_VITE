@@ -386,11 +386,25 @@ const FinanceOptionsMenu = () => {
               type="button"
               className="menuLink"
               onClick={() => {
+                handleRedirect('/financeiro/billinginvoicingmodel')
+                handleIsMenuOpen(false)
+              }}
+            >
+              Personalizar Fatura
+            </button>
+          </div>
+
+          <div style={{display:'grid'}}>
+            <hr />
+            <button
+              type="button"
+              className="menuLink"
+              onClick={() => {
                     handleIsOpenMenuSettleReceipts(!isOpenMenuSettleReceipts)
                     handleIsMenuOpen(false)
                   }}
             >
-              Baixar Recebimentos
+              Processar Recebimentos
             </button>
           </div>
 
