@@ -26,12 +26,11 @@ import IntlCurrencyInput from "react-intl-currency-input";
 import { currencyConfig, selectStyles } from 'Shared/utils/commonFunctions';
 import { IPayments } from '../Interfaces/IPayments';
 import { Modal, ModalPostBackValidation, OverlayFinancialPayment } from './styles';
-
 import { ISelectData, MatterData, IMovementUploadFile } from '../Interfaces/IFinancial';
 import { parcelas, parcelasDatas, financialReminders } from 'Shared/utils/commonListValues';
 
 
-const FinancialReceivedPaymentsModal = (props) => {
+const FinancialSettleReceiptsModal = (props) => {
 
   const { isOpenMenuSettleReceipts, handleIsOpenMenuSettleReceipts } = useMenuHamburguer();
   const token = localStorage.getItem('@GoJur:token');
@@ -61,7 +60,7 @@ const handleCloseModal = () => {
 
         <div id='Header' style={{ height: '30px' }}>
           <div className='menuTitle'>
-
+       
             Baixar Recebimentos
           </div>
           <div className='menuSection'>
@@ -70,36 +69,37 @@ const handleCloseModal = () => {
         </div>
 
 
-        <div style={{ padding: '8px 30px 16px' }}>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '0.65rem', marginBottom: '3px' }}>Data Inicial:</div>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                style={{ width: '100%' }}
-                className='inputField'
-              />
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '0.65rem', marginBottom: '3px' }}>Data Final:</div>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                style={{ width: '100%' }}
-                className='inputField'
-              />
-            </div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '5px' }}>
+          <div style={{ width: '40%' }}>
+            <div style={{ textAlign: 'left', marginBottom: '3px' }}>Data Inicial:</div>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              style={{ width: '100%' }}
+              className='inputField'
+            />
           </div>
+          <div style={{ width: '40%' }}>
+            <div style={{ textAlign: 'left', marginBottom: '3px' }}>Data Final:</div>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              style={{ width: '100%' }}
+              className='inputField'
+            />
+          </div>
+        </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '12px' }}>
+          <div style={{ width: '10%' }} />
+          <div style={{ width: '50%', display: 'flex', gap: '0px', justifyContent: 'flex-end' }}>
             <button
               className="buttonClick"
               type='button'
               onClick={() => Save('')}
-              style={{ width: '90px' }}
+              style={{ width: '100px' }}
             >
               <BiSave />
               Processar
@@ -108,7 +108,7 @@ const handleCloseModal = () => {
               type='button'
               className="buttonClick"
               onClick={() => handleCloseModal()}
-              style={{ width: '90px' }}
+              style={{ width: '100px' }}
             >
               <FaRegTimesCircle />
               Cancelar
@@ -119,7 +119,7 @@ const handleCloseModal = () => {
       </Modal>
 
       {(showPostBackValidation) && <OverlayFinancialPayment />}
-
+      
       {isLoading && (
         <>
           <Overlay />
@@ -136,4 +136,4 @@ const handleCloseModal = () => {
 
 };
 
-export default FinancialReceivedPaymentsModal;
+export default FinancialSettleReceiptsModal;
