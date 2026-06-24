@@ -52,7 +52,25 @@ const [endDate, setEndDate] = useState<string>(currentDate);
 
 const handleCloseModal = () => {
     handleIsOpenMenuSettleReceipts(false)
-    //handleCaller('dealDefaultCategory')
+  }
+
+  const handleReceivedPayments = async () => {
+    try {
+      setIsLoading(true)
+      await api.post('/Financeiro/Faturamento2/BaixarRecebimentos', {
+        companyId: Number(companyId),
+        startDate,
+        endDate,
+        token,
+        apiKey,
+      })
+      addToast({ type: 'success', title: 'Recebimentos processados com sucesso!' })
+      handleCloseModal()
+    } catch {
+      addToast({ type: 'error', title: 'Erro ao processar recebimentos.' })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -103,7 +121,7 @@ const handleCloseModal = () => {
             <button
               className="buttonClick"
               type='button'
-              onClick={() => Save('')}
+              onClick={handleReceivedPayments}
               style={{ width: '90px' }}
             >
               <BiSave />
