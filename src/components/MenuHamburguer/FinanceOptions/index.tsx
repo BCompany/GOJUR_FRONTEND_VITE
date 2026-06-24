@@ -29,7 +29,7 @@ export interface ISelectData{
 };
 
 const FinanceOptionsMenu = () => {
-  const { handleIsOpenMenuConfig, handleIsMenuOpen, handleCaller, handleIsOpenMenuDealDefaultCategory, isOpenMenuDealDefaultCategory } = useMenuHamburguer();
+  const { handleIsOpenMenuConfig, handleIsMenuOpen, handleCaller, handleIsOpenMenuDealDefaultCategory, handleIsOpenMenuSettleReceipts, isOpenMenuDealDefaultCategory, isOpenMenuSettleReceipts } = useMenuHamburguer();
   const [showConfigMenu, setShowConfigMenu] = useState<boolean>(false);
   const [showReportMenu, setShowReportMenu] = useState<boolean>(false);
   const {permissionsSecurity, handleValidateSecurity } = useSecurity();
@@ -378,6 +378,21 @@ const FinanceOptionsMenu = () => {
               </div>
             </>
           )}
+
+
+          <div style={{display:'grid'}}>
+            <hr />
+            <button
+              type="button"
+              className="menuLink"
+              onClick={() => {
+                    handleIsOpenMenuSettleReceipts(!isOpenMenuSettleReceipts)
+                    handleIsMenuOpen(false)
+                  }}
+            >
+              Baixar Recebimentos
+            </button>
+          </div>
 
           <hr />
 

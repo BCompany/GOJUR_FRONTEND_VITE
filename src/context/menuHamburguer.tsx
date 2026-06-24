@@ -7,6 +7,7 @@ interface menuHamburguerData {
   isOpenMenuHelp: boolean;
   isOpenMenuSearch: boolean;
   isOpenMenuDealDefaultCategory: boolean;
+  isOpenMenuSettleReceipts: boolean;
   isMenuOpen: boolean;
   isOpenOldVersion: boolean;
   caller: string;
@@ -14,6 +15,7 @@ interface menuHamburguerData {
   handleIsOpenMenuConfig(value:boolean): void;
   handleIsOpenMenuSearch(value:boolean): void;
   handleIsOpenMenuDealDefaultCategory(value:boolean): void;
+  handleIsOpenMenuSettleReceipts(value:boolean): void;
   handleIsOpenMenuParameter(value:boolean): void;
   handleIsOpenMenuHelp(value:boolean): void;
   handleOpenOldVersion(value:boolean): void;
@@ -29,6 +31,7 @@ const MenuHamburguerProvider: React.FC =  ({ children }) => {
   const [isOpenMenuHelp, setIsOpenMenuHelp] = useState(false);
   const [isOpenMenuSearch, setIsOpenMenuSearch] = useState(false);
   const [isOpenMenuDealDefaultCategory, setIsOpenMenuDealDeafultCategory] = useState(false);
+  const [isOpenMenuSettleReceipts, setIsOpenMenuSettleReceipts] = useState(false);
   const [isOpenMenuConfig, setIsOpenMenuConfig] = useState(false);
   const [isOpenOldVersion, setIsOpenOldVersion] = useState(false);
   const [isOpenMenuParameter, setIsOpenMenuParameter] = useState(false);
@@ -50,6 +53,11 @@ const MenuHamburguerProvider: React.FC =  ({ children }) => {
   const handleIsOpenMenuDealDefaultCategory = useCallback((value:boolean) => {
     setIsOpenMenuDealDeafultCategory(value)
   }, []);
+
+
+  const handleIsOpenMenuSettleReceipts = useCallback((value:boolean) => {
+    setIsOpenMenuSettleReceipts(value)
+  }, []); 
 
   const handleIsOpenMenuHelp = useCallback((value:boolean) => {
     setIsOpenMenuHelp(value)
@@ -81,6 +89,7 @@ const MenuHamburguerProvider: React.FC =  ({ children }) => {
           handleCaller,
           handleIsOpenMenuSearch,
           handleIsOpenMenuDealDefaultCategory,
+          handleIsOpenMenuSettleReceipts,
           handleIsOpenMenuHelp,
           handleOpenOldVersion,
           handleIsOpenMenuParameter,
@@ -90,6 +99,7 @@ const MenuHamburguerProvider: React.FC =  ({ children }) => {
           isOpenMenuHelp,
           isOpenMenuSearch,
           isOpenMenuDealDefaultCategory,
+          isOpenMenuSettleReceipts,
           isOpenOldVersion,
           isOpenMenuParameter,
           caller

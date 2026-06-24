@@ -46,6 +46,7 @@ import FinancialDocumentModal from './DocumentModal';
 import FinancialPaymentModal from './PaymentModal';
 import { Container, Content, GridContainerFinancial, ModalDeleteOptions, OverlayFinancial, HamburguerHeader } from './styles';
 import DealDefaultModal from './Category/Modal/DealDefaultModal';
+import SettleReceiptsModal from './SettleReceiptsModal';
 import { TableColumnVisibility } from '@devexpress/dx-react-grid-material-ui';
 import { FiEye } from "react-icons/fi";
 
@@ -54,7 +55,7 @@ import { FiEye } from "react-icons/fi";
 const Financeiro: React.FC = () => {
   const { addToast } = useToast();
   const { signOut } = useAuth();
-  const { isMenuOpen, handleIsMenuOpen, isOpenMenuDealDefaultCategory, handleIsOpenMenuDealDefaultCategory } = useMenuHamburguer();
+  const { isMenuOpen, handleIsMenuOpen, isOpenMenuDealDefaultCategory, isOpenMenuSettleReceipts, handleIsOpenMenuDealDefaultCategory, handleIsOpenMenuSettleReceipts } = useMenuHamburguer();
   const baseUrl = envProvider.redirectUrl;
   const { handleJsonStateObject, handleStateType, jsonStateObject, stateType }  = useStateContext();
   const history = useHistory();
@@ -2328,6 +2329,10 @@ const handleClickInvoice = useCallback(async (props: any) => {
 
       {(isOpenMenuDealDefaultCategory) && <OverlayFinancial /> }
       {isOpenMenuDealDefaultCategory && <DealDefaultModal />}
+
+
+      {(isOpenMenuSettleReceipts) && <OverlayFinancial /> }
+      {isOpenMenuSettleReceipts && <SettleReceiptsModal  />}
 
     </Container>
   );

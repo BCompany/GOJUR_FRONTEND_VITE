@@ -58,6 +58,9 @@ import { ListCustomerPersonData, ListFinancialIntegratorData, ListLawyerData, Li
 import { MdCreateNewFolder } from "react-icons/md";
 import PaymentSlipModal from '../BillingInvoicing/PaymentSlipModal';
 import { OverlayPaymentModal } from '../BillingInvoice/Edit/styles';
+import DealDefaultModal from '../Category/Modal/DealDefaultModal';
+import SettleReceiptsModal from '../SettleReceiptsModal';
+
 
 interface SelectedRow  {
     cod_Fatura2Movimento: string;
@@ -130,7 +133,7 @@ interface BillingInvoicingPayload {
 }
 
 const BillingInvoicing: React.FC = () => {
-    const { isMenuOpen, handleIsMenuOpen, isOpenMenuDealDefaultCategory, handleIsOpenMenuDealDefaultCategory } = useMenuHamburguer();
+    const { isMenuOpen, handleIsMenuOpen, isOpenMenuDealDefaultCategory, isOpenMenuSettleReceipts, handleIsOpenMenuDealDefaultCategory, handleIsOpenMenuSettleReceipts } = useMenuHamburguer();
     const { isConfirmMessage, isCancelMessage, handleCancelMessage, handleConfirmMessage, caller } = useConfirmBox();
     const { handleStateType } = useStateContext();
     const token = localStorage.getItem('@GoJur:token');
@@ -1818,6 +1821,12 @@ const handleValidateBankSlip = useCallback(
                 />
             )}
 
+
+            {(isOpenMenuDealDefaultCategory) && <OverlayFinancial /> }
+            {isOpenMenuDealDefaultCategory && <DealDefaultModal />}
+
+            {(isOpenMenuSettleReceipts) && <OverlayFinancial /> }
+            {isOpenMenuSettleReceipts && <SettleReceiptsModal  />}
 
 
         </Container>
