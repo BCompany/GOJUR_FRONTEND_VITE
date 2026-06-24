@@ -50,7 +50,7 @@ import FinancialDocumentModal from '../DocumentModal';
 import { ModalDeleteOptions, OverlayFinancial } from '../styles';
 import { Container, Content, Process, GridSubContainer, ModalPaymentInformation, HamburguerHeader } from './styles';
 import { FiEye } from "react-icons/fi";
-import SettleReceiptsModal from '../SettleReceiptsModal';
+import ReceivedPaymentsModal from '../ReceivedPaymentsModal';
 
 const FinancialMovement: React.FC = () => {
   const { isMenuOpen, handleIsMenuOpen, isOpenMenuDealDefaultCategory, isOpenMenuSettleReceipts, handleIsOpenMenuDealDefaultCategory, handleIsOpenMenuSettleReceipts } = useMenuHamburguer();
@@ -2091,7 +2091,7 @@ const calculateNetValue = (value, discount) => {
 
 
       {(isOpenMenuSettleReceipts) && <OverlayFinancial /> }
-      {isOpenMenuSettleReceipts && <SettleReceiptsModal  />}
+      {isOpenMenuSettleReceipts && <ReceivedPaymentsModal  />}
 
       
     </Container>

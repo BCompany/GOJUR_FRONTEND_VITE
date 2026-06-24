@@ -46,7 +46,7 @@ import FinancialDocumentModal from './DocumentModal';
 import FinancialPaymentModal from './PaymentModal';
 import { Container, Content, GridContainerFinancial, ModalDeleteOptions, OverlayFinancial, HamburguerHeader } from './styles';
 import DealDefaultModal from './Category/Modal/DealDefaultModal';
-import SettleReceiptsModal from './SettleReceiptsModal';
+import ReceivedPaymentsModal from './ReceivedPaymentsModal';
 import { TableColumnVisibility } from '@devexpress/dx-react-grid-material-ui';
 import { FiEye } from "react-icons/fi";
 
@@ -2332,7 +2332,7 @@ const handleClickInvoice = useCallback(async (props: any) => {
 
 
       {(isOpenMenuSettleReceipts) && <OverlayFinancial /> }
-      {isOpenMenuSettleReceipts && <SettleReceiptsModal  />}
+      {isOpenMenuSettleReceipts && <ReceivedPaymentsModal  />}
 
     </Container>
   );

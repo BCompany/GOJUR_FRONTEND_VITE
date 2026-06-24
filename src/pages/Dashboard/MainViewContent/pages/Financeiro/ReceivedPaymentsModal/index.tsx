@@ -26,11 +26,12 @@ import IntlCurrencyInput from "react-intl-currency-input";
 import { currencyConfig, selectStyles } from 'Shared/utils/commonFunctions';
 import { IPayments } from '../Interfaces/IPayments';
 import { Modal, ModalPostBackValidation, OverlayFinancialPayment } from './styles';
+
 import { ISelectData, MatterData, IMovementUploadFile } from '../Interfaces/IFinancial';
 import { parcelas, parcelasDatas, financialReminders } from 'Shared/utils/commonListValues';
 
 
-const FinancialSettleReceiptsModal = (props) => {
+const FinancialReceivedPaymentsModal = (props) => {
 
   const { isOpenMenuSettleReceipts, handleIsOpenMenuSettleReceipts } = useMenuHamburguer();
   const token = localStorage.getItem('@GoJur:token');
@@ -60,7 +61,7 @@ const handleCloseModal = () => {
 
         <div id='Header' style={{ height: '30px' }}>
           <div className='menuTitle'>
-       
+
             Baixar Recebimentos
           </div>
           <div className='menuSection'>
@@ -69,18 +70,9 @@ const handleCloseModal = () => {
         </div>
 
 
-        <div id='Labels' style={{ marginLeft: '5%', marginTop: '5px', height: '30px' }}>
-          <div style={{ float: 'left', width: '45%' }}>
-            Data Inicial:
-          </div>
-          <div style={{ float: 'left', width: '45%' }}>
-            Data Final:
-          </div>
-          
-        </div>
-        <div id='Elements' style={{ marginLeft: '4.5%', height: '40px' }}>
-
-          <div style={{ float: 'left', width: '40%', marginRight:'10px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '5px' }}>
+          <div style={{ width: '40%' }}>
+            <div style={{ textAlign: 'left', marginBottom: '3px' }}>Data Inicial:</div>
             <input
               type="date"
               value={startDate}
@@ -89,29 +81,21 @@ const handleCloseModal = () => {
               className='inputField'
             />
           </div>
-
-          <div style={{ float: 'left', width: '40%', marginRight:'10px' }}>
-        
+          <div style={{ width: '40%' }}>
+            <div style={{ textAlign: 'left', marginBottom: '3px' }}>Data Final:</div>
             <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            style={{ width: '100%' }}
-            className='inputField'
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              style={{ width: '100%' }}
+              className='inputField'
             />
-
           </div>
-
-      
-
         </div>
 
-
-        <br />
-        <br />
-
-        <div id='Buttons' style={{ float: 'right', marginRight: '17%', height: '60px' }}>
-          <div style={{ float: 'left' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '12px' }}>
+          <div style={{ width: '40%' }} />
+          <div style={{ width: '40%', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
             <button
               className="buttonClick"
               type='button'
@@ -119,11 +103,8 @@ const handleCloseModal = () => {
               style={{ width: '100px' }}
             >
               <BiSave />
-              Salvar
+              Processar
             </button>
-          </div>
-
-          <div style={{ float: 'left', width: '100px' }}>
             <button
               type='button'
               className="buttonClick"
@@ -139,7 +120,7 @@ const handleCloseModal = () => {
       </Modal>
 
       {(showPostBackValidation) && <OverlayFinancialPayment />}
-      
+
       {isLoading && (
         <>
           <Overlay />
@@ -156,4 +137,4 @@ const handleCloseModal = () => {
 
 };
 
-export default FinancialSettleReceiptsModal;
+export default FinancialReceivedPaymentsModal;

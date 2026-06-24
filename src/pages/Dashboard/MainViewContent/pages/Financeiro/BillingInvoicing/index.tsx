@@ -59,7 +59,7 @@ import { MdCreateNewFolder } from "react-icons/md";
 import PaymentSlipModal from '../BillingInvoicing/PaymentSlipModal';
 import { OverlayPaymentModal } from '../BillingInvoice/Edit/styles';
 import DealDefaultModal from '../Category/Modal/DealDefaultModal';
-import SettleReceiptsModal from '../SettleReceiptsModal';
+import ReceivedPaymentsModal from '../ReceivedPaymentsModal';
 
 
 interface SelectedRow  {
@@ -1826,7 +1826,7 @@ const handleValidateBankSlip = useCallback(
             {isOpenMenuDealDefaultCategory && <DealDefaultModal />}
 
             {(isOpenMenuSettleReceipts) && <OverlayFinancial /> }
-            {isOpenMenuSettleReceipts && <SettleReceiptsModal  />}
+            {isOpenMenuSettleReceipts && <ReceivedPaymentsModal  />}
 
 
         </Container>

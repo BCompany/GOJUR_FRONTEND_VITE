@@ -3,7 +3,7 @@ import styled from 'styled-components';
   interface SearchProps {
     show:boolean
   }
-  
+
   export const Modal = styled.div<SearchProps>`
   border: 1px solid var(--blue-twitter);
   font-size: 0.7rem;
@@ -34,7 +34,7 @@ import styled from 'styled-components';
   }
 
 
- 
+
          .inputField {
             font-size: 0.675rem;
             background-color: #FFFFFF;
@@ -129,7 +129,7 @@ export const ModalPostBackValidation = styled.div`
 
     > svg {
       width:0.85rem;
-      height:0.85rem; 
+      height:0.85rem;
     }
 
     &:hover {
@@ -162,4 +162,3 @@ export const OverlayFinancialPayment = styled.div `
       box-shadow: 1px 1px 4px 0.5px rgba(0,0,0,0.15);
     }
 `;
-
