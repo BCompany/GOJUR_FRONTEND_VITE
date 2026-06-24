@@ -70,7 +70,7 @@ const handleCloseModal = () => {
         </div>
 
 
-        <div style={{ padding: '8px 30px 16px' }}>
+        <div style={{ padding: '8px 30px' }}>
           <div style={{ display: 'flex', gap: '16px' }}>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: '0.65rem', marginBottom: '3px' }}>Data Inicial:</div>
@@ -94,7 +94,7 @@ const handleCloseModal = () => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '5px', marginTop: '55px' }}>
             <button
               className="buttonClick"
               type='button'
@@ -108,7 +108,7 @@ const handleCloseModal = () => {
               type='button'
               className="buttonClick"
               onClick={() => handleCloseModal()}
-              style={{ width: '90px' }}
+              style={{ width: '90px', marginRight: '0px' }}
             >
               <FaRegTimesCircle />
               Cancelar
