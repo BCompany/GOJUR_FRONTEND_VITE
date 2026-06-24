@@ -13,11 +13,11 @@ import styled from 'styled-components';
   max-height: 14rem;
   overflow: auto;
   background-color: var(--white);
-  position: absolute;
-  z-index: 2;
-  justify-content: center;
-  margin-left: 25%;
-  margin-top: 15%;
+  position: fixed;
+  z-index: 1000;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 
   input, select {
     flex: 1;
