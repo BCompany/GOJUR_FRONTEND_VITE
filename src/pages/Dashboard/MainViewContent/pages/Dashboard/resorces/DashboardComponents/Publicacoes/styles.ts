@@ -118,7 +118,8 @@ export const AlertBox = styled.div`
   max-height: 220px;
   border-radius: 8px;
   background: #fafafa;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.5);
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.12);
+  margin-top: 10px;
 
   display: flex;
   flex-direction: column;
@@ -126,19 +127,20 @@ export const AlertBox = styled.div`
   justify-content: center;
 
   > header {
-    font-size: 20px;
+    width: 100%;
+    font-size: 0.8rem;
     font-family: poppins;
-    font-weight: 300;
+    font-weight: 500;
     color: var(--orange);
+    padding: 0.4rem 0.75rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
   }
 
   > div {
     width: 100%;
     height: 100%;
-    /* border: 1px solid #000; */
     overflow: auto;
-
-    padding: 0.5rem;
+    padding: 0.5rem 0.75rem;
 
     ::-webkit-scrollbar {
       width: 0.25rem;
@@ -154,98 +156,96 @@ export const AlertBox = styled.div`
 `;
 export const AlertCard = styled.div<AlertCardProps>`
   width: 100%;
-  height: 3.5rem;
+  min-height: 4rem;
+  height: auto;
   background: #fafafa;
-  box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.35);
+  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.10);
   border-radius: 4px;
-  padding: 0.25rem;
+  border-left: 3px solid var(--orange);
+  padding: 0.6rem 0.75rem;
   margin-bottom: 0.5rem;
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: all 0.5s;
+  justify-content: flex-start;
+  transition: all 0.3s;
   overflow: hidden;
   cursor: pointer;
+  position: relative;
 
   > h4 {
-    width: 100%;
-    height: 100%;
-    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
     align-items: center;
     justify-content: center;
     font-family: Montserrat;
-    text-align: center;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--blue);
-    background-color: #e1f5fe;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--blue-twitter);
+    background-color: rgba(225, 245, 254, 0.92);
+    border-radius: 4px;
+    opacity: 0;
+    transition: opacity 0.25s;
   }
 
   > img {
-    /* border: 1px solid #000; */
     width: 64px;
     height: 64px;
     border-radius: 50%;
   }
 
   > div {
+    width: 100%;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: space-evenly;
+    align-items: flex-start;
+    gap: 0.3rem;
+    padding: 0 0.25rem;
     overflow: hidden;
-
-    padding: 0.25rem;
 
     > h5 {
       font-family: Montserrat;
-      font-size: 0.65rem;
+      font-size: 0.72rem;
       font-weight: 700;
       color: var(--primary);
-      margin-top: 0.25rem;
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 0.4rem;
+
       > svg {
-        width: 16px;
-        height: 16px;
+        width: 14px;
+        height: 14px;
         color: var(--orange);
-        margin-left: 0.5rem;
+        flex-shrink: 0;
       }
     }
 
     > section {
-      display: flex;
-
       width: 100%;
-      height: 2rem;
-
-      margin-top: 0.5rem;
 
       p {
-        width: 100%;
-        font-size: 0.65rem;
+        font-size: 0.7rem;
         font-weight: normal;
         font-family: Poppins;
         color: var(--secondary);
-
-        text-align: center;
+        line-height: 1.4;
+        text-align: left;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     }
   }
 
   &:hover {
-    /* background-color: var(--blue-light); */
-    background-color: #e3f2fd;
-    opacity: 0.8;
-    cursor: pointer;
+    background-color: #f0f7ff;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.15);
 
-    > div {
-      > h5 {
-        > svg {
-          color: var(--orange);
-        }
-      }
+    > h4 {
+      opacity: 1;
     }
   }
 `;
@@ -255,7 +255,9 @@ export const PublicationBox = styled.div`
   height: 100%;
   border-radius: 8px;
   background: #fafafa;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.5);
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.12);
+  margin-top: 12px;
+  margin-bottom: 10px;
 
   display: flex;
   flex-direction: column;
@@ -263,19 +265,20 @@ export const PublicationBox = styled.div`
   justify-content: center;
 
   > header {
-    font-size: 20px;
+    width: 100%;
+    font-size: 0.8rem;
     font-family: poppins;
-    font-weight: 300;
+    font-weight: 500;
     color: var(--blue-twitter);
+    padding: 0.4rem 0.75rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
   }
 
   > div {
     width: 100%;
     height: 100%;
-    /* border: 1px solid #000; */
     overflow: auto;
-
-    padding: 0.5rem;
+    padding: 0.5rem 0.75rem;
 
     ::-webkit-scrollbar {
       width: 0.25rem;
@@ -290,39 +293,29 @@ export const PublicationBox = styled.div`
   }
 
   > button {
-    margin-bottom:10px;
-    //margin-top: 16px;
-    /* background: var(--orange);
-    padding: 16px;
-    border-radius: 6px;
-    color: var(--gray);
-    font-size: 0.75rem;
-    text-decoration: none;
-    margin-bottom: 1rem;
-
-    &:hover {
-      opacity: 0.85;
-      color: var(--secondary);
-    } */
+    margin-bottom: 10px;
   }
 `;
 
 export const PublicationCard = styled.div<PublitionProps>`
   width: 100%;
-  height: 8rem;
-  background-color: ${props => (props.styles ? '#e1f5fe' : '#ffffcc')};
-  box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.35);
+  min-height: 8rem;
+  height: auto;
+  background-color: ${props => (props.styles ? '#e1f5fe' : '#fffde7')};
+  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.10);
   border-radius: 4px;
-  padding: 0.25rem;
+  border-left: 3px solid ${props => (props.styles ? 'var(--blue-twitter)' : 'var(--orange)')};
+  padding: 0.5rem 0.75rem;
   margin-bottom: 0.5rem;
   display: flex;
   cursor: pointer;
 
-  transition: all 0.5s;
-  opacity: ${props => (props.visible ? 0.4 : 1)};
+  transition: all 0.3s;
+  opacity: ${props => (props.visible ? 0.45 : 1)};
 
   &:hover {
-    background: ${props => (props.styles ? '#4fc3f7' : '#fafa84')};
+    background: ${props => (props.styles ? '#b3e5fc' : '#fff9c4')};
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.15);
   }
 
   > div {
@@ -330,7 +323,8 @@ export const PublicationCard = styled.div<PublitionProps>`
 
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
+    gap: 0.3rem;
+
     > article {
       display: flex;
       align-items: center;
@@ -338,6 +332,7 @@ export const PublicationCard = styled.div<PublitionProps>`
       > p {
         font-size: 0.75rem;
         font-family: Montserrat;
+        font-weight: 600;
         color: var(--primary);
       }
 
@@ -351,17 +346,15 @@ export const PublicationCard = styled.div<PublitionProps>`
     > div {
       display: flex;
       align-items: center;
+      gap: 0.75rem;
 
       p {
-        font-size: 0.65rem;
+        font-size: 0.7rem;
         font-family: Montserrat;
         color: var(--secondary);
-
-        & + p {
-          margin-left: 0.5rem;
-        }
       }
     }
+
     > section {
       width: 100%;
       display: flex;
@@ -380,21 +373,22 @@ export const PublicationCard = styled.div<PublitionProps>`
 
       > article {
         flex: 1;
-        height: 3.5rem;
-        padding: 0.5rem;
+        height: auto;
+        padding: 0.25rem 0;
         display: flex;
         flex-direction: column;
-        font-size: 0.75rem;
         font-family: Montserrat;
-        text-align: center;
 
         overflow: hidden;
         > p {
-          font-size: 0.625rem;
-          /* margin-top: 0.25rem; */
+          font-size: 0.7rem;
+          line-height: 1.4;
           text-align: justify;
-          text-overflow: ellipsis;
           color: var(--secondary);
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
       }
     }
