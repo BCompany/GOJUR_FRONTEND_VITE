@@ -8,7 +8,7 @@ interface headerProps {
 export const ContainerHeader = styled.div<headerProps>`
   width: 100%;
   height: 1.5rem;
-  background: rgba(0, 0, 0, 0.1);
+  background: #eef4fb;
   color: var(--primary);
   display: flex;
   align-items: center;
@@ -25,7 +25,7 @@ export const ContainerHeader = styled.div<headerProps>`
         font-family: montserrat;
         font-weight: normal;
         font-size: 0.75rem;
-        line-height: 1.2px;
+        line-height: 1.2;
         padding: 20px;
       }
 
