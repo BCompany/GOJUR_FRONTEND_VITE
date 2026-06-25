@@ -157,7 +157,13 @@ const Publicacoes: React.FC<PublicacaoProps> = ({ title, idElement, visible, act
 
 
      {/* RENDERIZAÇÃO DOS CARDS DE COMPROMISSO */}
-            {/*
+            {/* 
+             
+             **** Removido osbox alerta do widget "Publicações/Alertas" - colocamos apenas as publicações direto no widget
+             ***  sem 2 subdivisões - código abaixo mantido caso seja necessário retornar
+             ***  Remover código abaixo após 60 dias - Marcelo 25/06/2026 
+             ***
+
             <AlertBox>
               <header>Alertas</header>
 

@@ -97,12 +97,10 @@ export const Container = styled.div`
 export const AppointmentContent = styled.div`
   width: 100%;
   height: 100%;
-  background-color: #fafafa;
-  box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.4);
-  /* border: 1px solid #999591; */
+  background-color: transparent;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  padding: 0.6rem 0.75rem 0.5rem;
   overflow: auto;
 
   ::-webkit-scrollbar {
@@ -118,76 +116,53 @@ export const AppointmentContent = styled.div`
 
   > div {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    margin-top: 0.25rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 
     > h2 {
-      font-family: Poppins;
-      font-weight: normal;
-      font-size: 0.875rem;
-      color: var(--secondary);
+      font-family: Montserrat;
+      font-weight: 500;
+      font-size: 0.72rem;
+      color: var(--blue-twitter);
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 0.5rem;
 
       > button {
-        /* margin-top: 16px; */
-        margin-left: 16px;
         width: 16px;
         height: 16px;
         background: var(--orange);
-        border-radius: 6px;
+        border-radius: 4px;
         color: var(--white);
-        transition: all 0.5s;
         display: flex;
         align-items: center;
-        justify-content: space-evenly;
+        justify-content: center;
+
         > svg {
-          width: 14px;
-          height: 14px;
+          width: 12px;
+          height: 12px;
         }
 
         > p {
           display: none;
         }
-
-        // effect when hover pllus button
-        /* &:hover {
-          width: 124px;
-          height: 20px;
-          color: var(--secondary);
-          align-items: center;
-
-          > svg {
-            color: var(--white);
-          }
-
-          > p {
-            display: flex;
-          }
-        } */
-      }
-
-      > p {
-        font-family: Poppins;
-        font-weight: normal;
-        font-size: 11px;
-        color: var(--orange);
-        margin-top: 0.25rem;
       }
     }
   }
 `;
 
 export const AppointmentItens = styled(motion.div)<ItemProps>`
-  width: 90%;
-  height: 5rem;
+  width: 100%;
+  height: auto;
+  min-height: 4rem;
   background: var(--white-card);
-  border-radius: 0.5rem;
-  box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.10);
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
 
   ${props =>
     props.done === 'L' &&
@@ -195,15 +170,12 @@ export const AppointmentItens = styled(motion.div)<ItemProps>`
       filter: opacity(30%);
     `}
 
-  transition: background-color 0.3s, height 1.5s;
+  transition: background-color 0.3s, box-shadow 0.3s, height 1.5s;
 
   &:hover {
-    margin-left: 0.5rem;
     height: 17.5rem;
-
-    cursor: pointer;
-
     background-color: var(--blue-hover-light);
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.15);
   }
 `;
 
@@ -259,14 +231,19 @@ export const AppointmentHeader = styled.div`
 
 export const AppointmentDescription = styled.div`
   flex: 1;
-  padding: 0.5rem;
+  padding: 0.35rem 0.75rem 0.5rem;
   overflow: hidden;
 
   > p {
-    font-family: Poppins;
+    font-family: Montserrat;
     font-weight: normal;
-    word-break: break-all;
-    font-size: 0.625rem;
+    font-size: 0.68rem;
     color: var(--secondary);
+    line-height: 1.45;
+    overflow-wrap: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 `;
