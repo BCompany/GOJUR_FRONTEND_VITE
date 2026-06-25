@@ -340,10 +340,11 @@ export const PublicationCard = styled.div<PublitionProps>`
         font-size: 0.72rem;
         font-family: Montserrat;
         font-weight: 400;
-        color: var(--secondary);
+        color: ${props => (props.styles ? 'var(--blue-twitter)' : '#c49a00')};
+        
 
         > b {
-          font-weight: 700;
+          font-weight: 600;
           color: ${props => (props.styles ? 'var(--blue-twitter)' : '#c49a00')};
         }
       }
