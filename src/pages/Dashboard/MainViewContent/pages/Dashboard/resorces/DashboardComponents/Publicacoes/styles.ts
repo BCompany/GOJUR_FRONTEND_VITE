@@ -301,44 +301,51 @@ export const PublicationCard = styled.div<PublitionProps>`
   width: 100%;
   min-height: 8rem;
   height: auto;
-  background-color: ${props => (props.styles ? '#e1f5fe' : '#fffde7')};
+  background-color: var(--white-card);
   box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.10);
   border-radius: 4px;
   border-left: 3px solid ${props => (props.styles ? 'var(--blue-twitter)' : 'var(--orange)')};
-  padding: 0.5rem 0.75rem;
+  padding: 0;
   margin-bottom: 0.5rem;
   display: flex;
+  overflow: hidden;
   cursor: pointer;
 
   transition: all 0.3s;
   opacity: ${props => (props.visible ? 0.45 : 1)};
 
   &:hover {
-    background: ${props => (props.styles ? '#b3e5fc' : '#fff9c4')};
     box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.15);
+
+    > div > article {
+      background: ${props => (props.styles ? '#ddeeff' : '#ffe8cc')};
+    }
   }
 
   > div {
     width: 100%;
-
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
 
     > article {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      padding: 0.4rem 0.75rem;
+      background: ${props => (props.styles ? '#eaf4ff' : '#fff3e0')};
+      border-bottom: 1px solid ${props => (props.styles ? 'rgba(44,142,214,0.15)' : 'rgba(255,144,0,0.15)')};
+      transition: background 0.3s;
+
       > p {
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         font-family: Montserrat;
         font-weight: 600;
-        color: var(--primary);
+        color: ${props => (props.styles ? 'var(--blue-twitter)' : 'var(--orange)')};
       }
 
       > svg {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
         color: var(--orange);
       }
     }
@@ -347,11 +354,12 @@ export const PublicationCard = styled.div<PublitionProps>`
       display: flex;
       align-items: center;
       gap: 0.75rem;
+      padding: 0.35rem 0.75rem;
 
       p {
-        font-size: 0.7rem;
+        font-size: 0.68rem;
         font-family: Montserrat;
-        color: var(--secondary);
+        color: var(--grey);
       }
     }
 
@@ -359,6 +367,7 @@ export const PublicationCard = styled.div<PublitionProps>`
       width: 100%;
       display: flex;
       overflow: hidden;
+      padding: 0 0.75rem 0.5rem;
 
       img {
         width: 48px;
@@ -374,16 +383,15 @@ export const PublicationCard = styled.div<PublitionProps>`
       > article {
         flex: 1;
         height: auto;
-        padding: 0.25rem 0;
         display: flex;
         flex-direction: column;
         font-family: Montserrat;
-
         overflow: hidden;
+
         > p {
           font-size: 0.7rem;
-          line-height: 1.4;
-          text-align: justify;
+          line-height: 1.45;
+          text-align: left;
           color: var(--secondary);
           display: -webkit-box;
           -webkit-line-clamp: 3;
