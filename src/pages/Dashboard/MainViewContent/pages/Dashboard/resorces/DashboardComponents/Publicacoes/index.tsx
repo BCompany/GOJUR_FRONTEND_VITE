@@ -10,7 +10,8 @@ import { format } from 'date-fns';
 import { useIndicators } from 'context/indicators';
 import { FiBell } from 'react-icons/fi';
 import { AlertsData, AlertsDataDTO, PublicacaoProps, PublicationData } from 'pages/Dashboard/MainViewContent/pages/Interfaces/IPublication';
-import {Container, PublicationContent,AlertBox,AlertCard,PublicationBox,PublicationCard, ContainerHeader } from './styles';
+/*import {Container, PublicationContent,AlertBox,AlertCard,PublicationBox,PublicationCard, ContainerHeader } from './styles';*/
+import {Container, PublicationContent,PublicationCard, ContainerHeader } from './styles';
 import { useHeader } from 'context/headerContext';
 
 import { FaEye } from "react-icons/fa";

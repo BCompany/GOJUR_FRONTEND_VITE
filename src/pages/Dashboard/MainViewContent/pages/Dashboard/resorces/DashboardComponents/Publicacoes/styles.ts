@@ -52,6 +52,7 @@ export const PublicationContent = styled.div`
   }
 `;
 
+{/*
 export const AlertBox = styled.div`
   width: 90%;
   height: auto;
@@ -236,6 +237,7 @@ export const PublicationBox = styled.div`
     margin-bottom: 10px;
   }
 `;
+*/}
 
 export const PublicationCard = styled.div<PublitionProps>`
   width: 100%;
