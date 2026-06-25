@@ -147,7 +147,7 @@ const Publicacoes: React.FC<PublicacaoProps> = ({ title, idElement, visible, act
           </ContainerHeader> 
           <PublicationContent>
             {/* RENDERIZAÇÃO DOS CARDS DE COMPROMISSO */}
-
+            {/*
             <AlertBox>
               <header>Alertas</header>
 
@@ -172,10 +172,6 @@ const Publicacoes: React.FC<PublicacaoProps> = ({ title, idElement, visible, act
                   >
                     <h4>Ver Detalhes</h4>
                     <>
-                      {/* <img
-                        src="https://homo.gojur.com.br///Resources/Company/Id_33/User/bcompany-logo.jpg"
-                        alt="avatar"
-                      /> */}
                       <div>
                         <h5>
                           {alert.alertDescription}
@@ -191,6 +187,7 @@ const Publicacoes: React.FC<PublicacaoProps> = ({ title, idElement, visible, act
                 ))}
               </div>
             </AlertBox>
+            */}
 
             <PublicationBox>
               <header>Publicações</header>
@@ -275,7 +272,7 @@ const Publicacoes: React.FC<PublicacaoProps> = ({ title, idElement, visible, act
           </ContainerHeader> 
           <PublicationContent>
             {/* RENDERIZAÇÃO DOS CARDS DE COMPROMISSO */}
-
+            {/*
             <AlertBox>
               <header>Alertas</header>
 
@@ -300,10 +297,6 @@ const Publicacoes: React.FC<PublicacaoProps> = ({ title, idElement, visible, act
                   >
                     <h4>Ver Detalhes</h4>
                     <>
-                      {/* <img
-                        src="https://homo.gojur.com.br///Resources/Company/Id_33/User/bcompany-logo.jpg"
-                        alt="avatar"
-                      /> */}
                       <div>
                         <h5>
                           {alert.alertDescription}
@@ -319,6 +312,7 @@ const Publicacoes: React.FC<PublicacaoProps> = ({ title, idElement, visible, act
                 ))}
               </div>
             </AlertBox>
+            */}
 
             <PublicationBox>
               <header>Publicações</header>

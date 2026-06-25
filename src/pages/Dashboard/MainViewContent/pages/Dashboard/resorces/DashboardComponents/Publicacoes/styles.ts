@@ -304,7 +304,7 @@ export const PublicationCard = styled.div<PublitionProps>`
   background-color: var(--white-card);
   box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.10);
   border-radius: 4px;
-  border-left: 3px solid ${props => (props.styles ? 'var(--blue-twitter)' : 'var(--orange)')};
+  border-left: 3px solid ${props => (props.styles ? 'var(--blue-twitter)' : '#c49a00')};
   padding: 0;
   margin-bottom: 0.5rem;
   display: flex;
@@ -318,7 +318,7 @@ export const PublicationCard = styled.div<PublitionProps>`
     box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.15);
 
     > div > article {
-      background: ${props => (props.styles ? '#ddeeff' : '#ffe8cc')};
+      background: ${props => (props.styles ? '#ddeeff' : '#fef08a')};
     }
   }
 
@@ -332,15 +332,20 @@ export const PublicationCard = styled.div<PublitionProps>`
       align-items: center;
       justify-content: space-between;
       padding: 0.4rem 0.75rem;
-      background: ${props => (props.styles ? '#eaf4ff' : '#fff3e0')};
-      border-bottom: 1px solid ${props => (props.styles ? 'rgba(44,142,214,0.15)' : 'rgba(255,144,0,0.15)')};
+      background: ${props => (props.styles ? '#eaf4ff' : '#ffffcc')};
+      border-bottom: 1px solid ${props => (props.styles ? 'rgba(44,142,214,0.15)' : 'rgba(196,154,0,0.2)')};
       transition: background 0.3s;
 
       > p {
         font-size: 0.72rem;
         font-family: Montserrat;
-        font-weight: 600;
-        color: ${props => (props.styles ? 'var(--blue-twitter)' : 'var(--orange)')};
+        font-weight: 400;
+        color: var(--secondary);
+
+        > b {
+          font-weight: 700;
+          color: ${props => (props.styles ? 'var(--blue-twitter)' : '#c49a00')};
+        }
       }
 
       > svg {
