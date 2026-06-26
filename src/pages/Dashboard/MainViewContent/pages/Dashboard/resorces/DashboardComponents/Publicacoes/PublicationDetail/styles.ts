@@ -9,67 +9,89 @@ interface DetailProps {
 export const Container = styled.div`
   width: 100%;
   height: 100vh;
-  background: transparent;
+  background: rgba(0, 0, 0, 0.35);
   position: absolute;
+  top: 0;
+  left: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 999;
 `;
 
 export const ModalContent = styled(motion.div)<DetailProps>`
-  width: 50%;
-  height: 350px;
-  background-color: ${props => (props.styles ? '#e1f5fe' : '#ffffcc')};
-  border-radius: 16px;
-  box-shadow: 2px 1px 4px 2px rgba(0, 0, 0, 0.4);
+  width: 65%;
+  max-width: 700px;
+  height: auto;
+  background-color: var(--white-card);
+  border-radius: 8px;
+  border-left: 3px solid ${props => (props.styles ? 'var(--blue-twitter)' : '#c49a00')};
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
 
   > header {
     width: 100%;
     display: flex;
-    justify-content: flex-end;
-    padding: 0.25rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    background: ${props => (props.styles ? '#eaf4ff' : '#ffffcc')};
+    border-bottom: 1px solid ${props => (props.styles ? 'rgba(44,142,214,0.15)' : 'rgba(196,154,0,0.2)')};
+
+    > span {
+      font-family: Montserrat;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: ${props => (props.styles ? 'var(--blue-twitter)' : '#c49a00')};
+    }
 
     > svg {
-      margin-right: 1rem;
-      color: ${props => (props.styles ? `var(--blue-light)` : `var(--orange)`)};
+      width: 1rem;
+      height: 1rem;
+      color: var(--grey);
+      cursor: pointer;
 
       &:hover {
-        color: ${props => (props.styles ? `var(--blue)` : `var(--blue)`)};
+        color: var(--orange);
       }
     }
   }
 
   > div {
     width: 100%;
-    height: 300px;
+    height: auto;
+    max-height: 75vh;
     display: flex;
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding: 1rem;
     flex-direction: column;
-    justify-content: space-around;
-    overflow: hidden;
+    gap: 0.6rem;
+    overflow-y: auto;
   }
 `;
 
 export const Field = styled.div`
   width: 100%;
   display: flex;
-  align-items: center;
+  align-items: baseline;
+  gap: 0.5rem;
 
   > h2 {
     font-family: Montserrat;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--secondary);
+    white-space: nowrap;
   }
 
   > p {
     font-family: Montserrat;
     font-size: 0.75rem;
-    margin-left: 1rem;
+    color: var(--primary);
   }
+
   > a {
     font-family: Montserrat;
     font-size: 0.75rem;
-    margin-left: 1rem;
     color: var(--secondary);
     text-decoration: none;
 
@@ -84,50 +106,41 @@ export const Date = styled.div`
   width: 100%;
   display: flex;
   align-items: center;
-  /* justify-content: space-between; */
+  gap: 0.5rem;
 
   > h2 {
     font-family: Montserrat;
-    font-size: 0.875rem;
-  }
-  > h2#release {
-    font-family: Montserrat;
-    font-size: 0.875rem;
-    margin-left: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--secondary);
+    white-space: nowrap;
   }
 
   > p {
     font-family: Montserrat;
     font-size: 0.75rem;
-    margin-left: 1rem;
+    color: var(--primary);
   }
 `;
+
 export const Description = styled.div`
   width: 100%;
-  overflow: auto;
-
-  ::-webkit-scrollbar {
-    width: 0.25rem;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    -webkit-border-radius: 0.5rem;
-    border-radius: 0.5rem;
-    background: var(--orange);
-    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.4);
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 
   > h2 {
     font-family: Montserrat;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--secondary);
   }
 
   > p {
     font-family: Montserrat;
-    font-size: 0.625rem;
-    margin-top: 0.5rem;
-    margin-right: 0.5rem;
+    font-size: 0.72rem;
+    color: var(--primary);
     text-align: justify;
-    line-height: 1rem;
+    line-height: 1.5;
   }
 `;

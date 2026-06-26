@@ -346,7 +346,7 @@ const Dashboard: React.FC = () => {
                 // className="layout"
                 layout={layoutKey}
                 cols={13}
-                containerPadding={[64, 16]}
+                containerPadding={[16, 16]}
                 rowHeight={30}
                 width={screenWitdh}
                 onDragStop={handleNewPosition}
