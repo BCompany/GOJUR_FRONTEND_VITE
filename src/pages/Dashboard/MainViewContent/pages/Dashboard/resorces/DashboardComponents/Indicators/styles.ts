@@ -12,11 +12,12 @@ export const Container = styled.div`
 `;
 
 export const Content = styled.div`
-  width: 10rem;
-  height: 5rem;
+  width: 12rem;
+  height: 6rem;
   background: var(--white);
-  border: 1px solid #000;
+  border-left: 3px solid var(--blue-twitter);
   border-radius: 4px;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.12);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -41,7 +42,7 @@ export const Content = styled.div`
 
     > h1 {
       font-family: Montserrat;
-      font-size: 1.125rem;
+      font-size: 1.5rem;
       margin-top: 0.25rem;
       color: var(--orange);
     }
@@ -62,7 +63,7 @@ export const Content = styled.div`
 
     > h1 {
       font-family: Montserrat;
-      font-size: 1.125rem;
+      font-size: 1.5rem;
       margin-top: 0.25rem;
       color: var(--orange);
     }

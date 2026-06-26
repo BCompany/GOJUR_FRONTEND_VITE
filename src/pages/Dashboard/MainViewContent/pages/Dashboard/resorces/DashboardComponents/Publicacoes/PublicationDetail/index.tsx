@@ -38,7 +38,8 @@ const PublicationDetail: React.FC<ModalProps> = ({ handleDetails, handleCloseDet
         transition={{ opacity: 0.5, scale: 2, duration: 1.5 }}
       >
         <header>
-          <FiX onClick={handleCloseDetails} style={{cursor:'pointer'}} />
+          <span>Detalhe da Publicação</span>
+          <FiX onClick={handleCloseDetails} />
         </header>
         <div>
           <Field>
