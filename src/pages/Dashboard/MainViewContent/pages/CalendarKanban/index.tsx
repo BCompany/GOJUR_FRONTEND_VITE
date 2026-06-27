@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { FiPlus, FiTrash2, FiClock, FiLayout, FiX, FiCheck, FiEdit2 } from 'react-icons/fi';
-import { MdPalette } from 'react-icons/md';
+import { MdPalette, MdFavorite, MdFavoriteBorder } from 'react-icons/md';
 import { FcSearch } from 'react-icons/fc';
 import Search from 'components/Search';
 import { HeaderPage } from 'components/HeaderPage';
@@ -41,6 +41,7 @@ interface ICard {
   title: string;
   description: string;
   dateTime: string;
+  favorited?: boolean;
 }
 
 interface IPhase {
@@ -214,13 +215,20 @@ export default function AgendaKanban() {
 
   const PERIOD_OPTIONS: IComboData[] = [
     { value: 'mes_atual', label: 'Mês Atual' },
-    { value: 'semana', label: 'Semana' },
+    { value: 'semana', label: 'Semana Atual' },
     { value: 'proxima_semana', label: 'Próxima Semana' },
+    { value: 'proximo_mes', label: 'Próxima Mês' },
+    { value: '15 dias', label: '15 dias' },
+    { value: 'ultima_semana', label: 'Última Semana' },
+    { value: 'ultimo_mes', label: 'Último Mês' },
     { value: 'custom', label: 'Selecionar Período' },
   ];
   const [selectedPeriod, setSelectedPeriod] = useState<IComboData>(PERIOD_OPTIONS[0]);
   const [periodStart, setPeriodStart] = useState('');
   const [periodEnd, setPeriodEnd] = useState('');
+  const [showDateModal, setShowDateModal] = useState(false);
+  const [tempPeriodStart, setTempPeriodStart] = useState('');
+  const [tempPeriodEnd, setTempPeriodEnd] = useState('');
 
   // Panels modal
   const [showPanelsModal, setShowPanelsModal] = useState(false);
@@ -342,10 +350,17 @@ export default function AgendaKanban() {
     setCards((prev) => prev.filter((c) => c.id !== cardId));
   }, []);
 
+  const handleToggleFavorite = useCallback((cardId: number) => {
+    setCards((prev) =>
+      prev.map((c) => (c.id === cardId ? { ...c, favorited: !c.favorited } : c)),
+    );
+  }, []);
+
   const onDragEnd = useCallback((result: DropResult) => {
     const { source, destination, draggableId, type } = result;
     if (!destination) return;
     if (source.droppableId === destination.droppableId && source.index === destination.index) return;
+    if (type !== 'COLUMN' && source.droppableId === destination.droppableId) return;
 
     // ── Column reorder ──
     if (type === 'COLUMN') {
@@ -460,29 +475,13 @@ export default function AgendaKanban() {
                     const oneYearAgo = new Date(today);
                     oneYearAgo.setFullYear(today.getFullYear() - 1);
                     const fmt = (d: Date) => d.toISOString().slice(0, 10);
-                    setPeriodStart(fmt(oneYearAgo));
-                    setPeriodEnd(fmt(today));
+                    setTempPeriodStart(periodStart || fmt(oneYearAgo));
+                    setTempPeriodEnd(periodEnd || fmt(today));
+                    setShowDateModal(true);
                   }
                 }}
               />
             </div>
-            {selectedPeriod.value === 'custom' && (
-              <div className="date-range">
-                <label>De</label>
-                <input
-                  type="date"
-                  value={periodStart}
-                  onChange={(e) => setPeriodStart(e.target.value)}
-                />
-                <label>Até</label>
-                <input
-                  type="date"
-                  value={periodEnd}
-                  min={periodStart}
-                  onChange={(e) => setPeriodEnd(e.target.value)}
-                />
-              </div>
-            )}
           </div>
 
           <div className="taskbar-right">
@@ -603,6 +602,62 @@ export default function AgendaKanban() {
           </ModalOverlay>
         )}
 
+        {/* ── Date range modal ── */}
+        {showDateModal && (
+          <ModalOverlay onClick={() => { setShowDateModal(false); setSelectedPeriod(PERIOD_OPTIONS[0]); }}>
+            <PanelsModal onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h4>Selecionar Período</h4>
+                <FiX onClick={() => { setShowDateModal(false); setSelectedPeriod(PERIOD_OPTIONS[0]); }} />
+              </div>
+              <div className="modal-body" style={{ gap: '0.75rem', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <label style={{ fontSize: '0.75rem', color: 'var(--secondary)' }}>De</label>
+                  <input
+                    type="date"
+                    value={tempPeriodStart}
+                    onChange={(e) => setTempPeriodStart(e.target.value)}
+                    style={{ padding: '0.35rem 0.5rem', borderRadius: '4px', border: '1px solid #ddd', fontSize: '0.8rem' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <label style={{ fontSize: '0.75rem', color: 'var(--secondary)' }}>Até</label>
+                  <input
+                    type="date"
+                    value={tempPeriodEnd}
+                    min={tempPeriodStart}
+                    onChange={(e) => setTempPeriodEnd(e.target.value)}
+                    style={{ padding: '0.35rem 0.5rem', borderRadius: '4px', border: '1px solid #ddd', fontSize: '0.8rem' }}
+                  />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="buttonClick"
+                  style={{ flex: 1, justifyContent: 'center', display: 'flex' }}
+                  onClick={() => {
+                    setPeriodStart(tempPeriodStart);
+                    setPeriodEnd(tempPeriodEnd);
+                    setShowDateModal(false);
+                    const fmt = (s: string) => { const [, m, d] = s.split('-'); return `${d}/${m}`; };
+                    setSelectedPeriod({ value: 'custom', label: `${fmt(tempPeriodStart)} - ${fmt(tempPeriodEnd)}` });
+                  }}
+                >
+                  <FiCheck size={12} /> Confirmar
+                </button>
+                <button
+                  type="button"
+                  className="buttonLinkClick"
+                  onClick={() => { setShowDateModal(false); setSelectedPeriod(PERIOD_OPTIONS[0]); }}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </PanelsModal>
+          </ModalOverlay>
+        )}
+
         <BoardLayout>
           {activePanel ? (
             <DragDropContext onDragEnd={onDragEnd}>
@@ -694,7 +749,22 @@ export default function AgendaKanban() {
                                       : undefined,
                                   }}
                                 >
-                                  <div className="card-title">{card.title}</div>
+                                  <div className="card-header">
+                                    <span className="card-title">{card.title}</span>
+                                    {card.favorited ? (
+                                      <MdFavorite
+                                        className="card-favorite active"
+                                        title="Desfavoritar"
+                                        onClick={(e) => { e.stopPropagation(); handleToggleFavorite(card.id); }}
+                                      />
+                                    ) : (
+                                      <MdFavoriteBorder
+                                        className="card-favorite"
+                                        title="Favoritar"
+                                        onClick={(e) => { e.stopPropagation(); handleToggleFavorite(card.id); }}
+                                      />
+                                    )}
+                                  </div>
                                   {card.description && (
                                     <div className="card-description">{card.description}</div>
                                   )}

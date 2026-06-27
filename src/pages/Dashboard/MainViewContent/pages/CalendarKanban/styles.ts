@@ -430,11 +430,36 @@ export const AppointmentCard = styled.div`
     transform: translateY(-2px);
   }
 
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+
   .card-title {
     font-weight: 600;
     color: var(--primary);
-    margin-bottom: 0.25rem;
     font-size: 0.75rem;
+    flex: 1;
+  }
+
+  .card-favorite {
+    flex-shrink: 0;
+    width: 0.85rem;
+    height: 0.85rem;
+    color: #cbd5e1;
+    cursor: pointer;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: #f43f5e;
+    }
+
+    &.active {
+      color: var(--blue-twitter);
+    }
   }
 
   .card-description {
