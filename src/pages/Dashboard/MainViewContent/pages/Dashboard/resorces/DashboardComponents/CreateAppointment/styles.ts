@@ -797,6 +797,7 @@ export const ModalKanban = styled.div<SearchProps>`
   box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.45);
   width: 28rem;
   height: auto;
+  min-height: 16rem;
   background-color: var(--white);
   border-radius: 8px;
   overflow: hidden;

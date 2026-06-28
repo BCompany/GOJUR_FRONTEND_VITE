@@ -2755,12 +2755,6 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                   </button>
                   <button type="button" title="Vincular ao Kanban" onClick={() => setShowKanbanModal(true)}>
                     Kanban
-                    {selectedKanbanPanelId && (
-                      <span style={{ marginLeft: '4px', fontSize: '0.55rem', background: '#eff6ff', color: 'var(--blue)', border: '1px solid #bfdbfe', borderRadius: '0.2rem', padding: '0 0.3rem' }}>
-                        {KANBAN_PANELS_OPTIONS.find(p => p.value === selectedKanbanPanelId)?.label}
-                        {selectedKanbanPhaseId ? ` › ${KANBAN_PHASES_OPTIONS[selectedKanbanPanelId]?.find(ph => ph.value === selectedKanbanPhaseId)?.label ?? ''}` : ''}
-                      </span>
-                    )}
                   </button>
                   <button type="button" onClick={handleCloseModalLog}>
                     Fechar
@@ -3589,12 +3583,6 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                   </button>
                   <button type="button" title="Vincular ao Kanban" onClick={() => setShowKanbanModal(true)}>
                     Kanban
-                    {selectedKanbanPanelId && (
-                      <span style={{ marginLeft: '4px', fontSize: '0.55rem', background: '#eff6ff', color: 'var(--blue)', border: '1px solid #bfdbfe', borderRadius: '0.2rem', padding: '0 0.3rem' }}>
-                        {KANBAN_PANELS_OPTIONS.find(p => p.value === selectedKanbanPanelId)?.label}
-                        {selectedKanbanPhaseId ? ` › ${KANBAN_PHASES_OPTIONS[selectedKanbanPanelId]?.find(ph => ph.value === selectedKanbanPhaseId)?.label ?? ''}` : ''}
-                      </span>
-                    )}
                   </button>
                   <button type="button" onClick={handleCloseModalLog}>
                     Fechar
