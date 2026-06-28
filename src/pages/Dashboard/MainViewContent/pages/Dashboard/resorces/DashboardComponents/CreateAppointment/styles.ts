@@ -792,6 +792,87 @@ export const ModalRecurrence = styled.div<SearchProps>`
   }
 `;
 
+export const ModalKanban = styled.div<SearchProps>`
+  font-size: 0.665rem;
+  box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.45);
+  width: 28rem;
+  height: auto;
+  background-color: var(--white);
+  border-radius: 8px;
+  overflow: hidden;
+  position: absolute;
+  z-index: 9999;
+  margin-left: 30%;
+  margin-top: 10%;
+  display: ${props => (props.show ? 'flex' : 'none')};
+  flex-direction: column;
+
+  .kanban-header {
+    width: 100%;
+    height: 1.5rem;
+    background: rgba(0, 0, 0, 0.1);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    p {
+      font-family: montserrat;
+      font-weight: normal;
+      font-size: 0.75rem;
+    }
+  }
+
+  .kanban-body {
+    flex: 1;
+    padding: 1rem 1rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  label {
+    font-size: 0.675rem;
+    color: var(--secondary);
+    font-family: Montserrat;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .kanban-footer {
+    border-top: 1px solid var(--grey);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0.4rem 0.5rem;
+    gap: 0.25rem;
+
+    > button {
+      width: 4.5rem;
+      height: 2rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      font-family: Montserrat;
+      background-color: var(--blue-twitter);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      border-radius: 0.25rem;
+      box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.2);
+      color: var(--white);
+      cursor: pointer;
+      border: none;
+
+      &:hover {
+        background-color: var(--blue);
+      }
+    }
+  }
+`;
+
 export const Multi = styled(MultiSelect)`
   width: 16rem;
   font-size: 0.6rem;

@@ -18,7 +18,7 @@ import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Responsive as ResponsiveGridLayout } from 'react-grid-layout';
 import { RiFolder2Fill, RiEraserLine } from 'react-icons/ri';
 import { IoIosPaper } from 'react-icons/io';
-import { FiClock, FiTrash, FiSave, FiMail } from 'react-icons/fi';
+import { FiClock, FiTrash, FiSave, FiMail, FiCheck } from 'react-icons/fi';
 import { FcAbout, FcSearch, FcParallelTasks } from 'react-icons/fc';
 import { GoGitMerge } from "react-icons/go"
 import { FaRegTimesCircle, FaWhatsapp } from 'react-icons/fa';
@@ -51,7 +51,7 @@ import DeleteModal from './DeleteModal';
 import { selectedDayProps, selectedWeekProps } from './Interfaces/ICalendar';
 import { dayRecurrence, optionsLembrete, weekRecurrence } from './ListValues/List';
 import CalendarReminderModal from './CustomizeCalendarReminderModal';
-import { Container2, Container, ModalContent, ModalDateSettings, Wrapper, WrapperResp, Process, DropArea, Footer, Lembrete, Responsavel, ResponsibleList, ReminderList, ShareList, Privacidade, Share, ModalRecurrence, Multi, ConfirmOverlay, ModalConfirm } from './styles';
+import { Container2, Container, ModalContent, ModalDateSettings, Wrapper, WrapperResp, Process, DropArea, Footer, Lembrete, Responsavel, ResponsibleList, ReminderList, ShareList, Privacidade, Share, ModalRecurrence, ModalKanban, Multi, ConfirmOverlay, ModalConfirm } from './styles';
 import { useHistory, useLocation } from 'react-router-dom'
 
 
@@ -76,6 +76,22 @@ const layoutBig = [{
   name: 'Modal',
   positions: { i: '1', x: 2.2, y: 4, w: 7, h: (isMobile ? 12 : 17) },
 }];
+
+const KANBAN_PANELS_OPTIONS = [
+  { value: '1', label: 'Agenda Geral' },
+  { value: '2', label: 'Audiências' },
+];
+const KANBAN_PHASES_OPTIONS: Record<string, { value: string; label: string }[]> = {
+  '1': [
+    { value: '1', label: 'Aguardando' },
+    { value: '2', label: 'Fazendo' },
+    { value: '3', label: 'Concluído' },
+  ],
+  '2': [
+    { value: '4', label: 'A Realizar' },
+    { value: '5', label: 'Realizado' },
+  ],
+};
 
 const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   const { matterSelected, dateEnd, handleModalActiveId, selectProcess, handleModalActive, openSelectProcess, handleSelectProcess, jsonModalObjectResult, handleJsonModalObjectResult, deadLineText, publicationText, modalActiveId, caller } = useModal();
@@ -159,6 +175,9 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   const [completeLink, setCompleteLink] = useState<boolean>(false);
   const [appointmentWorkflowActionsExecId, setAppointmentWorkflowActionsExecId] = useState(0);
   const [appointmentWorkflowExecId, setAppointmentWorkflowExecId] = useState(0);
+  const [showKanbanModal, setShowKanbanModal] = useState(false);
+  const [selectedKanbanPanelId, setSelectedKanbanPanelId] = useState('');
+  const [selectedKanbanPhaseId, setSelectedKanbanPhaseId] = useState('');
   const history = useHistory();
 
   useEffect(() => {
@@ -2174,6 +2193,48 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                 <br />
               </ModalRecurrence>
 
+              <ModalKanban id='ModalKanban' show={showKanbanModal}>
+                <div className="kanban-header">
+                  <p>Kanban</p>
+                </div>
+
+                <div className="kanban-body">
+                  <label htmlFor="kanbanPanel">
+                    Painel
+                    <Select
+                      inputId="kanbanPanel"
+                      placeholder="Selecione"
+                      options={KANBAN_PANELS_OPTIONS}
+                      value={KANBAN_PANELS_OPTIONS.find(p => p.value === selectedKanbanPanelId) || null}
+                      onChange={opt => { setSelectedKanbanPanelId(opt ? opt.value : ''); setSelectedKanbanPhaseId(''); }}
+                      isClearable
+                    />
+                  </label>
+
+                  <label htmlFor="kanbanPhase">
+                    Etapa
+                    <Select
+                      inputId="kanbanPhase"
+                      placeholder="Selecione"
+                      options={selectedKanbanPanelId ? (KANBAN_PHASES_OPTIONS[selectedKanbanPanelId] || []) : []}
+                      value={(selectedKanbanPanelId ? KANBAN_PHASES_OPTIONS[selectedKanbanPanelId] || [] : []).find(ph => ph.value === selectedKanbanPhaseId) || null}
+                      onChange={opt => setSelectedKanbanPhaseId(opt ? opt.value : '')}
+                      isDisabled={!selectedKanbanPanelId}
+                      isClearable
+                    />
+                  </label>
+                </div>
+
+                <div className="kanban-footer">
+                  <button type="button" onClick={() => setShowKanbanModal(false)}>
+                    Confirmar
+                  </button>
+                  <button type="button" onClick={() => setShowKanbanModal(false)}>
+                    Fechar
+                  </button>
+                </div>
+              </ModalKanban>
+
               <HeaderComponent
                 id='HeaderComponent'
                 title="Agenda"
@@ -2692,6 +2753,15 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                     {textButton}
                     {loadingDone ? <Loader size={20} color="#f19000" /> : null}
                   </button>
+                  <button type="button" title="Vincular ao Kanban" onClick={() => setShowKanbanModal(true)}>
+                    Kanban
+                    {selectedKanbanPanelId && (
+                      <span style={{ marginLeft: '4px', fontSize: '0.55rem', background: '#eff6ff', color: 'var(--blue)', border: '1px solid #bfdbfe', borderRadius: '0.2rem', padding: '0 0.3rem' }}>
+                        {KANBAN_PANELS_OPTIONS.find(p => p.value === selectedKanbanPanelId)?.label}
+                        {selectedKanbanPhaseId ? ` › ${KANBAN_PHASES_OPTIONS[selectedKanbanPanelId]?.find(ph => ph.value === selectedKanbanPhaseId)?.label ?? ''}` : ''}
+                      </span>
+                    )}
+                  </button>
                   <button type="button" onClick={handleCloseModalLog}>
                     Fechar
                   </button>
@@ -2972,6 +3042,49 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                 </div>
                 <br />
               </ModalRecurrence>
+
+              <ModalKanban id='ModalKanban' show={showKanbanModal}>
+                <div className="kanban-header">
+                  <p>Kanban</p>
+                </div>
+
+                <div className="kanban-body">
+                  <label htmlFor="kanbanPanel">
+                    Painel
+                    <Select
+                      inputId="kanbanPanel"
+                      placeholder="Selecione"
+                      options={KANBAN_PANELS_OPTIONS}
+                      value={KANBAN_PANELS_OPTIONS.find(p => p.value === selectedKanbanPanelId) || null}
+                      onChange={opt => { setSelectedKanbanPanelId(opt ? opt.value : ''); setSelectedKanbanPhaseId(''); }}
+                      isClearable
+                    />
+                  </label>
+
+                  <label htmlFor="kanbanPhase">
+                    Etapa
+                    <Select
+                      inputId="kanbanPhase"
+                      placeholder="Selecione"
+                      options={selectedKanbanPanelId ? (KANBAN_PHASES_OPTIONS[selectedKanbanPanelId] || []) : []}
+                      value={(selectedKanbanPanelId ? KANBAN_PHASES_OPTIONS[selectedKanbanPanelId] || [] : []).find(ph => ph.value === selectedKanbanPhaseId) || null}
+                      onChange={opt => setSelectedKanbanPhaseId(opt ? opt.value : '')}
+                      isDisabled={!selectedKanbanPanelId}
+                      isClearable
+                    />
+                  </label>
+                </div>
+
+                <div className="kanban-footer">
+                  <button type="button" onClick={() => setShowKanbanModal(false)}>
+                    <FiCheck size={12} />
+                    Confirmar
+                  </button>
+                  <button type="button" onClick={() => setShowKanbanModal(false)}>
+                    Fechar
+                  </button>
+                </div>
+              </ModalKanban>
 
               <HeaderComponent
                 id='HeaderComponent'
@@ -3474,6 +3587,15 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                     {textButton}
                     {loadingDone ? <Loader size={20} color="#f19000" /> : null}
                   </button>
+                  <button type="button" title="Vincular ao Kanban" onClick={() => setShowKanbanModal(true)}>
+                    Kanban
+                    {selectedKanbanPanelId && (
+                      <span style={{ marginLeft: '4px', fontSize: '0.55rem', background: '#eff6ff', color: 'var(--blue)', border: '1px solid #bfdbfe', borderRadius: '0.2rem', padding: '0 0.3rem' }}>
+                        {KANBAN_PANELS_OPTIONS.find(p => p.value === selectedKanbanPanelId)?.label}
+                        {selectedKanbanPhaseId ? ` › ${KANBAN_PHASES_OPTIONS[selectedKanbanPanelId]?.find(ph => ph.value === selectedKanbanPhaseId)?.label ?? ''}` : ''}
+                      </span>
+                    )}
+                  </button>
                   <button type="button" onClick={handleCloseModalLog}>
                     Fechar
                   </button>
@@ -3534,7 +3656,6 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
           appointmentWorkflowActionsExecId={appointmentWorkflowActionsExecId}
           callbackFunction={{ handleCloseConfirmDelete, handleConfirmDelete }} />
       )}
-
 
     </DropArea>
   );
