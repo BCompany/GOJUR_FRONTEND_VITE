@@ -64,10 +64,10 @@ const handleCloseModal = () => {
         token,
         apiKey,
       })
-      addToast({ type: 'success', title: 'Recebimentos processados com sucesso!' })
+      addToast({ type: 'success', title: "Sucesso", description: 'Recebimentos processados com sucesso!' })
       handleCloseModal()
-    } catch {
-      addToast({ type: 'error', title: 'Erro ao processar recebimentos.' })
+    } catch (err: any){
+      addToast({ type: 'error', title: 'Operação não realizada.', description: err.response?.data?.Message })
     } finally {
       setIsLoading(false)
     }
