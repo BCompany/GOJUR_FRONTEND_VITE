@@ -186,6 +186,7 @@ export const AppointmentHeader = styled.div`
   width: 100%;
   height: 1.25rem;
   margin-top: 0.5rem;
+  padding-left: 0.5rem;
   > div {
     display: flex;
     align-items: center;

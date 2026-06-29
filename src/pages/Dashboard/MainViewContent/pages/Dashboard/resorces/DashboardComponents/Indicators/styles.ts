@@ -12,26 +12,27 @@ export const Container = styled.div`
 `;
 
 export const Content = styled.div`
-  width: 12rem;
+  width: 14rem;
   height: 6rem;
   background: var(--white);
   border-left: 3px solid var(--blue-twitter);
   border-radius: 4px;
-  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.12);
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.3);
 
   cursor: pointer;
 
   > a {
+    width: 100%;
     font-family: Montserrat;
     font-size: 0.75rem;
     color: var(--secondary);
     text-align: center;
     text-decoration: none;
+    padding: 0 1rem;
 
     > p {
       font-family: Montserrat;
@@ -48,11 +49,13 @@ export const Content = styled.div`
     }
   }
   > button {
+    width: 100%;
     font-family: Montserrat;
     font-size: 0.75rem;
     color: var(--secondary);
     text-align: center;
     text-decoration: none;
+    padding: 0 1rem;
 
     > p {
       font-family: Montserrat;
