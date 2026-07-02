@@ -22,9 +22,5 @@ GoJur - Software
 6. Rode `yarn build` para gerar os arquivos de produção.
 
 ## Variaveis Ambientes
-
-REACT_APP_ENVIROMENT= 'DEVELOPMENT' ⇒ Ambiente que a aplicação esta executando
-
-REACT_APP_BASE_URL_API= 'http://homoapi.gojur.com.br' ⇒ URL Base para as chamadas a api
-
-REACT_APP_BASE_URL_REDIRECT= 'https://homo.gojur.com.br/' ⇒ Base URL para redirects da navegação
+VITE_POSTHOG_PROJECT_TOKEN=phc_w7jdo7ivuUxMrEgKS3vdPxEdKCGcwGULHbzeatr9zbhX
+VITE_POSTHOG_HOST=https://us.i.posthog.com
