@@ -29,55 +29,58 @@ interface SelectData {
 }
 
 export default function CustomerListModal() {
-
   const {isCustomerListModalOpen, handleCloseCustomerListModal } = useCustomer()
   const {addToast} = useToast() 
   const [customerGroup , setCustomerGroup] = useState<SelectData[]>([]); // grupo de clientes
   const [customerGroupValue , setCustomerGroupValue] = useState(''); // group field value
   const [customerGroupId , setCustomerGroupId] = useState(''); // group field id
-  const [ reportLayout, setReportLayout] = useState('simple'); // layout
-  const [ reportTypePerson, setReportTypePerson] = useState('N'); // pessoa fisica
-  const [ reportFantasia, setReportFantasia] = useState(''); // nome fantasia 
-  // const [isGeneratingReport2, setIsGeneratingReport2] = useState<boolean>(false); // handle flag is generating report
+  const [reportLayout, setReportLayout] = useState('simple'); // layout
+  const [reportTypePerson, setReportTypePerson] = useState('N'); // pessoa fisica
+  const [activeCustomer, setActiveCustomer] = useState(''); // ativo
+  const [reportFantasia, setReportFantasia] = useState(''); // nome fantasia 
   const [isLoadingComboData, setIsLoadingComboData] = useState<boolean>(false);
   const [groupSearchTerm , setGroupSearchTerm] = useState(''); 
-
   const [isGeneratingReport, setIsGeneratingReport] = useState(false)
   const [idReportGenerate, setIdReportGenerate] = useState<number>(0)
 
+  const layoutOptions = [
+    { label: 'Lista Simples', id: 'simple'},
+    { label: 'Ficha Detalhada', id: 'detailedRecord'},
+    { label: 'Excel', id: 'excel'}
+  ]
+  
+  const ActiveOptions = [
+    { label: 'Sim', id: 'S'},
+    { label: 'Não', id: 'N'}
+  ]
+
   useEffect(() => {
-
     LoadGroups()
+  }, []);
 
-  },[]);
 
   useDelay(() => {
-        
     if (groupSearchTerm.length > 0){
       LoadGroups()
     }
-
   }, [groupSearchTerm], 1000)
+
 
   // when exists report id verify if is avalaliable by 5 minutes
   useEffect(() => {
-
     if (idReportGenerate > 0){
-
       const checkInterval = setInterval(() => { CheckReportPending() }, 5000);
 
       return () => {
         clearTimeout(checkInterval);
       };
     }
+  }, [idReportGenerate])
 
-  },[idReportGenerate])
 
   // Check is report is already 
   const CheckReportPending = useCallback(async () => {
-              
     if (isGeneratingReport){
-    
         const response = await api.post(`/ProcessosGOJUR/VerificarStatus`, {
           id: idReportGenerate,
           token: localStorage.getItem('@GoJur:token')
@@ -91,20 +94,14 @@ export default function CustomerListModal() {
           setIsGeneratingReport(false)
           setButtonText("Gerar Relatório")
   
-          addToast({
-            type: "error",
-            title: "Operação não realizada",
-            description: "Não foi possível gerar o relatório."
-            
-          })
+          addToast({type: "error", title: "Operação não realizada", description: "Não foi possível gerar o relatório."})
         }
     }
-      
-  },[isGeneratingReport, idReportGenerate])
+  }, [isGeneratingReport, idReportGenerate])
+
 
   // Open link with report
   const OpenReportAmazon = async() => {
-    
     const response = await api.post(`/ProcessosGOJUR/Editar`, {
       id: idReportGenerate,
       token: localStorage.getItem('@GoJur:token')
@@ -119,35 +116,34 @@ export default function CustomerListModal() {
    
 
   const LoadGroups = async (stateValue?: string) => {
-      try {
-        const tokenapi = localStorage.getItem('@GoJur:token');
+    try {
+      const tokenapi = localStorage.getItem('@GoJur:token');
+      const filter = stateValue == 'reset'? '': groupSearchTerm
+      setIsLoadingComboData(true)
 
-        const filter = stateValue == 'reset'? '': groupSearchTerm
-        setIsLoadingComboData(true)
+      const response = await api.post<CustomerGroup[]>('/Clientes/ListarGrupoClientes', {
+        filterClause: filter,
+        token: tokenapi,
+      });
 
-        const response = await api.post<CustomerGroup[]>('/Clientes/ListarGrupoClientes', {
-          filterClause: filter,
-          token: tokenapi,
-        });
-
-        const listSelectData: SelectData[] = []; //
-      
-        response.data.map((item) => {
-          listSelectData.push({
-            id: item.id, 
-            label:item.value
-          })
-
-          return listSelectData
+      const listSelectData: SelectData[] = []; //
+    
+      response.data.map((item) => {
+        listSelectData.push({
+          id: item.id, 
+          label:item.value
         })
 
-      setCustomerGroup(listSelectData)
-      setIsLoadingComboData(false)
+        return listSelectData
+      })
 
-      } catch (err) {
-        console.log(err);
-      }
+    setCustomerGroup(listSelectData)
+    setIsLoadingComboData(false)
+    } catch (err) {
+      console.log(err);
     }
+  }
+
 
   const handleGenerateToReport = useCallback(async() => {
     try {
@@ -156,11 +152,7 @@ export default function CustomerListModal() {
       setIsGeneratingReport(true)    
 
       if (!reportLayout){
-        addToast({
-          type: "info",
-          title: "Não foi possível completar a operação",
-          description:  "Nenhum layout de relatório foi definido, escolha um modelo e tente novamente"
-        })
+        addToast({type: "info", title: "Não foi possível completar a operação", description:  "Nenhum layout de relatório foi definido, escolha um modelo e tente novamente"})
 
         setIsGeneratingReport(false)    
         return
@@ -172,6 +164,7 @@ export default function CustomerListModal() {
         peopleType: `${reportTypePerson}`,
         peopleFantasyName: reportFantasia,
         layout: reportLayout,
+        activeCustomer: activeCustomer,
         token
       })
       
@@ -183,58 +176,59 @@ export default function CustomerListModal() {
       setReportFantasia('')
       setCustomerGroupId('')
       setCustomerGroupValue('')
-      
-      // handleCloseCustomerListModal()
-
       setIsGeneratingReport(true)
       setIdReportGenerate(response.data)
-
-    } catch (err) {
-      setIsGeneratingReport(false)    
-      addToast({
-        type: "info",
-        title: "Falha ao gerar o relatório",
-        description:  "Não foram encontrados clientes, verifique os filtros aplicados"
-      })
-      
     }
-  },[addToast, customerGroupId, customerGroupValue, reportFantasia, reportLayout, reportTypePerson]); 
+    catch (err) {
+      setIsGeneratingReport(false)    
+
+      addToast({type: "info", title: "Falha ao gerar o relatório", description:  "Não foram encontrados clientes, verifique os filtros aplicados"})
+    }
+  }, [addToast, customerGroupId, customerGroupValue, reportFantasia, reportLayout, activeCustomer, reportTypePerson]); 
+
 
   const handleLoadGroups = (item: any) => {
-    
     if (item){
       setCustomerGroupValue(item.label)
       setCustomerGroupId(item.id)
-    }else{
+    }
+    else{
       setCustomerGroupId('')
       setCustomerGroupValue('')
       LoadGroups('')
     }
   }
 
+
   const handleLayoutOptions = (item: any) => {
-    
     if (item){
       setReportLayout(item.id)
-    }else{
+    }
+    else{
       setReportLayout('')
     }
   }
 
+
+  const ActiveCustomerOptions = (item: any) => {
+    if (item){
+      setActiveCustomer(item.id)
+    }
+    else{
+      setActiveCustomer('')
+    }
+  }
+
+
   const handlePeopleType = (item: any) => {
-    
     if (item){
       setReportTypePerson(item.id)      
-    }else{
+    }
+    else{
       setReportTypePerson('')
     }
   }
 
-  const layoutOptions = [
-    { label: 'Lista Simples', id: 'simple'},
-    { label: 'Ficha Detalhada', id: 'detailedRecord'},
-    { label: 'Excel', id: 'excel'}
-  ]
 
   // same as creating your state variable where "Next" is the default value for buttonText and setButtonText is the setter function for your state variable instead of setState
   const [buttonText, setButtonText] = useState("Gerar Relatório");
@@ -249,11 +243,7 @@ export default function CustomerListModal() {
       className="react-modal-content"
     >
       { !isGeneratingReport && (
-        <button 
-          type="button" 
-          className="react-modal-close"
-          onClick={handleCloseCustomerListModal} 
-        >
+        <button type="button" className="react-modal-close" onClick={handleCloseCustomerListModal}>
           <FiX size={20} />
         </button>
       )}
@@ -262,7 +252,6 @@ export default function CustomerListModal() {
         <h1>Selecione um ou mais filtros para relatório de clientes</h1>
         
         <div>
-
           <AutoCompleteSelect className='selectData'>
             <p>Grupo de Cliente</p>
             <Select
@@ -290,17 +279,18 @@ export default function CustomerListModal() {
               options={layoutOptions}
             />
           </AutoCompleteSelect>
-          
-          <label htmlFor="fantasia">
-            <p>Nome Fantasia</p>
-            <input 
-              type="text" 
-              id="fantasia"
-              autoComplete="off"
-              value={reportFantasia}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setReportFantasia(e.target.value)}
+
+          <AutoCompleteSelect className='autoSelect'>
+            <p>Ativo</p>
+            <Select
+              isSearchable
+              isClearable
+              styles={selectStyles}         
+              placeholder="Selecione"
+              onChange={(item) => ActiveCustomerOptions(item)}
+              options={ActiveOptions}
             />
-          </label>
+          </AutoCompleteSelect>
           
           <AutoCompleteSelect className='selectData'>
             <p>Tipo Pessoa</p>
@@ -313,20 +303,25 @@ export default function CustomerListModal() {
               options={personTypes}
             />
           </AutoCompleteSelect>
-
         </div>
 
+        <div style={{marginLeft: '0.5%', width:'100%'}}>
+          <label htmlFor="fantasia" style={{marginLeft: '-10px', width:'480px'}}>
+            <p>Nome Fantasia</p>
+            <input 
+              type="text" 
+              id="fantasia"
+              autoComplete="off"
+              value={reportFantasia}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setReportFantasia(e.target.value)}
+            />
+          </label>
+        </div>
       </Container>
-
       <br />
       
       <div style={{marginLeft: '35%'}}>
-        <button 
-          className="buttonClick"
-          type='button'
-          onClick={()=>{ handleGenerateToReport(); changeText("Gerando Relatório ") }}
-          title="Clique para gerar o documento selecionado"
-        >
+        <button className="buttonClick" type='button' onClick={()=>{handleGenerateToReport(); changeText("Gerando Relatório ")}} title="Clique para gerar o documento selecionado">
           <FaFileAlt />
           {buttonText}
           {isGeneratingReport && <Loader size={5} color="var(--orange)" /> }
@@ -335,6 +330,4 @@ export default function CustomerListModal() {
 
     </Modal>
   );
-};
-
- 
+}

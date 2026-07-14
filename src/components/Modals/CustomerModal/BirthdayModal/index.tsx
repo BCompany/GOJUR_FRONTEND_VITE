@@ -28,73 +28,79 @@ interface SelectData {
 }
 
 export default function BirthdayModal() {
-
   const {isBirthdayModalOpen, handleCloseBirthdayModal } = useCustomer();
   const {addToast } = useToast();
-  const [ customerGroup , setCustomerGroup] = useState<SelectData[]>([]); // grupo de clientes
-  const [ customerGroupValue , setCustomerGroupValue] = useState(''); // group field value
-  const [ customerGroupId , setCustomerGroupId] = useState(''); // group field id
-  const [ reportLayout, setReportLayout] = useState('Birthdaysimple'); // layout
-  const [ reportBirthday, setReportBirthday] = useState('currentMonth'); // aniversario
-  const [ reportInitialDate, setReportInitialDate] = useState('01'); // aniversario date select
-  const [ reportEndDate, setReportEndDate] = useState('01'); // aniversario date select
+  const [customerGroup , setCustomerGroup] = useState<SelectData[]>([]); // grupo de clientes
+  const [customerGroupValue , setCustomerGroupValue] = useState(''); // group field value
+  const [customerGroupId , setCustomerGroupId] = useState(''); // group field id
+  const [reportLayout, setReportLayout] = useState('Birthdaysimple'); // layout
+  const [activeCustomer, setActiveCustomer] = useState(''); // ativo
+  const [reportBirthday, setReportBirthday] = useState('currentMonth'); // aniversario
+  const [reportInitialDate, setReportInitialDate] = useState('01'); // aniversario date select
+  const [reportEndDate, setReportEndDate] = useState('01'); // aniversario date select
   const [isLoadingComboData, setIsLoadingComboData] = useState<boolean>(false);
   const [groupSearchTerm , setGroupSearchTerm] = useState(''); 
-
   const [isGeneratingReport, setIsGeneratingReport] = useState(false)
   const [idReportGenerate, setIdReportGenerate] = useState<number>(0)
 
+  const layoutOptions = [
+    { label: 'Lista Simples', id: 'Birthdaysimple'},
+    { label: 'Excel', id: 'Birthdayexcel'}
+  ]
+
+  const monthBirthday = [
+    { label: 'Mês Atual', id: 'currentMonth'},
+    { label: 'Próximo Mês', id: 'nextMonth'},
+    { label: 'Selecionar datas', id: 'custom'}
+  ]
+
+  const ActiveOptions = [
+    { label: 'Sim', id: 'S'},
+    { label: 'Não', id: 'N'}
+  ]
+
+
   useEffect(() => {
-
     LoadGroups()
+  }, []);
 
-  },[]);
 
   // when exists report id verify if is avaiable every 5 seconds
   useEffect(() => {
-
     if (idReportGenerate > 0){
       const checkInterval = setInterval(() => { CheckReportPending(checkInterval) }, 5000);
     }
+  }, [idReportGenerate])
 
-  },[idReportGenerate])
 
   // Check is report is already 
   const CheckReportPending = useCallback(async (checkInterval) => {
-              
     if (isGeneratingReport){
-        const response = await api.post(`/ProcessosGOJUR/VerificarStatus`, {
-          id: idReportGenerate,
-          token: localStorage.getItem('@GoJur:token')
-        })
+      const response = await api.post(`/ProcessosGOJUR/VerificarStatus`, {
+        id: idReportGenerate,
+        token: localStorage.getItem('@GoJur:token')
+      })
 
-        if (response.data == "F" && isGeneratingReport){
-          
-          clearInterval(checkInterval);
-          setIsGeneratingReport(false)
-          setButtonText("Gerar Relatório")
-          OpenReportAmazon()
-        }
+      if (response.data == "F" && isGeneratingReport){
+        clearInterval(checkInterval);
+        setIsGeneratingReport(false)
+        setButtonText("Gerar Relatório")
+        OpenReportAmazon()
+      }
 
-        if (response.data == "E"){
-          clearInterval(checkInterval);
-          setIsGeneratingReport(false)
-          setButtonText("Gerar Relatório")
-  
-          addToast({
-            type: "error",
-            title: "Operação não realizada",
-            description: "Não foi possível gerar o relatório."
-            
-          })
-  
-        }
+      if (response.data == "E"){
+        clearInterval(checkInterval);
+        setIsGeneratingReport(false)
+        setButtonText("Gerar Relatório")
+
+        addToast({type: "error", title: "Operação não realizada", description: "Não foi possível gerar o relatório."})
+      }
     }
   },[isGeneratingReport, idReportGenerate])
 
+
   // Open link with report
   const OpenReportAmazon = async() => {
-    
     const response = await api.post(`/ProcessosGOJUR/Editar`, {
       id: idReportGenerate,
       token: localStorage.getItem('@GoJur:token')
@@ -108,7 +114,6 @@ export default function BirthdayModal() {
   
 
   const handleGenerateToReport = useCallback(async() => {
-
     if (isGeneratingReport){
       return;
     }
@@ -122,6 +127,7 @@ export default function BirthdayModal() {
         filterDesc: `Grupo de Cliente: ${customerGroupValue}`,
         dateDesc: reportBirthday === 'custom'? `custom-${reportInitialDate}-${reportEndDate}` : reportBirthday,
         layout: reportLayout,
+        activeCustomer: activeCustomer,
         token
       })
 
@@ -131,121 +137,120 @@ export default function BirthdayModal() {
       setCustomerGroupId('currentMonth')
       setReportInitialDate('01')
       setReportEndDate('01')
-      
       setIdReportGenerate(response.data)
-
-    } catch (err: any) {
+    }
+    catch (err: any) {
       setIsGeneratingReport(false)
       setButtonText("Gerar Relatório")
-      addToast({
-        type: "info",
-        title: "Falha ao gerar o relatório",
-        description:  err.response.data.Message
-      })
+      addToast({type: "info", title: "Falha ao gerar o relatório", description: err.response.data.Message})
     }
-    },[addToast, customerGroupId, customerGroupValue, reportBirthday, reportEndDate, reportInitialDate, reportLayout]); 
+  }, [addToast, customerGroupId, customerGroupValue, reportBirthday, reportEndDate, reportInitialDate, reportLayout, activeCustomer]); 
 
-    useDelay(() => {
-        
-      if (groupSearchTerm.length > 0){
-        LoadGroups()
-      }
-  
-    }, [groupSearchTerm], 1000)
 
-    const LoadGroups = async (stateValue?: string) => {
-      try {
-        const tokenapi = localStorage.getItem('@GoJur:token');
+  useDelay(() => {
+    if (groupSearchTerm.length > 0){
+      LoadGroups()
+    }
+  }, [groupSearchTerm], 1000)
 
-        const filter = stateValue == 'reset'? '': groupSearchTerm
-        setIsLoadingComboData(true)
 
-        const response = await api.post<CustomerGroup[]>('/Clientes/ListarGrupoClientes', {
-          filterClause: filter,
-          token: tokenapi,
-        });
+  const LoadGroups = async (stateValue?: string) => {
+    try {
+      const tokenapi = localStorage.getItem('@GoJur:token');
 
-        const listSelectData: SelectData[] = []; //
-      
-        response.data.map((item) => {
-          listSelectData.push({
-            id: item.id, 
-            label:item.value
-          })
+      const filter = stateValue == 'reset'? '': groupSearchTerm
+      setIsLoadingComboData(true)
 
-          return listSelectData
+      const response = await api.post<CustomerGroup[]>('/Clientes/ListarGrupoClientes', {
+        filterClause: filter,
+        token: tokenapi,
+      });
+
+      const listSelectData: SelectData[] = []; //
+    
+      response.data.map((item) => {
+        listSelectData.push({
+          id: item.id, 
+          label:item.value
         })
 
-      setCustomerGroup(listSelectData)
-      setIsLoadingComboData(false)
+        return listSelectData
+      })
 
-      } catch (err) {
-        console.log(err);
-      }
-    }
-    
-    const layoutOptions = [
-      { label: 'Lista Simples', id: 'Birthdaysimple'},
-      { label: 'Excel', id: 'Birthdayexcel'}
-    ]
-  
-    const monthBirthday = [
-      { label: 'Mês Atual', id: 'currentMonth'},
-      { label: 'Próximo Mês', id: 'nextMonth'},
-      { label: 'Selecionar datas', id: 'custom'}
-    ]
-    
-    const handleLoadGroups = (item: any) => {
-    
-      if (item){
-        setCustomerGroupValue(item.label)
-        setCustomerGroupId(item.id)
-      }else{
-        setCustomerGroupId('')
-        setCustomerGroupValue('')
-        LoadGroups('')
-      }
-    }
+    setCustomerGroup(listSelectData)
+    setIsLoadingComboData(false)
 
-    const handleTypeLayout = (item: any) => {
-    
-      if (item){
-        setReportLayout(item.id)
-      }else{
-        setCustomerGroupValue('')
-      }
+    } catch (err) {
+      console.log(err);
     }
+  }
 
-    const handleBirthdayMonth = (item: any) => {
     
-      if (item){
-        
-        setReportBirthday(item.id)
-      }else{
-        setReportBirthday('')
-      }
+  const handleLoadGroups = (item: any) => {
+    if (item){
+      setCustomerGroupValue(item.label)
+      setCustomerGroupId(item.id)
     }
-
-    const handleStartMonth = (item: any) => {
-    
-      if (item){
-        setReportInitialDate(item.id)
-      }else{
-        setReportInitialDate('')
-      }
+    else{
+      setCustomerGroupId('')
+      setCustomerGroupValue('')
+      LoadGroups('')
     }
+  }
 
-    const handleEndMonth = (item: any) => {
-    
-      if (item){
-        setReportEndDate(item.id)
-      }else{
-        setReportEndDate('')
-      }
+
+  const handleTypeLayout = (item: any) => {
+    if (item){
+      setReportLayout(item.id)
     }
+    else{
+      setCustomerGroupValue('')
+    }
+  }
 
-    const [buttonText, setButtonText] = useState("Gerar Relatório");
-    const changeText = (text) => setButtonText(text);
+
+  const ActiveCustomerOptions = (item: any) => {
+    if (item){
+      setActiveCustomer(item.id)
+    }
+    else{
+      setActiveCustomer('')
+    }
+  }
+
+
+  const handleBirthdayMonth = (item: any) => {
+    if (item){
+      setReportBirthday(item.id)
+    }
+    else{
+      setReportBirthday('')
+    }
+  }
+
+
+  const handleStartMonth = (item: any) => {
+    if (item){
+      setReportInitialDate(item.id)
+    }
+    else{
+      setReportInitialDate('')
+    }
+  }
+
+
+  const handleEndMonth = (item: any) => {
+     if (item){
+      setReportEndDate(item.id)
+    }
+    else{
+      setReportEndDate('')
+    }
+  }
+
+
+  const [buttonText, setButtonText] = useState("Gerar Relatório");
+  const changeText = (text) => setButtonText(text);
 
   return (
     <Modal
@@ -297,8 +302,7 @@ export default function BirthdayModal() {
             />
           </AutoCompleteSelect>
 
-
-          <AutoCompleteSelect style={{width:'186%'}} className='selectData'>
+          <AutoCompleteSelect className='selectData'>
             <p>Aniversário</p>
             <Select
               isSearchable   
@@ -309,44 +313,52 @@ export default function BirthdayModal() {
               options={monthBirthday}
             />
           </AutoCompleteSelect>
+
+          <AutoCompleteSelect className='autoSelect'>
+            <p>Ativo</p>
+            <Select
+              isSearchable
+              isClearable
+              styles={selectStyles}         
+              placeholder="Selecione"
+              onChange={(item) => ActiveCustomerOptions(item)}
+              options={ActiveOptions}
+            />
+          </AutoCompleteSelect>
          
           {reportBirthday !== 'custom' ? (
               null
-         ) : (
-           <>
-             <br />
-             
-             <AutoCompleteSelect className='selectData'>
-               <p>De:</p>
-               <Select
-                 isSearchable   
-                 placeholder="Selecione"
-                 styles={selectStyles}       
-                 defaultValue={months.filter(item => item.id ==="01")}
-                 onChange={(item) => handleStartMonth(item)}
-                 options={months}
-               />
-             </AutoCompleteSelect>
+            ) : (
+            <>
+              <AutoCompleteSelect className='selectData'>
+                <p>De:</p>
+                <Select
+                  isSearchable   
+                  placeholder="Selecione"
+                  styles={selectStyles}       
+                  defaultValue={months.filter(item => item.id ==="01")}
+                  onChange={(item) => handleStartMonth(item)}
+                  options={months}
+                />
+              </AutoCompleteSelect>
 
-             <AutoCompleteSelect className='selectData'>
-               <p>Até:</p>
-               <Select
-                 isSearchable   
-                 placeholder="Selecione"
-                 styles={selectStyles}       
-                 defaultValue={months.filter(item => item.id ==="01")}
-                 onChange={(item) => handleEndMonth(item)}
-                 options={months}
-               />
-             </AutoCompleteSelect>
-
-           </>
-         )}
+              <AutoCompleteSelect className='selectData'>
+                <p>Até:</p>
+                <Select
+                  isSearchable   
+                  placeholder="Selecione"
+                  styles={selectStyles}       
+                  defaultValue={months.filter(item => item.id ==="01")}
+                  onChange={(item) => handleEndMonth(item)}
+                  options={months}
+                />
+              </AutoCompleteSelect>
+            </>
+          )}
          
         </div>
 
       </Container>
-      
       <br />
 
       <div style={{marginLeft: '35%'}}>
@@ -365,4 +377,3 @@ export default function BirthdayModal() {
     </Modal>
   );
 };
-

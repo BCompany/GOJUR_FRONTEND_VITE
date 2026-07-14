@@ -2353,7 +2353,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                   value={appointmentObs}
                   onChange={handleNewObs}
                   style={{ overflow: 'auto' }}
-                  maxLength={1000}
+                  maxLength={2000}
                 />
 
                 <Process>
@@ -3194,7 +3194,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                   value={appointmentObs}
                   onChange={handleNewObs}
                   style={{ overflow: 'auto' }}
-                  maxLength={1000}
+                  maxLength={2000}
                 />
 
                 <Process>

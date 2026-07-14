@@ -98,6 +98,7 @@ export default function Customer() {
   const [customerSCtps , setCustomerSCtps] = useState(''); //  field Serie Ctps
   const [customerSalary , setCustomerSalary] = useState<number>(); //  field Salário
   const [customerIE , setCustomerIE] = useState(''); //  field numero insc estadual
+  const [passwordGovBR , setPasswordGovBR] = useState(''); // senha do GOV.BR
   const [groupSearchTerm , setGroupSearchTerm] = useState('');
   const [salesChannelSearchTerm , setSalesChannelSearchTerm] = useState('');
   const [customerObs , setCustomerObs] = useState(''); //  field observação
@@ -268,6 +269,7 @@ export default function Customer() {
       setCustomerInss(response.data.num_BeneficioINSS)
       setCustomerCtps(response.data.num_CTPS)
       setCustomerSCtps(response.data.num_SerieCTPS)
+      setPasswordGovBR(response.data.cod_SenhaGOVBR)
       setCustomerSalary(response.data.vlr_UltimoSalario)
       setCustomerStatus(response.data.flg_Status)
 
@@ -648,6 +650,7 @@ export default function Customer() {
         des_Profissao: customerProf, // profissão
         num_CTPS: customerCtps,
         num_SerieCTPS: customerSCtps,
+        cod_SenhaGOVBR: passwordGovBR,
         vlr_UltimoSalario: customerSalary,
         num_BeneficioINSS: customerInss,
         num_PIS: customerPis,
@@ -704,7 +707,7 @@ export default function Customer() {
       localStorage.removeItem('@GoJur:businessCustomerId')
     }
 
-  },[customerAbertura, customerNasc, customerAddress, customerLegalPerson, customer.cod_Pessoa, customer.tpo_Telefone01, customer.num_Telefone01, customer.tpo_Telefone02, customer.num_Telefone02, customer.cod_PessoaFisica, customer.cod_Cliente, customer.cod_PessoaJuridica, customer.cod_SistemaUsuarioEmpresa, customer.doubleCheck, customer.cod_Empresa, customerName, customerFantasia, customerEmail, customerSenha, customerGroupId, customerGroupValue, customerNacionalidade, customerType, customerNumDoc, customerWhatsapp, customerRg, customerSex, customerECivil, customerProf, customerCtps, customerSCtps, customerInss, customerPis, customerPai, customerMae, customerRepresent, customerObs, customerIE, customerEmailFinanAdd, customerRef, customerSalesChannelId, customerStatus, customerStartDate, customerSalary, addToast, history]);
+  },[customerAbertura, customerNasc, customerAddress, customerLegalPerson, customer.cod_Pessoa, customer.tpo_Telefone01, customer.num_Telefone01, customer.tpo_Telefone02, customer.num_Telefone02, customer.cod_PessoaFisica, customer.cod_Cliente, customer.cod_PessoaJuridica, customer.cod_SistemaUsuarioEmpresa, customer.doubleCheck, customer.cod_Empresa, customerName, customerFantasia, customerEmail, customerSenha, customerGroupId, customerGroupValue, customerNacionalidade, customerType, customerNumDoc, customerWhatsapp, customerRg, customerSex, customerECivil, customerProf, customerCtps, customerSCtps, passwordGovBR, customerInss, customerPis, customerPai, customerMae, customerRepresent, customerObs, customerIE, customerEmailFinanAdd, customerRef, customerSalesChannelId, customerStatus, customerStartDate, customerSalary, addToast, history]);
 
 
   const handleSaveWithDoubleCheck = useCallback(async() => {
@@ -741,6 +744,7 @@ export default function Customer() {
         des_Profissao: customerProf, // profissão
         num_CTPS: customerCtps,
         num_SerieCTPS: customerSCtps,
+        passwordGovBR: passwordGovBR,
         vlr_UltimoSalario: customerSalary,
         num_BeneficioINSS: customerInss,
         num_PIS: customerPis,
@@ -782,7 +786,7 @@ export default function Customer() {
       }
     }
 
-  },[addToast, customer.cod_Cliente, customer.cod_Pessoa, customer.cod_PessoaFisica, customer.cod_PessoaJuridica, customer.cod_SistemaUsuarioEmpresa, customer.num_Telefone01, customer.num_Telefone02, customer.tpo_Telefone01, customer.tpo_Telefone02, customerAbertura, customerAddress, customerCtps, customerECivil, customerEmail, customerEmailFinanAdd, customerFantasia, customerGroupId, customerGroupValue, customerIE, customerInss, customerLegalPerson, customerMae, customerNacionalidade, customerName, customerNasc, customerNumDoc, customerObs, customerPai, customerPis, customerProf, customerRef, customerRepresent, customerRg, customerSCtps, customerSalary, customerSenha, customerSex, customerType, customerWhatsapp, history]);
+  },[addToast, customer.cod_Cliente, customer.cod_Pessoa, customer.cod_PessoaFisica, customer.cod_PessoaJuridica, customer.cod_SistemaUsuarioEmpresa, customer.num_Telefone01, customer.num_Telefone02, customer.tpo_Telefone01, customer.tpo_Telefone02, customerAbertura, customerAddress, customerCtps, customerECivil, customerEmail, customerEmailFinanAdd, customerFantasia, customerGroupId, customerGroupValue, customerIE, customerInss, customerLegalPerson, customerMae, customerNacionalidade, customerName, customerNasc, customerNumDoc, customerObs, customerPai, customerPis, customerProf, customerRef, customerRepresent, customerRg, customerSCtps, passwordGovBR, customerSalary, customerSenha, customerSex, customerType, customerWhatsapp, history]);
 
 
   const handleDeletePassword = () => {
@@ -2023,6 +2027,16 @@ export default function Customer() {
                         />
                       </label>
 
+                      <label htmlFor="govBR">
+                        Senha GOV.BR
+                        <input
+                          type="text"
+                          value={passwordGovBR}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => setPasswordGovBR(e.target.value)}
+                          maxLength={200}
+                        />
+                      </label>
+
                       <label htmlFor="sctps">
                         Último Salário
                         <IntlCurrencyInput
@@ -2092,6 +2106,16 @@ export default function Customer() {
                         value={customerIE}
                         onChange={(e: ChangeEvent<HTMLInputElement>) => setCustomerIE(e.target.value)}
                         maxLength={15}
+                      />
+                    </label>
+
+                    <label htmlFor="govBR">
+                      Senha GOV.BR
+                      <input
+                        type="text"
+                        value={passwordGovBR}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => setPasswordGovBR(e.target.value)}
+                        maxLength={200}
                       />
                     </label>
                   </>

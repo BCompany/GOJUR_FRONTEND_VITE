@@ -7,13 +7,14 @@ interface headerProps {
 
 export const ContainerHeader = styled.div<headerProps>`
   width: 100%;
-  height: 1.5rem;
-  background: rgba(0, 0, 0, 0.1);
+  height: 2rem;
+  background: #eef4fb;
   color: var(--primary);
   display: flex;
   align-items: center;
   justify-content: space-between;
   transition: 0.3s all;
+  border-bottom: 1px solid rgba(44, 142, 214, 0.12);
 
   > div {
     flex: 1;
@@ -22,11 +23,15 @@ export const ContainerHeader = styled.div<headerProps>`
     justify-content: center;
 
       > p {
-        font-family: montserrat;
-        font-weight: normal;
-        font-size: 0.75rem;
-        line-height: 1.2px;
-        padding: 20px;
+        font-family: Montserrat;
+        font-weight: 500;
+        font-size: 0.72rem;
+        line-height: 1.2;
+        color: var(--blue-twitter);
+        padding: 0 0.5rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       div{

@@ -46,6 +46,7 @@ export const Wrapper = styled.div`
   overflow: auto;
   margin-top: 16px;
   position: relative;
+  background: var(--gray);
   
   ::-webkit-scrollbar {
     width: 6px;
@@ -81,7 +82,7 @@ export const Content = styled.div<propsMove>`
   cursor: ${props => (props.isDraggable ? 'move' : 'default')}; 
   //cursor:$props
   border-radius: 6px;
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.45);
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.12);
 
   ::-webkit-scrollbar {
     width: 6px;

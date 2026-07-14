@@ -10,7 +10,8 @@ import { format } from 'date-fns';
 import { useIndicators } from 'context/indicators';
 import { FiBell } from 'react-icons/fi';
 import { AlertsData, AlertsDataDTO, PublicacaoProps, PublicationData } from 'pages/Dashboard/MainViewContent/pages/Interfaces/IPublication';
-import {Container, PublicationContent,AlertBox,AlertCard,PublicationBox,PublicationCard, ContainerHeader } from './styles';
+/*import {Container, PublicationContent,AlertBox,AlertCard,PublicationBox,PublicationCard, ContainerHeader } from './styles';*/
+import {Container, PublicationContent,PublicationCard, ContainerHeader } from './styles';
 import { useHeader } from 'context/headerContext';
 
 import { FaEye } from "react-icons/fa";
@@ -146,7 +147,23 @@ const Publicacoes: React.FC<PublicacaoProps> = ({ title, idElement, visible, act
               </div>
           </ContainerHeader> 
           <PublicationContent>
-            {/* RENDERIZAÇÃO DOS CARDS DE COMPROMISSO */}
+
+
+
+
+
+
+
+
+
+
+     {/* RENDERIZAÇÃO DOS CARDS DE COMPROMISSO */}
+            {/* 
+             
+             **** Removido osbox alerta do widget "Publicações/Alertas" - colocamos apenas as publicações direto no widget
+             ***  sem 2 subdivisões - código abaixo mantido caso seja necessário retornar
+             ***  Remover código abaixo após 60 dias - Marcelo 25/06/2026 
+             ***
 
             <AlertBox>
               <header>Alertas</header>
@@ -172,10 +189,6 @@ const Publicacoes: React.FC<PublicacaoProps> = ({ title, idElement, visible, act
                   >
                     <h4>Ver Detalhes</h4>
                     <>
-                      {/* <img
-                        src="https://homo.gojur.com.br///Resources/Company/Id_33/User/bcompany-logo.jpg"
-                        alt="avatar"
-                      /> */}
                       <div>
                         <h5>
                           {alert.alertDescription}
@@ -230,7 +243,6 @@ const Publicacoes: React.FC<PublicacaoProps> = ({ title, idElement, visible, act
                             :&nbsp;
                             {item.matterNumber}
                           </p>
-                          {/* <FiMoreVertical /> */}
                         </article>
                         <div>
                           <p>
@@ -254,16 +266,56 @@ const Publicacoes: React.FC<PublicacaoProps> = ({ title, idElement, visible, act
                   </PublicationCard>
                 ))}
               </div>
-              {/* <button type="button" className="buttonLinkClick" onClick={handleMore}>
-                Mais publicações
-              </button> */}
-
               <button type="button" className='buttonLinkClick' onClick={() => handleMore()}>
                 <FaSearchPlus />
                 Mais publicações
               </button>
                           
             </PublicationBox>
+            */}
+
+            {publication.length === 0 && (
+              <p style={{ fontSize: 13, color: '#7d7d7d', textAlign: 'center', padding: '16px 0' }}>
+                Não há publicações para o dia de hoje
+              </p>
+            )}
+            {publication.map(item => (
+              <PublicationCard
+                key={item.id}
+                visible={item.read}
+                styles={item.withMatter}
+                onClick={() => { handleDetailModal(item.id); }}
+              >
+                <div>
+                  <article>
+                    <p>
+                      <b>Processo</b>
+                      :&nbsp;
+                      {item.matterNumber}
+                    </p>
+                  </article>
+                  <div>
+                    <p>
+                      <b>Publicação</b>:&nbsp;
+                      {format(new Date(item.publicationDate), 'dd/MM/yyyy')}
+                    </p>
+                    <p>
+                      <b>Divulgação</b>:&nbsp;
+                      {format(new Date(item.releaseDate), 'dd/MM/yyyy')}
+                    </p>
+                  </div>
+                  <section>
+                    <article>
+                      <p>{item.description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()}</p>
+                    </article>
+                  </section>
+                </div>
+              </PublicationCard>
+            ))}
+            <button type="button" className='buttonLinkClick' onClick={() => handleMore()}>
+              <FaSearchPlus />
+              Mais publicações
+            </button>
           </PublicationContent>
         </Container>
       ) : (
@@ -272,127 +324,50 @@ const Publicacoes: React.FC<PublicacaoProps> = ({ title, idElement, visible, act
               <div style= {{ display:'flex', width:"100%", height:"100%", alignItems: "center", justifyContent: "center", textAlign: "center",...rest}} >
                 <p style={{ margin: 0}}>{title}</p>
               </div>
-          </ContainerHeader> 
+          </ContainerHeader>
           <PublicationContent>
-            {/* RENDERIZAÇÃO DOS CARDS DE COMPROMISSO */}
-
-            <AlertBox>
-              <header>Alertas</header>
-
-              <div>
-                {alerts.length === 0 && (
-                  <p
-                    style={{
-                      fontSize: 14,
-                      color: '#202327',
-                      width: '100%',
-                      textAlign: 'center',
-                    }}
-                  >
-                    Não há alertas para o dia de hoje
-                  </p>
-                )}
-                {alerts.map(alert => (
-                  <AlertCard
-                    key={alert.eventId}
-                    onHover={isHover}
-                    onClick={() => isOpenModal(alert.eventId.toString())}
-                  >
-                    <h4>Ver Detalhes</h4>
-                    <>
-                      {/* <img
-                        src="https://homo.gojur.com.br///Resources/Company/Id_33/User/bcompany-logo.jpg"
-                        alt="avatar"
-                      /> */}
-                      <div>
-                        <h5>
-                          {alert.alertDescription}
-                          <FiBell title={alert.alertTitle} />
-                        </h5>
-
-                        <section>
-                          <p id="description">{alert.description}</p>
-                        </section>
-                      </div>
-                    </>
-                  </AlertCard>
-                ))}
-              </div>
-            </AlertBox>
-
-            <PublicationBox>
-              <header>Publicações</header>
-
-              <div>
-                {publication.length === 0 && (
-                  <p
-                    style={{
-                      fontSize: 14,
-                      color: '#202327',
-                      textAlign: 'center',
-                      flex: 1,
-                      fontWeight: 400,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      padding: 16,
-                    }}
-                  >
-                    Não há publicações para o dia de hoje
-                  </p>
-                )}
-                {publication.map(item => (
-                  <PublicationCard
-                    key={item.id}
-                    visible={item.read}
-                    styles={item.withMatter}
-                    onClick={() => {
-                      handleDetailModal(item.id);
-                    }}
-                  >
-                    <>
-                      <div>
-                        <article>
-                          <p>
-                            <b>Processo</b>
-                            :&nbsp;
-                            {item.matterNumber}
-                          </p>
-                          {/* <FiMoreVertical /> */}
-                        </article>
-                        <div>
-                          <p>
-                            <b>Publicação</b>: &nbsp;
-                            {format(new Date(item.publicationDate), 'dd/MM/yyyy')}
-                          </p>
-                          <p>
-                            <b>Divulgação</b>
-                            :&nbsp;
-                            {format(new Date(item.releaseDate), 'dd/MM/yyyy')}
-                          </p>
-                        </div>
-
-                        <section>
-                          <article>
-                            {/* <div dangerouslySetInnerHTML={{ __html: item.description }} /> */}
-                            <p>{item.description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()}</p>
-                          </article>
-                        </section>
-                      </div>
-                    </>
-                  </PublicationCard>
-                ))}
-              </div>
-              {/* <button type="button" className="buttonLinkClick" onClick={handleMore}>
-                Mais publicações
-              </button> */}
-
-              <button type="button" className='buttonLinkClick' onClick={() => handleMore()}>
-                <FaSearchPlus />
-                Mais publicações
-              </button>
-                          
-            </PublicationBox>
+            {publication.length === 0 && (
+              <p style={{ fontSize: 13, color: '#7d7d7d', textAlign: 'center', padding: '16px 0' }}>
+                Não há publicações para o dia de hoje
+              </p>
+            )}
+            {publication.map(item => (
+              <PublicationCard
+                key={item.id}
+                visible={item.read}
+                styles={item.withMatter}
+                onClick={() => { handleDetailModal(item.id); }}
+              >
+                <div>
+                  <article>
+                    <p>
+                      <b>Processo</b>
+                      :&nbsp;
+                      {item.matterNumber}
+                    </p>
+                  </article>
+                  <div>
+                    <p>
+                      <b>Publicação</b>:&nbsp;
+                      {format(new Date(item.publicationDate), 'dd/MM/yyyy')}
+                    </p>
+                    <p>
+                      <b>Divulgação</b>:&nbsp;
+                      {format(new Date(item.releaseDate), 'dd/MM/yyyy')}
+                    </p>
+                  </div>
+                  <section>
+                    <article>
+                      <p>{item.description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()}</p>
+                    </article>
+                  </section>
+                </div>
+              </PublicationCard>
+            ))}
+            <button type="button" className='buttonLinkClick' onClick={() => handleMore()}>
+              <FaSearchPlus />
+              Mais publicações
+            </button>
           </PublicationContent>
         </Container>
       )}

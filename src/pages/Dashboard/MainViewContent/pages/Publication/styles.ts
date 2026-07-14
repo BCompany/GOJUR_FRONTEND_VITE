@@ -1,5 +1,4 @@
 import styled from 'styled-components';
-import { MultiSelect } from 'react-multi-select-component';
 
 interface MenuProps {
   open: boolean;
@@ -590,31 +589,153 @@ export const MenuItem = styled.div<MenuProps>`
   }
 `;
 
-export const Multi = styled(MultiSelect)`
+
+export const CustomMultiSelect = styled.div`
+  position: relative;
   font-size: 0.7rem;
-  background-color: var(--white);
-  color: var(--primary);
   margin-right: 5px;
+  outline: 0;
+  background-color: var(--white);
+  border: 1px solid #ccc;
+  border-radius: 4px;
 
-  .dropdown-heading {
-    min-width: 13vw;
-    height: 1.6rem;
+  &:focus-within {
+    box-shadow: #4285f4 0 0 0 1px;
+    border-color: #4285f4;
   }
 
-  svg:first-child {
-    margin-left: 40px;
-    width: 21px;
-    height: 20px;
-    margin-top: -25px;
-    position: absolute;
-  }
-
-  &::placeholder {
+  .trigger {
     color: var(--primary);
+    height: 1.6rem;
+    min-width: 13vw;
+    max-width: 22vw;
+    padding: 0 10px;
+    cursor: default;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    overflow: hidden;
+    background: none;
+    border: none;
+    outline: 0;
+
+    .heading-value {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+      text-align: left;
+    }
+
+    .arrow {
+      margin-left: 6px;
+      font-size: 0.6rem;
+      flex-shrink: 0;
+      color: #aaa;
+    }
   }
 
-  &:focus {
-    border: none;
+  .dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    padding-top: 8px;
+    z-index: 200;
+    width: 100%;
+    min-width: max-content;
+
+    .panel-content {
+      overflow: visible;
+      border-radius: 4px;
+      background: var(--white);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 4px 11px rgba(0, 0, 0, 0.1);
+
+      label {
+        box-sizing: border-box;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 10px;
+        color: var(--primary);
+        white-space: nowrap;
+
+        &:hover {
+          background: #f1f3f5;
+        }
+
+        input[type='checkbox'] {
+          margin: 0;
+          cursor: pointer;
+        }
+      }
+    }
+
+    .sub-item {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+      cursor: pointer;
+      color: var(--primary);
+      white-space: nowrap;
+
+      &:hover {
+        background: #f1f3f5;
+      }
+
+      em {
+        font-style: normal;
+        font-size: 0.65rem;
+        color: #aaa;
+      }
+
+      .sub-arrow {
+        font-size: 0.55rem;
+        margin-left: 8px;
+        flex-shrink: 0;
+        color: #aaa;
+      }
+
+      .sub-dropdown {
+        position: absolute;
+        left: 100%;
+        top: 0;
+        padding-top: 0;
+        z-index: 201;
+        min-width: 140px;
+
+        .panel-content {
+          overflow: visible;
+          border-radius: 4px;
+          background: var(--white);
+          box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 4px 11px rgba(0, 0, 0, 0.1);
+
+          label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            padding: 10px;
+            color: var(--primary);
+            white-space: nowrap;
+
+            &:hover {
+              background: #f1f3f5;
+            }
+
+            input[type='checkbox'] {
+              margin: 0;
+              cursor: pointer;
+            }
+          }
+        }
+        }
+      }
+    }
   }
 `;
 
