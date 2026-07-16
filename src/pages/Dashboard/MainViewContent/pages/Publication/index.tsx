@@ -621,7 +621,22 @@ const Publication: React.FC = () => {
   }
 
 
-  const handleToggleMultiFilterItem = (item: filterProps) => {
+  const handleToggleMultiFilterItem = (item: filterProps, checkBox: boolean) => {
+    if(checkBox)
+    {
+      let text;
+      if(item.value == "itemSearch_estadualFederal")
+        text = "EVT_CNTFILTROCIVELFED";
+      if(item.value == "itemSearch_trabalhista")
+        text = "EVT_CNTFILTROTRABALHISTA";
+      if(item.value == "itemSearch_eleitoral")
+        text = "EVT_CNTFILTROELEITORAL";
+      if(item.value == "itemSearch_militar")
+        text = "EVT_CNTFILTROMILITAR";
+      
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: text})
+    }
+    
     setMultiFilter(prev => {
       const exists = prev.some(f => f.value === item.value)
       return exists ? prev.filter(f => f.value !== item.value) : [...prev, item]
@@ -1939,7 +1954,7 @@ const Publication: React.FC = () => {
                         <input
                           type="checkbox"
                           checked={multiFilter.some(f => f.value === opt.value)}
-                          onChange={() => handleToggleMultiFilterItem(opt)}
+                          onChange={(e) => handleToggleMultiFilterItem(opt, e.target.checked)}
                         />
                         {opt.label}
                       </label>
@@ -1964,7 +1979,7 @@ const Publication: React.FC = () => {
                                 <input
                                   type="checkbox"
                                   checked={multiFilter.some(f => f.value === opt.value)}
-                                  onChange={() => handleToggleMultiFilterItem(opt)}
+                                  onChange={(e) => handleToggleMultiFilterItem(opt, e.target.checked)}
                                 />
                                 {opt.label}
                               </label>

@@ -1287,11 +1287,15 @@ const Calendar: React.FC = () => {
   };
 
   const handleOpenDeadLineCalculator = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_AGECALCULADORAPRAZO'})
+    
     handleDetailsAnyType(null);
     handlePublicationModal('Calc');
   };
 
   const handleWorkflow = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_AGEWORKFLOW'})
+
     localStorage.setItem('@Gojur:calendarRedirect', 'S')
 
     localStorage.removeItem('@Gojur:publicationId');
@@ -1309,7 +1313,6 @@ const Calendar: React.FC = () => {
       history.push(`/workflowexec/kanban`)
 
   };
-
 
 
   const buttonsCalendarLabel = {
@@ -1380,7 +1383,6 @@ const Calendar: React.FC = () => {
     [selectDateStart],
   );
 
-
   useEffect(() => {
     LoadDefaultProps();
 
@@ -1408,7 +1410,6 @@ const Calendar: React.FC = () => {
     }
   }
 
-
   const handleSubjectChange = (item) => {
     if (item) {
       setAppointmentSubject(item.label)
@@ -1421,12 +1422,27 @@ const Calendar: React.FC = () => {
     }
   }
 
-
   const [open, setOpen] = useState(false)
   const [multiFilter1, setMultiFilter1] = useState<string[]>([])
 
+  const toggle = (value: string, checkBox: boolean) => {
+    if(checkBox)
+    {
+      let text;
+      if(value == "S_A")
+        text = "EVT_AGEFILTROAUDIENCIA";
+      if(value == "S_P")
+        text = "EVT_AGEFILTROPRAZO";
+      if(value == "U_R")
+        text = "EVT_AGEFILTRORESPONSAVEL";
+      if(value == "U_RC")
+        text = "EVT_AGEFILTRORESPCOMPART";
+      if(value == "PE")
+        text = "EVT_AGEFILTROPENDENTE";
+      
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: text})
+    }
 
-  const toggle = (value: string) => {
     setMultiFilter1(prev =>
       prev.includes(value)
         ? prev.filter(v => v !== value)
@@ -1482,10 +1498,6 @@ const Calendar: React.FC = () => {
 
   }, [appointmentSubject], 1000)
 
-
-//const handleEventsSet = (events: EventApi[]) => {
-//  console.log('Total de eventos visíveis:', events.length)
-//}
 
   return (
     <>

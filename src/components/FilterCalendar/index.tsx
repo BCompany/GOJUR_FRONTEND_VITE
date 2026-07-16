@@ -24,7 +24,7 @@ interface FilterCalendarProps {
   optionsCalendarFilter: ICalendarFilterOption[]
   multiFilter: { value: string; label: string }[]
   selectedFilterValues: string[]
-  onToggleFilter: (value: string) => void
+  onToggleFilter: (value: string, checkBox: boolean) => void
   optionsSubject: ISelectValues[]
   appointmentSubjectId: string
   appointmentSubject: string
@@ -73,8 +73,8 @@ const FilterCalendar: React.FC<FilterCalendarProps> = ({
               <input
                 type="checkbox"
                 checked={selectedFilterValues.includes(opt.value)}
-                onChange={() => {
-                  onToggleFilter(opt.value)
+                onChange={(e) => {
+                  onToggleFilter(opt.value, e.target.checked)
                   setIsLoadingSearch(showSearchList)
                   setIsLoading(!showSearchList)
                 }}
