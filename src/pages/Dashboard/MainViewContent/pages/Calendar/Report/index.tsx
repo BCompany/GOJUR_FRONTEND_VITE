@@ -415,6 +415,7 @@ const CalendarReport: React.FC = () => {
 
 
   useEffect(() => {
+    SaveUserNavigationLog()
     LoadSubjects('reset')
     LoadCustomerGroup()
     LoadCustomer()
@@ -426,6 +427,11 @@ const CalendarReport: React.FC = () => {
     LoadStates()
     LoadUserFilters()
   },[])
+
+
+  const SaveUserNavigationLog = async (stateValue?: string) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_AGERELCOMPROMISSO'})
+  }
   
 
   // REPORT FIELDS - GET API DATA
