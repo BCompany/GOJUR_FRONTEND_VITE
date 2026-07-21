@@ -10,6 +10,7 @@ import Select from 'react-select';
 import { selectStyles, useDelay } from 'Shared/utils/commonFunctions';
 import { IComboData } from 'pages/Dashboard/MainViewContent/pages/Financeiro/Account/Modal';
 import { useModal } from 'context/modal';
+import { v4 as uuidv4 } from 'uuid';
 import FilterCalendar, { ISelectValues } from 'components/FilterCalendar';
 import api from 'services/api';
 import {
@@ -31,6 +32,13 @@ import {
   PhaseColumn,
   PhaseHeader,
 } from './styles';
+import { ItemBox } from '../Matter/InvertParts/styles';
+import { IParameterData } from '../Calendar';
+import { Underline } from 'ckeditor5';
+// import { useSecurity } from 'context/securityContext';
+// import { Console } from 'console';
+// import { set } from 'date-fns';
+// import { Description } from '../Dashboard/resorces/DashboardComponents/Publicacoes/PublicationDetail/styles';
 
 /* ─── Interfaces ─── */
 
@@ -57,63 +65,71 @@ interface IPanel {
   name: string;
 }
 
+interface IPhasePagination
+{
+  phaseId: number | any;
+  lastIdEvent: number | any;
+  lastDateEvent: Date | any;
+  lastIdRecurrency: number | any;
+  lastDateRecurrency: number | any;
+}
+
 /* ─── Colors for auto-assignment ─── */
 const PHASE_COLORS = [
-  '#ffc9c9',
-  '#fde68a',
-  '#bbf7d0',
-  '#bfdbfe',
-  '#e9d5ff',
-  '#fed7aa',
-  '#a5f3fc',
+  // '#ffc9c9',
+  // '#fde68a',
+  // '#bbf7d0',
+  // '#bfdbfe',
+  // '#e9d5ff',
+  // '#fed7aa',
+  // '#a5f3fc',
 ];
 
 let nextId = 100;
 const uid = () => ++nextId;
 
 /* ─── Initial demo data ─── */
-const INITIAL_PANELS: IPanel[] = [
-  { id: 1, name: 'Agenda Geral' },
-  { id: 2, name: 'Audiências' },
-];
+//const INITIAL_PANELS: IPanel[] = [
+  // { id: 1, name: 'Agenda Geral' },
+  // { id: 2, name: 'Audiências' },
+//];
 
-const INITIAL_PHASES: IPhase[] = [
-  { id: 1, panelId: 1, name: 'Aguardando', color: '#ffc9c9', order: 0 },
-  { id: 2, panelId: 1, name: 'Fazendo', color: '#fde68a', order: 1 },
-  { id: 3, panelId: 1, name: 'Concluído', color: '#bbf7d0', order: 2 },
-  { id: 4, panelId: 2, name: 'A Realizar', color: '#bfdbfe', order: 0 },
-  { id: 5, panelId: 2, name: 'Realizado', color: '#bbf7d0', order: 1 },
-];
+//const INITIAL_PHASES: IPhase[] = [
+  // { id: 1, panelId: 1, name: 'Aguardando', color: '#ffc9c9', order: 0 },
+  // { id: 2, panelId: 1, name: 'Fazendo', color: '#fde68a', order: 1 },
+  // { id: 3, panelId: 1, name: 'Concluído', color: '#bbf7d0', order: 2 },
+  // { id: 4, panelId: 2, name: 'A Realizar', color: '#bfdbfe', order: 0 },
+  // { id: 5, panelId: 2, name: 'Realizado', color: '#bbf7d0', order: 1 },
+//];
 
 const INITIAL_CARDS: ICard[] = [
-  {
-    id: 1,
-    phaseId: 1,
-    panelId: 1,
-    title: 'Audiência de conciliação',
-    description: 'Audiência de conciliação entre as partes. Comparecer com documentos originais.',
-    dateTime: '26/05 10:00',
-  },
-  {
-    id: 2,
-    phaseId: 2,
-    panelId: 1,
-    title: 'Prazo recursal',
-    description: 'Interpor recurso de apelação no prazo legal.',
-    dateTime: '28/05 17:00',
-  },
-  {
-    id: 3,
-    phaseId: 4,
-    panelId: 2,
-    title: 'Audiência de instrução',
-    description: 'Oitiva de testemunhas arroladas pelas partes.',
-    dateTime: '30/05 09:30',
-  },
+  // {
+  //   id: 1,
+  //   phaseId: 1,
+  //   panelId: 1,
+  //   title: 'Audiência de conciliação',
+  //   description: 'Audiência de conciliação entre as partes. Comparecer com documentos originais.',
+  //   dateTime: '26/05 10:00',
+  // },
+  // {
+  //   id: 2,
+  //   phaseId: 2,
+  //   panelId: 1,
+  //   title: 'Prazo recursal',
+  //   description: 'Interpor recurso de apelação no prazo legal.',
+  //   dateTime: '28/05 17:00',
+  // },
+  // {
+  //   id: 3,
+  //   phaseId: 4,
+  //   panelId: 2,
+  //   title: 'Audiência de instrução',
+  //   description: 'Oitiva de testemunhas arroladas pelas partes.',
+  //   dateTime: '30/05 09:30',
+  // },
 ];
 
 /* ─── Component ─── */
-
 export default function AgendaKanban() {
   const history = useHistory();
 
@@ -132,11 +148,11 @@ export default function AgendaKanban() {
   }, [handleCaptureTextPublication, handleDeadLineCalculatorText, handleModalActive, isOpenModal]);
 
   const optionsCalendarFilter = [
-    { value: 'S_A', label: 'Audiência' },
-    { value: 'S_P', label: 'Prazo' },
-    { value: 'U_R', label: 'Responsável' },
-    { value: 'U_RC', label: 'Responsável e Compartilhado' },
-    { value: 'PE', label: 'Apenas pendentes' },
+    { value: 'S_A',   label: 'Audiência' },
+    { value: 'S_P',   label: 'Prazo' },
+    { value: 'U_R',   label: 'Responsável' },
+    { value: 'U_RC',  label: 'Responsável e Compartilhado' },
+    { value: 'PE',    label: 'Apenas pendentes' },
   ];
 
   const token = localStorage.getItem('@GoJur:token');
@@ -146,10 +162,22 @@ export default function AgendaKanban() {
   const [optionsSubject, setOptionsSubject] = useState<ISelectValues[]>([]);
   const [appointmentSubject, setAppointmentSubject] = useState('');
   const [appointmentSubjectId, setAppointmentSubjectId] = useState('');
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
   const [filterTerm, setFilterTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isChangePeriod, setIsChangePeriod] = useState(false);
+  const [loadEvents, setLoadEvents] = useState(false);
   const [isLoadingSearch, setIsLoadingSearch] = useState(false);
   const [showSearchList] = useState(false);
+  const[phasePagination, setPhasePagination] = useState<IPhasePagination[]>([])
+
+  //const [panels, setPanels] = useState<IPanel[]>(INITIAL_PANELS);
+  const [activePanelId, setActivePanelId] = useState<number>();
+  const [panels, setPanels] = useState<IPanel[]>([]);
+  //const [phases, setPhases] = useState<IPhase[]>(INITIAL_PHASES);
+  const [phases, setPhases] = useState<IPhase[]>();
+  const [cards, setCards] = useState<ICard[]>(INITIAL_CARDS);
 
   const toggle = (value: string) => {
     setMultiFilter1(prev =>
@@ -157,12 +185,75 @@ export default function AgendaKanban() {
     );
   };
 
+  useEffect(() => 
+  {
+    setIsLoading(true)
+
+  },[])
+
+    useEffect(() => {
+      if (isLoading)
+      {
+        GetParameterValue()   // obtem o parametro com o tipo de filtro
+        LoadKanban();         // carrega o kanban em seguida as etapas e por fim os eventos
+        SaveLogNavigation();  // salva o log de navegação
+      }
+  },[isLoading])
+      
+ const SaveLogNavigation = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_AGENDAKANBAN'})
+
+    setIsLoading(false)
+  };
+
+  const LoadKanban = async () => {
+    try
+    {
+      // Carregar os paineis do kanban (tipos)
+    }
+    catch (err) {
+    }
+ };
+
+ const LoadKanbanEtapa = async (kanbanId: number) => {
+    try
+    {
+        // Carregar as Etapas do Kanban
+    }
+    catch (err) {
+    }
+ }
+
+ function updatePhasePagination(newData: IPhasePagination) {
+  setPhasePagination(prev => {
+    const exists = prev.find(p => p.phaseId === newData.phaseId);
+
+    if (!exists) 
+    {
+      return [...prev, newData];
+    } 
+    else 
+    {
+      return prev.map(p =>
+        p.phaseId === newData.phaseId ? { ...p, ...newData } : p
+      );
+    }
+  });
+}
+
+useEffect(() => {
+
+  //console.log('resultado paginação state', phasePagination)
+
+},[phasePagination])
+
   useEffect(() => {
     const mapped = optionsCalendarFilter
       .filter(opt => multiFilter1.includes(opt.value))
       .map(opt => ({ value: opt.value, label: opt.label }));
     setMultiFilter(mapped);
   }, [multiFilter1]);
+
 
   const LoadSubject = useCallback(async (reload = false, termSearch = '') => {
     try {
@@ -200,12 +291,8 @@ export default function AgendaKanban() {
     }
   };
 
-  const [panels, setPanels] = useState<IPanel[]>(INITIAL_PANELS);
-  const [phases, setPhases] = useState<IPhase[]>(INITIAL_PHASES);
-  const [cards, setCards] = useState<ICard[]>(INITIAL_CARDS);
-
-  const [activePanelId, setActivePanelId] = useState<number>(INITIAL_PANELS[0].id);
-
+  // const [activePanelId, setActivePanelId] = useState<number>(INITIAL_PANELS[0].id);
+  
   // Permission flags — connect to backend later
   const [permissions] = useState({
     canManagePanels: true,   // show "Painéis" button
@@ -218,12 +305,12 @@ export default function AgendaKanban() {
     { value: 'semana', label: 'Semana Atual' },
     { value: 'proxima_semana', label: 'Próxima Semana' },
     { value: 'proximo_mes', label: 'Próxima Mês' },
-    { value: '15 dias', label: '15 dias' },
+    { value: 'dias_15', label: '15 dias' },
     { value: 'ultima_semana', label: 'Última Semana' },
     { value: 'ultimo_mes', label: 'Último Mês' },
     { value: 'custom', label: 'Selecionar Período' },
   ];
-  const [selectedPeriod, setSelectedPeriod] = useState<IComboData>(PERIOD_OPTIONS[0]);
+  const [selectedPeriod, setSelectedPeriod] = useState<IComboData>();
   const [periodStart, setPeriodStart] = useState('');
   const [periodEnd, setPeriodEnd] = useState('');
   const [showDateModal, setShowDateModal] = useState(false);
@@ -252,17 +339,49 @@ export default function AgendaKanban() {
   const panelNameRef = useRef<HTMLInputElement>(null);
   const phaseNameRef = useRef<HTMLInputElement>(null);
 
+  const [activePhases, setActivePhases] = useState([] as IPhase[]);
+
+
   /* ── Derived ── */
   const activePanel = panels.find((p) => p.id === activePanelId);
-  const activePhases = phases
-    .filter((ph) => ph.panelId === activePanelId)
-    .sort((a, b) => a.order - b.order);
+  // const activePhases = phases
+  //   .filter((ph) => ph.panelId === activePanelId)
+  //   .sort((a, b) => a.order - b.order);
+
+
+
+  useEffect(() => {
+  // const [tempPeriodStart, setTempPeriodStart] = useState('');
+  // const [tempPeriodEnd, setTempPeriodEnd] = useState('');
+
+  },[tempPeriodStart, tempPeriodEnd])
 
   /* ── Panel actions ── */
-  const handleAddPanel = useCallback(() => {
+  const handleAddPanel = useCallback(async () => {
     const name = newPanelName.trim();
-    if (!name) return;
-    const newPanel: IPanel = { id: uid(), name };
+    if (!name) 
+    {
+      alert('validação toast descrição não informada')
+    }
+
+    try
+    {
+      var response = await api.post('/Kanban/Salvar', {
+        token,
+        Description: name
+      })      
+
+      console.log('TESTE RETORNO', response.data)
+
+    }
+     catch (err) {
+      console.log(err);
+    }
+    const newPanel: IPanel = { 
+      id: uid(), 
+      name 
+    };
+
     setPanels((prev) => [...prev, newPanel]);
     setActivePanelId(newPanel.id);
     setNewPanelName('');
@@ -401,14 +520,156 @@ export default function AgendaKanban() {
 
   /* ── Keyboard shortcuts ── */
   const onPanelKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleAddPanel();
-    if (e.key === 'Escape') { setShowAddPanel(false); setNewPanelName(''); }
+    if (e.key === 'Enter') 
+      handleAddPanel();
+    if (e.key === 'Escape') { 
+      setShowAddPanel(false);
+       setNewPanelName(''); 
+      }
   };
 
   const onPhaseKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleAddPhase();
     if (e.key === 'Escape') { setAddingPhaseForPanel(null); setNewPhaseName(''); }
   };
+
+  const handleChangeDate = item => {
+    setSelectedPeriod(item);
+    if (item.value === 'custom') {
+      const today = new Date();
+      const oneYearAgo = new Date(today);
+      oneYearAgo.setFullYear(today.getFullYear() - 1);
+      const fmt = (d: Date) => d.toISOString().slice(0, 10);
+      setTempPeriodStart(periodStart || fmt(oneYearAgo));
+      setTempPeriodEnd(periodEnd || fmt(today));
+      setShowDateModal(true);
+    }
+    else{
+      setIsChangePeriod(true);
+    }
+    
+  }  
+
+  const mappingSelectToParameter = {
+      mes_atual: "kanbanMonth",
+      semana: "kanbanWeek",
+      proxima_semana: "kanbanNextWeek",
+      proximo_mes: "kanbanNextMonth",
+      ultima_semana: "kanbanLastWeek",
+      ultimo_mes: "kanbanLastMonth",
+      dias_15: "kanban15dias",
+      custom: (startDate, endDate) => `kanbanPeriod=${startDate}to${endDate}`
+  };
+
+    const mappingParameterToSelect = {
+      kanbanMonth: "mes_atual",
+      kanbanWeek: "semana",
+      kanbanNextWeek: "proxima_semana",
+      kanbanNextMonth: "proximo_mes",
+      kanbanLastWeek: "ultima_semana",
+      kanbanLastMonth: "ultimo_mes",
+      kanban15dias: "dias_15",
+      custom: (startDate, endDate) => `kanbanPeriod=${startDate}to${endDate}`
+  };
+
+  function getKanbanParam(value, startDate, endDate) {
+    if (value === "custom") {
+      return mappingSelectToParameter.custom(startDate, endDate);
+    }
+
+    return mappingSelectToParameter[value];
+  }
+
+  function getSelectParamValue(value) {
+    return mappingParameterToSelect[value];
+  }
+  
+  const GetParameterValue = useCallback(async () => {
+
+      const response = await api.post<IParameterData[]>('/Parametro/Selecionar', {
+        token,
+        parametersName: '#CalendarView' 
+      })
+
+      var parameter = response.data[0];
+
+      if (parameter.parameterValue.includes('kanbanPeriod'))
+      {
+          const periodString = parameter.parameterValue.replace("kanbanPeriod=", "");
+          const [startDate, endDate] = periodString.split("to");
+          
+          setPeriodStart(startDate)
+          setPeriodEnd(endDate)
+
+          var comboValue = PERIOD_OPTIONS.find(x=> x.value =='custom')
+          setSelectedPeriod(comboValue);
+      }
+      else
+      {
+          var value = getSelectParamValue(parameter.parameterValue)
+          
+          if (value === undefined)
+            setSelectedPeriod(PERIOD_OPTIONS[0])
+          else
+          {
+            var comboValue = PERIOD_OPTIONS.find(x=> x.value == value)
+
+            setSelectedPeriod(comboValue);
+          }
+      }
+    
+  },[token])
+
+  useEffect(() => {  
+
+      if (selectedPeriod)
+      {
+        const parameterName = getKanbanParam(selectedPeriod.value, periodStart, periodEnd);
+
+        api.post('/Parametro/Salvar', {
+          token: token, 
+          parametersName: '#calendarView',
+          parameterType: 'P',
+          parameterValue: parameterName        
+        })
+      }
+
+  },[selectedPeriod]) 
+
+
+  // useEffect(() => {  
+
+  //   if (isChangePeriod) 
+  //   { 
+  //     const parameterName = getKanbanParam(selectedPeriod.value, periodStart, periodEnd);
+
+  //     api.post('/Parametro/Salvar', {
+  //       token: token, 
+  //       parametersName: '#calendarView',
+  //       parameterType: 'P',
+  //       parameterValue: parameterName        
+  //     })
+
+  //     setIsChangePeriod(false)
+  //   }
+
+  // },[isChangePeriod, periodStart, periodEnd]) 
+
+    useEffect(() => {  
+
+      if (selectedPeriod)
+      {
+        const parameterName = getKanbanParam(selectedPeriod.value, periodStart, periodEnd);
+
+        api.post('/Parametro/Salvar', {
+          token: token, 
+          parametersName: '#calendarView',
+          parameterType: 'P',
+          parameterValue: parameterName        
+        })
+      }
+
+  },[selectedPeriod]) 
 
   /* ── Render ── */
   return (
@@ -467,19 +728,7 @@ export default function AgendaKanban() {
                 styles={selectStyles}
                 options={PERIOD_OPTIONS}
                 value={selectedPeriod}
-                onChange={(opt) => {
-                  if (!opt) return;
-                  setSelectedPeriod(opt);
-                  if (opt.value === 'custom') {
-                    const today = new Date();
-                    const oneYearAgo = new Date(today);
-                    oneYearAgo.setFullYear(today.getFullYear() - 1);
-                    const fmt = (d: Date) => d.toISOString().slice(0, 10);
-                    setTempPeriodStart(periodStart || fmt(oneYearAgo));
-                    setTempPeriodEnd(periodEnd || fmt(today));
-                    setShowDateModal(true);
-                  }
-                }}
+                onChange={handleChangeDate}
               />
             </div>
           </div>
@@ -582,7 +831,10 @@ export default function AgendaKanban() {
                     <button
                       type="button"
                       className="buttonLinkClick"
-                      onClick={() => { setShowAddPanel(false); setNewPanelName(''); }}
+                      onClick={() => { 
+                        setShowAddPanel(false);
+                         setNewPanelName(''); 
+                      }}
                     >
                       <FiX size={12} />
                     </button>
@@ -640,6 +892,7 @@ export default function AgendaKanban() {
                     setPeriodStart(tempPeriodStart);
                     setPeriodEnd(tempPeriodEnd);
                     setShowDateModal(false);
+                    setIsChangePeriod(true)
                     const fmt = (s: string) => { const [, m, d] = s.split('-'); return `${d}/${m}`; };
                     setSelectedPeriod({ value: 'custom', label: `${fmt(tempPeriodStart)} - ${fmt(tempPeriodEnd)}` });
                   }}
