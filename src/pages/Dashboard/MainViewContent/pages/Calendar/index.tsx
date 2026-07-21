@@ -261,6 +261,11 @@ const Calendar: React.FC = () => {
     1000,
   );
 
+  useEffect(() => 
+  {
+    SaveLogNavigation();
+  },[])
+
   // LOAD FULL CALENDAR
   const LoadCalendar = useCallback(async (subjectIdParam?: number) => {
     try {
@@ -317,7 +322,6 @@ const Calendar: React.FC = () => {
           
       setTotalPeriod(total)
 
-
     } catch (err: any) {
       setIsLoading(false);
 
@@ -347,6 +351,12 @@ const Calendar: React.FC = () => {
   }, [appointmentSubjectId]);
 
 
+  const SaveLogNavigation = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_AGENDACALENDAR'})
+
+    setIsLoading(false)
+  };
+  
   // LOAD CALENDAR SEARCH VIEW
   const LoadCalendarSearch = useCallback(async () => {
     let filterItens = '';
