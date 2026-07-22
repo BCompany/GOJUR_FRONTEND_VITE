@@ -92,6 +92,7 @@ import {
 } from './styles';
 import CalendarReport from './Report';
 import CalendarExportConfig from './Export';
+import { IParameterData } from '../Interfaces/IMatter';
 
 
 export interface IDefaultsProps {
@@ -261,11 +262,6 @@ const Calendar: React.FC = () => {
     1000,
   );
 
-  useEffect(() => 
-  {
-    SaveLogNavigation();
-  },[])
-
   // LOAD FULL CALENDAR
   const LoadCalendar = useCallback(async (subjectIdParam?: number) => {
     try {
@@ -322,6 +318,7 @@ const Calendar: React.FC = () => {
           
       setTotalPeriod(total)
 
+
     } catch (err: any) {
       setIsLoading(false);
 
@@ -346,17 +343,20 @@ const Calendar: React.FC = () => {
 
 
   useEffect(() => {
+    GetParameterValue();
+    SaveLogNavigation();
+  }, []);
+
+  useEffect(() => {
     //alert('PASSO 1 ' + appointmentSubjectId);
     LoadCalendar(Number(appointmentSubjectId));
   }, [appointmentSubjectId]);
 
-
   const SaveLogNavigation = () => {
-    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_AGENDACALENDAR'})
-
-    setIsLoading(false)
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_AGENDACALENDAR'})
   };
-  
+
+
   // LOAD CALENDAR SEARCH VIEW
   const LoadCalendarSearch = useCallback(async () => {
     let filterItens = '';
@@ -533,6 +533,7 @@ const Calendar: React.FC = () => {
   }, [multiFilter]);
 
   useEffect(() => {
+
     LoadCalendar();
   }, [startDate, endDate]);
 
@@ -585,30 +586,30 @@ const Calendar: React.FC = () => {
           else setSharedParameter('R');
         }
 
-        if (item.parameterName == '#CALENDARVIEW') {
-          setViewParameter(item.parameterValue);
+        // if (item.parameterName == '#CALENDARVIEW') {
+        //   setViewParameter(item.parameterValue);
 
-          if (calendarRedirect == 'dayGridWeek') {
-            setDefaultView('dayGridWeek');
-            localStorage.removeItem('@GoJur:CalendarRedirect');
-          } else {
-            if (item.parameterValue == 'month') {
-              setDefaultView('dayGridMonth');
-            }
-            if (item.parameterValue == 'agendaWeek') {
-              setDefaultView('timeGridWeek');
-            }
-            if (item.parameterValue == 'basicWeek') {
-              setDefaultView('dayGridWeek');
-            }
-            if (item.parameterValue == 'agendaDay') {
-              setDefaultView('timeGridDay');
-            }
-            if (item.parameterValue == 'basicDay') {
-              setDefaultView('listDay');
-            }
-          }
-        }
+        //   if (calendarRedirect == 'dayGridWeek') {
+        //     setDefaultView('dayGridWeek');
+        //     localStorage.removeItem('@GoJur:CalendarRedirect');
+        //   } else {
+        //     if (item.parameterValue == 'month') {
+        //       setDefaultView('dayGridMonth');
+        //     }
+        //     if (item.parameterValue == 'agendaWeek') {
+        //       setDefaultView('timeGridWeek');
+        //     }
+        //     if (item.parameterValue == 'basicWeek') {
+        //       setDefaultView('dayGridWeek');
+        //     }
+        //     if (item.parameterValue == 'agendaDay') {
+        //       setDefaultView('timeGridDay');
+        //     }
+        //     if (item.parameterValue == 'basicDay') {
+        //       setDefaultView('listDay');
+        //     }
+        //   }
+        // }
 
         if (item.parameterName == '#CALENDARUPDATE') {
           setUpdatePermissionParameter(item.parameterValue);
@@ -648,7 +649,7 @@ const Calendar: React.FC = () => {
 
   // CLICK EDIT APPOINTMENT
   const handleClickEdit = item => {
-    localStorage.setItem(
+     localStorage.setItem(
       '@GoJur:RecurrenceDate',
       FormatDate(new Date(item.event.start), 'yyyy-MM-dd'),
     );
@@ -670,6 +671,7 @@ const Calendar: React.FC = () => {
 
   // CLICK INCLUDE NEW FAST APPOINTMENT
   const handleClickIncludeFast = e => {
+  
     setOpenModalFast(true);
     LoadSubjects();
 
@@ -836,7 +838,7 @@ const Calendar: React.FC = () => {
       LoadParameterSubjects('reset');
       setSubjectParameterId('');
     }
-  };
+  };         
 
   const LoadParameterSubjects = async (stateValue?: string) => {
     if (isLoadingComboData) {
@@ -1286,14 +1288,74 @@ const Calendar: React.FC = () => {
     }
   };
 
+  const mappingToParameter =  {
+      dayGridMonth: "calendarMonth",
+      timeGridWeek: "calendarWeek",
+      dayGridWeek: "calendarListWeek",
+      timeGridDay: "calendarDay",
+      listDay: "calendarListDay",
+      custom: (startDate, endDate) => `calendarPeriod=${startDate}to${endDate}`
+  };
+
+  function getCalendarParam(value, startDate, endDate) {
+    if (value === "custom") {
+      return mappingToParameter.custom(startDate, endDate);
+    }
+    return mappingToParameter[value];
+  }
+
+  const mappingToCalendarView =  {
+      calendarMonth: "dayGridMonth",
+      calendarWeek: "timeGridWeek",
+      calendarListWeek: "dayGridWeek",
+      calendarDay: "timeGridDay",
+      calendarListDay: "listDay",
+      custom: (startDate, endDate) => `calendarPeriod=${startDate}to${endDate}`
+  };
+
+  function getCalendarView(value, startDate, endDate) {
+    if (value === "custom") {
+      return mappingToCalendarView.custom(startDate, endDate);
+    }
+    return mappingToCalendarView[value];
+  }
+
   const handleDatesChange = (e: any) => {
     const sDate = format(e.start, 'yyyy-MM-dd');
     const eDate = format(e.end, 'yyyy-MM-dd');
 
     setStartDate(sDate);
     setEndDate(eDate);
-    
+
+    const comboValue = getCalendarParam(e.view.type, sDate, eDate)
+
+    SalvarParametroCalendarView(comboValue)
   };
+  
+  const SalvarParametroCalendarView = (parameterName:string) =>
+  {
+    api.post('/Parametro/Salvar', {
+          token: token, 
+          parametersName: '#calendarView',
+          parameterType: 'P',
+          parameterValue: parameterName        
+        })
+  }
+  
+  const GetParameterValue = useCallback(async () => {
+
+      const response = await api.post<IParameterData[]>('/Parametro/Selecionar', {
+        token,
+        parametersName: '#CalendarView' 
+      })
+
+      var parameter = response.data[0];
+      
+      const defaultView = getCalendarView(parameter.parameterValue, "", "")
+      setDefaultView(defaultView)
+
+    
+  },[token])
 
   const handleOpenDeadLineCalculator = () => {
     api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_AGECALCULADORAPRAZO'})
@@ -1817,7 +1879,7 @@ const Calendar: React.FC = () => {
               <div
                 style={{
                   marginLeft: '15px',
-                  marginTop: '10px',
+                  marginTop: '15px',
                   marginRight: '10px',
                 }}
               >
@@ -1838,7 +1900,7 @@ const Calendar: React.FC = () => {
                 <br />
                 <br />
 
-                <label htmlFor="type">
+                {/* <label htmlFor="type">
                   Visualização padrão
                   <br />
                   <select
@@ -1856,7 +1918,7 @@ const Calendar: React.FC = () => {
                   </select>
                 </label>
                 <br />
-                <br />
+                <br /> */}
 
                 <label htmlFor="type">
                   Permissão atualização
@@ -2154,7 +2216,7 @@ const Calendar: React.FC = () => {
                     click() {
                       selectDate();
                     },
-                  },
+                  }
                 }}
                 headerToolbar={{
                   left: 'today',
@@ -2489,14 +2551,14 @@ const Calendar: React.FC = () => {
                 <br />
                 <br />
 
-                <label htmlFor="type">
+                {/* <label htmlFor="type">
                   Visualização padrão
                   <br />
                   <select
                     name="userType"
                     value={viewParameter}
                     onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                      setViewParameter(e.target.value)
+                     // setViewParameter(e.target.value)
                     }
                   >
                     <option value="month">Mensal</option>
@@ -2507,7 +2569,7 @@ const Calendar: React.FC = () => {
                   </select>
                 </label>
                 <br />
-                <br />
+                <br /> */}
 
                 <label htmlFor="type">
                   Permissão atualização

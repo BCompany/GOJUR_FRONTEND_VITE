@@ -25,6 +25,7 @@ import { useDefaultSettings } from 'context/defaultSettings';
 import { Overlay } from 'Shared/styles/GlobalStyle';
 import ButtonMenu from '../Buttons/ButtonMenu';
 import { Container, Content, ModalInformation, ModalImage } from './styles';
+import { IParameterData } from 'pages/Dashboard/MainViewContent/pages/Interfaces/IMatter';
 
 const Sidebar: React.FC = () => {
   const { addToast } = useToast();
@@ -69,15 +70,19 @@ const Sidebar: React.FC = () => {
     setOpenInformationModal(true)
   }, []);
 
+ 
+  const CalendarRedirect = async () => {
+      const response = await api.post<IParameterData[]>('/Parametro/Selecionar', {
+        token,
+        parametersName: '#CalendarView' 
+      })
 
-  const CalendarRedirect = () => {
-    // Save navigation log
-    const response = api.post('/Usuario/SalvarLogNavegacaoUsuario', {
-      token,
-      module: 'MEN_AGENDA'
-    });
+      const parameterValue = response.data[0].parameterValue;
 
-    history.push('/calendar');
+      if (parameterValue.includes('kanban'))
+        history.push('/calendar/kanban');
+      else
+        history.push('/calendar');
   };
 
 

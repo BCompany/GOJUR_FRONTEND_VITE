@@ -620,22 +620,7 @@ useEffect(() => {
     
   },[token])
 
-  useEffect(() => {  
-
-      if (selectedPeriod)
-      {
-        const parameterName = getKanbanParam(selectedPeriod.value, periodStart, periodEnd);
-
-        api.post('/Parametro/Salvar', {
-          token: token, 
-          parametersName: '#calendarView',
-          parameterType: 'P',
-          parameterValue: parameterName        
-        })
-      }
-
-  },[selectedPeriod]) 
-
+  
 
   // useEffect(() => {  
 

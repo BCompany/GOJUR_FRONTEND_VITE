@@ -163,7 +163,7 @@ export const ModalParameters = styled.div<SearchProps>`
   font-size:0.665rem;
   box-shadow: 1px 1px 4px 0.5px rgba(0,0,0,0.15);
   width:22rem;
-  height:29rem;
+  height:25rem;
   background-color:var(--white);
   position:absolute;
   z-index:99999;
