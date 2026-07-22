@@ -1,1195 +1,1054 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { FiPlus, FiTrash2, FiClock, FiLayout, FiX, FiCheck, FiEdit2 } from 'react-icons/fi';
-import { MdPalette, MdFavorite, MdFavoriteBorder } from 'react-icons/md';
-import { FcSearch } from 'react-icons/fc';
-import Search from 'components/Search';
-import { HeaderPage } from 'components/HeaderPage';
-import { useHistory } from 'react-router-dom';
-import Select from 'react-select';
-import { selectStyles, useDelay } from 'Shared/utils/commonFunctions';
-import { IComboData } from 'pages/Dashboard/MainViewContent/pages/Financeiro/Account/Modal';
-import { useModal } from 'context/modal';
-import { v4 as uuidv4 } from 'uuid';
-import FilterCalendar, { ISelectValues } from 'components/FilterCalendar';
+import React, { ChangeEvent, useCallback, useEffect, useRef, useState, UIEvent } from 'react'
+import { Container, Header, Grid, Sidebar, Main, Card, CardHeader, KanbanCard, BusinessCard, Process, Content } from './styles';
+import { AppointmentPropsSave, AppointmentPropsDelete, SelectValues, Data, dataProps, LembretesData, MatterData, ModalProps, ResponsibleDTO, Settings, ShareListDTO, userListData } from 'pages/Dashboard/MainViewContent/pages/Interfaces/ICalendar';
 import api from 'services/api';
-import {
-  AddCardButton,
-  AddPhaseColumn,
-  AppointmentCard,
-  BoardLayout,
-  CardsList,
-  ColorDot,
-  ColorPickerWrapper,
-  Container,
-  Content,
-  EmptyState,
-  KanbanArea,
-  ModalOverlay,
-  PanelItem,
-  PanelsModal,
-  TaskBar,
-  PhaseColumn,
-  PhaseHeader,
-} from './styles';
-import { ItemBox } from '../Matter/InvertParts/styles';
-import { IParameterData } from '../Calendar';
-import { Underline } from 'ckeditor5';
-// import { useSecurity } from 'context/securityContext';
-// import { Console } from 'console';
-// import { set } from 'date-fns';
-// import { Description } from '../Dashboard/resorces/DashboardComponents/Publicacoes/PublicationDetail/styles';
+import { useAuth } from 'context/AuthContext';
+import { useSecurity } from 'context/securityContext';
+import Select from 'react-select'
+import { ISelectData } from '../../../Interfaces/IMatter';
+import { RiFolder2Fill, RiEraserLine, RiCalendarCheckFill } from 'react-icons/ri';
+import { useModal } from 'context/modal';
+import GridSelectProcess from 'pages/Dashboard/MainViewContent/pages/Dashboard/resorces/DashboardComponents/CreateAppointment/GridSelectProcess';
+import { IMatterData } from 'pages/Dashboard/MainViewContent/pages/Interfaces/IMatter';
+import { HeaderPage } from 'components/HeaderPage';
+import { format, parseISO } from "date-fns";
+import { useToast } from 'context/toast';
+import { useHistory, useLocation } from 'react-router-dom'
+import DatePicker from 'components/DatePicker';
+import { FormatCurrency, selectStyles, useDelay, FormatDate } from 'Shared/utils/commonFunctions';
+import { FcEditImage, FcSearch, FcAbout, FcCancel, FcPlus, FcDeleteDatabase } from 'react-icons/fc';
+import { FiEdit, FiTrash, FiArrowLeft } from 'react-icons/fi'
+import { FaFileAlt, FaAngleLeft } from 'react-icons/fa'
 
-/* ─── Interfaces ─── */
-
-interface ICard {
-  id: number;
-  phaseId: number;
-  panelId: number;
-  title: string;
-  description: string;
-  dateTime: string;
-  favorited?: boolean;
-}
-
-interface IPhase {
-  id: number;
-  panelId: number;
+export interface IWorkflowData {
+  workflowId: number;
   name: string;
-  color: string;
-  order: number;
+  workflowexecId: number;
+  startDate: string;
+  endDate: string;
+  statusType: string;
+  matterId: number;
+  matter: string;
+  customerId: number;
+  customer: string;
+  count: number;
 }
 
-interface IPanel {
-  id: number;
-  name: string;
-}
+export default function PainelWorkflows() {
 
-interface IPhasePagination
-{
-  phaseId: number | any;
-  lastIdEvent: number | any;
-  lastDateEvent: Date | any;
-  lastIdRecurrency: number | any;
-  lastDateRecurrency: number | any;
-}
-
-/* ─── Colors for auto-assignment ─── */
-const PHASE_COLORS = [
-  // '#ffc9c9',
-  // '#fde68a',
-  // '#bbf7d0',
-  // '#bfdbfe',
-  // '#e9d5ff',
-  // '#fed7aa',
-  // '#a5f3fc',
-];
-
-let nextId = 100;
-const uid = () => ++nextId;
-
-/* ─── Initial demo data ─── */
-//const INITIAL_PANELS: IPanel[] = [
-  // { id: 1, name: 'Agenda Geral' },
-  // { id: 2, name: 'Audiências' },
-//];
-
-//const INITIAL_PHASES: IPhase[] = [
-  // { id: 1, panelId: 1, name: 'Aguardando', color: '#ffc9c9', order: 0 },
-  // { id: 2, panelId: 1, name: 'Fazendo', color: '#fde68a', order: 1 },
-  // { id: 3, panelId: 1, name: 'Concluído', color: '#bbf7d0', order: 2 },
-  // { id: 4, panelId: 2, name: 'A Realizar', color: '#bfdbfe', order: 0 },
-  // { id: 5, panelId: 2, name: 'Realizado', color: '#bbf7d0', order: 1 },
-//];
-
-const INITIAL_CARDS: ICard[] = [
-  // {
-  //   id: 1,
-  //   phaseId: 1,
-  //   panelId: 1,
-  //   title: 'Audiência de conciliação',
-  //   description: 'Audiência de conciliação entre as partes. Comparecer com documentos originais.',
-  //   dateTime: '26/05 10:00',
-  // },
-  // {
-  //   id: 2,
-  //   phaseId: 2,
-  //   panelId: 1,
-  //   title: 'Prazo recursal',
-  //   description: 'Interpor recurso de apelação no prazo legal.',
-  //   dateTime: '28/05 17:00',
-  // },
-  // {
-  //   id: 3,
-  //   phaseId: 4,
-  //   panelId: 2,
-  //   title: 'Audiência de instrução',
-  //   description: 'Oitiva de testemunhas arroladas pelas partes.',
-  //   dateTime: '30/05 09:30',
-  // },
-];
-
-/* ─── Component ─── */
-export default function AgendaKanban() {
+  const { signOut } = useAuth();
   const history = useHistory();
-
-  const {
-    isOpenModal,
-    handleDeadLineCalculatorText,
-    handleCaptureTextPublication,
-    handleModalActive,
-  } = useModal();
-
-  const handleClickInclude = useCallback(() => {
-    handleCaptureTextPublication('');
-    handleDeadLineCalculatorText('');
-    handleModalActive(true);
-    isOpenModal('0');
-  }, [handleCaptureTextPublication, handleDeadLineCalculatorText, handleModalActive, isOpenModal]);
-
-  const optionsCalendarFilter = [
-    { value: 'S_A',   label: 'Audiência' },
-    { value: 'S_P',   label: 'Prazo' },
-    { value: 'U_R',   label: 'Responsável' },
-    { value: 'U_RC',  label: 'Responsável e Compartilhado' },
-    { value: 'PE',    label: 'Apenas pendentes' },
-  ];
-
+  const { addToast } = useToast();
+   const {permissionsSecurity, handleValidateSecurity } = useSecurity();
+  const [userList, setUserList] = useState<userListData[]>([]);
+  const [customerList, setCustomerList] = useState<ISelectData[]>([])
+  const [customer, setCustomer] = useState(null);
+  const [processTitle, setProcessTitle] = useState('Filtrar Processo');
+  const { matterSelected, dateEnd, selectProcess, openSelectProcess, handleSelectProcess, jsonModalObjectResult, handleJsonModalObjectResult, deadLineText, publicationText, modalActiveId } = useModal();
+  const [completeLink, setCompleteLink] = useState<boolean>(false);
+  const [redirectLink, setRedirectLink] = useState('/####');
+  const [appointmentMatter, setAppointmentMatter] = useState<MatterData | undefined>({} as MatterData);
+  const [selected, setSelected] = useState("Todos");
+  const [totalPageCount, setTotalPageCount] = useState<number>(0);
+  const [workflowList, setWorkflowList] = useState<IWorkflowData[]>([]);
+  const [isPagination, setIsPagination] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [workflowExecStartDate, setWorkflowExecStartDate] = useState<string>(FormatDate(new Date(new Date().setFullYear(new Date().getFullYear() - 1)), 'yyyy-MM-dd'))
+  //const [workflowExecStartDate, setWorkflowExecStartDate] = useState<Date | null>(null);
+  const [matterRedirect, setMatterRedirect] = useState<boolean>(false)
+  const [customerRedirect, setCustomerRedirect] = useState<boolean>(false)
+  const [publicationRedirect, setPublicationRedirect] = useState<boolean>(false)
+  const [workflowExecKanbanRedirectRedirect, setWorkflowExecKanbanRedirectRedirect] = useState<boolean>(false)
+  const [calendarRedirect, setCalendarRedirect] = useState<boolean>(false)
   const token = localStorage.getItem('@GoJur:token');
+  const [matterFileId, setMatterFileId] = useState('');
+  const [customerFileId, setCustomerFileId] = useState('');
+  const [notificationTag, setNotificationTag] = useState(null);
+  const checkWorkflow = permissionsSecurity.find(item => item.name === "CFGWKFCD");
 
-  const [multiFilter1, setMultiFilter1] = useState<string[]>([]);
-  const [multiFilter, setMultiFilter] = useState<{ value: string; label: string }[]>([]);
-  const [optionsSubject, setOptionsSubject] = useState<ISelectValues[]>([]);
-  const [appointmentSubject, setAppointmentSubject] = useState('');
-  const [appointmentSubjectId, setAppointmentSubjectId] = useState('');
-  const [startDate, setStartDate] = useState<string>('');
-  const [endDate, setEndDate] = useState<string>('');
-  const [filterTerm, setFilterTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isChangePeriod, setIsChangePeriod] = useState(false);
-  const [loadEvents, setLoadEvents] = useState(false);
-  const [isLoadingSearch, setIsLoadingSearch] = useState(false);
-  const [showSearchList] = useState(false);
-  const[phasePagination, setPhasePagination] = useState<IPhasePagination[]>([])
-
-  //const [panels, setPanels] = useState<IPanel[]>(INITIAL_PANELS);
-  const [activePanelId, setActivePanelId] = useState<number>();
-  const [panels, setPanels] = useState<IPanel[]>([]);
-  //const [phases, setPhases] = useState<IPhase[]>(INITIAL_PHASES);
-  const [phases, setPhases] = useState<IPhase[]>();
-  const [cards, setCards] = useState<ICard[]>(INITIAL_CARDS);
-
-  const toggle = (value: string) => {
-    setMultiFilter1(prev =>
-      prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value],
-    );
-  };
-
-  useEffect(() => 
-  {
-      setIsLoading(true)
-  },[])
-
-    useEffect(() => 
-  {
-      if (isLoading)
-      {
-        GetParameterValue()
-        LoadKanban();
-        SaveLogNavigation();  
-      }
-  },[isLoading])
-      
-  useEffect(() => {
-
-    if (activePanelId > 0)
-      LoadKanbanEtapa(activePanelId);
-      
-  }, [activePanelId]);
-
- const SaveLogNavigation = () => {
-    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_AGENDAKANBAN'})
-
-    setIsLoading(false)
-  };
-
-  const LoadKanban = async () => {
-    try
-    {
-       var response = await api.get('/Kanban/Listar', {
-            params:{ token }
-        })
-      
-      setPanels(response.data.map((item: any) => ({
-        id: item.Id,
-        name: item.Description
-      })));
-
-      // Será modificado para pegar do parametro
-      const kanbanId = response.data.length > 0 ? response.data[0].Id : 0;
-      setActivePanelId(kanbanId); 
-    }
-    catch (err) {
-      console.error('Error loading Kanban data:', err);
-    }
- };
-
- const LoadKanbanEtapa = async (kanbanId: number) => {
-    try
-    {
-        var response = await api.get('/KanbanEtapa/Listar', {
-            params:{ 
-              token,
-              kanbanId
-            }
-          })
-              
-        var listPhases = response.data.map((item: any) => ({ 
-            id: item.Id, 
-            panelId: item.KanbanId, 
-            name: item.Description, 
-            color: item.ColorCode,  
-            order: item.NumPosition
-        }));
-
-        setPhases(listPhases);
-        
-        var activePanel =listPhases.filter((ph) => ph.panelId === activePanelId).sort((a, b) => a.order - b.order) 
-        setActivePhases(activePanel);
-
-        setLoadEvents(true)
-    }
-    catch (err) {
-      console.error('Error loading Kanban data:', err);
-    }
- }
-
- useEffect(() => {
-
-  if (loadEvents)
-  {
-    LoadKanbanEvents(); 
-  }
-  
- },[loadEvents])
-
- function updatePhasePagination(newData: IPhasePagination) {
-  setPhasePagination(prev => {
-    const exists = prev.find(p => p.phaseId === newData.phaseId);
-
-    if (!exists) 
-    {
-      return [...prev, newData];
-    } 
-    else 
-    {
-      return prev.map(p =>
-        p.phaseId === newData.phaseId ? { ...p, ...newData } : p
-      );
-    }
+  const [filters, setFilters] = useState({
+    status: 'Todos',
+    responsavel: '',
+    cliente: '',
+    processo: '',
+    inicio: '',
   });
-}
 
-useEffect(() => {
 
-  //console.log('resultado paginação state', phasePagination)
+  useEffect(() => {
+    LoadPerson();
+    LoadUserList();
 
-},[phasePagination])
+  }, [])
 
- const LoadKanbanEvents = async () => { 
-    try
-    {     
-        const promises = phases.map((phase) => {
-        const pagination = phasePagination.find(p => p.phaseId === phase.id);
-        return api.get('/KanbanEtapa/ListarEventos', {
-          params: {
-            kanbanStageId: phase.id,
-            token,
-            startDate: "2026-07-01",
-            endDate: "2026-07-30",
-            lastIdPgDatabase: pagination ? pagination.lastIdEvent : 0,
-            lastDatePgDatabase: pagination ? pagination.lastDateEvent.toISOString() : "",
-            lastIdPgRecurrency: pagination ? pagination.lastIdRecurrency : 0,
-            lastDatePgRecurrency: pagination ? pagination.lastDateRecurrency.toISOString() : ""
-          },
-        }).then((response) => ({ response, phase }));
-      });
 
-      const results = await Promise.all(promises);
- 
-      results.forEach(({ response, phase }) => {
-        // Atualiza os eventos da lista por Kanban Etapa
-        setCards((prevCards) => [
-          ...prevCards,
-          ...response.data.EventList.map((item: any, index:number) => ({
-            id: `${uuidv4()}`,
-            eventId: item.id,
-            panelId: activePanelId,
-            phaseId: phase.id, 
-            title: item.subjectText,
-            description: item.title,
-          }))
-        ]);
+  function clearFiltersIfFollowUpOrPublicacao() {
+    const hasFollowUp = localStorage.getItem('@Gojur:followUpId');
+    const hasPublicacao = localStorage.getItem('@Gojur:publicacaoId');
 
-        // Atualiza o controle de paginação 
-        updatePhasePagination({
-          phaseId: phase.id,
-          lastIdEvent: response.data.LastIdEvent,
-          lastDateEvent: new Date(response.data.LastDateEvent),
-          lastIdRecurrency: response.data.LastIdRecurrency,
-          lastDateRecurrency: new Date(response.data.LastDateRecurrency),
-        });
-      });
+    if (hasFollowUp || hasPublicacao) {
+      const keysToRemove = [
+        '@Gojur:filterCustomerId',
+        '@Gojur:filterCustomer',
+        '@Gojur:customerId',
+        '@Gojur:filterMatterId',
+        '@Gojur:matterId',
+      ];
 
-      setLoadEvents(false)
-    }
-    catch (err) {
-      console.error('Error loading Kanban data:', err);
+      keysToRemove.forEach(key => localStorage.removeItem(key));
     }
   }
 
+  const Initialize = async () => {
+
+    //if(localStorage.getItem('@Gojur:matterRedirect') == null && localStorage.getItem('@Gojur:customerRedirect') == null && localStorage.getItem('@Gojur:calendarRedirect') == null ) return;
+
+    clearFiltersIfFollowUpOrPublicacao();
+
+    const redirectByMatter = localStorage.getItem('@Gojur:matterRedirect')
+    if (redirectByMatter == "S") {
+      setMatterRedirect(true)
+      localStorage.removeItem('@Gojur:matterRedirect')
+    }
+
+    if (localStorage.getItem('@Gojur:matterId')) {
+      setMatterFileId(localStorage.getItem('@Gojur:matterId'))
+      localStorage.removeItem('@Gojur:matterId')
+    }
+
+    const redirectByCustomer = localStorage.getItem('@Gojur:customerRedirect')
+    if (redirectByCustomer == "S") {
+      setCustomerRedirect(true)
+      localStorage.removeItem('@Gojur:customerRedirect')
+    }
+
+    if (localStorage.getItem('@Gojur:customerId')) {
+      setCustomerFileId(localStorage.getItem('@Gojur:customerId'))
+    }
+
+    const redirectByPublication = localStorage.getItem('@Gojur:publicationRedirect')
+    if (redirectByPublication == "S") {
+      setPublicationRedirect(true)
+      localStorage.removeItem('@Gojur:publicationRedirect')
+    }
+
+    const redirectByWorkflowExecKanban = localStorage.getItem('@Gojur:workflowExecKanbanRedirect')
+    if (redirectByWorkflowExecKanban == "S") {
+      setWorkflowExecKanbanRedirectRedirect(true)
+      localStorage.removeItem('@Gojur:workflowExecKanbanRedirect')
+    }
+
+    //const redirectByCalendar = localStorage.getItem('@Gojur:calendarRedirect') 
+    const redirectByCalendar = "S"
+    if (redirectByCalendar == "S") {
+      setCalendarRedirect(true);
+    }
+
+  }
+
+
+
   useEffect(() => {
-    const mapped = optionsCalendarFilter
-      .filter(opt => multiFilter1.includes(opt.value))
-      .map(opt => ({ value: opt.value, label: opt.label }));
-    setMultiFilter(mapped);
-  }, [multiFilter1]);
+
+    const matterId = matterFileId;
+
+    if (matterId && matterId !== "null" && matterId.trim() !== "") {
+
+      const loadProcess = async () => {
+        try {
+
+          const responseMatter = await api.post('/Processo/SelecionarProcesso', {
+            matterId: matterId,
+            token: token,
+            companyId: localStorage.getItem('@GoJur:companyId'),
+            apiKey: localStorage.getItem('@GoJur:apiKey')
+          })
+            .then(response => {
+              const matterType = response.data.typeAdvisorId == null ? 'legal' : 'advisory'
+              const url = `/matter/edit/${matterType}/${matterId}`
+              setRedirectLink(url);
+              setCompleteLink(true);
+
+              const title = `${response.data.matterNumber} - ${response.data.matterFolder} - ${response.data.matterCustomerDesc} - ${response.data.matterOppossingDesc}`;
+
+              setProcessTitle(title)
+
+              const newFilters = { ...filters, processo: matterId };
+              setFilters(newFilters);
+              LoadWorkflow('initialize', newFilters);
+
+            })
+
+        } catch (err) {
+          console.error('Erro ao carregar processo:', err);
+        }
+      };
+
+      loadProcess();
+    }
+    else {
+
+    }
+
+  }, [matterFileId]);
 
 
-  const LoadSubject = useCallback(async (reload = false, termSearch = '') => {
+  useEffect(() => {
+
+    if (!localStorage.getItem('@Gojur:customerId')) return;
+
+    if (customerList.length === 0) return;
+
+    RefreshPersonList(localStorage.getItem('@Gojur:filterCustomer'));
+
+    const storedCustomerId = localStorage.getItem('@Gojur:customerId');
+
+    if (storedCustomerId) {
+      const selected = customerList.find(
+        (c) => String(c.id) === String(storedCustomerId)
+      );
+
+      setCustomer(selected ? { value: selected.id, label: selected.label } : null);
+
+      if (selected) {
+        //alert(localStorage.getItem('@Gojur:customerId'));
+        const newFilters = { ...filters, cliente: localStorage.getItem('@Gojur:customerId') };
+        setFilters(newFilters);
+
+        LoadWorkflow('initialize', newFilters);
+
+        localStorage.removeItem('@Gojur:customerId');
+
+      }
+    }
+  }, [customerList]);
+
+
+  useEffect(() => {
+    const tag = localStorage.getItem('@Gojur:notificationTag');
+    setNotificationTag(tag);
+
+  }, []);
+
+
+  const LoadUserList = useCallback(async () => {
     try {
-      if (termSearch === '') termSearch = appointmentSubject;
-      if (reload) termSearch = '';
+      const response = await api.post<userListData[]>(
+        `/Compromisso/ListarUsuariosETimes`,
+        {
+          userName: '',
+          token,
+        },
+      );
 
-      const response = await api.post('/Assunto/Listar', {
-        description: termSearch,
-        token,
-      });
+      setUserList(response.data);
 
-      const subjectList: ISelectValues[] = response.data.map(item => ({
+    } catch (err: any) {
+      console.log(err.message);
+    }
+  }, []);
+
+
+  const LoadPerson = async () => {
+    setCustomerList(await ListCustomerData(""))
+  }
+
+
+  const ListCustomerData = async (term: string) => {
+    const token = localStorage.getItem("@GoJur:token");
+    const customerListData: ISelectData[] = [];
+
+    const response = await api.post("/Clientes/ListarComboBox", {
+      token,
+      page: 0,
+      rows: 50,
+      filterClause: term,
+    });
+
+    response.data.forEach((item: any) => {
+      customerListData.push({
         id: item.id,
         label: item.value,
-      }));
+      });
+    });
 
-      setOptionsSubject(subjectList);
-    } catch (err) {
-      console.log(err);
-    }
-  }, [appointmentSubject, token]);
-
-  useDelay(() => {
-    LoadSubject();
-  }, [appointmentSubject], 1000);
-
-  const handleSubjectChange = (item: ISelectValues | null) => {
-    if (item) {
-      setAppointmentSubject(item.label);
-      setAppointmentSubjectId(item.id);
-    } else {
-      setAppointmentSubject('');
-      setAppointmentSubjectId('');
-      LoadSubject(true);
-    }
+    return customerListData;
   };
 
-  // const [activePanelId, setActivePanelId] = useState<number>(INITIAL_PANELS[0].id);
-  
-  // Permission flags — connect to backend later
-  const [permissions] = useState({
-    canManagePanels: true,   // show "Painéis" button
-    canDeletePhase: true,    // show trash icon on phase header
-    canChangePhaseColor: true, // show palette icon on phase header
-  });
 
-  const PERIOD_OPTIONS: IComboData[] = [
-    { value: 'mes_atual', label: 'Mês Atual' },
-    { value: 'semana', label: 'Semana Atual' },
-    { value: 'proxima_semana', label: 'Próxima Semana' },
-    { value: 'proximo_mes', label: 'Próxima Mês' },
-    { value: 'dias_15', label: '15 dias' },
-    { value: 'ultima_semana', label: 'Última Semana' },
-    { value: 'ultimo_mes', label: 'Último Mês' },
-    { value: 'custom', label: 'Selecionar Período' },
-  ];
-  const [selectedPeriod, setSelectedPeriod] = useState<IComboData>();
-  const [periodStart, setPeriodStart] = useState('');
-  const [periodEnd, setPeriodEnd] = useState('');
-  const [showDateModal, setShowDateModal] = useState(false);
-  const [tempPeriodStart, setTempPeriodStart] = useState('');
-  const [tempPeriodEnd, setTempPeriodEnd] = useState('');
-
-  // Panels modal
-  const [showPanelsModal, setShowPanelsModal] = useState(false);
-
-  // New panel form
-  const [showAddPanel, setShowAddPanel] = useState(false);
-  const [newPanelName, setNewPanelName] = useState('');
-
-  // New phase form
-  const [addingPhaseForPanel, setAddingPhaseForPanel] = useState<number | null>(null);
-  const [newPhaseName, setNewPhaseName] = useState('');
-
-  // Inline panel name editing
-  const [editingPanelId, setEditingPanelId] = useState<number | null>(null);
-  const [editingPanelName, setEditingPanelName] = useState('');
-
-  // Inline phase name editing
-  const [editingPhaseId, setEditingPhaseId] = useState<number | null>(null);
-  const [editingPhaseName, setEditingPhaseName] = useState('');
-
-  const panelNameRef = useRef<HTMLInputElement>(null);
-  const phaseNameRef = useRef<HTMLInputElement>(null);
-
-  const [activePhases, setActivePhases] = useState([] as IPhase[]);
-
-
-  /* ── Derived ── */
-  const activePanel = panels.find((p) => p.id === activePanelId);
-  // const activePhases = phases
-  //   .filter((ph) => ph.panelId === activePanelId)
-  //   .sort((a, b) => a.order - b.order);
-
+  const RefreshPersonList = useCallback(async (inputValue: string) => {
+    const list = await ListCustomerData(inputValue ?? "");
+    setCustomerList(list);
+  }, []);
 
 
   useEffect(() => {
-  // const [tempPeriodStart, setTempPeriodStart] = useState('');
-  // const [tempPeriodEnd, setTempPeriodEnd] = useState('');
 
-  },[tempPeriodStart, tempPeriodEnd])
+    const inputs = document.querySelectorAll<HTMLInputElement>('.rs__input input');
 
-  /* ── Panel actions ── */
-  const handleAddPanel = useCallback(async () => {
-    const name = newPanelName.trim();
-    if (!name) 
-    {
-      alert('validação toast descrição não informada')
+    inputs.forEach((inp) => {
+      // aplica os estilos
+      Object.assign(inp.style, {
+        all: "unset",
+        font: "inherit",
+        boxSizing: "border-box",
+        width: "100%",
+        minWidth: "270px",
+        padding: "0",
+        margin: "0",
+        textIndent: "0",
+        direction: "ltr",
+        position: "relative",
+        left: "0",
+        transform: "none",
+        whiteSpace: "nowrap",
+        overflowX: "auto",
+        overflowY: "hidden",
+        caretColor: "auto",
+      });
+
+      // faz o scroll acompanhar o cursor
+      const handleInput = () => {
+        inp.scrollLeft = inp.selectionStart || 0;
+      };
+      inp.addEventListener("input", handleInput);
+
+      // remove o listener na limpeza do efeito
+      return () => {
+        inp.removeEventListener("input", handleInput);
+      };
+    });
+  }, []);
+
+
+  const selectStyles = {
+    control: (base) => ({
+      ...base,
+      width: "215px",
+      minWidth: "160px",
+      fontSize: "0.7rem",
+    }),
+    placeholder: (base) => ({
+      ...base,
+      fontSize: "0.7rem",
+    }),
+    singleValue: (base) => ({
+      ...base,
+      fontSize: "0.7rem",
+    }),
+    option: (base) => ({
+      ...base,
+      fontSize: "0.7rem",
+    }),
+    multiValueLabel: (base) => ({
+      ...base,
+      fontSize: "0.7rem",
+    }),
+    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+  };
+
+  const handleGridSelectProcess = useCallback(() => {
+    if (processTitle === 'Filtrar Processo') {
+      handleSelectProcess('Open');
+      //setTriggerActionsMap({});
+    }
+  }, [handleSelectProcess, processTitle]);
+
+
+  const handleSelectWorkflow = useCallback((workflowExecId: Number, customer: String) => {
+
+    localStorage.setItem('@Gojur:customer', customer);
+
+    if (customerFileId && customerFileId.trim() !== '' && customerFileId !== 'null') {
+      localStorage.setItem('@Gojur:filterCustomerId', customerFileId);
+      localStorage.setItem('@Gojur:customerId', customerFileId);
+    }
+    else {
+      localStorage.removeItem('@Gojur:filterCustomerId');
+      localStorage.removeItem('@Gojur:customerId');
     }
 
-    try
-    {
-      var response = await api.post('/Kanban/Salvar', {
+    localStorage.setItem('@Gojur:matterId', matterFileId);
+    localStorage.setItem('@Gojur:filterMatterId', matterFileId);
+
+
+    history.push('../workflowexec/edit/' + workflowExecId);
+
+  }, [matterFileId, customerFileId]);
+
+
+  useEffect(() => {
+    if (matterSelected !== null && processTitle === 'Filtrar Processo') {
+
+      setProcessTitle(`${matterSelected.matterNumber} - ${(matterSelected.matterFolder != null ? "-" : "")} ${matterSelected.matterCustomerDesc} - ${matterSelected.matterOppossingDesc}`,);
+
+      api.post<IMatterData>('/Processo/SelecionarProcesso', {
+        matterId: matterSelected.matterId,
         token,
-        Description: name
-      })      
+        companyId: localStorage.getItem('@GoJur:companyId'),
+        apiKey: localStorage.getItem('@GoJur:apiKey')
+      })
+        .then(response => {
+          const matterType = response.data.typeAdvisorId == null ? 'legal' : 'advisory'
+          //const url = `/matter/edit/${matterType}/${matterSelected.matterId}`
+          const url = `###`
+          setRedirectLink(url)
+          setCompleteLink(true)
 
-      console.log('TESTE RETORNO', response.data)
+
+          const newFilters = { ...filters, processo: matterSelected.matterId };
+          setFilters(newFilters);
+          LoadWorkflow('initialize', newFilters);
+
+
+        })
+    }
+    else {
+      setProcessTitle('Filtrar Processo');
 
     }
-     catch (err) {
-      console.log(err);
-    }
-    const newPanel: IPanel = { 
-      id: uid(), 
-      name 
-    };
+  }, [matterSelected, dateEnd]);
 
-    setPanels((prev) => [...prev, newPanel]);
-    setActivePanelId(newPanel.id);
-    setNewPanelName('');
-    setShowAddPanel(false);
-  }, [newPanelName]);
 
-  const handleDeletePanel = useCallback(
-    (panelId: number) => {
-      setPanels((prev) => prev.filter((p) => p.id !== panelId));
-      setPhases((prev) => prev.filter((ph) => ph.panelId !== panelId));
-      setCards((prev) => prev.filter((c) => c.panelId !== panelId));
-      if (activePanelId === panelId) {
-        setActivePanelId(panels.find((p) => p.id !== panelId)?.id ?? 0);
+  const statuses = [
+    { label: "Todos", color: "#fff", border: "#d1d5db" },
+    { label: "Em andamento", color: "#fef3c7", border: "#fde68a" },
+    { label: "Atrasado", color: "#ffe4e6", border: "#fecdd3" },
+    { label: "Concluído", color: "#d1fae5", border: "#a7f3d0" },
+  ];
+
+
+  /*
+    useEffect(() => {
+      const setup = async () => {
+        await LoadWorkflow('initialize');
+  
+      };
+  
+      setup();
+  
+    }, []);
+  */
+
+
+  const LoadWorkflow = useCallback(
+    async (state = '', customFilters = filters) => {
+      try {
+        const token = localStorage.getItem('@GoJur:token');
+
+        const page = 1;
+
+        const filterParams: string[] = [];
+
+        // Monta os filtros dinamicamente
+        if (customFilters.status && customFilters.status !== 'Todos')
+          filterParams.push(`status=${customFilters.status}`);
+
+        if (customFilters.responsavel)
+          filterParams.push(`userAssigned=${customFilters.responsavel}`);
+
+        if (customFilters.cliente)
+          filterParams.push(`customer=${customFilters.cliente}`);
+
+        if (customFilters.processo)
+          filterParams.push(`matter=${customFilters.processo}`);
+
+        console.log(customFilters.inicio);
+        if (customFilters.inicio)
+          filterParams.push(`startDate=${customFilters.inicio}`);
+
+        if (localStorage.getItem('@Gojur:followUpId')) {
+          filterParams.push(`followUpId=${localStorage.getItem('@Gojur:followUpId')}`);
+        }
+
+        if (localStorage.getItem('@Gojur:publicationId')) {
+          filterParams.push(`publicationId=${localStorage.getItem('@Gojur:publicationId')}`);
+        }
+
+        const filterClause = filterParams.join(', ');
+
+        const response = await api.get<IWorkflowData[]>('/WorkflowExec/ListarExec', {
+          params: {
+            page,
+            rows: 9999,
+            filterClause,
+            token,
+          },
+        });
+
+        const statusMap: Record<string, string> = {
+          emandamento: 'Em andamento',
+          atraso: 'Atraso',
+          concluido: 'Concluído',
+        };
+
+        const formattedData = response.data.map((item) => ({
+          ...item,
+          startDate: item.startDate
+            ? format(new Date(item.startDate), 'dd/MM/yyyy')
+            : '',
+          endDate: item.endDate
+            ? format(new Date(item.endDate), 'dd/MM/yyyy')
+            : '',
+          statusType: statusMap[item.statusType?.toLowerCase()] || item.statusType,
+        }));
+
+        if (!isPagination || state === 'initialize') {
+          setWorkflowList(formattedData);
+        } else {
+          setWorkflowList((prev) => [...prev, ...formattedData]);
+        }
+      } catch (err: any) {
+        console.log(err);
+        if (err.response?.data?.statusCode === 1002) {
+          addToast({
+            type: 'info',
+            title: 'Permissão negada',
+            description:
+              'Seu usuário não tem permissão para acessar esse módulo, contate o administrador do sistema',
+          });
+          signOut()
+        }
       }
     },
-    [activePanelId, panels],
+    [isPagination, filters]
   );
 
-  const handleSavePanelEdit = useCallback(() => {
-    const name = editingPanelName.trim();
-    if (name && editingPanelId !== null) {
-      setPanels((prev) =>
-        prev.map((p) => (p.id === editingPanelId ? { ...p, name } : p)),
-      );
+
+
+  const handleScroolSeeMore = (e: UIEvent<HTMLDivElement>) => {
+    const element = e.target as HTMLTextAreaElement;
+
+    const isEndScrool = ((element.scrollHeight - element.scrollTop) - 50) <= element.clientHeight
+
+    if (isEndScrool && !isLoading) {
+      setIsPagination(true)
     }
-    setEditingPanelId(null);
-    setEditingPanelName('');
-  }, [editingPanelId, editingPanelName]);
+  }
 
-  const onPanelEditKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') handleSavePanelEdit();
-    if (e.key === 'Escape') { setEditingPanelId(null); setEditingPanelName(''); }
-  };
 
-  /* ── Phase actions ── */
-  const handleAddPhase = useCallback(() => {
-    const name = newPhaseName.trim();
-    if (!name || addingPhaseForPanel === null) return;
-    const panelPhases = phases.filter((ph) => ph.panelId === addingPhaseForPanel);
-    const colorIndex = panelPhases.length % PHASE_COLORS.length;
-    const newPhase: IPhase = {
-      id: uid(),
-      panelId: addingPhaseForPanel,
-      name,
-      color: PHASE_COLORS[colorIndex],
-      order: panelPhases.length,
+  const handleStatusClick = (status: string) => {
+    // Mapeia o label do botão para o valor que o backend espera
+    const statusMap: Record<string, string> = {
+      'Em andamento': 'EMANDAMENTO',
+      'Atrasado': 'ATRASO',
+      'Concluído': 'CONCLUIDO',
+      'Todos': '', // opcional: vazio para pegar todos
     };
-    setPhases((prev) => [...prev, newPhase]);
-    setNewPhaseName('');
-    setAddingPhaseForPanel(null);
-  }, [newPhaseName, addingPhaseForPanel, phases]);
 
-  const handleDeletePhase = useCallback((phaseId: number) => {
-    setPhases((prev) => prev.filter((ph) => ph.id !== phaseId));
-    setCards((prev) => prev.filter((c) => c.phaseId !== phaseId));
-  }, []);
+    const backendStatus = statusMap[status] || '';
 
-  const handleChangePhaseColor = useCallback((phaseId: number, color: string) => {
-    setPhases((prev) => prev.map((ph) => (ph.id === phaseId ? { ...ph, color } : ph)));
-  }, []);
+    const newFilters = { ...filters, status: backendStatus };
+    setFilters(newFilters);
 
-  const handleStartEditPhase = useCallback((phase: IPhase) => {
-    setEditingPhaseId(phase.id);
-    setEditingPhaseName(phase.name);
-  }, []);
+    console.log('Filtros atualizados:', newFilters);
 
-  const handleSavePhaseEdit = useCallback(() => {
-    const name = editingPhaseName.trim();
-    if (name && editingPhaseId !== null) {
-      setPhases((prev) =>
-        prev.map((ph) => (ph.id === editingPhaseId ? { ...ph, name } : ph)),
-      );
-    }
-    setEditingPhaseId(null);
-    setEditingPhaseName('');
-  }, [editingPhaseId, editingPhaseName]);
-
-  const onPhaseEditKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') handleSavePhaseEdit();
-    if (e.key === 'Escape') { setEditingPhaseId(null); setEditingPhaseName(''); }
+    LoadWorkflow('initialize', newFilters);
   };
 
-  /* ── Card actions ── */
-  const handleDeleteCard = useCallback((cardId: number) => {
-    setCards((prev) => prev.filter((c) => c.id !== cardId));
-  }, []);
 
-  const handleToggleFavorite = useCallback((cardId: number) => {
-    setCards((prev) =>
-      prev.map((c) => (c.id === cardId ? { ...c, favorited: !c.favorited } : c)),
-    );
-  }, []);
+  function filterMatterAndCustomerToLocalStorage(
+    matterFileId: string,
+    customerFileId: string
+  ) {
+    // Verifica se o matterFileId é válido
+    if (matterFileId && matterFileId.trim() !== '' && matterFileId !== 'null') {
+      localStorage.setItem('@Gojur:matterId', matterFileId);
+      localStorage.setItem('@Gojur:filterMatterId', matterFileId);
 
-  const onDragEnd = useCallback((result: DropResult) => {
-    const { source, destination, draggableId, type } = result;
-    if (!destination) return;
-    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
-    if (type !== 'COLUMN' && source.droppableId === destination.droppableId) return;
+      localStorage.removeItem('@Gojur:customerId', customerFileId);
+      localStorage.removeItem('@Gojur:filterCustomerId', customerFileId);
 
-    // ── Column reorder ──
-    if (type === 'COLUMN') {
-      const phaseId = parseInt(draggableId.replace('phase-', ''), 10);
-      setPhases((prev) => {
-        const panelPhases = prev
-          .filter((ph) => ph.panelId === activePanelId)
-          .sort((a, b) => a.order - b.order);
-        const others = prev.filter((ph) => ph.panelId !== activePanelId);
-
-        const reordered = [...panelPhases];
-        const [moved] = reordered.splice(source.index, 1);
-        reordered.splice(destination.index, 0, moved);
-
-        const updated = reordered.map((ph, i) => ({ ...ph, order: i }));
-        return [...others, ...updated];
-      });
-      return;
     }
 
-    // ── Card move ──
-    const cardId = parseInt(draggableId, 10);
-    const destPhaseId = parseInt(destination.droppableId, 10);
+    // Verifica se o customerFileId é válido
+    if (customerFileId && customerFileId.trim() !== '' && customerFileId !== 'null') {
+      localStorage.setItem('@Gojur:customerId', customerFileId);
+      localStorage.setItem('@Gojur:filterCustomerId', customerFileId);
 
-    setCards((prev) => {
-      const withoutCard = prev.filter((c) => c.id !== cardId);
-      const moved = prev.find((c) => c.id === cardId);
-      if (!moved) return prev;
+      localStorage.removeItem('@Gojur:matterId', matterFileId);
+      localStorage.removeItem('@Gojur:filterMatterId', matterFileId);
 
-      const updated = { ...moved, phaseId: destPhaseId };
-      const destPhaseCards = withoutCard.filter((c) => c.phaseId === destPhaseId);
-      const otherCards = withoutCard.filter((c) => c.phaseId !== destPhaseId);
-
-      destPhaseCards.splice(destination.index, 0, updated);
-      return [...otherCards, ...destPhaseCards];
-    });
-  }, [activePanelId]);
-
-  /* ── Keyboard shortcuts ── */
-  const onPanelKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') 
-      handleAddPanel();
-    if (e.key === 'Escape') { 
-      setShowAddPanel(false);
-       setNewPanelName(''); 
-      }
-  };
-
-  const onPhaseKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleAddPhase();
-    if (e.key === 'Escape') { setAddingPhaseForPanel(null); setNewPhaseName(''); }
-  };
-
-  const handleChangeDate = item => {
-    setSelectedPeriod(item);
-    if (item.value === 'custom') {
-      const today = new Date();
-      const oneYearAgo = new Date(today);
-      oneYearAgo.setFullYear(today.getFullYear() - 1);
-      const fmt = (d: Date) => d.toISOString().slice(0, 10);
-      setTempPeriodStart(periodStart || fmt(oneYearAgo));
-      setTempPeriodEnd(periodEnd || fmt(today));
-      setShowDateModal(true);
     }
-    else{
-      setIsChangePeriod(true);
-    }
-    
-  }  
-
-  const mappingSelectToParameter = {
-      mes_atual: "kanbanMonth",
-      semana: "kanbanWeek",
-      proxima_semana: "kanbanNextWeek",
-      proximo_mes: "kanbanNextMonth",
-      ultima_semana: "kanbanLastWeek",
-      ultimo_mes: "kanbanLastMonth",
-      dias_15: "kanban15dias",
-      custom: (startDate, endDate) => `kanbanPeriod=${startDate}to${endDate}`
-  };
-
-    const mappingParameterToSelect = {
-      kanbanMonth: "mes_atual",
-      kanbanWeek: "semana",
-      kanbanNextWeek: "proxima_semana",
-      kanbanNextMonth: "proximo_mes",
-      kanbanLastWeek: "ultima_semana",
-      kanbanLastMonth: "ultimo_mes",
-      kanban15dias: "dias_15",
-      custom: (startDate, endDate) => `kanbanPeriod=${startDate}to${endDate}`
-  };
-
-  function getKanbanParam(value, startDate, endDate) {
-    if (value === "custom") {
-      return mappingSelectToParameter.custom(startDate, endDate);
-    }
-
-    return mappingSelectToParameter[value];
   }
 
-  function getSelectParamValue(value) {
-    return mappingParameterToSelect[value];
-  }
-  
-  const GetParameterValue = useCallback(async () => {
 
-      const response = await api.post<IParameterData[]>('/Parametro/Selecionar', {
-        token,
-        parametersName: '#CalendarView' 
-      })
-
-      var parameter = response.data[0];
-
-      if (parameter.parameterValue.includes('kanbanPeriod'))
-      {
-          const periodString = parameter.parameterValue.replace("kanbanPeriod=", "");
-          const [startDate, endDate] = periodString.split("to");
-          
-          setPeriodStart(startDate)
-          setPeriodEnd(endDate)
-
-          var comboValue = PERIOD_OPTIONS.find(x=> x.value =='custom')
-          setSelectedPeriod(comboValue);
-      }
-      else
-      {
-          var value = getSelectParamValue(parameter.parameterValue)
-          
-          if (value === undefined)
-            setSelectedPeriod(PERIOD_OPTIONS[0])
-          else
-          {
-            var comboValue = PERIOD_OPTIONS.find(x=> x.value == value)
-
-            setSelectedPeriod(comboValue);
-          }
-      }
-    
-  },[token])
-
-  useEffect(() => {  
-
-    if (isChangePeriod) 
-    { 
-      const parameterName = getKanbanParam(selectedPeriod.value, periodStart, periodEnd);
-
-      api.post('/Parametro/Salvar', {
-        token: token, 
-        parametersName: '#calendarView',
+  const handleList = async () => {
+    try {
+      await api.post('/Parametro/Salvar', {
+        parametersName: '#WORKFLOWVIEW',
         parameterType: 'P',
-        parameterValue: parameterName        
-      })
+        parameterValue: 'LISTA',
+        token,
+      });
 
-      setIsChangePeriod(false)
-    }
+      selectProcess(null)
 
-  },[isChangePeriod, periodStart, periodEnd]) 
+      filterMatterAndCustomerToLocalStorage(matterFileId, customerFileId);
 
-    useEffect(() => {  
-
-      if (selectedPeriod)
-      {
-        const parameterName = getKanbanParam(selectedPeriod.value, periodStart, periodEnd);
-
-        api.post('/Parametro/Salvar', {
-          token: token, 
-          parametersName: '#calendarView',
-          parameterType: 'P',
-          parameterValue: parameterName        
-        })
+      if (matterRedirect == true) {
+        localStorage.setItem('@Gojur:matterRedirect', "S")
+      }
+      if (customerRedirect == true) {
+        localStorage.setItem('@Gojur:customerRedirect', "S")
+      }
+      if (publicationRedirect == true) {
+        localStorage.setItem('@Gojur:publicationRedirect', "S")
       }
 
-  },[selectedPeriod]) 
+      history.push('/workflowexec/list')
 
-  /* ── Render ── */
+    } catch (error) {
+      console.error('Erro ao salvar parâmetro:', error);
+    }
+
+  };
+
+
+   const handleConfigWorkflow = async () => {
+      history.push('/workflow')
+  };
+
+  const handleWorkflowExecStartDate = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    setWorkflowExecStartDate(event.target.value)
+  }, [workflowExecStartDate])
+
+
+  useEffect(() => {
+    const setup = async () => {
+
+      const newFilters = { ...filters, inicio: workflowExecStartDate };
+
+      setFilters(newFilters);
+
+      console.log('Filtros atualizados:', newFilters);
+
+      let carregar = false;
+
+      if ( ( !localStorage.getItem('@Gojur:matterId') || localStorage.getItem('@Gojur:matterId') === null ) &&
+        ( !localStorage.getItem('@Gojur:customerId') || localStorage.getItem('@Gojur:customerId') === null ) 
+      )  
+      {
+        carregar = true;  
+      }
+
+      await Initialize();
+
+      if ( carregar )
+        await LoadWorkflow('initialize', newFilters);
+      };
+
+    setup();
+
+  }, [workflowExecStartDate]);
+
+
+
+
+  const handleCancel = () => {
+    console.log('MatterRedirect: ', matterRedirect)
+
+    if (matterRedirect) {
+      history.push('../../../matter/list')
+    }
+    else if (customerRedirect) {
+      history.push('../customer/list')
+    } else if (publicationRedirect) {
+      history.push('../publication')
+    }
+    //else if (workflowExecKanbanRedirectRedirect){ 
+    //  history.push('../workflowexec/kanban')
+    //}
+    else if (calendarRedirect) {
+      history.push('../calendar')
+    }
+
+  }
+
+  const handleWorkflow = () => {
+
+    filterMatterAndCustomerToLocalStorage(matterFileId, customerFileId);
+
+    history.push('/WorkflowExec/edit/0')
+
+  };
+
   return (
-    <Container>
+    <Container onScroll={handleScroolSeeMore} ref={scrollRef}>
+
       <HeaderPage />
 
       <Content>
-        <TaskBar>
-          <div className="taskbar-left">
-            <Search
-              onKeyPress={(e: React.KeyboardEvent) => {
-                if (e.key === 'Delete' || e.key === 'Backspace' || e.which === 8) {
-                  e.preventDefault();
-                }
-                if (e.key === 'Enter') {
-                  setIsLoadingSearch(true);
-                  setIsLoading(true);
-                }
-              }}
-              placeholder="Pesquisar Compromissos"
-              className="search"
-              name="search"
-              style={{minWidth: '10rem', marginTop: 0, marginLeft: 0 }}
-              value={!isLoadingSearch ? filterTerm : ''}
-              onChange={(e) => setFilterTerm(e.target.value)}
-            />
 
-            <FcSearch
-              className="icons"
-              title="Clique para realizar a pesquisa pelo termo digitado"
-              onClick={() => {
-                setIsLoadingSearch(true);
-                setIsLoading(true);
-              }}
-            />
 
-            <div style={{ zIndex: 9 }}>
-              <FilterCalendar
-                width={300} 
-                optionsCalendarFilter={optionsCalendarFilter}
-                multiFilter={multiFilter}
-                selectedFilterValues={multiFilter1}
-                onToggleFilter={toggle}
-                optionsSubject={optionsSubject}
-                appointmentSubjectId={appointmentSubjectId}
-                appointmentSubject={appointmentSubject}
-                onSubjectChange={handleSubjectChange}
-                setIsLoading={setIsLoading}
-                setIsLoadingSearch={setIsLoadingSearch}
-                showSearchList={showSearchList}
-              />
-            </div>
-
-            <div style={{ width: '180px' }}>
-              <Select
-                styles={selectStyles}
-                options={PERIOD_OPTIONS}
-                value={selectedPeriod}
-                onChange={handleChangeDate}
-              />
-            </div>
+        <Header>
+          <div>
+            <h3>Painel de Workflows</h3>
           </div>
+          <div className="right">
 
-          <div className="taskbar-right">
-            {permissions.canManagePanels && (
-              <button
-                type="button"
-                className="buttonClick"
-                onClick={() => setShowPanelsModal(true)}
-              >
-                <FiLayout size={12} /> Painéis
-              </button>
-            )}
-            <button
-              type="button"
-              className="buttonClick"
-              onClick={() => history.push('/calendar')}
-            >
-              Retornar Calendário
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1px' }}>
+              <DatePicker
+                title=""
+                onChange={(date: Date | null) => {
+
+                  handleWorkflowExecStartDate(date);
+
+                  const newFilters = { ...filters, inicio: date.target.value };
+
+                  setFilters(newFilters);
+
+                  console.log('Filtros atualizados:', newFilters);
+
+                  LoadWorkflow('initialize', newFilters);
+                }}
+                value={workflowExecStartDate}
+                style={{ width: '170px' }}
+              />
+
+              <FcSearch
+                className='infoButton'
+                title='Altere o calendário para recarregar a página com base na nova data de início informada'
+                // onClick={() => LoadPage()}
+                style={{ cursor: 'pointer', fontSize: '20px' }}
+              />
+            </div>
+
+          {(checkWorkflow) &&(
+            <button type="button" className='buttonClick' onClick={() => handleConfigWorkflow()}>
+              Config. Workflow
             </button>
+          )}
+
+            <button type="button" className='buttonClick' onClick={() => handleList()}>
+              Alternar: Kanban / Lista
+            </button>
+
+            <button
+              className="buttonClick"
+              title="Clique para incluir um Workflow"
+              type="submit"
+              onClick={() => handleWorkflow()}
+            >
+              <FaFileAlt />
+              Iniciar Novo Workflow
+            </button>
+
+            <button
+              className="buttonClick"
+              title="Clique para retornar"
+              type="submit"
+              onClick={handleCancel}
+            >
+              <FiArrowLeft />
+              Retornar
+            </button>
+
           </div>
-        </TaskBar>
+        </Header>
 
-        <h3 style={{ textAlign: 'center', fontSize: '1.1rem', fontWeight: 600, color: 'var(--primary)', marginBottom: '0.75rem' }}>{activePanel?.name ?? ''}</h3>
+        <Grid>
+          <Sidebar>
+            <h5>Filtros rápidos</h5>
 
-        {/* ── Panels modal ── */}
-        {showPanelsModal && (
-          <ModalOverlay onClick={() => { setShowPanelsModal(false); setShowAddPanel(false); setNewPanelName(''); }}>
-            <PanelsModal onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h4>Painéis</h4>
-                <FiX onClick={() => { setShowPanelsModal(false); setShowAddPanel(false); setNewPanelName(''); }} />
-              </div>
-
-              <div className="modal-body">
-                {panels.map((panel) => (
-                  <PanelItem
-                    key={panel.id}
-                    active={panel.id === activePanelId}
-                    onClick={() => { if (editingPanelId !== panel.id) { setActivePanelId(panel.id); setShowPanelsModal(false); } }}
+            <div className="section">
+              <label>Status</label>
+              <div className="chips">
+                {statuses.map((status) => (
+                  <button
+                    key={status.label}
+                    className={`chip ${selected === status.label ? "active" : ""}`}
+                    style={{
+                      background: status.color,
+                      borderColor: status.border,
+                    }}
+                    onClick={() => { setSelected(status.label); handleStatusClick(status.label); }}
                   >
-                    {editingPanelId === panel.id ? (
-                      <input
-                        autoFocus
-                        value={editingPanelName}
-                        onChange={(e) => setEditingPanelName(e.target.value)}
-                        onKeyDown={onPanelEditKeyDown}
-                        onBlur={handleSavePanelEdit}
-                        onClick={(e) => e.stopPropagation()}
-                        style={{
-                          flex: 1,
-                          border: 'none',
-                          borderBottom: '1px solid var(--blue)',
-                          background: 'transparent',
-                          fontSize: '0.8rem',
-                          fontFamily: 'Poppins, Montserrat, sans-serif',
-                          outline: 'none',
-                          color: 'var(--secondary)',
-                        }}
-                      />
-                    ) : (
-                      <span style={{ flex: 1 }}>{panel.name}</span>
-                    )}
-                    <span className="panel-actions">
-                      <FiEdit2
-                        title="Renomear painel"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingPanelId(panel.id);
-                          setEditingPanelName(panel.name);
-                        }}
-                      />
-                      <FiTrash2
-                        title="Excluir painel"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeletePanel(panel.id);
-                        }}
-                      />
-                    </span>
-                  </PanelItem>
+                    {status.label}
+                  </button>
                 ))}
               </div>
+            </div>
 
-              <div className="modal-footer">
-                {showAddPanel ? (
+            <div className="section">
+              <label>Responsável</label>
+
+              <Select
+                isClearable
+                isSearchable
+                name="responsavel1"
+                placeholder="Selecione"
+                options={userList.map((user) => ({
+                  value: user.id,
+                  label: user.value,
+                }))}
+                value={
+                  userList
+                    .map((user) => ({ value: user.id, label: user.value }))
+                    .find((u) => u.value === filters.responsavel) || null
+                }
+                onChange={(option) => {
+                  const newFilters = { ...filters, responsavel: option?.value || '' };
+                  setFilters(newFilters);
+                  LoadWorkflow('initialize', newFilters);
+                }}
+                styles={selectStyles}
+                menuPortalTarget={document.body}
+              />
+
+            </div>
+
+            <div className="section">
+              <label>Cliente</label>
+
+              <Select
+                isClearable
+                isSearchable
+                classNamePrefix="rs"
+                inputId="select-input"
+                placeholder="&nbsp;&nbsp;Selecione"
+                options={customerList}
+                getOptionValue={(option) => option.id}
+                getOptionLabel={(option) => option.label}
+                value={customer}
+                onChange={(option) => {
+                  setCustomer(option);
+
+                  const newFilters = { ...filters, cliente: option?.id || '' };
+                  setFilters(newFilters);
+                  LoadWorkflow('initialize', newFilters);
+                }}
+                onInputChange={(inputValue) => {
+                  RefreshPersonList(inputValue);
+                }}
+                filterOption={(option, inputValue) =>
+                  option.label.toLowerCase().includes(inputValue.toLowerCase())
+                }
+                styles={selectStyles}
+                menuPortalTarget={document.body}
+              />
+
+            </div>
+
+            <div className="section">
+              <label>Processo</label>
+
+              <Process>
+
+                {processTitle === 'Filtrar Processo' && (
+                  <button
+                    type="button"
+                    id="associar"
+                    onClick={handleGridSelectProcess}
+                  >
+                    <p>{processTitle}</p>
+                  </button>
+                )}
+                {processTitle !== 'Filtrar Processo' && (
                   <>
-                    <input
-                      ref={panelNameRef}
-                      autoFocus
-                      placeholder="Nome do novo painel"
-                      value={newPanelName}
-                      onChange={(e) => setNewPanelName(e.target.value)}
-                      onKeyDown={onPanelKeyDown}
-                    />
-                    <button type="button" className="buttonClick" onClick={handleAddPanel}>
-                      <FiCheck size={12} /> Salvar
-                    </button>
-                    <button
-                      type="button"
-                      className="buttonLinkClick"
-                      onClick={() => { 
-                        setShowAddPanel(false);
-                         setNewPanelName(''); 
-                      }}
-                    >
-                      <FiX size={12} />
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    type="button"
-                    className="buttonClick"
-                    style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: '0.3rem', alignItems: 'center' }}
-                    onClick={() => { setShowAddPanel(true); setTimeout(() => panelNameRef.current?.focus(), 50); }}
-                  >
-                    <FiPlus size={12} /> Novo Painel
-                  </button>
-                )}
-              </div>
-            </PanelsModal>
-          </ModalOverlay>
-        )}
-
-        {/* ── Date range modal ── */}
-        {showDateModal && (
-          <ModalOverlay onClick={() => { setShowDateModal(false); setSelectedPeriod(PERIOD_OPTIONS[0]); }}>
-            <PanelsModal onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
-                <h4>Selecionar Período</h4>
-                <FiX onClick={() => { setShowDateModal(false); setSelectedPeriod(PERIOD_OPTIONS[0]); }} />
-              </div>
-              <div className="modal-body" style={{ gap: '0.75rem', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                  <label style={{ fontSize: '0.75rem', color: 'var(--secondary)' }}>De</label>
-                  <input
-                    type="date"
-                    value={tempPeriodStart}
-                    onChange={(e) => setTempPeriodStart(e.target.value)}
-                    style={{ padding: '0.35rem 0.5rem', borderRadius: '4px', border: '1px solid #ddd', fontSize: '0.8rem' }}
-                  />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                  <label style={{ fontSize: '0.75rem', color: 'var(--secondary)' }}>Até</label>
-                  <input
-                    type="date"
-                    value={tempPeriodEnd}
-                    min={tempPeriodStart}
-                    onChange={(e) => setTempPeriodEnd(e.target.value)}
-                    style={{ padding: '0.35rem 0.5rem', borderRadius: '4px', border: '1px solid #ddd', fontSize: '0.8rem' }}
-                  />
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="buttonClick"
-                  style={{ flex: 1, justifyContent: 'center', display: 'flex' }}
-                  onClick={() => {
-                    setPeriodStart(tempPeriodStart);
-                    setPeriodEnd(tempPeriodEnd);
-                    setShowDateModal(false);
-                    setIsChangePeriod(true)
-                    const fmt = (s: string) => { const [, m, d] = s.split('-'); return `${d}/${m}`; };
-                    setSelectedPeriod({ value: 'custom', label: `${fmt(tempPeriodStart)} - ${fmt(tempPeriodEnd)}` });
-                  }}
-                >
-                  <FiCheck size={12} /> Confirmar
-                </button>
-                <button
-                  type="button"
-                  className="buttonLinkClick"
-                  onClick={() => { setShowDateModal(false); setSelectedPeriod(PERIOD_OPTIONS[0]); }}
-                >
-                  Cancelar
-                </button>
-              </div>
-            </PanelsModal>
-          </ModalOverlay>
-        )}
-
-        <BoardLayout>
-          {activePanel ? (
-            <DragDropContext onDragEnd={onDragEnd}>
-              <Droppable droppableId="board" direction="horizontal" type="COLUMN">
-                {(boardProvided) => (
-            <KanbanArea ref={boardProvided.innerRef} {...boardProvided.droppableProps}>
-              {activePhases.map((phase, colIndex) => {
-                const phaseCards = cards.filter((c) => c.phaseId === phase.id);
-
-                return (
-                  <Draggable key={phase.id} draggableId={`phase-${phase.id}`} index={colIndex}>
-                    {(colDrag, colSnapshot) => (
-                  <PhaseColumn
-                    ref={colDrag.innerRef}
-                    {...colDrag.draggableProps}
-                    style={{
-                      ...colDrag.draggableProps.style,
-                      opacity: colSnapshot.isDragging ? 0.88 : 1,
-                    }}
-                  >
-                    <PhaseHeader color={phase.color} {...colDrag.dragHandleProps}>
-                      <span className="phase-title">
-                        {editingPhaseId === phase.id ? (
-                          <input
-                            autoFocus
-                            value={editingPhaseName}
-                            onChange={(e) => setEditingPhaseName(e.target.value)}
-                            onKeyDown={onPhaseEditKeyDown}
-                            onBlur={handleSavePhaseEdit}
-                          />
-                        ) : (
-                          <span
-                            title="Clique para renomear"
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => handleStartEditPhase(phase)}
-                          >
-                            {phase.name}
-                          </span>
-                        )}
-                      </span>
-                      <span className="phase-count">{phaseCards.length}</span>
-                      {permissions.canChangePhaseColor && (
-                        <ColorPickerWrapper>
-                          <ColorDot
-                            color={phase.color}
-                            title="Alterar cor"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              (e.currentTarget.nextElementSibling as HTMLInputElement)?.click();
-                            }}
-                          >
-                            <MdPalette />
-                          </ColorDot>
-                          <input
-                            type="color"
-                            value={phase.color}
-                            style={{ position: 'absolute', opacity: 0, width: 0, height: 0, pointerEvents: 'none' }}
-                            onChange={(e) => handleChangePhaseColor(phase.id, e.target.value)}
-                          />
-                        </ColorPickerWrapper>
-                      )}
-                      {permissions.canDeletePhase && (
-                        <FiTrash2
-                          title="Excluir etapa"
-                          onClick={() => handleDeletePhase(phase.id)}
-                        />
-                      )}
-                    </PhaseHeader>
-
-                    <Droppable droppableId={String(phase.id)}>
-                      {(provided, snapshot) => (
-                        <CardsList
-                          ref={provided.innerRef}
-                          {...provided.droppableProps}
-                          style={{ background: snapshot.isDraggingOver ? '#f0f7ff' : undefined }}
-                        >
-                          {phaseCards.map((card, index) => (
-                            <Draggable key={card.id} draggableId={String(card.id)} index={index}>
-                              {(drag, dragSnapshot) => (
-                                <AppointmentCard
-                                  ref={drag.innerRef}
-                                  {...drag.draggableProps}
-                                  {...drag.dragHandleProps}
-                                  style={{
-                                    ...drag.draggableProps.style,
-                                    opacity: dragSnapshot.isDragging ? 0.85 : 1,
-                                    boxShadow: dragSnapshot.isDragging
-                                      ? '0 8px 24px rgba(2,6,23,0.18)'
-                                      : undefined,
-                                  }}
-                                >
-                                  <div className="card-header">
-                                    <span className="card-title">{card.title}</span>
-                                    {card.favorited ? (
-                                      <MdFavorite
-                                        className="card-favorite active"
-                                        title="Desfavoritar"
-                                        onClick={(e) => { e.stopPropagation(); handleToggleFavorite(card.id); }}
-                                      />
-                                    ) : (
-                                      <MdFavoriteBorder
-                                        className="card-favorite"
-                                        title="Favoritar"
-                                        onClick={(e) => { e.stopPropagation(); handleToggleFavorite(card.id); }}
-                                      />
-                                    )}
-                                  </div>
-                                  {card.description && (
-                                    <div className="card-description">{card.description}</div>
-                                  )}
-                                  <div className="card-meta">
-                                    {card.dateTime && (
-                                      <>
-                                        <FiClock />
-                                        <span>{card.dateTime}</span>
-                                      </>
-                                    )}
-                                    <FiTrash2
-                                      style={{ marginLeft: 'auto', cursor: 'pointer', color: '#fca5a5' }}
-                                      title="Excluir compromisso"
-                                      onClick={() => handleDeleteCard(card.id)}
-                                    />
-                                  </div>
-                                </AppointmentCard>
-                              )}
-                            </Draggable>
-                          ))}
-                          {provided.placeholder}
-                        </CardsList>
-                      )}
-                    </Droppable>
-
-                    <AddCardButton
-                      type="button"
-                      onClick={handleClickInclude}
-                    >
-                      <FiPlus /> Criar Compromisso
-                    </AddCardButton>
-                  </PhaseColumn>
+                    {completeLink && (
+                      <a href={redirectLink}>
+                        <p>{processTitle}</p>
+                      </a>
                     )}
-                  </Draggable>
-                );
-              })}
-              {boardProvided.placeholder}
-
-              {/* ── Add phase column ── */}
-              <AddPhaseColumn>
-                {addingPhaseForPanel === activePanelId ? (
-                  <div className="add-phase-form">
-                    <input
-                      ref={phaseNameRef}
-                      autoFocus
-                      placeholder="Nome da etapa"
-                      value={newPhaseName}
-                      onChange={(e) => setNewPhaseName(e.target.value)}
-                      onKeyDown={onPhaseKeyDown}
-                    />
-                    <div className="form-actions">
-                      <button type="button" className="buttonClick" onClick={handleAddPhase}>
-                        <FiCheck size={12} /> Salvar
-                      </button>
-                      <button
-                        type="button"
-                        className="buttonLinkClick"
-                        onClick={() => { setAddingPhaseForPanel(null); setNewPhaseName(''); }}
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </div>
-                ) : (
+                  </>
+                )}
+                {processTitle === 'Filtrar Processo' && (
                   <button
                     type="button"
-                    className="add-phase-btn"
-                    onClick={() => {
-                      setAddingPhaseForPanel(activePanelId);
-                      setTimeout(() => phaseNameRef.current?.focus(), 50);
-                    }}
+                    onClick={handleGridSelectProcess}
                   >
-                    <FiPlus /> Nova Etapa
+                    <RiFolder2Fill />
                   </button>
                 )}
-              </AddPhaseColumn>
-            </KanbanArea>
+
+                {processTitle !== 'Filtrar Processo' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProcessTitle('Filtrar Processo');
+                      const newFilters = { ...filters, processo: null };
+                      setFilters(newFilters);
+                      LoadWorkflow('initialize', newFilters);
+                      selectProcess(null)
+                      setAppointmentMatter(undefined);
+                      //setTriggerActionsMap({});
+                    }}
+                  >
+                    {<RiEraserLine />}
+                  </button>
                 )}
-              </Droppable>
-            </DragDropContext>
-          ) : (
-            <EmptyState>
-              <FiLayout />
-              <p>Nenhum painel selecionado. Crie um novo painel para começar.</p>
-            </EmptyState>
-          )}
-        </BoardLayout>
+              </Process>
+
+            </div>
+
+            {notificationTag && (
+              <div className="section">
+                <label>Notificação</label>
+
+                <label>
+                  <p>{notificationTag}</p>
+                </label>
+
+              </div>
+            )}
+
+
+<div className="section" style={{ marginTop: "20px" }}>
+              <button
+                type="button"
+                className='buttonClick'
+                onClick={() => {
+                  const filtrosLimpados = {
+                    status: '',
+                    responsavel: '',
+                    cliente: '',
+                    processo: null
+                  };
+
+                  setSelected('');
+                  setFilters(filtrosLimpados);
+                  setCustomer(null);
+                  setProcessTitle('Filtrar Processo');
+                  selectProcess(null);
+                  setAppointmentMatter(undefined);
+
+                  localStorage.removeItem('@Gojur:publicationId');
+                  localStorage.removeItem('@Gojur:followUpId');
+                  localStorage.removeItem('@Gojur:notificationTag');
+                  localStorage.removeItem('@Gojur:filterCustomerId')
+                  localStorage.removeItem('@Gojur:filterCustomer')
+                  localStorage.removeItem('@Gojur:customer')
+                  localStorage.removeItem('@Gojur:filterMatterId')
+
+                  setNotificationTag('');
+
+                  LoadWorkflow('initialize', filtrosLimpados);
+
+                }}
+                style={{
+                  width: "100%",
+                 
+                }}
+              >
+                Limpar filtros
+              </button>
+            </div>
+
+
+
+          </Sidebar>
+
+          <Main>
+            <div className="columns">
+
+
+              <section>
+                <KanbanCard onDragOverCapture={(e) => e.preventDefault()}>
+                  <header>
+                    Em andamento &nbsp;&nbsp;
+                  </header>
+
+                  {workflowList
+                    .filter((item) => item.statusType === "Em andamento")
+                    .map((item) => (
+                      <>
+                        <div className="totalHeader">
+                          {item.name}
+                        </div>
+
+                        <BusinessCard key={item.workflowexecId} onClick={() => handleSelectWorkflow(item.workflowexecId, item.customer)}>
+
+                          <p>
+                            <label>Processo:</label> {item.matter}
+                          </p>
+                          <p>
+                            <label>Cliente:</label> {item.customer}
+                          </p>
+                          <p>
+                            <label>Início:</label> {item.startDate}
+                          </p>
+                        </BusinessCard>
+                      </>
+                    ))}
+                </KanbanCard>
+              </section>
+
+
+              <section>
+                <KanbanCard onDragOverCapture={(e) => e.preventDefault()}>
+                  <header>
+                    Atraso &nbsp;&nbsp;
+                  </header>
+
+                  {workflowList
+                    .filter((item) => item.statusType === "Atraso")
+                    .map((item) => (
+                      <>
+                        <div className="totalHeader">
+                          {item.name}
+                        </div>
+
+                        <BusinessCard key={item.workflowexecId} onClick={() => handleSelectWorkflow(item.workflowexecId, item.customer)}>
+
+                          <p>
+                            <label>Processo:</label> {item.matter}
+                          </p>
+                          <p>
+                            <label>Cliente:</label> {item.customer}
+                          </p>
+                          <p>
+                            <label>Início:</label> {item.startDate}
+                          </p>
+                        </BusinessCard>
+                      </>
+                    ))}
+                </KanbanCard>
+              </section>
+
+
+              <section>
+                <KanbanCard onDragOverCapture={(e) => e.preventDefault()}>
+                  <header>
+                    Concluído &nbsp;&nbsp;
+                  </header>
+
+                  {workflowList
+                    .filter((item) => item.statusType === "Concluído")
+                    .map((item) => (
+                      <>
+                        <div className="totalHeader">
+                          {item.name}
+                        </div>
+
+                        <BusinessCard key={item.workflowexecId} onClick={() => handleSelectWorkflow(item.workflowexecId, item.customer)}>
+
+                          <p>
+                            <label>Processo:</label> {item.matter}
+                          </p>
+                          <p>
+                            <label>Cliente:</label> {item.customer}
+                          </p>
+                          <p>
+                            <label>Início:</label> {item.startDate}
+                          </p>
+                        </BusinessCard>
+                      </>
+                    ))}
+                </KanbanCard>
+              </section>
+
+
+            </div>
+          </Main>
+        </Grid>
+
+        {openSelectProcess === 'Open' ? <GridSelectProcess /> : null}
       </Content>
+
+
     </Container>
   );
-}
+};
