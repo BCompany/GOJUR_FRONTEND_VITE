@@ -211,6 +211,8 @@ const MatterListOptionsMenu = () => {
   }, []);
 
   const handleMatterReportSimpleList = useCallback(() => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PRORELPROCESSO'})
+    
     handleIsOpenMenuConfig(!isOpenMenuConfig)
     setShowConfigMenu(false)
     handleIsMenuOpen(false)
@@ -218,6 +220,8 @@ const MatterListOptionsMenu = () => {
   }, []);
 
   const handleMatterDemandReportList = useCallback(() => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PRORELPROPEDIDO'})
+
     handleIsOpenMenuConfig(!isOpenMenuConfig)
     setShowConfigMenu(false)
     handleIsMenuOpen(false)

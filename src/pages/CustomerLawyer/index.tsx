@@ -19,6 +19,7 @@ import {
 } from 'react-icons/fa';
 import { FiSearch, FiX } from 'react-icons/fi';
 import api from 'services/api';
+import { useDevice } from "react-use-device";
 import FullCalendar from '@fullcalendar/react';
 import LoaderWaiting from 'react-spinners/ClipLoader';
 import { useToast } from 'context/toast';
@@ -66,6 +67,7 @@ const CustomerLawyer = () => {
   const [showMatterTab, setShowMatterTab] = useState<boolean>(true);
   const [showEventTab, setShowEventTab] = useState<boolean>(false);
   const [matterList, setMatterList] = useState<IMatterLawyerData[]>([]);
+  const { isMOBILE } = useDevice();
 
   // DATE SELECT
   const [openModalDateSelect, setOpenModalDateSelect] =
@@ -458,308 +460,620 @@ const CustomerLawyer = () => {
 
   return (
     <Container>
-      <Content onScroll={handleScrool} ref={scrollRef}>
-        <div className="header">
-          <div className="userName">
-            <button
-              type="button"
-              title="Sair"
-              className="buttonTabInactive"
-              onClick={() => handleSignOut()}
-            >
-              {/* <FaPowerOff /> */}
-            </button>
-            {localStorage.getItem('@GoJur:companyId')}
-            {' - '}
-            {localStorage.getItem('@GoJur:name')}
-          </div>
-
-          {!showEventTab && (
-            <div className="search">
-              <Search
-                onKeyPress={(e: React.KeyboardEvent) => {
-                  if (
-                    e.key === 'Delete' ||
-                    e.key === 'Backspace' ||
-                    e.which === 8
-                  ) {
-                    e.preventDefault();
-                  }
-                  if (e.key == 'Enter') {
-                    handleReloadPage();
-                  }
-                }}
-                onChange={e => {
-                  setTerm(e.target.value);
-                }}
-                handleRequest={handleReloadPage}
-                icon={FiSearch}
-                placeholder="Procurar processos"
-                name="search"
-                style={{ marginTop: '-3px' }}
-              />
+      
+      {!isMOBILE && (
+        <Content onScroll={handleScrool} ref={scrollRef}>
+          <div className="header">
+            <div className="userName">
+              <button
+                type="button"
+                title="Sair"
+                className="buttonTabInactive"
+                onClick={() => handleSignOut()}
+              >
+                {/* <FaPowerOff /> */}
+              </button>
+              {localStorage.getItem('@GoJur:companyId')}
+              {' - '}
+              {localStorage.getItem('@GoJur:name')}
             </div>
-          )}
-        </div>
 
-        <Tabs>
-          <div>
-            <button
-              type="button"
-              title="Visualizar processos"
-              className={
-                showMatterTab ? 'buttonTabActive' : 'buttonTabInactive'
-              }
-              onClick={() => handleTabs('matter')}
-            >
-              <FaFolderOpen />
-              Processos
-            </button>
-
-            <button
-              type="button"
-              title="Visualizar agenda"
-              className={showEventTab ? 'buttonTabActive' : 'buttonTabInactive'}
-              onClick={() => handleTabs('events')}
-            >
-              <FaCalendarAlt />
-              Compromissos
-            </button>
-
-            <button
-              type="button"
-              title="Sair"
-              className="buttonTabInactive"
-              onClick={() => handleTabs('logout')}
-            >
-              <FaPowerOff />
-              Sair
-            </button>
-          </div>
-
-          <Tab active={showMatterTab}>
-            {matterList.map(matter => {
-              return (
-                <>
-                  <MatterCard key={`matterId_${matter.cod_Processo}`}>
-                    <header>
-                      <FaFolderOpen />
-                      <span>Pasta:</span>
-                      {matter.cod_Pasta}
-                    </header>
-
-                    <div>
-                      <section>
-                        <span>Processo:</span>
-                        {matter.num_Processo}
-                      </section>
-
-                      <section>
-                        <span>Partes:</span>
-                        {`${matter.nomeClientePrincipal} X ${matter.nomeContrarioPrincipal}`}
-                      </section>
-
-                      <section>
-                        {matter.isMatterLegal && <span>Ação Judicial:</span>}
-                        {!matter.isMatterLegal && <span>Assunto:</span>}
-                        {matter.des_AcaoJudicial}
-                      </section>
-                    </div>
-
-                    <div className="followList">
-                      <header>
-                        {matter.followList.length > 0 && (
-                          <span>Andamentos</span>
-                        )}
-                      </header>
-
-                      {matter.followList.map(follow => (
-                        <section>
-                          <span>Data:</span>
-                          {!(follow.showAll ?? false) &&
-                            `${FormatDate(
-                              new Date(follow.date),
-                              'dd/MM/yyyy',
-                            )} - ${
-                              follow.description.length > 1000
-                                ? follow.description.substring(0, 1000)
-                                : follow.description
-                            }`}
-                          {(follow.showAll ?? false) &&
-                            `${FormatDate(
-                              new Date(follow.date),
-                              'dd/MM/yyyy',
-                            )} - ${follow.description}`}
-
-                          {!follow.showAll &&
-                            follow.description.length > 1000 && (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handleDescription(
-                                    follow,
-                                    matter.cod_Processo,
-                                    true,
-                                  )
-                                }
-                              >
-                                Ver Mais
-                              </button>
-                            )}
-
-                          {follow.showAll &&
-                            follow.description.length > 1000 && (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handleDescription(
-                                    follow,
-                                    matter.cod_Processo,
-                                    false,
-                                  )
-                                }
-                              >
-                                Ver Menos
-                              </button>
-                            )}
-                        </section>
-                      ))}
-
-                      {matter.followList.length > 0 && (
-                        <footer>
-                          <FaFolderOpen
-                            onClick={() => LoadFollowsList(matter)}
-                          />
-                          &nbsp;
-                          <button
-                            type="button"
-                            className="buttonLinkClick"
-                            onClick={() => LoadFollowsList(matter)}
-                          >
-                            Ver mais Andamentos
-                          </button>
-                        </footer>
-                      )}
-                    </div>
-                  </MatterCard>
-
-                  <DropArea>
-                    <FileComponent
-                      matterId={matter.cod_Processo}
-                      load
-                      sharedFile
-                      fromModal=""
-                    />
-                  </DropArea>
-
-                  <Divisor />
-                </>
-              );
-            })}
-
-            {matterList.length == 0 && !isLoading && (
-              <div className="messageEmpty">
-                <FaFolderOpen />
-                Nenhum processo foi encontrado
+            {!showEventTab && (
+              <div className="search">
+                <Search
+                  onKeyPress={(e: React.KeyboardEvent) => {
+                    if (
+                      e.key === 'Delete' ||
+                      e.key === 'Backspace' ||
+                      e.which === 8
+                    ) {
+                      e.preventDefault();
+                    }
+                    if (e.key == 'Enter') {
+                      handleReloadPage();
+                    }
+                  }}
+                  onChange={e => {
+                    setTerm(e.target.value);
+                  }}
+                  handleRequest={handleReloadPage}
+                  icon={FiSearch}
+                  placeholder="Procurar processos"
+                  name="search"
+                  style={{ marginTop: '-3px' }}
+                />
               </div>
             )}
-          </Tab>
+          </div>
 
-          <Tab active={showEventTab}>
-            <FullCalendar
-              ref={calendarRef}
-              locale={ptbr}
-              plugins={[
-                dayGridPlugin,
-                timeGridPlugin,
-                listPlugin,
-                interactionPlugin,
-              ]}
-              events={calendarList}
-              buttonText={buttonsCalendarLabel}
-              datesSet={e => handleDatesChange(e)}
-              showNonCurrentDates
-              eventContent={renderAppointmentCell}
-              displayEventTime={false}
-              views={{ dayGridMonth: { dayMaxEventRows: 7 } }}
-              height="90vh"
-              customButtons={{
-                myCustomButton: {
-                  text: 'Ir para',
-                  click() {
-                    selectDate();
+          <Tabs>
+            <div>
+              <button
+                type="button"
+                title="Visualizar processos"
+                className={
+                  showMatterTab ? 'buttonTabActive' : 'buttonTabInactive'
+                }
+                onClick={() => handleTabs('matter')}
+              >
+                <FaFolderOpen />
+                Processos
+              </button>
+
+              <button
+                type="button"
+                title="Visualizar agenda"
+                className={showEventTab ? 'buttonTabActive' : 'buttonTabInactive'}
+                onClick={() => handleTabs('events')}
+              >
+                <FaCalendarAlt />
+                Compromissos
+              </button>
+
+              <button
+                type="button"
+                title="Sair"
+                className="buttonTabInactive"
+                onClick={() => handleTabs('logout')}
+              >
+                <FaPowerOff />
+                Sair
+              </button>
+            </div>
+
+            <Tab active={showMatterTab}>
+              {matterList.map(matter => {
+                return (
+                  <>
+                    <MatterCard key={`matterId_${matter.cod_Processo}`}>
+                      <header>
+                        <FaFolderOpen />
+                        <span>Pasta:</span>
+                        {matter.cod_Pasta}
+                      </header>
+
+                      <div>
+                        <section>
+                          <span>Processo:</span>
+                          {matter.num_Processo}
+                        </section>
+
+                        <section>
+                          <span>Partes:</span>
+                          {`${matter.nomeClientePrincipal} X ${matter.nomeContrarioPrincipal}`}
+                        </section>
+
+                        <section>
+                          {matter.isMatterLegal && <span>Ação Judicial:</span>}
+                          {!matter.isMatterLegal && <span>Assunto:</span>}
+                          {matter.des_AcaoJudicial}
+                        </section>
+                      </div>
+
+                      <div className="followList">
+                        <header>
+                          {matter.followList.length > 0 && (
+                            <span>Andamentos</span>
+                          )}
+                        </header>
+
+                        {matter.followList.map(follow => (
+                          <section>
+                            <span>Data:</span>
+                            {!(follow.showAll ?? false) &&
+                              `${FormatDate(
+                                new Date(follow.date),
+                                'dd/MM/yyyy',
+                              )} - ${
+                                follow.description.length > 1000
+                                  ? follow.description.substring(0, 1000)
+                                  : follow.description
+                              }`}
+                            {(follow.showAll ?? false) &&
+                              `${FormatDate(
+                                new Date(follow.date),
+                                'dd/MM/yyyy',
+                              )} - ${follow.description}`}
+
+                            {!follow.showAll &&
+                              follow.description.length > 1000 && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleDescription(
+                                      follow,
+                                      matter.cod_Processo,
+                                      true,
+                                    )
+                                  }
+                                >
+                                  Ver Mais
+                                </button>
+                              )}
+
+                            {follow.showAll &&
+                              follow.description.length > 1000 && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleDescription(
+                                      follow,
+                                      matter.cod_Processo,
+                                      false,
+                                    )
+                                  }
+                                >
+                                  Ver Menos
+                                </button>
+                              )}
+                          </section>
+                        ))}
+
+                        {matter.followList.length > 0 && (
+                          <footer>
+                            <FaFolderOpen
+                              onClick={() => LoadFollowsList(matter)}
+                            />
+                            &nbsp;
+                            <button
+                              type="button"
+                              className="buttonLinkClick"
+                              onClick={() => LoadFollowsList(matter)}
+                            >
+                              Ver mais Andamentos
+                            </button>
+                          </footer>
+                        )}
+                      </div>
+                    </MatterCard>
+
+                    <DropArea>
+                      <FileComponent
+                        matterId={matter.cod_Processo}
+                        load
+                        sharedFile
+                        fromModal=""
+                      />
+                    </DropArea>
+
+                    <Divisor />
+                  </>
+                );
+              })}
+
+              {matterList.length == 0 && !isLoading && (
+                <div className="messageEmpty">
+                  <FaFolderOpen />
+                  Nenhum processo foi encontrado
+                </div>
+              )}
+            </Tab>
+
+            <Tab active={showEventTab}>
+              <FullCalendar
+                ref={calendarRef}
+                locale={ptbr}
+                plugins={[
+                  dayGridPlugin,
+                  timeGridPlugin,
+                  listPlugin,
+                  interactionPlugin,
+                ]}
+                events={calendarList}
+                buttonText={buttonsCalendarLabel}
+                datesSet={e => handleDatesChange(e)}
+                showNonCurrentDates
+                eventContent={renderAppointmentCell}
+                displayEventTime={false}
+                views={{ dayGridMonth: { dayMaxEventRows: 7 } }}
+                height="90vh"
+                customButtons={{
+                  myCustomButton: {
+                    text: 'Ir para',
+                    click() {
+                      selectDate();
+                    },
                   },
-                },
-              }}
-              headerToolbar={{
-                left: 'today',
-                center: 'title',
-                right:
-                  'dayGridMonth,timeGridWeek,dayGridWeek,timeGridDay,listDay,myCustomButton,prev,next',
-              }}
-            />
-          </Tab>
-        </Tabs>
+                }}
+                headerToolbar={{
+                  left: 'today',
+                  center: 'title',
+                  right:
+                    'dayGridMonth,timeGridWeek,dayGridWeek,timeGridDay,listDay,myCustomButton,prev,next',
+                }}
+              />
+            </Tab>
+          </Tabs>
 
-        {openModalDateSelect && (
-          <ModalDateSelect>
-            <div id="Header" style={{ height: '30px' }}>
-              <div className="menuTitle">
-                &nbsp;&nbsp;&nbsp;&nbsp;Selecionar Data
+          {openModalDateSelect && (
+            <ModalDateSelect>
+              <div id="Header" style={{ height: '30px' }}>
+                <div className="menuTitle">
+                  &nbsp;&nbsp;&nbsp;&nbsp;Selecionar Data
+                </div>
+                <div className="menuSection">
+                  <FiX onClick={e => CloseDateSelect()} />
+                </div>
               </div>
-              <div className="menuSection">
-                <FiX onClick={e => CloseDateSelect()} />
+
+              <br />
+
+              <div style={{ marginLeft: '35%', width: '150px', float: 'left' }}>
+                <label htmlFor="data" style={{ width: '35%' }}>
+                  Selecionar Data
+                  <input
+                    style={{ backgroundColor: 'white', marginLeft: '-20px' }}
+                    type="date"
+                    value={selectDateStart}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                      setSelectDateStart(e.target.value)
+                    }
+                    onInput={(e: ChangeEvent<HTMLInputElement>) =>
+                      AutomaticDateSelect(e.target.value)
+                    }
+                  />
+                </label>
               </div>
+
+              <br />
+              <br />
+              <br />
+              <br />
+
+              <div style={{ float: 'left', width: '150px', marginLeft: '70px' }}>
+                <button
+                  type="button"
+                  className="buttonClick"
+                  onClick={() => ApplyDateSelect(selectDateStart)}
+                >
+                  <AiOutlineCheckCircle />
+                  Aplicar
+                </button>
+              </div>
+
+              <div style={{ float: 'left', width: '150px' }}>
+                <button
+                  type="button"
+                  className="buttonClick"
+                  onClick={() => CloseDateSelect()}
+                >
+                  <FaRegTimesCircle />
+                  Fechar
+                </button>
+              </div>
+            </ModalDateSelect>
+          )}
+        </Content>
+      )}
+
+      {isMOBILE && (
+        <Content onScroll={handleScrool} ref={scrollRef}>
+          <div className="headerMobile">
+            <div className="userName">
+              <button
+                type="button"
+                title="Sair"
+                className="buttonTabInactive"
+                onClick={() => handleSignOut()}
+              >
+              </button>
+              {localStorage.getItem('@GoJur:companyId')}
+              {' - '}
+              {localStorage.getItem('@GoJur:name')}
             </div>
-
             <br />
 
-            <div style={{ marginLeft: '35%', width: '150px', float: 'left' }}>
-              <label htmlFor="data" style={{ width: '35%' }}>
-                Selecionar Data
-                <input
-                  style={{ backgroundColor: 'white', marginLeft: '-20px' }}
-                  type="date"
-                  value={selectDateStart}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setSelectDateStart(e.target.value)
-                  }
-                  onInput={(e: ChangeEvent<HTMLInputElement>) =>
-                    AutomaticDateSelect(e.target.value)
-                  }
+            {!showEventTab && (
+              <div className="search">
+                <Search
+                  onKeyPress={(e: React.KeyboardEvent) => {
+                    if (
+                      e.key === 'Delete' ||
+                      e.key === 'Backspace' ||
+                      e.which === 8
+                    ) {
+                      e.preventDefault();
+                    }
+                    if (e.key == 'Enter') {
+                      handleReloadPage();
+                    }
+                  }}
+                  onChange={e => {
+                    setTerm(e.target.value);
+                  }}
+                  handleRequest={handleReloadPage}
+                  icon={FiSearch}
+                  placeholder="Procurar processos"
+                  name="search"
+                  style={{ marginTop: '-3px', alignItens:'center' }}
                 />
-              </label>
-            </div>
+              </div>
+            )}
+            <br />
+            <br />
+          </div>
+          <br />
 
-            <br />
-            <br />
-            <br />
-            <br />
-
-            <div style={{ float: 'left', width: '150px', marginLeft: '70px' }}>
+          <Tabs>
+            <div style={{width:'100%', textAlign:'center'}}>
               <button
                 type="button"
-                className="buttonClick"
-                onClick={() => ApplyDateSelect(selectDateStart)}
+                title="Visualizar processos"
+                className={
+                  showMatterTab ? 'buttonTabActive' : 'buttonTabInactive'
+                }
+                onClick={() => handleTabs('matter')}
               >
-                <AiOutlineCheckCircle />
-                Aplicar
+                <FaFolderOpen />
+                Processos
+              </button>
+
+              <button
+                type="button"
+                title="Visualizar agenda"
+                className={showEventTab ? 'buttonTabActive' : 'buttonTabInactive'}
+                onClick={() => handleTabs('events')}
+              >
+                <FaCalendarAlt />
+                Compromissos
+              </button>
+
+              <button
+                type="button"
+                title="Sair"
+                className="buttonTabInactive"
+                onClick={() => handleTabs('logout')}
+              >
+                <FaPowerOff />
+                Sair
               </button>
             </div>
 
-            <div style={{ float: 'left', width: '150px' }}>
-              <button
-                type="button"
-                className="buttonClick"
-                onClick={() => CloseDateSelect()}
-              >
-                <FaRegTimesCircle />
-                Fechar
-              </button>
-            </div>
-          </ModalDateSelect>
-        )}
-      </Content>
+            <Tab active={showMatterTab}>
+              {matterList.map(matter => {
+                return (
+                  <>
+                    <MatterCard key={`matterId_${matter.cod_Processo}`}>
+                      <header>
+                        <FaFolderOpen />
+                        <span>Pasta:</span>
+                        {matter.cod_Pasta}
+                      </header>
+
+                      <div>
+                        <section>
+                          <span>Processo:</span>
+                          {matter.num_Processo}
+                        </section>
+
+                        <section>
+                          <span>Partes:</span>
+                          {`${matter.nomeClientePrincipal} X ${matter.nomeContrarioPrincipal}`}
+                        </section>
+
+                        <section>
+                          {matter.isMatterLegal && <span>Ação Judicial:</span>}
+                          {!matter.isMatterLegal && <span>Assunto:</span>}
+                          {matter.des_AcaoJudicial}
+                        </section>
+                      </div>
+
+                      <div className="followList">
+                        <header>
+                          {matter.followList.length > 0 && (
+                            <span>Andamentos</span>
+                          )}
+                        </header>
+
+                        {matter.followList.map(follow => (
+                          <section>
+                            <span>Data:</span>
+                            {!(follow.showAll ?? false) &&
+                              `${FormatDate(
+                                new Date(follow.date),
+                                'dd/MM/yyyy',
+                              )} - ${
+                                follow.description.length > 1000
+                                  ? follow.description.substring(0, 1000)
+                                  : follow.description
+                              }`}
+                            {(follow.showAll ?? false) &&
+                              `${FormatDate(
+                                new Date(follow.date),
+                                'dd/MM/yyyy',
+                              )} - ${follow.description}`}
+
+                            {!follow.showAll &&
+                              follow.description.length > 1000 && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleDescription(
+                                      follow,
+                                      matter.cod_Processo,
+                                      true,
+                                    )
+                                  }
+                                >
+                                  Ver Mais
+                                </button>
+                              )}
+
+                            {follow.showAll &&
+                              follow.description.length > 1000 && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleDescription(
+                                      follow,
+                                      matter.cod_Processo,
+                                      false,
+                                    )
+                                  }
+                                >
+                                  Ver Menos
+                                </button>
+                              )}
+                          </section>
+                        ))}
+
+                        {matter.followList.length > 0 && (
+                          <footer>
+                            <FaFolderOpen
+                              onClick={() => LoadFollowsList(matter)}
+                            />
+                            &nbsp;
+                            <button
+                              type="button"
+                              className="buttonLinkClick"
+                              onClick={() => LoadFollowsList(matter)}
+                            >
+                              Ver mais Andamentos
+                            </button>
+                          </footer>
+                        )}
+                      </div>
+                    </MatterCard>
+
+                    <DropArea>
+                      <FileComponent
+                        matterId={matter.cod_Processo}
+                        load
+                        sharedFile
+                        fromModal=""
+                      />
+                    </DropArea>
+
+                    <Divisor />
+                  </>
+                );
+              })}
+
+              {matterList.length == 0 && !isLoading && (
+                <div className="messageEmpty">
+                  <FaFolderOpen />
+                  Nenhum processo foi encontrado
+                </div>
+              )}
+            </Tab>
+
+            <Tab active={showEventTab}>
+              <FullCalendar
+                ref={calendarRef}
+                locale={ptbr}
+                plugins={[
+                  dayGridPlugin,
+                  timeGridPlugin,
+                  listPlugin,
+                  interactionPlugin,
+                ]}
+                events={calendarList}
+                buttonText={buttonsCalendarLabel}
+                datesSet={e => handleDatesChange(e)}
+                showNonCurrentDates
+                eventContent={renderAppointmentCell}
+                displayEventTime={false}
+                views={{ dayGridMonth: { dayMaxEventRows: 7 } }}
+                height="90vh"
+                customButtons={{
+                  myCustomButton: {
+                    text: 'Ir para',
+                    click() {
+                      selectDate();
+                    },
+                  },
+                }}
+                headerToolbar={{
+                  left: 'today',
+                  center: 'title',
+                  right:
+                    'dayGridMonth,timeGridWeek,dayGridWeek,timeGridDay,listDay,myCustomButton,prev,next',
+                }}
+              />
+            </Tab>
+          </Tabs>
+
+          {openModalDateSelect && (
+            <ModalDateSelect>
+              <br />
+              <div id="Header" style={{ height: '30px' }}>
+                <div className="menuTitle">
+                  &nbsp;&nbsp;&nbsp;&nbsp;Selecionar Data
+                </div>
+                <div className="menuSection">
+                  <FiX onClick={e => CloseDateSelect()} />
+                </div>
+              </div>
+
+              <br />
+
+              <div style={{ marginLeft: '35%', width: '150px', float: 'left' }}>
+                <label htmlFor="data" style={{ width: '35%' }}>
+                  Selecionar Data
+                  <input
+                    style={{ backgroundColor: 'white', marginLeft: '-20px' }}
+                    type="date"
+                    value={selectDateStart}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                      setSelectDateStart(e.target.value)
+                    }
+                    onInput={(e: ChangeEvent<HTMLInputElement>) =>
+                      AutomaticDateSelect(e.target.value)
+                    }
+                  />
+                </label>
+              </div>
+
+              <br />
+              <br />
+              <br />
+              <br />
+
+              <div style={{ float: 'left', width: '150px', marginLeft: '70px' }}>
+                <button
+                  type="button"
+                  className="buttonClick"
+                  onClick={() => ApplyDateSelect(selectDateStart)}
+                >
+                  <AiOutlineCheckCircle />
+                  Aplicar
+                </button>
+              </div>
+
+              <div style={{ float: 'left', width: '150px' }}>
+                <button
+                  type="button"
+                  className="buttonClick"
+                  onClick={() => CloseDateSelect()}
+                >
+                  <FaRegTimesCircle />
+                  Fechar
+                </button>
+              </div>
+            </ModalDateSelect>
+          )}
+        </Content>
+      )}      
 
       {isLoading && (
         <>

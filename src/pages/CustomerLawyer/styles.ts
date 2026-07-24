@@ -49,6 +49,19 @@ export const Content = styled.div`
       margin-bottom:-30px;   
     }
 
+    .headerMobile {
+      display:flex;
+      flex-direction:column;
+      font-size:0.65rem;
+      color:var(--blue-twitter);
+      margin-top:10px;
+      text-align:center;
+      font-weight:500;
+      align-items: center;
+      margin-right:10px;  
+      margin-bottom:-30px;   
+    }
+
     #fc-dom-1 {
       font-weight:600;
       font-size:0.8rem;

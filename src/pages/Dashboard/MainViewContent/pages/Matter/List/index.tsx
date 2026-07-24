@@ -432,6 +432,36 @@ const Matter: React.FC = () => {
 
 
   const handleChangeStatus = async (status) => {
+    if(status == "T"){
+      if(matterType === 'matterLegal')
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROFILTROTODOS'})
+      else
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOFILTROTODOS'})
+    }
+    if(status == "A"){
+      if(matterType === 'matterLegal')
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROFILTROATIVO'})
+      else
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOFILTROATIVO'})
+    }
+    if(status == "R"){
+      if(matterType === 'matterLegal')
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROFILTROARQUIVADO'})
+      else
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOFILTROARQUIVADO'})
+    }
+    if(status == "M"){
+      if(matterType === 'matterLegal')
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROFILTROMONITORADO'})
+      else
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOFILTROMONITORADO'})
+    }
+    if(status == "P"){
+      if(matterType === 'matterLegal')
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROFILTROEMPESQUISA'})
+      else
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOFILTROEMPESQUISA'})
+    }
 
     // m -> Monitorado
     // In this case we do not save as default parameter, because M type is considerer a filter not a default behavior
@@ -445,6 +475,30 @@ const Matter: React.FC = () => {
     }
 
     setStatus(status);
+  }
+
+
+  const handleChangeSortBy = async (sortBy) => {
+    if(sortBy == "dta_UltimoMovimento"){
+      if(matterType === 'matterLegal')
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROORGMOVIMENTACAO'})
+      else
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOORGMOVIMENTACAO'})
+    }
+    if(sortBy == "cod_Processo"){
+      if(matterType === 'matterLegal')
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROORGCADASTRO'})
+      else
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOORGCADASTRO'})
+    }
+    if(sortBy == "nom_ClientePrincipal"){
+      if(matterType === 'matterLegal')
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROORGCLIENTE'})
+      else
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOORGCLIENTE'})
+    }
+
+    setSortBy(sortBy)
   }
 
 
@@ -1684,6 +1738,11 @@ const Matter: React.FC = () => {
   // SAVE MATTER EVENT
   const handleSaveNewFollow = useCallback(async (matter: IMatterData) => {
     try {
+      if(matterType === 'matterLegal')
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROCRIARACOMPPAINEL'})
+      else
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOCRIARACOMPPAINEL'})
+
       // Call validation
       if (!ValidateSaveFollow(matter, false)) {
         return
@@ -1737,7 +1796,13 @@ const Matter: React.FC = () => {
   // EDIT MATTER EVENT
   const handleEditFollow = useCallback((state: string, follow: IMatterFollowData, matterId: number) => {
     try {
-      console.log(follow)
+      if(state == 'save'){
+        if(matterType === 'matterLegal')
+          api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROEDITARACOMPPAINEL'})
+        else
+          api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOEDITARACOMPPAINEL'})
+      }
+
       if (follow.typeFollow == 'T' || follow.typeFollow == 'W')
         setIsEdit(true)
       else
@@ -2014,6 +2079,10 @@ const Matter: React.FC = () => {
 
 
   const handleNewMatter = () => {
+    if(matterType === 'matterLegal')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROINCLUIRMANUAL'})
+    else
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOINCLUIRMANUAL'})
 
     if ((!hasButtonIncludeMatterLegal && matterType == 'matterLegal') || (!hasButtonIncludeMatterAdvisory && matterType == 'matterAdvisory')) {
       addToast({
@@ -2031,6 +2100,7 @@ const Matter: React.FC = () => {
 
 
   const handleNewMatterAutomatic = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROINCLUIRAUTOMATICO'})
 
     if ((!hasButtonIncludeMatterLegal && matterType == 'matterLegal') || (!hasButtonIncludeMatterAdvisory && matterType == 'matterAdvisory')) {
       addToast({
@@ -2048,6 +2118,7 @@ const Matter: React.FC = () => {
 
 
   const handleNewMatterAutomaticBatch = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROINCLUIRLOTE'})
 
     if ((!hasButtonIncludeMatterLegal && matterType == 'matterLegal') || (!hasButtonIncludeMatterAdvisory && matterType == 'matterAdvisory')) {
       addToast({
@@ -2495,7 +2566,8 @@ const getTextColor = (hex) => {
                     autoComplete="off"
                     styles={selectStyles}
                     value={matterFilteOrderBy.filter(options => options.id === sortBy)}
-                    onChange={(item) => setSortBy(item ? item.id : '')}
+                    // onChange={(item) => setSortBy(item ? item.id : '')}
+                    onChange={(item) => handleChangeSortBy(item ? item.id : '')}
                     options={matterFilteOrderBy}
                   />
                 </label>
