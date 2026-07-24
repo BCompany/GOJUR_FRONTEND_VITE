@@ -1071,7 +1071,8 @@ useEffect(() => {
                 <button
                   type="button"
                   className="buttonLinkClick"
-                  onClick={() => { setShowDateModal(false); setSelectedPeriod(PERIOD_OPTIONS[0]); }}
+                  // onClick={() => { setShowDateModal(false); setSelectedPeriod(PERIOD_OPTIONS[0]); }}
+                  onClick={() => { setShowDateModal(false) }}
                 >
                   Cancelar
                 </button>
