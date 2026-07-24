@@ -313,7 +313,7 @@ const Publication: React.FC = () => {
       setPrintData([])
 
       if (isFirstLoad) {
-        const responseLog = api.post('/Usuario/SalvarLogNavegacaoUsuario', { token, module: 'MEN_PUBLICACAO' });
+        const responseLog = api.post('/Usuario/SalvarLogNavegacaoUsuario', { token, module: 'MEN_CENTRALNOTIFICACAO' });
       }
 
     } catch (err: any) {
@@ -625,8 +625,24 @@ const Publication: React.FC = () => {
     if(checkBox)
     {
       let text;
+
+      if(item.value == "itemSearch_withMatter")
+        text = "EVT_CNTFILTROCOMPROCESSO";
+      if(item.value == "itemSearch_withoutMatter")
+        text = "EVT_CNTFILTROSEMPROCESSO";
+
+      if(item.value == "itemSearch_read")
+        text = "EVT_CNTFILTROLIDAS";
+      if(item.value == "itemSearch_unread")
+        text = "EVT_CNTFILTRONAOLIDAS";
+
+      if(item.value == "itemSearch_publication")
+        text = "EVT_CNTFILTROPUBLICACAO";
+      if(item.value == "itemSearch_matterEvent")
+        text = "EVT_CNTFILTROANDAMENTO";
+
       if(item.value == "itemSearch_estadualFederal")
-        text = "EVT_CNTFILTROCIVELFED";
+        text = "EVT_CNTFILTROCIVELFEDERAL";
       if(item.value == "itemSearch_trabalhista")
         text = "EVT_CNTFILTROTRABALHISTA";
       if(item.value == "itemSearch_eleitoral")

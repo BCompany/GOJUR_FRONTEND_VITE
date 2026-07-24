@@ -1150,6 +1150,10 @@ const Matter: React.FC = () => {
 
 
   const handleDeleteMatter = (matterId: number, temp = false) => {
+    if(matterType === 'matterLegal')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROEXCLUIR'})
+    else
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOEXCLUIR'})
 
     if (!temp)
       setIsDeleting(true)
@@ -1306,30 +1310,6 @@ const Matter: React.FC = () => {
   };
 
 
-  /*
-  const handleAddition = (tag, item: IMatterData) => {
-
-    // allow only 5 markers by folder
-    if (item.markersList.length < 5) {
-
-      item.markersList.push(tag)
-      const updateMatterList = matterList.map(matter =>
-
-        matter.matterId === item.matterId ?
-          {
-            ...matter,
-            markersList: item.markersList
-          } :
-          matter
-      );
-
-      setMatterList(updateMatterList)
-      SaveMarkers(item.matterId, item.markersList)
-    }
-  };
-*/
-
-
   const handleAddition = (tag, item: IMatterData) => {
 
     // allow only 5 markers by folder
@@ -1446,13 +1426,13 @@ const Matter: React.FC = () => {
 
 
   const handleAppointmentModalInclude = async (matterId: number) => {
+    if(matterType === 'matterLegal')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROAGENDACOMPROMISSO'})
+    else
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOAGENDACOMPROMISSO'})
 
     try {
-
       isOpenModal('0')
-
-      // handleModalActive(true)
-
       setCurrentMatterId(matterId)
 
       if (matterId > 0) {
@@ -1661,6 +1641,10 @@ const Matter: React.FC = () => {
 
 
   const handleDocumentModal = (matterId: number, customerId: number) => {
+    if(matterType === 'matterLegal')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROEMITIRDOCUMENTOS'})
+    else
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOEMITIRDOCUMENTOS'})
 
     localStorage.setItem('@GoJur:matterId', matterId.toString())
     localStorage.setItem('@GoJur:customerId', customerId.toString())
@@ -1887,8 +1871,13 @@ const Matter: React.FC = () => {
 
 
   const handleRedirectToProcess = (id) => {
-
     const pageType = matterType === 'matterLegal' ? 'legal' : 'advisory'
+
+    if(matterType === 'matterLegal')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROVERDETALHES'})
+    else
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOVERDETALHES'})
+
     const url = `/matter/edit/${pageType}/${id}`
 
     history.push(url)
@@ -1912,13 +1901,22 @@ const Matter: React.FC = () => {
 
 
   const handleRedirectToTagPrinter = async (matterId) => {
-    // const urlRedirect = `${envProvider.redirectUrl}reports/matter/label?matterId=${id}&token=${token}`;
+    if(matterType === 'matterLegal')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROETIQUETA'})
+    else
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOETIQUETA'})
+
     localStorage.setItem('@GoJur:matterCoverId', matterId.toString());
     history.push("/matter/printer/label", '_blank');
   }
 
 
   const handleOpenMatterCover = async (matterId) => {
+    if(matterType === 'matterLegal')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROCAPA'})
+    else
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOCAPA'})
+
     localStorage.setItem('@GoJur:matterCoverId', matterId.toString());
     window.open('/matter/printer/cover', '_blank');
   }
@@ -1931,6 +1929,10 @@ const Matter: React.FC = () => {
 
 
   const handleOpenMatterDataReport = useCallback(async (matterId) => {
+    if(matterType === 'matterLegal')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROFICHA'})
+    else
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOFICHA'})
 
     if (isGeneratingReport) {
       return;
@@ -2120,6 +2122,11 @@ const Matter: React.FC = () => {
 
 
   const handleOpenMatterFileModal = async (matterId, matteFilePlace) => {
+    if(matterType === 'matterLegal')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROANEXARDOCUMENTOS'})
+    else
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOANEXARDOCUMENTOS'})
+    
     setShowMatterFileModal(true)
     setMatterFileId(matterId)
     setMatterFilePlace(matteFilePlace)
@@ -2179,6 +2186,11 @@ const Matter: React.FC = () => {
 
 
   const MatterCRM = async (matterId, matteFilePlace) => {
+    if(matterType === 'matterLegal')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROCRM'})
+    else
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOCRM'})
+
     setMatterFileId(matterId)
     setMatterFilePlace(matteFilePlace)
 
@@ -2205,6 +2217,11 @@ const Matter: React.FC = () => {
 
 
   const MatterWorkflow = async (matterId, matteFilePlace) => {
+    if(matterType === 'matterLegal')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROWORKFLOW'})
+    else
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOWORKFLOW'})
+
     setMatterFileId(matterId)
     setMatterFilePlace(matteFilePlace)
 
