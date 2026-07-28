@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { FiPlus, FiTrash2, FiClock, FiLayout, FiX, FiCheck, FiEdit2 } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiClock, FiLayout, FiX, FiCheck, FiEdit2, FiEdit } from 'react-icons/fi';
 import { MdPalette, MdFavorite, MdFavoriteBorder } from 'react-icons/md';
 import { FcSearch } from 'react-icons/fc';
 import Search from 'components/Search';
@@ -195,7 +195,6 @@ export default function AgendaKanban() {
   {
       setIsLoading(true)
       setIsWaiting(true)
-
   },[])
 
   useEffect(() => 
@@ -248,7 +247,25 @@ export default function AgendaKanban() {
  const LoadKanbanEtapa = async (kanbanId: number) => {
     try
     {
-        // Listar Etapas aqui
+        var response = await api.get('/KanbanEtapa/Listar', {
+            params:{ 
+              token,
+              kanbanId
+            }
+          })
+              
+        var listPhases = response.data.map((item: any) => ({ 
+            id: item.Id, 
+            panelId: item.KanbanId, 
+            name: item.Description, 
+            color: item.ColorCode,  
+            order: item.NumPosition
+        }));
+
+        setPhases(listPhases);
+        
+        var activePanel =listPhases.filter((ph) => ph.panelId === activePanelId).sort((a, b) => a.order - b.order) 
+        setActivePhases(activePanel);
 
         setLoadEvents(true)
     }
@@ -289,15 +306,9 @@ useEffect(() => {
 
 },[phasePagination])
 
- const LoadKanbanEvents = async () => { 
-    try
-    {     
-        // Listar Eventos aqui
-    }
-    catch (err) {
-      console.error('Error loading Kanban data:', err);
-    }
-  }
+const LoadKanbanEvents = async () => { 
+
+}
 
   useEffect(() => {
     const mapped = optionsCalendarFilter
@@ -409,8 +420,10 @@ useEffect(() => {
   },[tempPeriodStart, tempPeriodEnd])
 
   /* ── Panel actions ── */
-  const handleAddPanel = useCallback(async () => {
+    const handleAddPanel = useCallback(async () => {
     setIsWaiting(true)
+
+  
     const name = newPanelName.trim();
     if (!name) 
     {
@@ -418,7 +431,7 @@ useEffect(() => {
           type: 'info',
           title: 'Atenção',
           description:
-            'Defina um novo para o novo painel',
+            'Defina um nome válido para o painél'
         });
 
         setIsWaiting(false)
@@ -460,9 +473,64 @@ useEffect(() => {
 
   }, [newPanelName])
   
-  ;
 
-  const handleDeletePanel = useCallback(async(panelId: number, e: any) => {
+  const handleSavePanelEdit = useCallback(async() => {
+
+    setIsWaiting(true)
+    
+    try
+    {
+      const name = editingPanelName.trim();
+
+      if (name === '') 
+      {
+        addToast({
+          type: 'info',
+          title: 'Atenção',
+          description:
+            'Defina um nome válido para o painél',
+        });
+
+        setIsWaiting(false);
+        
+        return;
+      }
+
+      await api.post('/Kanban/Salvar', {
+        token,
+        Description: name,
+        Id: editingPanelId
+      })      
+
+      setPanels((prev) =>
+        prev.map((p) => (p.id === editingPanelId ? { ...p, name } : p)),
+      );
+
+      addToast({
+        type: 'success',
+        title: 'Operação Realizada',
+        description: 'Painel atualizado com sucesso'
+      });
+
+      setIsWaiting(false)
+      setEditingPanelId(null);
+      setEditingPanelName('');
+      setShowAddPanel(false);
+      setShowPanelsModal(false)
+    }
+    catch (err) {
+      console.log(err);
+      setIsWaiting(false)
+    }
+  }, [editingPanelId, editingPanelName]);
+
+
+  const onPanelEditKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') handleSavePanelEdit();
+    if (e.key === 'Escape') { setEditingPanelId(null); setEditingPanelName(''); }
+  };
+
+  const handleDeletePanel = useCallback(async(panelId: number) => {
       try
       {    
         setIsWaiting(true)
@@ -475,12 +543,11 @@ useEffect(() => {
         })     
 
         setPanels((prev) => prev.filter((p) => p.id !== panelId));
-        //setPhases((prev) => prev.filter((ph) => ph.panelId !== panelId));
         setCards((prev) => prev.filter((c) => c.panelId !== panelId));
-        
-        if (activePanelId === panelId) {
-          setActivePanelId(panels.find((p) => p.id !== panelId)?.id ?? 0);
-        }
+
+        // ADD o primeiro como default
+        // if (panels.length > 0)
+        //   setActivePanelId(panels[0].id);
 
         addToast({
             type: 'success',
@@ -488,10 +555,8 @@ useEffect(() => {
             description: 'Painel deletado com sucesso  '
           });
 
+        setShowPanelsModal(false)
         setIsWaiting(false)
-        
-        e.stopPropagation();
-
       }
       catch
       {
@@ -507,29 +572,22 @@ useEffect(() => {
     [activePanelId, panels],
   );
 
-  const handleSavePanelEdit = useCallback(() => {
-    const name = editingPanelName.trim();
-    if (name && editingPanelId !== null) {
-      setPanels((prev) =>
-        prev.map((p) => (p.id === editingPanelId ? { ...p, name } : p)),
-      );
-    }
-    setEditingPanelId(null);
-    setEditingPanelName('');
-  }, [editingPanelId, editingPanelName]);
-
-  const onPanelEditKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') handleSavePanelEdit();
-    if (e.key === 'Escape') { setEditingPanelId(null); setEditingPanelName(''); }
-  };
-
   /* ── Phase actions ── */
   const handleAddPhase = useCallback(async () => {
 
     try
     {
         const name = newPhaseName.trim();
-        if (!name || addingPhaseForPanel === null) return;
+        if (!name || addingPhaseForPanel === null)
+        {
+          addToast({
+            type: 'info',
+            title: 'Atenção',
+            description:'Defina um nome válido para a etapa do painél',
+          });
+
+          return;
+        }
         const panelPhases = phases.filter((ph) => ph.panelId === addingPhaseForPanel);
 
         setIsWaiting(true);
@@ -556,10 +614,19 @@ useEffect(() => {
         setNewPhaseName('');
         setAddingPhaseForPanel(null);
 
+        LoadKanbanEtapa(activePanelId);
+
         setIsWaiting(false)
+
+        addToast({
+          type: 'success',
+          title: 'Operação realizada com sucesso',
+          description:'Nova etapa do painél criada com sucesso',
+        });
     }
-    catch
+    catch(err)
     {
+        console.log(err)
         setIsWaiting(false)
     }
   }, [newPhaseName, addingPhaseForPanel, phases]);
@@ -569,15 +636,22 @@ useEffect(() => {
     {
       setIsWaiting(true);
 
-      var response = await api.delete('/KanbanEtapa/Deletar', {
+      await api.delete('/KanbanEtapa/Deletar', {
         params:{
           id:phaseId,
           token
         }
       })   
 
+      LoadKanbanEtapa(activePanelId);
 
       setIsWaiting(false)
+
+      addToast({
+          type: 'success',
+          title: 'Operação realizada com sucesso',
+          description:'Etapa do kanban deletada com sucesso',
+      });
     }
     catch(err)
     {
@@ -592,9 +666,7 @@ useEffect(() => {
       
     setPhases((prev) => prev.filter((ph) => ph.id !== phaseId));
     setCards((prev) => prev.filter((c) => c.phaseId !== phaseId));
-  }, []);
-
-  
+  }, [activePanelId]);
 
   const handleChangePhaseColor = useCallback((phaseId: number, color: string) => {
     setPhases((prev) => prev.map((ph) => (ph.id === phaseId ? { ...ph, color } : ph)));
@@ -605,15 +677,27 @@ useEffect(() => {
     setEditingPhaseName(phase.name);
   }, []);
 
-  const handleSavePhaseEdit = useCallback(() => {
-    const name = editingPhaseName.trim();
-    if (name && editingPhaseId !== null) {
-      setPhases((prev) =>
-        prev.map((ph) => (ph.id === editingPhaseId ? { ...ph, name } : ph)),
-      );
+  const handleSavePhaseEdit = useCallback(async () => {
+
+    try
+    {
+      
+      alert('Em desenvolvimento')
+        
+      //  setPhases((prev) => [...prev, newPhase]);
+        setNewPhaseName('');
+        setAddingPhaseForPanel(null);
+        setEditingPhaseId(null);
+        setEditingPhaseName('');
+        LoadKanbanEtapa(activePanelId);
+
+        setIsWaiting(false)
     }
-    setEditingPhaseId(null);
-    setEditingPhaseName('');
+    catch(err)
+    {
+        console.log(err)
+        setIsWaiting(false)
+    }
   }, [editingPhaseId, editingPhaseName]);
 
   const onPhaseEditKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -627,6 +711,32 @@ useEffect(() => {
   }, []);
   
 
+  const handleToggleFavorite = useCallback((cardId: number) => {
+
+    var kanbanCardFilter = cards.filter(x=> x.id == cardId);
+
+    var kanbanCard = kanbanCardFilter[0];
+
+    SalvarFavorito(kanbanCard.id, kanbanCard.eventId, "S")
+
+  }, []);
+
+  
+  const handleToggleUndoFavorite = useCallback((cardId: number) => {
+
+    var kanbanCardFilter = cards.filter(x=> x.id == cardId);
+
+    var kanbanCard = kanbanCardFilter[0];
+
+    SalvarFavorito(kanbanCard.id, kanbanCard.eventId, "N")
+
+  }, []);
+
+  const SalvarFavorito = async (cardId: number, eventId: number, FlagFavorite: string) => {
+
+    // Favoritar
+
+  }
 
   const onDragEnd = useCallback((result: DropResult) => {
     const { source, destination, draggableId, type } = result;
@@ -975,7 +1085,8 @@ useEffect(() => {
                       <FiTrash2
                         title="Excluir painel"
                         onClick={(e) => {
-                          handleDeletePanel(panel.id, e);
+                          e.stopPropagation();
+                          handleDeletePanel(panel.id);
                         }}
                       />
                     </span>
@@ -994,7 +1105,7 @@ useEffect(() => {
                       onChange={(e) => setNewPanelName(e.target.value)}
                       onKeyDown={onPanelKeyDown}
                     />
-                    <button type="button" className="buttonClick" onClick={handleAddPanel}>
+                    <button type="button" className="buttonClick" onClick={handleAddPanel} style={{marginRight:"0"}}>
                       <FiCheck size={12} /> Salvar
                     </button>
                     <button
@@ -1015,7 +1126,11 @@ useEffect(() => {
                     style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: '0.3rem', alignItems: 'center' }}
                     onClick={() => { setShowAddPanel(true); setTimeout(() => panelNameRef.current?.focus(), 50); }}
                   >
-                    <FiPlus size={12} /> Novo Painel
+                    {editingPanelId 
+                        ? <><FiEdit size={12} /> Atualizar Painel</> 
+                        : <><FiPlus size={12} /> Novo Painel</>
+                    }
+
                   </button>
                 )}
               </div>
@@ -1072,7 +1187,7 @@ useEffect(() => {
                   type="button"
                   className="buttonLinkClick"
                   // onClick={() => { setShowDateModal(false); setSelectedPeriod(PERIOD_OPTIONS[0]); }}
-                  onClick={() => { setShowDateModal(false) }}
+                  onClick={() => { setShowDateModal(false)}}
                 >
                   Cancelar
                 </button>
@@ -1227,7 +1342,43 @@ useEffect(() => {
               {boardProvided.placeholder}
 
               {/* ── Add phase column ── */}
-   
+              <AddPhaseColumn>
+                {addingPhaseForPanel === activePanelId ? (
+                  <div className="add-phase-form">
+                    <input
+                      ref={phaseNameRef}
+                      autoFocus
+                      placeholder="Nome da etapa"
+                      value={newPhaseName}
+                      onChange={(e) => setNewPhaseName(e.target.value)}
+                      onKeyDown={onPhaseKeyDown}
+                    />
+                    <div className="form-actions">
+                      <button type="button" className="buttonClick" onClick={handleAddPhase}>
+                        <FiCheck size={12} /> Salvar
+                      </button>
+                      <button
+                        type="button"
+                        className="buttonLinkClick"
+                        onClick={() => { setAddingPhaseForPanel(null); setNewPhaseName(''); }}
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="add-phase-btn"
+                    onClick={() => {
+                      setAddingPhaseForPanel(activePanelId);
+                      setTimeout(() => phaseNameRef.current?.focus(), 50);
+                    }}
+                  >
+                    <FiPlus /> Nova Etapa
+                  </button>
+                )}
+              </AddPhaseColumn>
             </KanbanArea>
                 )}
               </Droppable>
