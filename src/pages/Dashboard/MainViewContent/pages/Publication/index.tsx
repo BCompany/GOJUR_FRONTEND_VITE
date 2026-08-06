@@ -270,8 +270,6 @@ const Publication: React.FC = () => {
         apiKey: localStorage.getItem('@GoJur:apiKey')
       })
 
-      console.log(response)
-
       //if there is no data set loading handle as false and return
       if (response.data.length === 0) {
         setLoadingData(false);
@@ -596,6 +594,19 @@ const Publication: React.FC = () => {
 
   // Save state filter period
   const handleChangeFilterDate = (period: string) => {
+    if(period == "1d")
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTHOJE'})
+    if(period == "7d")
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNT7DIAS'})
+    if(period == "30d")
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNT30DIAS'})
+    if(period == "90d")
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNT90DIAS'})
+    if(period == "year")
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNT1ANO'})
+    if(period == "all")
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTTODAS'})
+    
     setDtaCustomStart('')
     setDtaCustomEnd('')
     setChangeDates(false)
@@ -697,6 +708,7 @@ const Publication: React.FC = () => {
 
   const PublicationReadOrNot = useCallback(async id => {
     try {
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTMARCARLIDONAOLIDO'})
       setActionType('readUnread')
 
       await api.post('/Publicacao/LidoNaoLido', { publicationId: id, token });
@@ -725,7 +737,7 @@ const Publication: React.FC = () => {
 
   const handleDeletePublication = async () => {
     try {
-
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTEXCLUIR'})
       setActionType('delete')
 
       await api.post('/Publicacao/Apagar', {
@@ -805,6 +817,7 @@ const Publication: React.FC = () => {
 
 
   const handleAssociatedAllProcess = useCallback(async () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTASSOCIARTODOS'})
     setIsOpenMenu(false);
 
     try {
@@ -1085,6 +1098,7 @@ const Publication: React.FC = () => {
 
   const handleAppointmentModalInclude = async (matterId: number, publicationId: number, hasMatter: boolean) => {
     try {
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTAGENDARPRAZO'})
       handleModalActiveId(0)
       isOpenModal('0')
 
@@ -1248,6 +1262,7 @@ const Publication: React.FC = () => {
 
 
   const PrintPublications = useCallback(async (id: number) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTIMPRIMIR'})
     const publicationSelected = publication.find(item => item.id === id)
 
     if (!publicationSelected) {
@@ -1273,6 +1288,7 @@ const Publication: React.FC = () => {
 
 
   const handlePrintSelectPublications = useCallback(async () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTIMPRIMIRSELECIONADA'})
     const existsSelectedPublication = publication.find(item => item.publicationSelected > 0);
 
     if (!existsSelectedPublication) {
@@ -1308,6 +1324,8 @@ const Publication: React.FC = () => {
 
 
   const handleCopyClipBoard = async () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTCOPIARTRANSF'})
+
     // verify if exists some publication selected
     const existsSelectedPublication = publication.find(item => item.publicationSelected > 0);
 
@@ -1403,6 +1421,8 @@ const Publication: React.FC = () => {
 
 
   const handleDeadLineCalculator = (idPublication: number, hasMatter: boolean) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTCALCULADORAPRAZO'})
+
     // set current publication edit to refresh only this
     setCurrentPublicationId(idPublication)
 
@@ -1424,6 +1444,8 @@ const Publication: React.FC = () => {
 
 
   const handleCoveragesList = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTLISTARABRPUBLICACAO'})
+
     const page = Coverages;
     window.open("/coverages", "_blank")
   }
@@ -1436,6 +1458,8 @@ const Publication: React.FC = () => {
 
 
   const handleLog = async (id: number) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTVERLOG'})
+
     setCurrentPublicationId(id)
     setShowLog(true)
   }
@@ -1472,6 +1496,7 @@ const Publication: React.FC = () => {
 
   const MatterEventReadOrNot = useCallback(async id => {
     try {
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTMARCARLIDONAOLIDO'})
       setActionType('readUnread')
 
       await api.post('/ProcessoAcompanhamentos/LidoNaoLido', { matterEventId: id, token });
@@ -1495,8 +1520,9 @@ const Publication: React.FC = () => {
 
 
   const PrintMatterEvent = useCallback(async (id: number) => {
-
     try {
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTIMPRIMIR'})
+
       const response = await api.get(`/ProcessoAcompanhamentos/Relatorio`, {
         params: {
           matterEventIds: id.toString(),
@@ -1538,6 +1564,7 @@ const Publication: React.FC = () => {
 
   const MatterEventCreateCalendarEvent = async (matterId: number, matterEventIdId: number) => {
     try {
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTAGENDARPRAZO'})
       handleModalActiveId(0)
       isOpenModal('0')
 
@@ -1644,6 +1671,7 @@ const Publication: React.FC = () => {
 
   const handleDeleteMatterEvent = async () => {
     try {
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTEXCLUIR'})
 
       setActionType('delete')
 
@@ -1707,8 +1735,6 @@ const Publication: React.FC = () => {
 
       setActionType('none');
 
-      console.log(response.data)
-
       const read = publication.map(publi =>
         publi.id === id || publi.meCod_ProcessoAcompanhamento == id
           ? {
@@ -1740,12 +1766,16 @@ const Publication: React.FC = () => {
 
 
   const MatterEventLog = async (id: number) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTVERLOG'})
+
     setCurrentPublicationId(id)
     setShowMatterEventLog(true)
   }
 
 
   const MatterDeadLineCalculator = (matterEventId: number, hasMatter: boolean) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTCALCULADORAPRAZO'})
+
     // set current publication edit to refresh only this
     setCurrentPublicationId(matterEventId)
 
@@ -1764,11 +1794,11 @@ const Publication: React.FC = () => {
 
 
   const publicationWorkflow = async (id, publicationDate, matterNumber) => {
-    localStorage.setItem('@Gojur:publicationRedirect', 'S')
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTWORKFLOW'})
 
+    localStorage.setItem('@Gojur:publicationRedirect', 'S')
     localStorage.setItem('@Gojur:publicationId', id.toString());
     localStorage.removeItem('@Gojur:followUpId');
-
     localStorage.setItem('@Gojur:notificationTag', 'PUB.: ' + publicationDate + ' - ' + matterNumber);
     
     if ( workflowView == "LISTA" )  
@@ -1784,11 +1814,11 @@ const Publication: React.FC = () => {
 
 
   const followUpWorkflow = async (id, publicationDate, matterNumber) => {
-    localStorage.setItem('@Gojur:publicationRedirect', 'S')
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTWORKFLOW'})
 
+    localStorage.setItem('@Gojur:publicationRedirect', 'S')
     localStorage.setItem('@Gojur:followUpId', id.toString());
     localStorage.removeItem('@Gojur:publicationId');
-
     localStorage.setItem('@Gojur:notificationTag', 'ACOMP.: ' + publicationDate + ' - ' + matterNumber);
   
     if ( workflowView == "LISTA" )  

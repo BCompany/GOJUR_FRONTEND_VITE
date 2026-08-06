@@ -1234,6 +1234,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
 
   const handleSaveModal = useCallback(async () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: userToken, module: 'EVT_AGEIAGENDACOMPROMISSODETALHADO'})
+
     const appointmentId = modalActiveId
     const publicationId = localStorage.getItem('@GoJur:PublicationId');
     const matterEventId = localStorage.getItem('@GoJur:MatterEventId');

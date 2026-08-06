@@ -277,24 +277,28 @@ const CustomerList: React.FC = () => {
 
   // save businessCustomerId to redirect to tab business automatically
   const handleBusinessCustomer = (customerId) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CLINEGOCIOS'})
     localStorage.setItem('@GoJur:businessCustomerId', customerId.toString())
     const href = `/customer/edit/${customerId.toString()}`
     history.push(href)
   }
 
   const handleMatterCustomer = (customerId) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CLIPROCESSO'})
     localStorage.setItem('@GoJur:matterCustomerId', customerId.toString())
     const href = `/customer/edit/${customerId.toString()}`
     history.push(href)
   }
 
   const handleDocumentCustomer = (customerId) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CLIANEXARDOCUMENTOS'})
     localStorage.setItem('@GoJur:documentCustomerId', customerId.toString())
     const href = `/customer/edit/${customerId.toString()}`
     history.push(href)
   }
 
   const handleWorkflow = async (customerId, customer) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CLIWORKFLOW'})
 
     localStorage.setItem('@Gojur:customerRedirect', 'S')
     localStorage.setItem('@Gojur:customerId', customerId.toString())
@@ -313,6 +317,7 @@ const CustomerList: React.FC = () => {
   }
 
   const handleCheckBoxDeleteCustomer = (customerId: number) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CLIEXCLUIR'})
     setIsDeleting(true)
     setCurrentCustomerId(customerId);
   }
