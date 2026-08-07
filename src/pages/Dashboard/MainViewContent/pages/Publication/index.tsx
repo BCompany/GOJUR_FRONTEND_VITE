@@ -1856,6 +1856,14 @@ const Publication: React.FC = () => {
   }
 
 
+  const AssociateMatter = (item: string) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTASSOCIARPROCESSO'})
+
+    localStorage.setItem('@GoJur:PublicationId', item);
+    handlePublicationModal('Associated');
+  }
+
+
   return (
     <Container style={{ pointerEvents: (loadingData ? 'none' : 'all'), opacity: (isMobile && isPagination ? '0.3' : '1') }} onScrollCapture={handleScroll}>
       <HeaderPage />
@@ -2254,8 +2262,7 @@ const Publication: React.FC = () => {
                         {item.matterId === 0 && (
                           <p
                             onClick={() => {
-                              localStorage.setItem('@GoJur:PublicationId', item.id.toString());
-                              handlePublicationModal('Associated');
+                              AssociateMatter(item.id.toString())
                             }}
                             title="Clique para associar um processo a publicação"
                           >

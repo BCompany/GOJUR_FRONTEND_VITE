@@ -108,6 +108,7 @@ const BusinessActivity = () => {
   }
 
   const SaveNewActivity = useCallback(async (allForm:boolean|null) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CRMATIVIDADES'})
 
     if (description == ""){
       if (triggerCaller == ''){

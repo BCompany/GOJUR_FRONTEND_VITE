@@ -2,6 +2,7 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 // eslint-disable-next-line jsx-a11y/click-events-have-key-events
 import React, { useEffect, useState, useCallback } from 'react';
+import api from 'services/api';
 import { BsFillPeopleFill }from 'react-icons/bs';
 import { AiOutlinePrinter } from 'react-icons/ai';
 import { FaBusinessTime, FaTools } from 'react-icons/fa';
@@ -36,6 +37,27 @@ const CustomerListOptionsMenu = () => {
     history.push(`/CustomerGroup`)
   }, []);
 
+
+  const CustomerList = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CLIRELCLIENTE'})
+    handleIsOpenMenuReport(!isOpenMenuReport)
+    handleIsMenuOpen(false)
+    handleOpenCustomerListModal()
+  }
+
+  const CustomerLabel = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CLIETIQUETA'})
+    handleIsOpenMenuReport(!isOpenMenuReport)
+    handleIsMenuOpen(false)
+    history.push(`/customer/printer/label`)
+  }
+
+  const CustomerBirthday = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CLIRELANIVERSARIO'})
+    handleIsOpenMenuReport(!isOpenMenuReport)
+    handleIsMenuOpen(false)
+    handleOpenBirthdayModal()
+  }
   
   // accessCodes Permissions
   const showSalesFunnelMenu = permissionsSecurity.find(item => item.name === "CFGSFUNI");
@@ -100,36 +122,21 @@ const CustomerListOptionsMenu = () => {
         <button
           type="button"
           className="menuLink"
-          onClick={() => {
-            handleIsOpenMenuReport(!isOpenMenuReport)
-            handleIsMenuOpen(false)
-            handleOpenCustomerListModal()
-          }}
-        >
+          onClick={() => {CustomerList()}}>
           Listagem de clientes
         </button>
 
         <button
           type="button"
           className="menuLink"
-          onClick={() => {
-            handleIsOpenMenuReport(!isOpenMenuReport)
-            handleIsMenuOpen(false)
-            history.push(`/customer/printer/label`)
-          }}
-        >
+          onClick={() => {CustomerLabel()}}>
           Etiquetas de clientes
         </button>
 
         <button
           type="button"
           className="menuLink"
-          onClick={() => {
-            handleIsOpenMenuReport(!isOpenMenuReport)
-            handleIsMenuOpen(false)
-            handleOpenBirthdayModal()          
-          }}
-        >
+          onClick={() => {CustomerBirthday()}}>
           Listagem de aniversariantes
         </button>
       </div>

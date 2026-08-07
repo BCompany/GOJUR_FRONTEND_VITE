@@ -356,6 +356,7 @@ export function HeaderPage() {
     setSearchTerm(event.target.value);
 
     if (pathname === '/publication') {
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: localStorage.getItem('@GoJur:token'), module: 'EVT_CNTPESQUISA'})
       handleCaptureText(event.target.value) // handle capture is used when only term will be executed by caller view
     }
   }, []);

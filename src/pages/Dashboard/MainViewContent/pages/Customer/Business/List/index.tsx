@@ -39,7 +39,7 @@ export default function BussinessList( props ) {
   }, [isConfirmMessage, businessDataCurrentId])   
 
   const handleEdit = (id:string, customerId: string) =>{
-
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CRMEDITARNEGOCIO'})
     localStorage.setItem('@GoJur:businessCustomerId', customerId)
     history.push(`/customer/business/edit/${id}`)
   }
