@@ -64,7 +64,7 @@ const Publication: React.FC = () => {
   const { signOut } = useAuth();
   const { handlePublicationModal, handleSetFilterName, handleSetFilterChanged, filterName, isReportModalOpen, filterChanged, handleDetailsAnyType, handleOpenReportModal, handleCloseReportModal, handleReload, reloadTrigger } = usePublication();
   const { handleShowListSearch, handleLoadingData } = useHeader()
-  const { isOpenModal, handleModalActiveId, selectProcess, modalActive, handleCaptureTextPublication, handleMatterAssociated, handleDeadLineCalculatorText, handleModalActive, handleShowVideoTrainning } = useModal();
+  const { isOpenModal, handleModalActiveId, selectProcess, modalActive, handleCaptureTextPublication, handleMatterAssociated, handleDeadLineCalculatorText, handleModalActive, handleJsonModalObjectResult,jsonModalObjectResult } = useModal();
   const { captureText, handleCaptureText, handleDispathCallback, dispathCallback } = useHeader();
   const { isConfirmMessage, isCancelMessage, handleCancelMessage, handleConfirmMessage } = useConfirmBox();
   const [showLog, setShowLog] = useState(false); // Controla a abertura do modal de Log de publicação
@@ -440,7 +440,7 @@ const Publication: React.FC = () => {
     setActionType('none');
     if (!modalActive && publicationId > 0) {
       RefreshEventList()
-    }
+    } 
   }, [modalActive])
 
 

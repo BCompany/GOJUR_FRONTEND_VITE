@@ -1382,9 +1382,12 @@ const Calendar: React.FC = () => {
       history.push(`/workflowexec/list`)
     else if (workflowView == "KANBAN")
       history.push(`/workflowexec/kanban`)
-
   };
-
+  
+  const RedirectToKanban = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_AGENDAKANBAN'})
+    history.push('/calendar/kanban')
+  };
 
   const buttonsCalendarLabel = {
     dayGridMonth: 'Mês',
@@ -1679,7 +1682,7 @@ const Calendar: React.FC = () => {
 
               <button
                 className="buttonLinkClick"
-                onClick={() => history.push('/calendar/kanban')}
+                onClick={RedirectToKanban}
                 title="Agenda Modo Kanban"
                 type="button"
               >

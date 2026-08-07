@@ -53,6 +53,7 @@ import { dayRecurrence, optionsLembrete, weekRecurrence } from './ListValues/Lis
 import CalendarReminderModal from './CustomizeCalendarReminderModal';
 import { Container2, Container, ModalContent, ModalDateSettings, Wrapper, WrapperResp, Process, DropArea, Footer, Lembrete, Responsavel, ResponsibleList, ReminderList, ShareList, Privacidade, Share, ModalRecurrence, ModalKanban, Multi, ConfirmOverlay, ModalConfirm } from './styles';
 import { useHistory, useLocation } from 'react-router-dom'
+import { stringify } from 'uuid';
 
 
 
@@ -182,15 +183,13 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
   useEffect(() => {
     if (isCancelMessage) {
-      alert("CANCELA")
-      handleCancelMessage(false)
+        handleCancelMessage(false)
     }
   }, [isCancelMessage]);
 
 
   useEffect(() => {
-    if (isConfirmMessage) {
-      alert("CONFIRMA")
+    if (isConfirmMessage) {      
       handleConfirmMessage(false)
       // handleDeleteModal()
     }
@@ -1256,6 +1255,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     const appointmentId = modalActiveId
     const publicationId = localStorage.getItem('@GoJur:PublicationId');
     const matterEventId = localStorage.getItem('@GoJur:MatterEventId');
+    const kanbanStageId = localStorage.getItem('@Gojur:kanbanStageId');
     const deadLineJson = localStorage.getItem('@GoJur:DeadLineJson');
     const startDateN = `${appointmentDateBeggin}T${appointmentHourBeggin}`;
     const endDateN = `${appointmentDateEnd}T${appointmentHourEnd}`;
@@ -1358,6 +1358,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         eventId: appointmentId,
         publicationId: publicationId == null ? 0 : publicationId,
         matterEventId: matterEventId == null ? 0 : matterEventId,
+        kanbanStageId: kanbanStageId == null ? 0: kanbanStageId,
         description: appointmentDescription,
         eventNote: appointmentObs,
         startDate: startDateN, // v
@@ -1392,7 +1393,6 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         addToast({ type: 'success', title: 'Compromisso Salvo', description: 'Seu compromisso foi salvo com sucesso' });
         isClosed()
         handleModalActive(false)
-        handleJsonModalObjectResult('')
       }
       catch (err: any) {
         if (err.response.data.typeError.warning == "awareness") {

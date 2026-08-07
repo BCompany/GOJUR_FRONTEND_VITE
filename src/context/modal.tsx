@@ -271,6 +271,7 @@ const ModalProvider: React.FC = ({ children }) => {
     localStorage.removeItem('@GoJur:MatterEventId');
     localStorage.removeItem('@GoJur:PublicationHasMatter');
     localStorage.removeItem('@fullCalendarDate')
+    localStorage.removeItem('@Gojur:kanbanStageId')
     handleModalActiveId(0)
   }
 

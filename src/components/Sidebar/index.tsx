@@ -85,7 +85,6 @@ const Sidebar: React.FC = () => {
         history.push('/calendar');
   };
 
-
   const MatterRedirect = () => {
     // Save navigation log
     const response = api.post('/Usuario/SalvarLogNavegacaoUsuario', {

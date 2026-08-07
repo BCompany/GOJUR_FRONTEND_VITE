@@ -13,37 +13,11 @@ import { useModal } from 'context/modal';
 import { v4 as uuidv4 } from 'uuid';
 import FilterCalendar, { ISelectValues } from 'components/FilterCalendar';
 import api from 'services/api';
-import {
-  AddCardButton,
-  AddPhaseColumn,
-  AppointmentCard,
-  BoardLayout,
-  CardsList,
-  ColorDot,
-  ColorPickerWrapper,
-  Container,
-  Content,
-  EmptyState,
-  KanbanArea,
-  ModalOverlay,
-  PanelItem,
-  PanelsModal,
-  TaskBar,
-  PhaseColumn,
-  PhaseHeader,
-} from './styles';
-import { ItemBox } from '../Matter/InvertParts/styles';
-import { Underline } from 'ckeditor5';
+import {AddCardButton, AddPhaseColumn, AppointmentCard, BoardLayout, CardsList, ColorDot,ColorPickerWrapper,Container,Content,EmptyState,KanbanArea,ModalOverlay,PanelItem,PanelsModal,TaskBar, PhaseColumn, PhaseHeader} from './styles';
 import { useToast } from 'context/toast';
 import { Overlay } from 'Shared/styles/GlobalStyle';
 import Loader from 'react-spinners/ClipLoader';
 import { IParameterData } from '../Matter/Interfaces/IMatter';
-// import { useSecurity } from 'context/securityContext';
-// import { Console } from 'console';
-// import { set } from 'date-fns';
-// import { Description } from '../Dashboard/resorces/DashboardComponents/Publicacoes/PublicationDetail/styles';
-
-/* ─── Interfaces ─── */
 
 interface ICard {
   id: number;
@@ -67,6 +41,7 @@ interface IPhase {
 interface IPanel {
   id: number;
   name: string;
+  hasKanbanPermission: boolean;
 }
 
 interface IPhasePagination
@@ -142,14 +117,9 @@ export default function AgendaKanban() {
     handleDeadLineCalculatorText,
     handleCaptureTextPublication,
     handleModalActive,
+    modalActiveId,
+    modalActive
   } = useModal();
-
-  const handleClickInclude = useCallback(() => {
-    handleCaptureTextPublication('');
-    handleDeadLineCalculatorText('');
-    handleModalActive(true);
-    isOpenModal('0');
-  }, [handleCaptureTextPublication, handleDeadLineCalculatorText, handleModalActive, isOpenModal]);
 
   const optionsCalendarFilter = [
     { value: 'S_A',   label: 'Audiência' },
@@ -165,6 +135,8 @@ export default function AgendaKanban() {
   const [multiFilter, setMultiFilter] = useState<{ value: string; label: string }[]>([]);
   const [optionsSubject, setOptionsSubject] = useState<ISelectValues[]>([]);
   const [appointmentSubject, setAppointmentSubject] = useState('');
+  const [currentKanbanStageId, setCurrentKanbanStageId] = useState<number>();
+  const [currentAppointmentEdit, setCurrentAppointmentEdit] = useState<number>();
   const [appointmentSubjectId, setAppointmentSubjectId] = useState('');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
@@ -176,6 +148,11 @@ export default function AgendaKanban() {
   const [isLoadingSearch, setIsLoadingSearch] = useState(false);
   const [showSearchList] = useState(false);
   const[phasePagination, setPhasePagination] = useState<IPhasePagination[]>([])
+  const [permissions,setPermissions] = useState({
+    canManagePanels: true,   // show "Painéis" button
+    canDeletePhase: true,    // show trash icon on phase header
+    canChangePhaseColor: true, // show palette icon on phase header
+  });
 
   //const [panels, setPanels] = useState<IPanel[]>(INITIAL_PANELS);
   const [activePanelId, setActivePanelId] = useState<number>();
@@ -183,6 +160,8 @@ export default function AgendaKanban() {
   //const [phases, setPhases] = useState<IPhase[]>(INITIAL_PHASES);
   const [phases, setPhases] = useState<IPhase[]>();
   const [cards, setCards] = useState<ICard[]>(INITIAL_CARDS);
+  const [messageEmptyPanel, setMessageEmptyPanel] = useState<string>();
+
   const { addToast } = useToast();
 
   const toggle = (value: string) => {
@@ -191,18 +170,37 @@ export default function AgendaKanban() {
     );
   };
 
+  
+useEffect(() => {
+       
+    let kanbanStageId = currentKanbanStageId;
+
+    if (currentKanbanStageId == 0 && localStorage.getItem('@GoJur:kanbanStageId') !== '') {
+      kanbanStageId = Number(localStorage.getItem('@GoJur:kanbanStageId'));
+      setCurrentKanbanStageId(kanbanStageId)
+    }
+
+    if (!modalActive && currentKanbanStageId > 0) {
+      LoadKanbanEvents()
+    } 
+    
+   }, [modalActive, isWaiting])
+
   useEffect(() => 
   {
       setIsLoading(true)
       setIsWaiting(true)
   },[])
 
+  // useEffect(() => 
+  // {
+  //     alert(modalActiveId)
+  // },[modalActiveId])
+
   useEffect(() => 
   {
-      if (isLoading)
-      {
+      if (isLoading) {
         GetParameterValue()
-        SaveLogNavigation();  
         LoadKanban();        
       }
   },[isLoading])
@@ -214,16 +212,24 @@ export default function AgendaKanban() {
       
   }, [activePanelId]);
 
- const SaveLogNavigation = () => {
-    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_AGENDAKANBAN'})
-  };
-
   const LoadKanban = async () => {
     try
     {
-       var response = await api.get('/Kanban/Listar', {
-            params:{ token }
-        })
+      var response = await api.get('/Kanban/Listar', {
+          params:{ token }
+      })
+
+      if (response.data.length > 0)
+      {
+         const hasKanbanPermission = response.data[0].hasKanbanPermission;
+         
+         if (!hasKanbanPermission)
+            setPermissions({
+              canManagePanels: false,
+              canDeletePhase: false,
+              canChangePhaseColor: false,
+            });
+      }
       
       setPanels(response.data.map((item: any) => ({
         id: item.Id,
@@ -235,18 +241,25 @@ export default function AgendaKanban() {
       setActivePanelId(kanbanId); 
 
       setIsLoading(false)
-      setIsWaiting(false)
     }
     catch (err) {
-      console.error('Error loading Kanban data:', err);
+      addToast({
+        type: 'error',
+        title: 'Operação NÃO Realizada',
+        description: 'Houve uma falha no carregamento do Painel'
+      });
+
+      console.log(err);
+
       setIsLoading(false)
-      setIsWaiting(false)
     }
  };
 
  const LoadKanbanEtapa = async (kanbanId: number) => {
     try
     {
+        setIsWaiting(true)
+
         var response = await api.get('/KanbanEtapa/Listar', {
             params:{ 
               token,
@@ -263,25 +276,32 @@ export default function AgendaKanban() {
         }));
 
         setPhases(listPhases);
-        
-        var activePanel =listPhases.filter((ph) => ph.panelId === activePanelId).sort((a, b) => a.order - b.order) 
-        setActivePhases(activePanel);
 
-        setLoadEvents(true)
+        if (listPhases.length == 0)
+          setMessageEmptyPanel('Nenhum painel selecionado. Crie um novo painel para começar')
+        
+        var orderPhasesList = listPhases.filter((ph) => ph.panelId === activePanelId).sort((a, b) => a.order - b.order) 
+        setActivePhases(orderPhasesList);
+
+        setLoadEvents(true)        
     }
     catch (err) {
-      console.error('Error loading Kanban data:', err);
+      addToast({
+        type: 'error',
+        title: 'Operação NÃO Realizada',
+        description: 'Houve uma falha no carregamento das etapas do painel'
+      });
+
+      console.log(err);      
     }
  }
 
  useEffect(() => {
 
   if (loadEvents)
-  {
     LoadKanbanEvents(); 
-  }
   
- },[loadEvents])
+ },[loadEvents, isWaiting])
 
  function updatePhasePagination(newData: IPhasePagination) {
   setPhasePagination(prev => {
@@ -300,15 +320,111 @@ export default function AgendaKanban() {
   });
 }
 
-useEffect(() => {
+const LoadKanbanEvents = async () => {  
+    try 
+    { 
+        const promises = phases.map((phase) => {
+        const pagination = phasePagination.find(p => p.phaseId === phase.id);
+        return api.get('/KanbanEtapa/ListarEventos', {
+          params: {
+            token,
+            kanbanStageId: phase.id, 
+            startDate: "2026-07-01",
+            endDate: "2026-08-10",
+            qtdRecords:20,
+            lastIdPgDatabase: pagination ? pagination.lastIdEvent : 0,
+            lastDatePgDatabase: pagination ? pagination.lastDateEvent.toISOString() : "",
+            lastIdPgRecurrency: pagination ? pagination.lastIdRecurrency : 0,
+            lastDatePgRecurrency: pagination ? pagination.lastDateRecurrency.toISOString() : ""
+          },
+        }).then((response) => ({ response, phase }));
+      });
 
-  //console.log('resultado paginação state', phasePagination)
+      const results = await Promise.all(promises);
+ 
+      results.forEach(({ response, phase }) => {
+        setCards((prevCards) => [
+          ...prevCards,
+          ...response.data.EventList.map((item: any) => ({
+            id: `${uuidv4()}`,
+            eventId: item.id,
+            panelId: activePanelId,
+            phaseId: phase.id, 
+            title: item.subjectText,
+            description: item.title,
+          })) 
+        ]);
 
-},[phasePagination])
+        // Atualiza o controle de paginação 
+        updatePhasePagination({
+          phaseId: phase.id,
+          lastIdEvent: response.data.LastIdEvent,
+          lastDateEvent: new Date(response.data.LastDateEvent),
+          lastIdRecurrency: response.data.LastIdRecurrency,
+          lastDateRecurrency: new Date(response.data.LastDateRecurrency),
+        });
+      });
 
-const LoadKanbanEvents = async () => { 
+      setLoadEvents(false)
+      setIsWaiting(false)
+      setCurrentKanbanStageId(0)
+    }
+    catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Operação NÃO Realizada',
+        description: 'Houve uma falha no carregamento dos eventos relacionados as etapas do painel'
+      });
 
-}
+      setIsWaiting(false)
+      console.log(err);
+    }
+  }
+
+  const handleClickInclude = useCallback((phaseId: number) => {
+    
+    if (!permissions.canManagePanels)
+    {
+      addToast({
+        type: 'info',
+        title: 'Acesso Negado',
+        description: 'O seu usuário não possui permissão para o painel kanban, verifique com o administrador do sistema.'
+      });
+
+      return;
+    }
+
+    localStorage.setItem('@Gojur:kanbanStageId', phaseId.toString());
+    setCurrentKanbanStageId(phaseId)
+    handleCaptureTextPublication('');
+    handleDeadLineCalculatorText('');
+    handleModalActive(true);
+    isOpenModal('0');
+  }, [permissions, handleCaptureTextPublication, handleDeadLineCalculatorText, handleModalActive, isOpenModal]);
+
+
+  const handleClickEdit = useCallback((phaseId: number, eventId: number) => {
+    
+    if (!permissions.canManagePanels)
+    {
+      addToast({
+        type: 'info',
+        title: 'Acesso Negado',
+        description: 'O seu usuário não possui permissão para o painel kanban, verifique com o administrador do sistema.'
+      });
+
+      return;
+    }
+    
+    isOpenModal(eventId.toString());
+    setCurrentAppointmentEdit(eventId)
+    localStorage.setItem('@Gojur:kanbanStageId', phaseId.toString());
+    setCurrentKanbanStageId(phaseId)
+    handleCaptureTextPublication('');
+    handleDeadLineCalculatorText('');
+  }, [permissions, handleCaptureTextPublication, handleDeadLineCalculatorText, handleModalActive, isOpenModal]);
+
+
 
   useEffect(() => {
     const mapped = optionsCalendarFilter
@@ -353,15 +469,6 @@ const LoadKanbanEvents = async () => {
       LoadSubject(true);
     }
   };
-
-  // const [activePanelId, setActivePanelId] = useState<number>(INITIAL_PANELS[0].id);
-  
-  // Permission flags — connect to backend later
-  const [permissions] = useState({
-    canManagePanels: true,   // show "Painéis" button
-    canDeletePhase: true,    // show trash icon on phase header
-    canChangePhaseColor: true, // show palette icon on phase header
-  });
 
   const PERIOD_OPTIONS: IComboData[] = [
     { value: 'mes_atual', label: 'Mês Atual' },
@@ -491,8 +598,6 @@ const LoadKanbanEvents = async () => {
             'Defina um nome válido para o painél',
         });
 
-        setIsWaiting(false);
-        
         return;
       }
 
@@ -577,6 +682,17 @@ const LoadKanbanEvents = async () => {
 
     try
     {
+          if (!permissions.canManagePanels)
+          {
+              addToast({
+                type: 'info',
+                title: 'Acesso Negado',
+                description: 'O seu usuário não possui permissão para criação de novas etapas Kanban, verifique com o administrador do sistema.'
+              });
+              
+              return;
+          }
+          
         const name = newPhaseName.trim();
         if (!name || addingPhaseForPanel === null)
         {
@@ -586,6 +702,7 @@ const LoadKanbanEvents = async () => {
             description:'Defina um nome válido para a etapa do painél',
           });
 
+          setIsWaiting(false);
           return;
         }
         const panelPhases = phases.filter((ph) => ph.panelId === addingPhaseForPanel);
@@ -597,8 +714,7 @@ const LoadKanbanEvents = async () => {
             token,
             kanbanId:addingPhaseForPanel,
             Description: name,
-            ColorCode: "#GGGGG",
-            NumPosition:panelPhases.length,
+            ColorCode: "#GGGGG"
           })      
 
         var dadosKanban = response.data;
@@ -621,7 +737,7 @@ const LoadKanbanEvents = async () => {
         addToast({
           type: 'success',
           title: 'Operação realizada com sucesso',
-          description:'Nova etapa do painél criada com sucesso',
+          description:'Nova etapa do painel criada com sucesso',
         });
     }
     catch(err)
@@ -629,7 +745,54 @@ const LoadKanbanEvents = async () => {
         console.log(err)
         setIsWaiting(false)
     }
-  }, [newPhaseName, addingPhaseForPanel, phases]);
+  }, [newPhaseName, addingPhaseForPanel, phases]); 
+
+  const handleChangePhaseColor = useCallback(async (phaseId: number, color: string) => {
+  
+    try
+    {
+        setIsWaiting(true);
+
+        var phaseSelected = phases.filter(x=> x.id == phaseId);
+
+        if (phaseSelected.length == 0)
+        {
+          addToast({
+            type: 'info',
+            title: 'Atenção',
+            description:'Não foi possível efetuar esta alteração',
+          });
+
+          setIsWaiting(false);
+          return;
+        }
+
+        await api.post('/KanbanEtapa/Salvar', {
+            token,
+            id: phaseId,
+            kanbanId:phaseSelected[0].panelId,
+            Description: phaseSelected[0].name,
+            NumPosition:phaseSelected[0].order,
+            ColorCode: color
+          })      
+
+        //LoadKanbanEtapa(activePanelId);
+        setActivePhases((prev) => prev.map((ph) => (ph.id === phaseId ? { ...ph, color } : ph)));
+
+        setIsWaiting(false)
+    }
+    catch(err)
+    {
+        console.log(err)
+        setIsWaiting(false)
+    }
+
+  }, [phases, token, isWaiting]);
+
+  const handleStartEditPhase = useCallback((phase: IPhase) => {
+    setEditingPhaseId(phase.id);
+    setEditingPhaseName(phase.name);
+  }, []);
 
   const handleDeletePhase = useCallback(async(phaseId: number) => {
     try
@@ -648,9 +811,9 @@ const LoadKanbanEvents = async () => {
       setIsWaiting(false)
 
       addToast({
-          type: 'success',
-          title: 'Operação realizada com sucesso',
-          description:'Etapa do kanban deletada com sucesso',
+        type: 'success',
+        title: 'Operação realizada com sucesso',
+        description: 'Etapa do Kanban removida com sucesso'
       });
     }
     catch(err)
@@ -668,28 +831,58 @@ const LoadKanbanEvents = async () => {
     setCards((prev) => prev.filter((c) => c.phaseId !== phaseId));
   }, [activePanelId]);
 
-  const handleChangePhaseColor = useCallback((phaseId: number, color: string) => {
-    setPhases((prev) => prev.map((ph) => (ph.id === phaseId ? { ...ph, color } : ph)));
-  }, []);
-
-  const handleStartEditPhase = useCallback((phase: IPhase) => {
-    setEditingPhaseId(phase.id);
-    setEditingPhaseName(phase.name);
-  }, []);
-
   const handleSavePhaseEdit = useCallback(async () => {
 
     try
     {
-      
-      alert('Em desenvolvimento')
-        
-      //  setPhases((prev) => [...prev, newPhase]);
-        setNewPhaseName('');
-        setAddingPhaseForPanel(null);
+        setIsWaiting(true)
+
+        const name = editingPhaseName.trim();
+       
+        if (!name || editingPhaseId === null) 
+        {
+          addToast({
+            type: 'info',
+            title: 'Atenção',
+            description:'Defina um nome válido para a etapa do painél',
+          });
+
+          setIsWaiting(false)
+          return;
+        }
+
+        const phaseSelected = phases.filter(x=> x.id == editingPhaseId)
+        if (phaseSelected.length == 0)
+        {
+          addToast({
+            type: 'error',
+            title: 'Operação NÃO realizada',
+            description:'Não foi possível executar esta operação',
+          });
+
+          setIsWaiting(false)
+          return;
+        }
+
+        await api.post('/KanbanEtapa/Salvar', {
+            token,
+            Id:editingPhaseId,
+            kanbanId:activePanelId,
+            Description: name,
+            ColorCode: phaseSelected[0].color,
+            NumPosition:phaseSelected[0].order,
+          })      
+ 
+        setActivePhases((prev) => prev.map((ph) => (ph.id === editingPhaseId ? { ...ph, name } : ph)));
+
         setEditingPhaseId(null);
         setEditingPhaseName('');
-        LoadKanbanEtapa(activePanelId);
+
+        addToast({
+          type: 'success',
+          title: 'Operação realizada com sucesso',
+          description:'Nome da etapa do painel atualizado com sucesso',
+        });
 
         setIsWaiting(false)
     }
@@ -711,75 +904,86 @@ const LoadKanbanEvents = async () => {
   }, []);
   
 
-  const handleToggleFavorite = useCallback((cardId: number) => {
+  const handleToggleFavorite = useCallback((cardId: number, favorite: string) => {
 
     var kanbanCardFilter = cards.filter(x=> x.id == cardId);
 
     var kanbanCard = kanbanCardFilter[0];
+    
+    SalvarFavorito(kanbanCard.id, kanbanCard.eventId, favorite)
 
-    SalvarFavorito(kanbanCard.id, kanbanCard.eventId, "S")
+  }, [cards]);
 
-  }, []);
 
-  
-  const handleToggleUndoFavorite = useCallback((cardId: number) => {
+const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string) => {
+    try
+    {
+      setIsWaiting(true);
 
-    var kanbanCardFilter = cards.filter(x=> x.id == cardId);
+      await api.post('/KanbanEtapa/Favoritar', {
+          EventId:eventId,
+          FlagFavorite,
+          Token: token
+      })
+      
+      addToast({
+        type: 'success',
+        title: 'Operação Concluída',
+        description: FlagFavorite == "S"? 'Compromisso favoritado com sucesso':'Compromisso Desfavoritado com sucesso'
+      });
+      
+      setCards((prev) => prev.map((c) => (c.id === id ? { ...c, favorited: !c.favorited } : c)));
 
-    var kanbanCard = kanbanCardFilter[0];
+      setIsWaiting(false);
+    }
+    catch
+    {
+      addToast({
+        type: 'info',
+        title: 'Operação Não Realizada',
+        description: 'Houve uma falha na execução deste comando',
+      });
 
-    SalvarFavorito(kanbanCard.id, kanbanCard.eventId, "N")
-
-  }, []);
-
-  const SalvarFavorito = async (cardId: number, eventId: number, FlagFavorite: string) => {
-
-    // Favoritar
-
+      setIsWaiting(false);
+    }
   }
 
-  const onDragEnd = useCallback((result: DropResult) => {
+  function reorderStages(phaseId, destinationIndex) {
+
+    const novaLista = [...activePhases];
+
+    const draggedIndex = novaLista.findIndex(item => item.id === phaseId);
+    const [draggedItem] = novaLista.splice(draggedIndex, 1);
+
+    novaLista.splice(destinationIndex, 0, draggedItem);
+
+    const listaAtualizada = novaLista.map((item, index) => ({
+      ...item,
+      order: index
+    }));
+
+    return listaAtualizada;
+}
+
+  const onDragEnd = useCallback( async (result: DropResult) => 
+  {
     const { source, destination, draggableId, type } = result;
-    if (!destination) return;
-    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
-    if (type !== 'COLUMN' && source.droppableId === destination.droppableId) return;
 
-    // ── Column reorder ──
-    if (type === 'COLUMN') {
-      const phaseId = parseInt(draggableId.replace('phase-', ''), 10);
-      setPhases((prev) => {
-        const panelPhases = prev
-          .filter((ph) => ph.panelId === activePanelId)
-          .sort((a, b) => a.order - b.order);
-        const others = prev.filter((ph) => ph.panelId !== activePanelId);
-
-        const reordered = [...panelPhases];
-        const [moved] = reordered.splice(source.index, 1);
-        reordered.splice(destination.index, 0, moved);
-
-        const updated = reordered.map((ph, i) => ({ ...ph, order: i }));
-        return [...others, ...updated];
-      });
+    if (!destination) 
       return;
+
+    if (source.droppableId === destination.droppableId && source.index === destination.index) 
+      return;
+    
+    if (type !== 'COLUMN' && source.droppableId === destination.droppableId) 
+      return;
+
+    if (type === 'COLUMN') {
+
+     
     }
 
-    // ── Card move ──
-    const cardId = parseInt(draggableId, 10);
-    const destPhaseId = parseInt(destination.droppableId, 10);
-
-    setCards((prev) => {
-      const withoutCard = prev.filter((c) => c.id !== cardId);
-      const moved = prev.find((c) => c.id === cardId);
-      if (!moved) return prev;
-
-      const updated = { ...moved, phaseId: destPhaseId };
-      const destPhaseCards = withoutCard.filter((c) => c.phaseId === destPhaseId);
-      const otherCards = withoutCard.filter((c) => c.phaseId !== destPhaseId);
-
-      destPhaseCards.splice(destination.index, 0, updated);
-      return [...otherCards, ...destPhaseCards];
-    });
-  }, [activePanelId]);
+  }, [activePanelId, activePhases]);
 
   /* ── Keyboard shortcuts ── */
   const onPanelKeyDown = (e: React.KeyboardEvent) => {
@@ -891,24 +1095,6 @@ const LoadKanbanEvents = async () => {
     
   },[token])
 
-  // useEffect(() => {  
-
-  //   if (isChangePeriod) 
-  //   { 
-  //     const parameterName = getKanbanParam(selectedPeriod.value, periodStart, periodEnd);
-
-  //     api.post('/Parametro/Salvar', {
-  //       token: token, 
-  //       parametersName: '#calendarView',
-  //       parameterType: 'P',
-  //       parameterValue: parameterName        
-  //     })
-
-  //     setIsChangePeriod(false)
-  //   }
-
-  // },[isChangePeriod, periodStart, periodEnd]) 
-
     useEffect(() => {  
 
       if (selectedPeriod)
@@ -939,7 +1125,8 @@ const LoadKanbanEvents = async () => {
 
   /* ── Render ── */
   return (
-    <Container>
+
+    <Container >
       <HeaderPage />
   
       {isWaiting && (
@@ -952,7 +1139,7 @@ const LoadKanbanEvents = async () => {
         </>
       )}
       
-      <Content>
+      <Content >
         <TaskBar>
           <div className="taskbar-left">
             <Search
@@ -1196,17 +1383,17 @@ const LoadKanbanEvents = async () => {
           </ModalOverlay>
         )}
 
-        <BoardLayout>
+        <BoardLayout >
           {activePanel ? (
-            <DragDropContext onDragEnd={onDragEnd}>
-              <Droppable droppableId="board" direction="horizontal" type="COLUMN">
-                {(boardProvided) => (
-            <KanbanArea ref={boardProvided.innerRef} {...boardProvided.droppableProps}>
-              {activePhases.map((phase, colIndex) => {
-                const phaseCards = cards.filter((c) => c.phaseId === phase.id);
 
+            <DragDropContext  onDragEnd={onDragEnd}>
+              <Droppable droppableId="board" direction="horizontal" type="COLUMN">
+              {(boardProvided) => (
+              <KanbanArea ref={boardProvided.innerRef} {...boardProvided.droppableProps}>
+              {activePhases.map((phase) => {
+                const phaseCards = cards.filter((c) => c.phaseId === phase.id);
                 return (
-                  <Draggable key={phase.id} draggableId={`phase-${phase.id}`} index={colIndex}>
+                  <Draggable  key={phase.id} draggableId={`phase-${phase.id}`} index={phase.order}>
                     {(colDrag, colSnapshot) => (
                   <PhaseColumn
                     ref={colDrag.innerRef}
@@ -1227,6 +1414,7 @@ const LoadKanbanEvents = async () => {
                             onBlur={handleSavePhaseEdit}
                           />
                         ) : (
+                          permissions.canManagePanels ? (
                           <span
                             title="Clique para renomear"
                             style={{ cursor: 'pointer' }}
@@ -1234,7 +1422,10 @@ const LoadKanbanEvents = async () => {
                           >
                             {phase.name}
                           </span>
-                        )}
+                        ) : (
+                          <span>{phase.name}</span>
+                        ))
+                      }
                       </span>
                       <span className="phase-count">{phaseCards.length}</span>
                       {permissions.canChangePhaseColor && (
@@ -1276,6 +1467,7 @@ const LoadKanbanEvents = async () => {
                             <Draggable key={card.id} draggableId={String(card.id)} index={index}>
                               {(drag, dragSnapshot) => (
                                 <AppointmentCard
+                                  onClick={(e) => handleClickEdit(phase.id, card.eventId)}
                                   ref={drag.innerRef}
                                   {...drag.draggableProps}
                                   {...drag.dragHandleProps}
@@ -1293,13 +1485,13 @@ const LoadKanbanEvents = async () => {
                                       <MdFavorite
                                         className="card-favorite active"
                                         title="Desfavoritar"
-                                        onClick={(e) => { e.stopPropagation(); handleToggleUndoFavorite(card.id); }}
+                                        onClick={(e) => { e.stopPropagation(); handleToggleFavorite(card.id, "N"); }}
                                       />
                                     ) : (
                                       <MdFavoriteBorder
                                         className="card-favorite"
                                         title="Favoritar"
-                                        onClick={(e) => { e.stopPropagation(); handleToggleFavorite(card.id); }}
+                                        onClick={(e) => { e.stopPropagation(); handleToggleFavorite(card.id, "S"); }}
                                       />
                                     )}
                                   </div>
@@ -1328,14 +1520,12 @@ const LoadKanbanEvents = async () => {
                       )}
                     </Droppable>
 
-                    <AddCardButton
-                      type="button"
-                      onClick={handleClickInclude}
-                    >
-                      <FiPlus /> Criar Compromisso
-                    </AddCardButton>
-                  </PhaseColumn>
-                    )}
+                      <AddCardButton type="button" onClick={() => handleClickInclude(phase.id)}>
+                        <FiPlus /> Criar Compromisso
+                      </AddCardButton>
+                    </PhaseColumn>
+                   
+                   )}
                   </Draggable>
                 );
               })}
@@ -1386,7 +1576,7 @@ const LoadKanbanEvents = async () => {
           ) : (
             <EmptyState>
               <FiLayout />
-              <p>Nenhum painel selecionado. Crie um novo painel para começar.</p>
+              <p>{messageEmptyPanel}</p>
             </EmptyState>
           )}
         </BoardLayout>
