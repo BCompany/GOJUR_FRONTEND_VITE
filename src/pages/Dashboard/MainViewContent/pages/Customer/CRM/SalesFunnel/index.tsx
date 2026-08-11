@@ -274,7 +274,10 @@ const SalesFunnel = () => {
   }
 
 
-  const LoadPage = async () => {
+  const LoadPage = async (item:string) => {
+    if(item == 'pesquisa')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CRMPESQUISA'})
+
     if(salesFunnelStatus != "TO"){
       const newLocal = businessStartDate == "" || businessStartDate == undefined;
 
@@ -395,7 +398,7 @@ const SalesFunnel = () => {
   // called when is save a apppointment by modal to reload list
   useEffect(() => {
     if (!modalActive && !isLoading) {
-      LoadPage()
+      LoadPage('')
     }
   }, [isLoading, modalActive, captureText])
 
@@ -455,7 +458,7 @@ const SalesFunnel = () => {
       await api.put('NegocioCliente/Salvar', businessCard)
 
       // reaload sales funnel
-      await LoadPage();
+      await LoadPage('');
 
       handleCloseMenuCard()
 
@@ -473,7 +476,7 @@ const SalesFunnel = () => {
       // eslint-disable-next-line no-param-reassign
       businessCard.token =  token;
       await api.put('NegocioCliente/Salvar', businessCard)
-      await LoadPage()
+      await LoadPage('')
 
       addToast({type: "success", title: "Operação realizada com sucesso", description: `O Card selecionado foi salvo com sucesso`})
     }
@@ -496,7 +499,7 @@ const SalesFunnel = () => {
 
       addToast({type: "success", title: "Operação realizada com sucesso", description: "O negócio selecionado foi deletado com sucesso"})
 
-      await LoadPage()
+      await LoadPage('')
       handleCloseMenuCard()
       setIsDeleting(false)
     }
@@ -528,6 +531,8 @@ const SalesFunnel = () => {
 
   
   const handleClickCard = (businessId: number) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CRMEDITARNEGOCIOFUNIL'})
+
     localStorage.setItem('@Gojur:funnelRedirect', 'S')
 
     sessionStorage.setItem( 'salesFunnelId', salesFunnelId.toString())
@@ -577,6 +582,8 @@ const SalesFunnel = () => {
 
 
   const handleCreateNewBusiness = (funnelStepId: string) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CRMINLCUIRNEGOCIOFUNIL'})
+
     if (!permissionCRM){
       addToast({type: 'info', title: 'Operação não realizada', description: `O seu plano atual permite a inclusão de apenas ${ businessTotal } negócios, faça um upgrade para obter acesso ilimitado a este serviço`})
       return false;
@@ -797,7 +804,30 @@ const SalesFunnel = () => {
       setSelectDate('')
     }
   };
-  
+
+
+  const ChangeStatusEA = (item) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CRMFILTROANDAMENTO'})
+    setStatusEA(item)
+  }
+
+
+  const ChangeStatusFE = (item) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CRMFILTROEXITO'})
+    setStatusFE(item)
+  }
+
+
+  const ChangeStatusPE = (item) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CRMFILTROPERDIDO'})
+    setStatusPE(item)
+  }
+
+
+  const ChangeStatusAR = (item) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CRMFILTROARQUIVADO'})
+    setStatusAR(item)
+  }
 
 
   return (
@@ -889,7 +919,7 @@ const SalesFunnel = () => {
             <input
               type="checkbox"
               checked={statusEA}
-              onChange={(e) => setStatusEA(e.target.checked)}
+              onChange={(e) => ChangeStatusEA(e.target.checked)}
             />
             &nbsp;Em andamento
           </label>
@@ -898,7 +928,7 @@ const SalesFunnel = () => {
             <input
               type="checkbox"
               checked={statusFE}
-              onChange={(e) => setStatusFE(e.target.checked)}
+              onChange={(e) => ChangeStatusFE(e.target.checked)}
             />
             &nbsp;Fechado (Êxito)
           </label>
@@ -907,7 +937,7 @@ const SalesFunnel = () => {
             <input
               type="checkbox"
               checked={statusPE}
-              onChange={(e) => setStatusPE(e.target.checked)}
+              onChange={(e) => ChangeStatusPE(e.target.checked)}
             />
             &nbsp;Perdido
           </label>
@@ -916,7 +946,7 @@ const SalesFunnel = () => {
             <input
               type="checkbox"
               checked={statusAR}
-              onChange={(e) => setStatusAR(e.target.checked)}
+              onChange={(e) => ChangeStatusAR(e.target.checked)}
             />
             &nbsp;Arquivado
           </label>
@@ -943,7 +973,7 @@ const SalesFunnel = () => {
                     title=""
                     onKeyPress={(e: React.KeyboardEvent) => {
                       if (e.key == 'Enter'){
-                        LoadPage();
+                        LoadPage('');
                       }
                     }}
                     onChange={handleBusinessStartDate}
@@ -976,7 +1006,7 @@ const SalesFunnel = () => {
                       title=""
                       onKeyPress={(e: React.KeyboardEvent) => {
                         if (e.key == 'Enter'){
-                          LoadPage();
+                          LoadPage('');
                         }
                       }}
                       onChange={handleBusinessStartDate}
@@ -990,7 +1020,7 @@ const SalesFunnel = () => {
                       title=""
                       onKeyPress={(e: React.KeyboardEvent) => {
                         if (e.key == 'Enter'){
-                          LoadPage();
+                          LoadPage('');
                         }
                       }}
                       onChange={handleBusinessEndDate}
@@ -1006,7 +1036,7 @@ const SalesFunnel = () => {
           <FcSearch
             className='infoButton'
             title='Clique para recarregar a pagina com base na nova data de inicio informada'
-            onClick={() => LoadPage()}
+            onClick={() => LoadPage('')}
           />
 
           <div />
@@ -1014,7 +1044,7 @@ const SalesFunnel = () => {
           <Search
             onKeyPress={(e: React.KeyboardEvent) => {
               if (e.key === 'Delete' || e.key === 'Backspace' || e.which === 8) { e.preventDefault() }
-              if (e.key == 'Enter'){ LoadPage() }}
+              if (e.key == 'Enter'){ LoadPage('pesquisa') }}
             }
             onChange={(e) =>  {
               setFilterTerm(e.target.value)
@@ -1030,7 +1060,7 @@ const SalesFunnel = () => {
           <FcAbout
             className='infoButton'
             title='Pesquisa por negócios através dos campos: Cliente | Responsável | Descrição | Funil de venda'
-            onClick={() => LoadPage()}
+            onClick={() => LoadPage('pesquisa')}
           />
         </div>
 

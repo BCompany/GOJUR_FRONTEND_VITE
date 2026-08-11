@@ -359,6 +359,8 @@ const Calendar: React.FC = () => {
 
   // LOAD CALENDAR SEARCH VIEW
   const LoadCalendarSearch = useCallback(async () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_AGEPESQUISA'})
+    
     let filterItens = '';
     if (multiFilter.length > 0) {
       multiFilter.map(item => {
@@ -738,6 +740,8 @@ const Calendar: React.FC = () => {
     try {
       const token = localStorage.getItem('@GoJur:token');
       const startDate = localStorage.getItem('@fullCalendarDate');
+
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_AGEAGENDACOMPROMISSORAPIDO'})
 
       setIsSaving(true);
 
@@ -1388,6 +1392,7 @@ const Calendar: React.FC = () => {
     api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_AGENDAKANBAN'})
     history.push('/calendar/kanban')
   };
+
 
   const buttonsCalendarLabel = {
     dayGridMonth: 'Mês',

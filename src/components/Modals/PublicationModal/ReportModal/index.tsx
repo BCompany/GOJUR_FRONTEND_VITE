@@ -85,10 +85,11 @@ useEffect(() => {
   } 
     
   const handlePrintSelectPublications = useCallback(async () => {
-
     try {
-
       const userToken = localStorage.getItem('@GoJur:token');
+
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: userToken, module: 'EVT_CNTIMPRIMIRSELECIONADA'})
+
       const response = await api.post(`/Publicacao/Relatorio`, {
         publicationIds: publication
           .filter(i => i.publicationSelected)

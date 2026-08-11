@@ -113,6 +113,7 @@ const BusinessDocument = () => {
 
 
    const handleSaveFile = (event: any) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: tokenapi, module: 'EVT_CRMANEXARARQUIVOS'})
      const {files} = event.target;
      UploadFiles(files)
    }
