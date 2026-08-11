@@ -92,6 +92,8 @@ export function HeaderPage() {
       financeOptionsList.push({ value: '1', label: 'Mês selecionado' })
       financeOptionsList.push({ value: '12', label: 'Últimos 12 meses' })
       financeOptionsList.push({ value: '2', label: 'Acordos' })
+      financeOptionsList.push({ value: '3', label: 'Receitas' })
+      financeOptionsList.push({ value: '4', label: 'Despesas' })
 
       handleCaptureType('1')
       setFinanceOptions(financeOptionsList)
@@ -127,6 +129,14 @@ export function HeaderPage() {
       setDefaultMonthValue('2')
       setDefaultMonthLabel('Acordos')
     }
+    else if (item == '3') {
+      setDefaultMonthValue('3')
+      setDefaultMonthLabel('Receitas')
+    }
+    else if (item == '4') {
+      setDefaultMonthValue('4')
+      setDefaultMonthLabel('Despesas')
+    }
     else {
       setDefaultMonthValue('12')
       setDefaultMonthLabel('Últimos 12 meses')
@@ -143,6 +153,14 @@ export function HeaderPage() {
     else if (captureType == '2') {
       setDefaultMonthValue('2')
       setDefaultMonthLabel('Acordos')
+    }
+    else if (captureType == '3') {
+      setDefaultMonthValue('3')
+      setDefaultMonthLabel('Receitas')
+    }
+    else if (captureType == '4') {
+      setDefaultMonthValue('4')
+      setDefaultMonthLabel('Despesas')
     }
     else {
       setDefaultMonthValue('12')
