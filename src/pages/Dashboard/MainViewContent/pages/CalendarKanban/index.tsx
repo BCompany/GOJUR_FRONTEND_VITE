@@ -55,13 +55,13 @@ interface IPhasePagination
 
 /* ─── Colors for auto-assignment ─── */
 const PHASE_COLORS = [
-  // '#ffc9c9',
-  // '#fde68a',
-  // '#bbf7d0',
-  // '#bfdbfe',
-  // '#e9d5ff',
-  // '#fed7aa',
-  // '#a5f3fc',
+  '#ffc9c9',
+  '#fde68a',
+  '#bbf7d0',
+  '#bfdbfe',
+  '#e9d5ff',
+  '#fed7aa',
+  '#a5f3fc',
 ];
 
 let nextId = 100;
@@ -117,7 +117,6 @@ export default function AgendaKanban() {
     handleDeadLineCalculatorText,
     handleCaptureTextPublication,
     handleModalActive,
-    modalActiveId,
     modalActive
   } = useModal();
 
@@ -169,6 +168,64 @@ export default function AgendaKanban() {
       prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value],
     );
   };
+
+const SelectAppointment = async() => {
+
+  try
+  {
+      if ((currentAppointmentEdit ?? 0) == 0)
+        return;
+
+      setIsWaiting(true)
+
+      var response = await api.post('Compromisso/Selecionar', {
+        token,
+        id: currentAppointmentEdit
+      })
+
+      setCards(prevCards =>
+        prevCards.map(card =>
+          String(card.eventId) === String(response.data.eventId)
+            ? { 
+                ...card, 
+                title: `${new Date(response.data.startDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} ${new Date(response.data.startDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${capitalize(response.data.subject)}`,
+                description: response.data.description,
+                
+              }
+            : card
+        )
+      );
+
+      // Função para capitalizar primeira letra
+      function capitalize(text) {
+        return text.charAt(0).toUpperCase() + text.slice(1);
+      }
+
+      setIsWaiting(false)
+      setCurrentAppointmentEdit(0)
+  }
+  catch(err)
+  {
+      addToast({
+        type: 'error',
+        title: 'Operação NÃO Realizada',
+        description: 'Houve uma falha na atualização do compromisso'
+      });
+
+      console.log(err)
+      setIsWaiting(false)
+  }
+}
+
+function capitalize(text) {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+useEffect(() => {
+  if (!modalActive) {
+    SelectAppointment();
+  }
+}, [currentAppointmentEdit, modalActive]);
 
   
 useEffect(() => {
@@ -290,9 +347,7 @@ useEffect(() => {
         type: 'error',
         title: 'Operação NÃO Realizada',
         description: 'Houve uma falha no carregamento das etapas do painel'
-      });
-
-      console.log(err);      
+      });   
     }
  }
 
@@ -329,8 +384,8 @@ const LoadKanbanEvents = async () => {
           params: {
             token,
             kanbanStageId: phase.id, 
-            startDate: "2026-07-01",
-            endDate: "2026-08-10",
+            startDate: "2026-08-01",
+            endDate: "2026-08-30",
             qtdRecords:20,
             lastIdPgDatabase: pagination ? pagination.lastIdEvent : 0,
             lastDatePgDatabase: pagination ? pagination.lastDateEvent.toISOString() : "",
@@ -710,11 +765,12 @@ const LoadKanbanEvents = async () => {
         setIsWaiting(true);
 
         const colorIndex = panelPhases.length % PHASE_COLORS.length;
+
         var response = await api.post('/KanbanEtapa/Salvar', {
             token,
             kanbanId:addingPhaseForPanel,
             Description: name,
-            ColorCode: "#GGGGG"
+            ColorCode: PHASE_COLORS[colorIndex],
           })      
 
         var dadosKanban = response.data;
@@ -810,6 +866,9 @@ const LoadKanbanEvents = async () => {
 
       setIsWaiting(false)
 
+      setPhases((prev) => prev.filter((ph) => ph.id !== phaseId));
+      setCards((prev) => prev.filter((c) => c.phaseId !== phaseId));
+
       addToast({
         type: 'success',
         title: 'Operação realizada com sucesso',
@@ -826,9 +885,6 @@ const LoadKanbanEvents = async () => {
 
       setIsWaiting(false)
     }
-      
-    setPhases((prev) => prev.filter((ph) => ph.id !== phaseId));
-    setCards((prev) => prev.filter((c) => c.phaseId !== phaseId));
   }, [activePanelId]);
 
   const handleSavePhaseEdit = useCallback(async () => {
@@ -878,12 +934,6 @@ const LoadKanbanEvents = async () => {
         setEditingPhaseId(null);
         setEditingPhaseName('');
 
-        addToast({
-          type: 'success',
-          title: 'Operação realizada com sucesso',
-          description:'Nome da etapa do painel atualizado com sucesso',
-        });
-
         setIsWaiting(false)
     }
     catch(err)
@@ -925,12 +975,6 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
           FlagFavorite,
           Token: token
       })
-      
-      addToast({
-        type: 'success',
-        title: 'Operação Concluída',
-        description: FlagFavorite == "S"? 'Compromisso favoritado com sucesso':'Compromisso Desfavoritado com sucesso'
-      });
       
       setCards((prev) => prev.map((c) => (c.id === id ? { ...c, favorited: !c.favorited } : c)));
 
@@ -980,7 +1024,42 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
 
     if (type === 'COLUMN') {
 
-     
+      setIsWaiting(true);
+
+      const phaseId = parseInt(draggableId.replace('phase-', ''), 10);
+      const destinationIndex = destination.index;
+
+      // console.log(`Dragged phase ${phaseId} to index ${destinationIndex}`);
+
+      // const listaOrdenada = reorderStages(phaseId, destinationIndex);
+
+      // setActivePhases(listaOrdenada)
+
+      var response = await api.post('/KanbanEtapa/ArrastarEtapa', 
+        {
+            kanbanStageId: phaseId,
+            NumPosition: destinationIndex,
+            Token: token
+        }
+      )
+
+      console.log('lista antiga', activePhases)
+      console.log('lista nova', response.data)
+
+      setActivePhases(prev =>
+        prev
+          .map(item => {
+            // procura o item correspondente no response.data pelo Id
+            const atualizado = response.data.find(resp => resp.Id === item.id);
+            return atualizado
+              ? { ...item, order: atualizado.NumPosition }
+              : item;
+          })
+          // ordena pelo campo order para refletir visualmente
+          .sort((a, b) => a.order - b.order)
+      );
+
+      setIsWaiting(false);
     }
 
   }, [activePanelId, activePhases]);
@@ -999,6 +1078,15 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
     if (e.key === 'Enter') handleAddPhase();
     if (e.key === 'Escape') { setAddingPhaseForPanel(null); setNewPhaseName(''); }
   };
+
+  const handleReturnCalendar = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {
+      token,
+      module: 'MEN_AGENDA'
+    });
+
+    history.push('/calendar');
+  }
 
   const handleChangeDate = item => {
     setSelectedPeriod(item);
@@ -1209,7 +1297,7 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
             <button
               type="button"
               className="buttonClick"
-              onClick={() => history.push('/calendar')}
+              onClick={() => handleReturnCalendar()}
             >
               Retornar Calendário
             </button>
@@ -1472,6 +1560,7 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
                                   {...drag.draggableProps}
                                   {...drag.dragHandleProps}
                                   style={{
+                                    cursor: 'pointer',
                                     ...drag.draggableProps.style,
                                     opacity: dragSnapshot.isDragging ? 0.85 : 1,
                                     boxShadow: dragSnapshot.isDragging
@@ -1496,7 +1585,10 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
                                     )}
                                   </div>
                                   {card.description && (
-                                    <div className="card-description">{card.description}</div>
+                                    <div className="card-description"
+                                       title={card.description}>
+                                      {card.description.length > 100 ? card.description.substring(0, 100) + '...' : card.description}
+                                    </div>
                                   )}
                                   <div className="card-meta">
                                     {card.dateTime && (
@@ -1505,11 +1597,11 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
                                         <span>{card.dateTime}</span>
                                       </>
                                     )}
-                                    <FiTrash2
+                                    {/* <FiTrash2
                                       style={{ marginLeft: 'auto', cursor: 'pointer', color: '#fca5a5' }}
                                       title="Excluir compromisso"
                                       onClick={() => handleDeleteCard(card.id)}
-                                    />
+                                    /> */}
                                   </div>
                                 </AppointmentCard>
                               )}

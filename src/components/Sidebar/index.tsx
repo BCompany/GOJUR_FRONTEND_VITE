@@ -82,7 +82,14 @@ const Sidebar: React.FC = () => {
       if (parameterValue.includes('kanban'))
         history.push('/calendar/kanban');
       else
-        history.push('/calendar');
+      {
+          api.post('/Usuario/SalvarLogNavegacaoUsuario', {
+            token,
+            module: 'MEN_AGENDA'
+          });
+
+          history.push('/calendar');
+      }
   };
 
   const MatterRedirect = () => {
