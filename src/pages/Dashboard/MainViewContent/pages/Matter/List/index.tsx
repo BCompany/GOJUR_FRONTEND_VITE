@@ -3022,7 +3022,7 @@ const getTextColor = (hex) => {
                           {' '}
                           <span>
                             {' '}
-                            {item.judicialAction}
+                            {(item.judicialAction ?? "").length > 60 ? `${item.judicialAction.substring(0, 60)}...` : item.judicialAction}
                           </span>
                         </div>
 
@@ -3031,12 +3031,12 @@ const getTextColor = (hex) => {
                           {' '}
                           <span>
                             {' '}
-                            {item.forumName}
+                            {(item.forumName ?? "").length > 55 ? `${item.forumName.substring(0, 55)}...` : item.forumName}
                             {item.forumName.length > 0 ? ' (' : ''}
                             {(item.currentInstance ?? "").length > 20 ? `${item.currentInstance.substring(0, 20)}...` : item.currentInstance}
                             {' '}
                             {(item.currentCourt ?? "").length > 20 ? `${item.currentCourt.substring(0, 20)}...` : item.currentCourt}
-                            {item.forumName.length > 0 ? ' )' : ''}
+                            {item.forumName.length > 0 ? ')' : ''}
                           </span>
                         </div>
 
