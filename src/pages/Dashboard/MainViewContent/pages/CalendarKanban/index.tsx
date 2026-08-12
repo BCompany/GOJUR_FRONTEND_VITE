@@ -268,6 +268,7 @@ useEffect(() => {
       LoadKanbanEtapa(activePanelId);
       
   }, [activePanelId]);
+  
 
   const LoadKanban = async () => {
     try
@@ -293,14 +294,21 @@ useEffect(() => {
         name: item.Description
       })));
 
-      // Será modificado para pegar do parametro
-      const kanbanId = response.data.length > 0 ? response.data[0].Id : 0;
-      setActivePanelId(kanbanId); 
-
+      // Load default from SQL or the first one if do not have default
+      var findKanbanDefault = response.data.find(x=> x.Default);
+      if (findKanbanDefault) {
+        setActivePanelId(findKanbanDefault.Id);
+      }
+      else  
+      {
+        const kanbanId = response.data.length > 0 ? response.data[0].Id : 0;
+        setActivePanelId(kanbanId); 
+      }
+       
       setIsLoading(false)
     }
     catch (err) {
-      addToast({
+      addToast({ 
         type: 'error',
         title: 'Operação NÃO Realizada',
         description: 'Houve uma falha no carregamento do Painel'
@@ -309,6 +317,7 @@ useEffect(() => {
       console.log(err);
 
       setIsLoading(false)
+      setIsWaiting(false)
     }
  };
 
@@ -317,12 +326,20 @@ useEffect(() => {
     {
         setIsWaiting(true)
 
+        // Salva a flg_Padrao na tabela para recarregar automaticamente na proxima vez
+        api.post('/Kanban/DefinirPadrao', {
+          token,
+          Id: activePanelId,
+        }) 
+
+        // Listagem de etapas por id de painel seleiconado
         var response = await api.get('/KanbanEtapa/Listar', {
             params:{ 
               token,
               kanbanId
             }
           })
+
               
         var listPhases = response.data.map((item: any) => ({ 
             id: item.Id, 
@@ -407,8 +424,12 @@ const LoadKanbanEvents = async () => {
             phaseId: phase.id, 
             title: item.subjectText,
             description: item.title,
+            favorited: item.KanbanFavorite === 'S',
           })) 
         ]);
+
+        
+        console.log(results)
 
         // Atualiza o controle de paginação 
         updatePhasePagination({
@@ -584,7 +605,6 @@ const LoadKanbanEvents = async () => {
   /* ── Panel actions ── */
     const handleAddPanel = useCallback(async () => {
     setIsWaiting(true)
-
   
     const name = newPanelName.trim();
     if (!name) 
@@ -609,21 +629,16 @@ const LoadKanbanEvents = async () => {
       })      
 
       var dadosKanban = response.data;
+
       const newPanel: IPanel = { 
         id: dadosKanban.Id, 
         name: dadosKanban.Description
       };
         
       setPanels((prev) => [...prev, newPanel]);
-      setActivePanelId(newPanel.id);
+      setActivePanelId(dadosKanban.Id);
       setNewPanelName('');
       setShowAddPanel(false);
-
-       addToast({
-          type: 'success',
-          title: 'Operação Realizada',
-          description: 'Novo painel criado com sucesso  '
-        });
 
       setIsWaiting(false)
       setShowPanelsModal(false)
@@ -666,12 +681,6 @@ const LoadKanbanEvents = async () => {
         prev.map((p) => (p.id === editingPanelId ? { ...p, name } : p)),
       );
 
-      addToast({
-        type: 'success',
-        title: 'Operação Realizada',
-        description: 'Painel atualizado com sucesso'
-      });
-
       setIsWaiting(false)
       setEditingPanelId(null);
       setEditingPanelName('');
@@ -706,25 +715,19 @@ const LoadKanbanEvents = async () => {
         setCards((prev) => prev.filter((c) => c.panelId !== panelId));
 
         // ADD o primeiro como default
-        // if (panels.length > 0)
-        //   setActivePanelId(panels[0].id);
-
-        addToast({
-            type: 'success',
-            title: 'Operação Realizada',
-            description: 'Painel deletado com sucesso  '
-          });
+        if (panels.length > 0)
+          setActivePanelId(panels[0].id);
 
         setShowPanelsModal(false)
         setIsWaiting(false)
       }
-      catch
+      catch(err)
       {
-          addToast({
-            type: 'error',
-            title: 'Operação Não Realizada',
-            description: 'Houve uma falha na execução desta operação'
-          });
+        addToast({
+          type: 'error',
+          title: 'Operação Não Permitida',
+          description: err.response.data.Message
+        });
 
           setIsWaiting(false)
       }
@@ -790,11 +793,6 @@ const LoadKanbanEvents = async () => {
 
         setIsWaiting(false)
 
-        addToast({
-          type: 'success',
-          title: 'Operação realizada com sucesso',
-          description:'Nova etapa do painel criada com sucesso',
-        });
     }
     catch(err)
     {
@@ -869,11 +867,6 @@ const LoadKanbanEvents = async () => {
       setPhases((prev) => prev.filter((ph) => ph.id !== phaseId));
       setCards((prev) => prev.filter((c) => c.phaseId !== phaseId));
 
-      addToast({
-        type: 'success',
-        title: 'Operação realizada com sucesso',
-        description: 'Etapa do Kanban removida com sucesso'
-      });
     }
     catch(err)
     {
@@ -1028,12 +1021,6 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
 
       const phaseId = parseInt(draggableId.replace('phase-', ''), 10);
       const destinationIndex = destination.index;
-
-      // console.log(`Dragged phase ${phaseId} to index ${destinationIndex}`);
-
-      // const listaOrdenada = reorderStages(phaseId, destinationIndex);
-
-      // setActivePhases(listaOrdenada)
 
       var response = await api.post('/KanbanEtapa/ArrastarEtapa', 
         {
@@ -1285,15 +1272,13 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
           </div>
 
           <div className="taskbar-right">
-            {permissions.canManagePanels && (
-              <button
-                type="button"
-                className="buttonClick"
-                onClick={() => setShowPanelsModal(true)}
-              >
-                <FiLayout size={12} /> Painéis
-              </button>
-            )}
+            <button
+              type="button"
+              className="buttonClick"
+              onClick={() => setShowPanelsModal(true)}
+            >
+              <FiLayout size={12} /> Painéis
+            </button>
             <button
               type="button"
               className="buttonClick"
@@ -1312,7 +1297,10 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
             <PanelsModal onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <h4>Painéis</h4>
-                <FiX onClick={() => { setShowPanelsModal(false); setShowAddPanel(false); setNewPanelName(''); }} />
+                <FiX onClick={() => { 
+                  setShowPanelsModal(false); 
+                  etShowAddPanel(false); 
+                  setNewPanelName(''); }} />
               </div>
 
               <div className="modal-body">
@@ -1587,7 +1575,7 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
                                   {card.description && (
                                     <div className="card-description"
                                        title={card.description}>
-                                      {card.description.length > 100 ? card.description.substring(0, 100) + '...' : card.description}
+                                      {card.description.length > 70 ? card.description.substring(0, 70) + '...' : card.description}
                                     </div>
                                   )}
                                   <div className="card-meta">

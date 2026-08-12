@@ -1498,7 +1498,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         handleModalActive(false)
       }
       catch (err: any) {
-        if (err.response.data.typeError.warning == "awareness") {
+        if (err.response.data.typeError?.warning == "awareness") {
           setCheckMessage(true)
         }
         else {
