@@ -65,38 +65,27 @@ const BusinessEvents = (props) => {
       setIsLoading(false)
 
   },[isLoading, businessId])
+
   
   const handleOpenAppointment = async (appointmentId:string) => {
+    try {
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CRMCRIARCOMPROMISSO'})
 
-    try {               
-      
-        if (businessId === 0){
+      if (businessId === 0){
+        addToast({type: "info", title: "Operação não realizada", description: "É necessário salvar esta nova oportunidade de negócio antes de incluir um compromisso"})
+        return false;
+      }
 
-          addToast({
-            type: "info",
-            title: "Operação não realizada",
-            description: "É necessário salvar esta nova oportunidade de negócio antes de incluir um compromisso"
-          })
-          
-          return false;
-        }        
-
-        handleJsonModalObjectResult(JSON.stringify({businessId}));
-
-        isOpenModal(appointmentId)
-
-        handleCaptureTextPublication(customerName)
-
-        // handleModalActive(true)
-
-        // handleJsonModalObjectResult(JSON.stringify({businessId}));
-
+      handleJsonModalObjectResult(JSON.stringify({businessId}));
+      isOpenModal(appointmentId)
+      handleCaptureTextPublication(customerName)
     }
     catch (err) {
       console.log('Houve um erro ao abrir o cadastro de compromisso, tente novamente') 
     }
   }
 
+  
   // when appear confirm box to delete and is clicked on cancel
   useEffect(() => {
   

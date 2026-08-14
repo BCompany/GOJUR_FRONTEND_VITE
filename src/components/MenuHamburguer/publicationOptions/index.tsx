@@ -2,6 +2,7 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 // eslint-disable-next-line jsx-a11y/click-events-have-key-events
 import React, { useState, useEffect } from 'react';
+import api from 'services/api';
 import { BsFillCameraVideoFill }from 'react-icons/bs';
 import { FiPaperclip,FiCopy } from 'react-icons/fi';
 import { FaTools, FaTabletAlt } from 'react-icons/fa';
@@ -23,6 +24,7 @@ const PublicationOptionsMenu = (props) => {
   const { handleShowVideoTrainning } = useModal();
   const [checkEletronicIntimation, setCheckEletronicIntimation] = useState<boolean>(false);
   const companyId = localStorage.getItem('@GoJur:companyId');
+  const token = localStorage.getItem('@GoJur:token')
 
   // Call security permission - passing module
   useEffect(() => {
@@ -45,6 +47,7 @@ const PublicationOptionsMenu = (props) => {
 
   
   const handleMatterStatusOperation = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTLISTARABRAMONITOR'})
     history.push(`/Matter/monitoring`)
   };
 

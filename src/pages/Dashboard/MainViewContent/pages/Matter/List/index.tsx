@@ -432,6 +432,36 @@ const Matter: React.FC = () => {
 
 
   const handleChangeStatus = async (status) => {
+    if(status == "T"){
+      if(matterType === 'matterLegal')
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROFILTROTODOS'})
+      else
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOFILTROTODOS'})
+    }
+    if(status == "A"){
+      if(matterType === 'matterLegal')
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROFILTROATIVO'})
+      else
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOFILTROATIVO'})
+    }
+    if(status == "R"){
+      if(matterType === 'matterLegal')
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROFILTROARQUIVADO'})
+      else
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOFILTROARQUIVADO'})
+    }
+    if(status == "M"){
+      if(matterType === 'matterLegal')
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROFILTROMONITORADO'})
+      else
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOFILTROMONITORADO'})
+    }
+    if(status == "P"){
+      if(matterType === 'matterLegal')
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROFILTROEMPESQUISA'})
+      else
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOFILTROEMPESQUISA'})
+    }
 
     // m -> Monitorado
     // In this case we do not save as default parameter, because M type is considerer a filter not a default behavior
@@ -445,6 +475,30 @@ const Matter: React.FC = () => {
     }
 
     setStatus(status);
+  }
+
+
+  const handleChangeSortBy = async (sortBy) => {
+    if(sortBy == "dta_UltimoMovimento"){
+      if(matterType === 'matterLegal')
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROORGMOVIMENTACAO'})
+      else
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOORGMOVIMENTACAO'})
+    }
+    if(sortBy == "cod_Processo"){
+      if(matterType === 'matterLegal')
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROORGCADASTRO'})
+      else
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOORGCADASTRO'})
+    }
+    if(sortBy == "nom_ClientePrincipal"){
+      if(matterType === 'matterLegal')
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROORGCLIENTE'})
+      else
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOORGCLIENTE'})
+    }
+
+    setSortBy(sortBy)
   }
 
 
@@ -1150,6 +1204,10 @@ const Matter: React.FC = () => {
 
 
   const handleDeleteMatter = (matterId: number, temp = false) => {
+    if(matterType === 'matterLegal')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROEXCLUIR'})
+    else
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOEXCLUIR'})
 
     if (!temp)
       setIsDeleting(true)
@@ -1306,30 +1364,6 @@ const Matter: React.FC = () => {
   };
 
 
-  /*
-  const handleAddition = (tag, item: IMatterData) => {
-
-    // allow only 5 markers by folder
-    if (item.markersList.length < 5) {
-
-      item.markersList.push(tag)
-      const updateMatterList = matterList.map(matter =>
-
-        matter.matterId === item.matterId ?
-          {
-            ...matter,
-            markersList: item.markersList
-          } :
-          matter
-      );
-
-      setMatterList(updateMatterList)
-      SaveMarkers(item.matterId, item.markersList)
-    }
-  };
-*/
-
-
   const handleAddition = (tag, item: IMatterData) => {
 
     // allow only 5 markers by folder
@@ -1446,13 +1480,13 @@ const Matter: React.FC = () => {
 
 
   const handleAppointmentModalInclude = async (matterId: number) => {
+    if(matterType === 'matterLegal')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROAGENDACOMPROMISSO'})
+    else
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOAGENDACOMPROMISSO'})
 
     try {
-
       isOpenModal('0')
-
-      // handleModalActive(true)
-
       setCurrentMatterId(matterId)
 
       if (matterId > 0) {
@@ -1661,6 +1695,10 @@ const Matter: React.FC = () => {
 
 
   const handleDocumentModal = (matterId: number, customerId: number) => {
+    if(matterType === 'matterLegal')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROEMITIRDOCUMENTOS'})
+    else
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOEMITIRDOCUMENTOS'})
 
     localStorage.setItem('@GoJur:matterId', matterId.toString())
     localStorage.setItem('@GoJur:customerId', customerId.toString())
@@ -1700,6 +1738,11 @@ const Matter: React.FC = () => {
   // SAVE MATTER EVENT
   const handleSaveNewFollow = useCallback(async (matter: IMatterData) => {
     try {
+      if(matterType === 'matterLegal')
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROCRIARACOMPPAINEL'})
+      else
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOCRIARACOMPPAINEL'})
+
       // Call validation
       if (!ValidateSaveFollow(matter, false)) {
         return
@@ -1753,7 +1796,13 @@ const Matter: React.FC = () => {
   // EDIT MATTER EVENT
   const handleEditFollow = useCallback((state: string, follow: IMatterFollowData, matterId: number) => {
     try {
-      console.log(follow)
+      if(state == 'save'){
+        if(matterType === 'matterLegal')
+          api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROEDITARACOMPPAINEL'})
+        else
+          api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOEDITARACOMPPAINEL'})
+      }
+
       if (follow.typeFollow == 'T' || follow.typeFollow == 'W')
         setIsEdit(true)
       else
@@ -1887,8 +1936,13 @@ const Matter: React.FC = () => {
 
 
   const handleRedirectToProcess = (id) => {
-
     const pageType = matterType === 'matterLegal' ? 'legal' : 'advisory'
+
+    if(matterType === 'matterLegal')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROVERDETALHES'})
+    else
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOVERDETALHES'})
+
     const url = `/matter/edit/${pageType}/${id}`
 
     history.push(url)
@@ -1912,13 +1966,22 @@ const Matter: React.FC = () => {
 
 
   const handleRedirectToTagPrinter = async (matterId) => {
-    // const urlRedirect = `${envProvider.redirectUrl}reports/matter/label?matterId=${id}&token=${token}`;
+    if(matterType === 'matterLegal')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROETIQUETA'})
+    else
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOETIQUETA'})
+
     localStorage.setItem('@GoJur:matterCoverId', matterId.toString());
     history.push("/matter/printer/label", '_blank');
   }
 
 
   const handleOpenMatterCover = async (matterId) => {
+    if(matterType === 'matterLegal')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROCAPA'})
+    else
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOCAPA'})
+
     localStorage.setItem('@GoJur:matterCoverId', matterId.toString());
     window.open('/matter/printer/cover', '_blank');
   }
@@ -1931,6 +1994,10 @@ const Matter: React.FC = () => {
 
 
   const handleOpenMatterDataReport = useCallback(async (matterId) => {
+    if(matterType === 'matterLegal')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROFICHA'})
+    else
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOFICHA'})
 
     if (isGeneratingReport) {
       return;
@@ -2012,6 +2079,10 @@ const Matter: React.FC = () => {
 
 
   const handleNewMatter = () => {
+    if(matterType === 'matterLegal')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROINCLUIRMANUAL'})
+    else
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOINCLUIRMANUAL'})
 
     if ((!hasButtonIncludeMatterLegal && matterType == 'matterLegal') || (!hasButtonIncludeMatterAdvisory && matterType == 'matterAdvisory')) {
       addToast({
@@ -2029,6 +2100,7 @@ const Matter: React.FC = () => {
 
 
   const handleNewMatterAutomatic = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROINCLUIRAUTOMATICO'})
 
     if ((!hasButtonIncludeMatterLegal && matterType == 'matterLegal') || (!hasButtonIncludeMatterAdvisory && matterType == 'matterAdvisory')) {
       addToast({
@@ -2046,6 +2118,7 @@ const Matter: React.FC = () => {
 
 
   const handleNewMatterAutomaticBatch = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROINCLUIRLOTE'})
 
     if ((!hasButtonIncludeMatterLegal && matterType == 'matterLegal') || (!hasButtonIncludeMatterAdvisory && matterType == 'matterAdvisory')) {
       addToast({
@@ -2120,6 +2193,11 @@ const Matter: React.FC = () => {
 
 
   const handleOpenMatterFileModal = async (matterId, matteFilePlace) => {
+    if(matterType === 'matterLegal')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROANEXARDOCUMENTOS'})
+    else
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOANEXARDOCUMENTOS'})
+    
     setShowMatterFileModal(true)
     setMatterFileId(matterId)
     setMatterFilePlace(matteFilePlace)
@@ -2179,6 +2257,11 @@ const Matter: React.FC = () => {
 
 
   const MatterCRM = async (matterId, matteFilePlace) => {
+    if(matterType === 'matterLegal')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROCRM'})
+    else
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOCRM'})
+
     setMatterFileId(matterId)
     setMatterFilePlace(matteFilePlace)
 
@@ -2205,6 +2288,11 @@ const Matter: React.FC = () => {
 
 
   const MatterWorkflow = async (matterId, matteFilePlace) => {
+    if(matterType === 'matterLegal')
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PROWORKFLOW'})
+    else
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_PCOWORKFLOW'})
+
     setMatterFileId(matterId)
     setMatterFilePlace(matteFilePlace)
 
@@ -2478,7 +2566,8 @@ const getTextColor = (hex) => {
                     autoComplete="off"
                     styles={selectStyles}
                     value={matterFilteOrderBy.filter(options => options.id === sortBy)}
-                    onChange={(item) => setSortBy(item ? item.id : '')}
+                    // onChange={(item) => setSortBy(item ? item.id : '')}
+                    onChange={(item) => handleChangeSortBy(item ? item.id : '')}
                     options={matterFilteOrderBy}
                   />
                 </label>
@@ -2933,7 +3022,7 @@ const getTextColor = (hex) => {
                           {' '}
                           <span>
                             {' '}
-                            {item.judicialAction}
+                            {(item.judicialAction ?? "").length > 60 ? `${item.judicialAction.substring(0, 60)}...` : item.judicialAction}
                           </span>
                         </div>
 
@@ -2942,12 +3031,12 @@ const getTextColor = (hex) => {
                           {' '}
                           <span>
                             {' '}
-                            {item.forumName}
+                            {(item.forumName ?? "").length > 55 ? `${item.forumName.substring(0, 55)}...` : item.forumName}
                             {item.forumName.length > 0 ? ' (' : ''}
                             {(item.currentInstance ?? "").length > 20 ? `${item.currentInstance.substring(0, 20)}...` : item.currentInstance}
                             {' '}
                             {(item.currentCourt ?? "").length > 20 ? `${item.currentCourt.substring(0, 20)}...` : item.currentCourt}
-                            {item.forumName.length > 0 ? ' )' : ''}
+                            {item.forumName.length > 0 ? ')' : ''}
                           </span>
                         </div>
 

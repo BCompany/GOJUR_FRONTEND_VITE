@@ -1373,6 +1373,7 @@ export default function Customer() {
 
 
   const handleNewBusiness = useCallback(async () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CRMINLCUIRNEGOCIO'})
 
     if (!permissionCRM){
       addToast({

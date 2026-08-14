@@ -277,24 +277,28 @@ const CustomerList: React.FC = () => {
 
   // save businessCustomerId to redirect to tab business automatically
   const handleBusinessCustomer = (customerId) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CLINEGOCIOS'})
     localStorage.setItem('@GoJur:businessCustomerId', customerId.toString())
     const href = `/customer/edit/${customerId.toString()}`
     history.push(href)
   }
 
   const handleMatterCustomer = (customerId) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CLIPROCESSO'})
     localStorage.setItem('@GoJur:matterCustomerId', customerId.toString())
     const href = `/customer/edit/${customerId.toString()}`
     history.push(href)
   }
 
   const handleDocumentCustomer = (customerId) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CLIANEXARDOCUMENTOS'})
     localStorage.setItem('@GoJur:documentCustomerId', customerId.toString())
     const href = `/customer/edit/${customerId.toString()}`
     history.push(href)
   }
 
   const handleWorkflow = async (customerId, customer) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CLIWORKFLOW'})
 
     localStorage.setItem('@Gojur:customerRedirect', 'S')
     localStorage.setItem('@Gojur:customerId', customerId.toString())
@@ -313,6 +317,7 @@ const CustomerList: React.FC = () => {
   }
 
   const handleCheckBoxDeleteCustomer = (customerId: number) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CLIEXCLUIR'})
     setIsDeleting(true)
     setCurrentCustomerId(customerId);
   }
@@ -534,6 +539,38 @@ const CustomerList: React.FC = () => {
     }
   }
 
+
+  const SalesFunnel = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CRMFUNILVENDAS'})
+    history.push('/CRM/salesFunnel')
+  }
+
+
+  const CRMDashboard = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CRMDASHBOARD'})
+    history.push('/CRM/Dashboard')
+  }
+
+
+  const CreateNewCustomer = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CLIINCLUIR'})
+    history.push('/customer/edit/0')
+  }
+
+
+  const EditCustomer = (item: number) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CLIEDITAR'})
+    history.push(`/customer/edit/${item}`)
+  }
+
+
+  const GenerateDocuments = (item: number) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CLIEMITIRDOCUMENTOS'})
+    handleOpenCustomerDocumentModal();
+    handleLoadInitialPropsFromDocument(item);
+  }
+
+
   // accessCodes Permissions
   const showSalesFunnelMenu = permissionsSecurity.find(item => item.name === "CFGSFUNI");
   const showBusinessDashboard = permissionsSecurity.find(item => item.name === "CFGSDASH");
@@ -557,7 +594,7 @@ const CustomerList: React.FC = () => {
             {showSalesFunnelMenu && (
               <button
                 className="buttonLinkClick"
-                onClick={() => history.push('/CRM/salesFunnel')}
+                onClick={() => SalesFunnel()}
                 title="Clique para visualizar o funil de vendas (CRM)"
                 type="submit"
               >
@@ -569,7 +606,7 @@ const CustomerList: React.FC = () => {
             {showBusinessDashboard && (
               <button
                 className="buttonLinkClick"
-                onClick={() => history.push('/CRM/Dashboard')}
+                onClick={() => CRMDashboard()}
                 title="Clique para visualizar o DashBoard do CRM"
                 type="submit"
               >
@@ -580,7 +617,7 @@ const CustomerList: React.FC = () => {
 
             <button
               className="buttonLinkClick"
-              onClick={() => history.push('/customer/edit/0')}
+              onClick={() => CreateNewCustomer()}
               title="Clique para incluir um novo cliente"
               type="submit"
             >
@@ -623,7 +660,7 @@ const CustomerList: React.FC = () => {
                   <button
                     type="button"
                     title="Editar"
-                    onClick={() => history.push(`/customer/edit/${customer.cod_Cliente}`)}
+                    onClick={() => EditCustomer(customer.cod_Cliente)}
                   >
                     <FiEdit />
                   </button>
@@ -662,15 +699,11 @@ const CustomerList: React.FC = () => {
                     <FiFile />
                   </button>
 
-
                   {checkpermissionDocument && (
                     <button
                       type="button"
                       title="Emitir Documento"
-                      onClick={() => {
-                        handleOpenCustomerDocumentModal();
-                        handleLoadInitialPropsFromDocument(customer.cod_Pessoa);
-                      }}
+                      onClick={() => { GenerateDocuments(customer.cod_Pessoa)}}
                     >
                       <RiNewspaperFill />
                     </button>
