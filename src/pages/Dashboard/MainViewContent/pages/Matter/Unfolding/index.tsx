@@ -80,10 +80,9 @@ const UnfoldingModal = (props) => {
     { columnName: 'remove',width: '10%' },
   ]);
 
-  useEffect(() => {
 
+  useEffect(() => {
     if (isCancelMessage){
-  
       if (caller === 'confirmOpenMatterMonitorResourceModal')
       {
         setOpenMatterMonitorResourceModal(false)
@@ -91,11 +90,10 @@ const UnfoldingModal = (props) => {
         setMatterMonitorResourceMessage("")
       }
     }
-  
-  },[isCancelMessage, caller]);
+  }, [isCancelMessage, caller]);
+
 
   useEffect(() => {
-
     if(isConfirmMessage)
     {
       if (caller === 'confirmOpenMatterMonitorResourceModal')
@@ -104,10 +102,10 @@ const UnfoldingModal = (props) => {
         setConfirmMatterMonitorResourceModal(true)
       }     
     }
-  },[isConfirmMessage, caller]);
+  }, [isConfirmMessage, caller]);
+
 
   useEffect(() => {
-
     if(confirmMatterMonitorResourceModal)
     {  
       setOpenMatterMonitorResourceModal(false)
@@ -115,12 +113,12 @@ const UnfoldingModal = (props) => {
       handleConfirmMessage(false)
       history.push('/changeplan')
     }
-  },[confirmMatterMonitorResourceModal]);
+  }, [confirmMatterMonitorResourceModal]);
   
-  useEffect(() => {
 
-    if (isCancelMessage){
-  
+  useEffect(() => {
+    if (isCancelMessage)
+    {
       if (caller === 'confirmOpenMatterMonitorResourceModalFree')
       {
         setOpenMatterMonitorResourceModalFree(false)
@@ -129,10 +127,10 @@ const UnfoldingModal = (props) => {
       }
     }
   
-  },[isCancelMessage, caller]);
+  }, [isCancelMessage, caller]);
+
 
   useEffect(() => {
-
     if(isConfirmMessage)
     {
       if (caller === 'confirmOpenMatterMonitorResourceModalFree')
@@ -142,8 +140,8 @@ const UnfoldingModal = (props) => {
     }
   },[isConfirmMessage, caller]);
 
-  useEffect(() => {
 
+  useEffect(() => {
     if(confirmMatterMonitorResourceModalFree)
     {  
       setOpenMatterMonitorResourceModalFree(false)
@@ -151,7 +149,7 @@ const UnfoldingModal = (props) => {
       handleConfirmMessage(false)
       history.push('/changeplan')
     }
-  },[confirmMatterMonitorResourceModalFree]);
+  }, [confirmMatterMonitorResourceModalFree]);
 
   
   useEffect(() => {
@@ -168,7 +166,7 @@ const UnfoldingModal = (props) => {
         setMatterUnfoldingId("")
       }      
     }      
-  },[isCancelMessage, caller]);
+  }, [isCancelMessage, caller]);
 
 
   useEffect(() => {
@@ -204,30 +202,23 @@ const UnfoldingModal = (props) => {
   const ListMatterUnfolding = async(matterId) => {
     try{
       const response = await api.get<IUnfolding[]>('/ProcessoDesdobramento/ListarPorProcesso', {
-        params:{
-          token,
-          matterId
-        }
+        params:{token, matterId}
       })
 
       setMatterUnfoldingList(response.data)
-    } catch (err:any) {
-      addToast({
-        type: "error",
-        title: "Operação não realizada",
-        description: err.response.data.Message
-      })
+    }
+    catch (err:any) {
+      addToast({type: "error", title: "Operação não realizada", description: err.response.data.Message})
     }
   };
 
 
   const CustomCell = (props) => {
-    
     const { column } = props;
-    
+
     if (column.name === 'matter') {
       return (
-        <Table.Cell onClick={(e) => console.log(e)} {...props}>
+        <Table.Cell {...props}>
           <div title={props.row.matterNumber} style={{fontSize:'12px'}}>
             {props.row.matterNumber}
           </div>
@@ -237,7 +228,7 @@ const UnfoldingModal = (props) => {
 
     if (column.name === 'description') {
       return (
-        <Table.Cell onClick={(e) => console.log(e)} {...props}>
+        <Table.Cell {...props}>
           <div title={props.row.description} style={{fontSize:'12px'}}>
             {props.row.description}
           </div>
@@ -247,9 +238,34 @@ const UnfoldingModal = (props) => {
 
     if (column.name === 'flag') {
       return (
-        <Table.Cell onClick={(e) => console.log(e)} {...props}>
+        <Table.Cell {...props}>
           <div style={{fontSize:'12px'}}>
-            {props.row.flgCourt == 'N' ? 'NÃO' : 'SIM'}
+            {followPermission && (
+              <div id='follow' style={{float:'left', marginLeft:'5%', marginTop:'7px'}} title="Acionando o botão seguir o processo passa a ser acompanhado nos tribunais e alimentado automaticamente.">
+                <label htmlFor="email">
+                  Seguir
+                  <br />
+                  <Switch
+                    onChange={() => {
+                      if (props.row.flgCourt == "S") {
+                        setMatterNumber(props.row.matterNumber)
+                        handleFollowButton(props.row.id, props.row.flgCourt, props.row.matterNumber);
+                      } else {
+                        handleOpenFollowModal(props.row.id, props.row.matterNumber);
+                      }
+                    }}
+                    checked={props.row.flgCourt == "S"}
+                    onColor="#86d3ff"
+                    onHandleColor="#2693e6"
+                    handleDiameter={15}
+                    uncheckedIcon={false}
+                    checkedIcon={false}
+                    height={14}
+                    width={38}
+                  />
+                </label>
+              </div>
+            )}
           </div>
         </Table.Cell>
       );
@@ -304,18 +320,15 @@ const UnfoldingModal = (props) => {
       setIsFollow(true)
 
       const response = await api.delete('/ProcessoDesdobramento/Apagar', {
-        params:{
-          token,
-          id,
-          matterId
-        }
+        params:{token, id, matterId}
       })
 
       addToast({type: "success", title: "Operação realizada com exito", description: 'Processo apagado no sistema'})
       ResetValues();
       setIsFollow(false)
       ListMatterUnfolding(matterId)
-    } catch (err:any) {
+    }
+    catch (err:any) {
       setIsFollow(false)
       addToast({type: "error", title: "Operação não realizada", description: err.response.data.Message})
     }
@@ -354,24 +367,18 @@ const UnfoldingModal = (props) => {
   },[matterUnfoldingId, matterId, matterNumber, description, flgCourt])
 
 
-  const handleFollowButton = useCallback(async (flgCourt) => {
-    
-    if(matterUnfoldingId == "0" || matterUnfoldingId == "")
-    {
-      addToast({type: "info", title: "Operação não realizada", description: 'Necessário salvar antes de ligar o robô.'})
-      return;
-    }
-
+  const handleFollowButton = useCallback(async (id, flgCourt, matterNumber) => {
     setIsFollow(true)
+    setMatterNumber(matterNumber)
     
     if(flgCourt == "S")
     {
-      Follow(flgCourt, matterUnfoldingId, matterNumber, selectedCredentialid) // OFF
+      Follow(flgCourt, id, matterNumber, selectedCredentialid) // OFF
       setFlgCourt("N")
     }
     else
     {
-      Follow(flgCourt, matterUnfoldingId, matterNumber, selectedCredentialid) // ON
+      Follow(flgCourt, id, matterNumber, selectedCredentialid) // ON
       setFlgCourt("S")
     }
   },[matterUnfoldingId, matterNumber, selectedCredentialid])
@@ -381,11 +388,7 @@ const UnfoldingModal = (props) => {
     try{
 
       if (isSecretJustice && selectedCredentialid === 0) {
-        addToast({
-          type: 'info',
-          title: 'Operação NÃO realizada',
-          description: "Para um processo em segredo de justiça, selecione uma credencial para prosseguir."
-        });
+        addToast({type: 'info', title: 'Operação NÃO realizada', description: "Para um processo em segredo de justiça, selecione uma credencial para prosseguir."});
         return;
       }
 
@@ -405,8 +408,8 @@ const UnfoldingModal = (props) => {
       ListMatterUnfolding(matterId);
       setIsFollow(false)
       setIsChanging(false)
-    } catch (err:any) {
-
+    }
+    catch (err:any) {
       setIsChanging(false)
       setIsFollow(false)
       setFlgCourt("N")
@@ -427,42 +430,26 @@ const UnfoldingModal = (props) => {
       }
 
       if (String(err.response.data.Message).includes("Não há mais crédito") && companyPlan == 'GOJURCM' || accessCode != 'adm' && String(err.response.data.Message).includes("Não há mais crédito")){
-        addToast({
-          type: 'info',
-          title: 'Operação NÃO realizada',
-          description: err.response.data.Message
-        });
+        addToast({type: 'info', title: 'Operação NÃO realizada', description: err.response.data.Message});
       }
 
       if (String(err.response.data.Message).includes("Não há mais crédito") == false && err.response.data.typeError.warning != "awareness") {
-        addToast({
-          type: 'info',
-          title: 'Operação NÃO realizada',
-          description: err.response.data.Message
-        });
-      }     
+        addToast({type: 'info', title: 'Operação NÃO realizada', description: err.response.data.Message});
+      }
     }
   };
 
-  const handleOpenFollowModal = async () => {
 
-    if (matterUnfoldingId == "0" || matterUnfoldingId == "") {
-      addToast({
-        type: 'info',
-        title: 'Operação NÃO realizada',
-        description: 'Necessário salvar antes de ligar o robô.'
-      });
-
-      return;
-    }
-
+  const handleOpenFollowModal = async (id, matterNumber) => {
+    setMatterNumber(matterNumber)
+    setMatterUnfoldingId(id)
     setMatterSelectedId(matterId)
     setMatterSelectedNumber(matterNumber)
     setShowFollowModal(true)
   };
 
-  const handleCloseFollowModal = async () => {
 
+  const handleCloseFollowModal = async () => {
     ResetValues()
     setShowFollowModal(false)
     setIsSecretJustice(false)
@@ -472,23 +459,28 @@ const UnfoldingModal = (props) => {
     setIsChanging(false)
   };
 
+
   const handleSecretJusticeChange = (event: ChangeEvent<HTMLInputElement>) => {
     setIsSecretJustice(event.target.checked);
   }
 
+
   const handleFollowMatter = async () => {
     setIsChanging(true)
-    handleFollowButton(flgCourt)
+    handleFollowButton(matterUnfoldingId, flgCourt, matterNumber)
   }
+
 
   const handleSelectCredentialId = (id) => {
     setSelectedCredentialid(id)
   }
   
+
   const handleCloseAwarenessModal = async () => {
     setShowAwarenessModal(false)
     setAwarenessModalMessage('')
   };
+
 
   const handleConfirmAwarenessButton = async () => {
     setShowAwarenessModal(false)
@@ -496,6 +488,7 @@ const UnfoldingModal = (props) => {
     history.push('/Matter/monitoring')
   };
 
+  
   return(
     <>
     {(showFollowModal) && <OverlayUnfolding />}
@@ -517,20 +510,9 @@ const UnfoldingModal = (props) => {
             Nº do Processo
             <br />
             {isEdit == true ? (
-              <input
-                type="search"
-                value={matterNumber}
-                disabled
-              />
+              <input type="search" value={matterNumber} disabled/>
             ) : (
-              <input
-                maxLength={100}
-                type="search"
-                value={matterNumber}
-                name="processo"
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setMatterNumber(e.target.value)}
-                autoComplete="nope"
-              />
+              <input type="search" name="processo" maxLength={100} value={matterNumber} autoComplete="nope" onChange={(e: ChangeEvent<HTMLInputElement>) => setMatterNumber(e.target.value)}/>
             )}
           </label>
         </div>
@@ -539,66 +521,21 @@ const UnfoldingModal = (props) => {
           <label htmlFor="email">
             Descrição
             <br />
-            <input
-              maxLength={100}
-              type="search"
-              value={description}
-              name="descrição"
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setDescription(e.target.value)}
-              autoComplete="nope"
-            />
+            <input type="search" name="descrição" maxLength={100} value={description} autoComplete="nope" onChange={(e: ChangeEvent<HTMLInputElement>) => setDescription(e.target.value)}/>
           </label>
         </div>
-
-        {followPermission && (
-          <div id='follow' style={{float:'left', marginLeft:'5%', marginTop:'7px'}} title="Acionando o botão seguir o processo passa a ser acompanhado nos tribunais e alimentado automaticamente.">
-            <label htmlFor="email">
-              Seguir
-              <br />
-              <Switch
-                onChange={() => {
-                  if (flgCourt == "S") {
-                    handleFollowButton(flgCourt);                                            
-                  } else {
-                    handleOpenFollowModal();
-                  }
-                }}
-                checked={flgCourt == "S"}
-                onColor="#86d3ff"
-                onHandleColor="#2693e6"
-                handleDiameter={15}
-                uncheckedIcon={false}
-                checkedIcon={false}
-                height={14}
-                width={38}
-              />
-            </label>
-          </div>
-        )}
         <br /><br /><br /><br />
 
         <div id='Buttons' style={{marginRight:'7%', float:'right'}}>
           <div style={{float:'left'}}>
-            <button 
-              className="buttonClick"
-              type='button'
-              onClick={()=> Save()}
-              style={{width:'100px', height:'38px'}}
-            >
-              <FiSave />
-              Salvar&nbsp;
+            <button type='button' className="buttonClick" style={{width:'100px', height:'38px'}} onClick={()=> Save()}>
+              <FiSave /> Salvar&nbsp;
             </button>
           </div>
                     
           <div style={{float:'left', width:'100px'}}>
-            <button 
-              type='button'
-              className="buttonClick"
-              onClick={() => CloseUnfoldingModal()}
-              style={{width:'100px', height:'38px'}}
-            >
-              <FaRegTimesCircle />
-              Fechar&nbsp;
+            <button type='button' className="buttonClick" style={{width:'100px', height:'38px'}} onClick={() => CloseUnfoldingModal()}>
+              <FaRegTimesCircle /> Fechar&nbsp;
             </button>
           </div>
         </div>
