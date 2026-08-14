@@ -183,6 +183,12 @@ const SelectAppointment = async() => {
         id: currentAppointmentEdit
       })
 
+      if (response.data == null)
+      {
+        LoadKanbanEvents();
+        return;
+      }
+
       setCards(prevCards =>
         prevCards.map(card =>
           String(card.eventId) === String(response.data.eventId)
@@ -340,7 +346,6 @@ useEffect(() => {
             }
           })
 
-              
         var listPhases = response.data.map((item: any) => ({ 
             id: item.Id, 
             panelId: item.KanbanId, 
@@ -401,8 +406,8 @@ const LoadKanbanEvents = async () => {
           params: {
             token,
             kanbanStageId: phase.id, 
-            startDate: "2026-08-01",
-            endDate: "2026-08-30",
+            startDate: "2026-01-01",
+            endDate: "2026-12-31",
             qtdRecords:20,
             lastIdPgDatabase: pagination ? pagination.lastIdEvent : 0,
             lastDatePgDatabase: pagination ? pagination.lastDateEvent.toISOString() : "",
@@ -427,9 +432,6 @@ const LoadKanbanEvents = async () => {
             favorited: item.KanbanFavorite === 'S',
           })) 
         ]);
-
-        
-        console.log(results)
 
         // Atualiza o controle de paginação 
         updatePhasePagination({
@@ -587,14 +589,11 @@ const LoadKanbanEvents = async () => {
 
   const [activePhases, setActivePhases] = useState([] as IPhase[]);
 
-
   /* ── Derived ── */
   const activePanel = panels.find((p) => p.id === activePanelId);
   // const activePhases = phases
   //   .filter((ph) => ph.panelId === activePanelId)
   //   .sort((a, b) => a.order - b.order);
-
-
 
   useEffect(() => {
   // const [tempPeriodStart, setTempPeriodStart] = useState('');
@@ -682,17 +681,16 @@ const LoadKanbanEvents = async () => {
       );
 
       setIsWaiting(false)
-      setEditingPanelId(null);
       setEditingPanelName('');
       setShowAddPanel(false);
       setShowPanelsModal(false)
+      setEditingPanelId(null);
     }
     catch (err) {
       console.log(err);
       setIsWaiting(false)
     }
-  }, [editingPanelId, editingPanelName]);
-
+  }, [editingPanelId, editingPanelName, showPanelsModal, showAddPanel, editingPanelName]);
 
   const onPanelEditKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') handleSavePanelEdit();
@@ -740,16 +738,16 @@ const LoadKanbanEvents = async () => {
 
     try
     {
-          if (!permissions.canManagePanels)
-          {
-              addToast({
-                type: 'info',
-                title: 'Acesso Negado',
-                description: 'O seu usuário não possui permissão para criação de novas etapas Kanban, verifique com o administrador do sistema.'
-              });
-              
-              return;
-          }
+        if (!permissions.canManagePanels)
+        {
+            addToast({
+              type: 'info',
+              title: 'Acesso Negado',
+              description: 'O seu usuário não possui permissão para criação de novas etapas Kanban, verifique com o administrador do sistema.'
+            });
+            
+            return;
+        }
           
         const name = newPhaseName.trim();
         if (!name || addingPhaseForPanel === null)
@@ -785,6 +783,7 @@ const LoadKanbanEvents = async () => {
           color: PHASE_COLORS[colorIndex],
           order: panelPhases.length
         };
+
         setPhases((prev) => [...prev, newPhase]);
         setNewPhaseName('');
         setAddingPhaseForPanel(null);
@@ -792,7 +791,6 @@ const LoadKanbanEvents = async () => {
         LoadKanbanEtapa(activePanelId);
 
         setIsWaiting(false)
-
     }
     catch(err)
     {
@@ -1293,14 +1291,17 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
 
         {/* ── Panels modal ── */}
         {showPanelsModal && (
-          <ModalOverlay onClick={() => { setShowPanelsModal(false); setShowAddPanel(false); setNewPanelName(''); }}>
+          // <ModalOverlay onClick={() => { setShowPanelsModal(false); setShowAddPanel(false); setNewPanelName(''); }}>
+          <ModalOverlay>
             <PanelsModal onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <h4>Painéis</h4>
                 <FiX onClick={() => { 
                   setShowPanelsModal(false); 
-                  etShowAddPanel(false); 
-                  setNewPanelName(''); }} />
+                  setShowAddPanel(false); 
+                  setNewPanelName('');
+                  setEditingPanelId(null);
+                  setIsWaiting(false) }} />
               </div>
 
               <div className="modal-body">
@@ -1383,19 +1384,28 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
                     </button>
                   </>
                 ) : (
-                  <button
-                    type="button"
-                    className="buttonClick"
-                    style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: '0.3rem', alignItems: 'center' }}
-                    onClick={() => { setShowAddPanel(true); setTimeout(() => panelNameRef.current?.focus(), 50); }}
-                  >
-                    {editingPanelId 
-                        ? <><FiEdit size={12} /> Atualizar Painel</> 
-                        : <><FiPlus size={12} /> Novo Painel</>
-                    }
-
-                  </button>
-                )}
+                  editingPanelId ? (
+                  <>
+                    <button
+                      type="button"
+                      className="buttonClick"
+                      style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: '0.3rem', alignItems: 'center' }}
+                    >
+                        <FiEdit size={12} /> Atualizar Painel 
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      className="buttonClick"
+                      style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: '0.3rem', alignItems: 'center' }}
+                      onClick={() => { setShowAddPanel(true); setTimeout(() => panelNameRef.current?.focus(), 50); }}
+                    >
+                      <FiPlus size={12} /> Novo Painel
+                    </button>
+                  </>
+                ))}
               </div>
             </PanelsModal>
           </ModalOverlay>

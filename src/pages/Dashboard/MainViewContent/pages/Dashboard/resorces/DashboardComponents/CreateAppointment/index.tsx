@@ -69,7 +69,7 @@ interface IPhase {
 }
 
 interface IPanel {
-  value: string;
+  value: number;
   label: string;
 }
 
@@ -188,7 +188,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   const [appointmentWorkflowExecId, setAppointmentWorkflowExecId] = useState(0);
   const [showKanbanModal, setShowKanbanModal] = useState(false);
   const [panels, setPanels] = useState<IPanel[]>([]);
-  const [phases, setPhases] = useState<IPhase[]>();
+  const [phases, setPhases] = useState<IPhase[]>([]);
   const [selectedKanbanPanelId, setSelectedKanbanPanelId] = useState('');
   const [selectedKanbanPhaseId, setSelectedKanbanPhaseId] = useState('');
 
@@ -200,11 +200,6 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         handleCancelMessage(false)
     }
   }, [isCancelMessage]);
-
-  useEffect(() => {
-    setPhases([])
-    setSelectedKanbanPhaseId('')
-  }, [selectedKanbanPanelId]);
 
   useEffect(() => {
     if (isConfirmMessage) {      
@@ -416,6 +411,10 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       setAppointmentUser(data.userCreator); // criador do compromisso
       setAppointmentWorkflowActionsExecId(data.workflowActionsExecId); //Workflow actions Exec relacionado
       setAppointmentWorkflowExecId(data.workflowExecId); //Workflow Exec relacionado
+
+      
+      setSelectedKanbanPanelId(data.kanbanId.toString())
+      setSelectedKanbanPhaseId(data.kanbanStageId.toString())
 
       setIsLoading(false)
       setAppointmentId(Number(appointmentId))
@@ -649,6 +648,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       return;
     }
 
+    localStorage.setItem('@Gojur:kanbanStageId', selectedKanbanPhaseId)
     setShowKanbanModal(false)
   }
 
@@ -1456,7 +1456,6 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       catch {
         businessId = 0;
       }
-
       const data = {
         eventId: appointmentId,
         publicationId: publicationId == null ? 0 : publicationId,
@@ -1496,6 +1495,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         addToast({ type: 'success', title: 'Compromisso Salvo', description: 'Seu compromisso foi salvo com sucesso' });
         isClosed()
         handleModalActive(false)
+        localStorage.removeItem('@Gojur:kanbanStageId');
       }
       catch (err: any) {
         if (err.response.data.typeError?.warning == "awareness") {
@@ -2308,8 +2308,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                       inputId="kanbanPanel"
                       placeholder="Selecione"
                       options={panels}
-                      value={panels.find(p => p.value === selectedKanbanPanelId) || null}
-                      onChange={opt => { setSelectedKanbanPanelId(opt ? opt.value : ''); setSelectedKanbanPhaseId(''); }}
+                      value={panels.find(p => p.value.toString() === selectedKanbanPanelId) || null}
+                      onChange={opt => { setSelectedKanbanPanelId(opt ? opt.value.toString() : ''); setSelectedKanbanPhaseId(''); }}
                       isClearable
                     />
                   </label>
@@ -2322,7 +2322,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                       options={phases}
                       value={phases.find(p => p.value.toString() === selectedKanbanPhaseId) || null}
                       onChange={opt => setSelectedKanbanPhaseId(opt ? opt.value.toString() : '')}
-                      isDisabled={!selectedKanbanPanelId}
+                      //isDisabled={!selectedKanbanPanelId}
                       isClearable
                     />
                   </label>

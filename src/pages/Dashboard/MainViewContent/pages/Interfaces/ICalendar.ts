@@ -71,6 +71,8 @@ export interface Data {
   recurrenceRule: string;
   workflowActionsExecId:number; 
   workflowExecId:number; 
+  kanbanId:number;
+  kanbanStageId:number;
 }
 
 export interface SelectValues {
