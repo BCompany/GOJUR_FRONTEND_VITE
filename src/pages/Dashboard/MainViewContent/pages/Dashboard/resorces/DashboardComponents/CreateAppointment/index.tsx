@@ -1158,6 +1158,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
 
   const handleLogOnDisplay = useCallback(async () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: userToken, module: 'EVT_AGEVERHISTORICO'})
     setShowLog(true);
   }, []);
 

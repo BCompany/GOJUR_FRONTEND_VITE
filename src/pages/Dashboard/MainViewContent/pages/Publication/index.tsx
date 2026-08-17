@@ -1704,7 +1704,7 @@ const Publication: React.FC = () => {
 
   const handlePublicationGojurAI = async (id: number, type: string) => {
     try {
-
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTANALISEIA'})
       setActionType('publicationIA');
 
       var response = await api.post<PublicationAIAnalyserDTO>('/PublicacoesIA/Analisar', {

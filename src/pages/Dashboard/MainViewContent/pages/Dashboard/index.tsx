@@ -189,11 +189,6 @@ const Dashboard: React.FC = () => {
         type: 'homeDashBoard',
         positions: key,
       });
-      addToast({
-        type: 'success',
-        title: 'Dashboard Alterada',
-        description: 'Dashboard Alterada com sucesso',
-      });
     } catch (error:any) {
       addToast({
         type: 'error',
