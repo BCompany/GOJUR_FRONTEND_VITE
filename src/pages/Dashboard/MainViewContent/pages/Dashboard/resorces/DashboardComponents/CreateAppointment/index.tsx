@@ -87,21 +87,21 @@ const layoutBig = [{
   positions: { i: '1', x: 2.2, y: 4, w: 7, h: (isMobile ? 12 : 17) },
 }];
 
-const KANBAN_PANELS_OPTIONS = [
-  // { value: '1', label: 'Agenda Geral' },
-  // { value: '2', label: 'Audiências' },
-];
-const KANBAN_PHASES_OPTIONS: Record<string, { value: string; label: string }[]> = {
-  // '1': [
-  //   { value: '1', label: 'Aguardando' },
-  //   { value: '2', label: 'Fazendo' },
-  //   { value: '3', label: 'Concluído' },
-  // ],
-  // '2': [
-  //   { value: '4', label: 'A Realizar' },
-  //   { value: '5', label: 'Realizado' },
-  // ],
-};
+// const KANBAN_PANELS_OPTIONS = [
+//   // { value: '1', label: 'Agenda Geral' },
+//   // { value: '2', label: 'Audiências' },
+// ];
+// const KANBAN_PHASES_OPTIONS: Record<string, { value: string; label: string }[]> = {
+//   // '1': [
+//   //   { value: '1', label: 'Aguardando' },
+//   //   { value: '2', label: 'Fazendo' },
+//   //   { value: '3', label: 'Concluído' },
+//   // ],
+//   // '2': [
+//   //   { value: '4', label: 'A Realizar' },
+//   //   { value: '5', label: 'Realizado' },
+//   // ],
+// };
 
 const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   const { matterSelected, dateEnd, handleModalActiveId, selectProcess, handleModalActive, openSelectProcess, handleSelectProcess, jsonModalObjectResult, handleJsonModalObjectResult, deadLineText, publicationText, modalActiveId, caller } = useModal();
@@ -1356,13 +1356,13 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     const appointmentId = modalActiveId
     const publicationId = localStorage.getItem('@GoJur:PublicationId');
     const matterEventId = localStorage.getItem('@GoJur:MatterEventId');
-    var kanbanStageId = localStorage.getItem('@Gojur:kanbanStageId');
     const deadLineJson = localStorage.getItem('@GoJur:DeadLineJson');
     const startDateN = `${appointmentDateBeggin}T${appointmentHourBeggin}`;
     const endDateN = `${appointmentDateEnd}T${appointmentHourEnd}`;
     const newStartDate = new Date(startDateN);
     const newEndDate = new Date();
-
+    var kanbanStageId = localStorage.getItem('@Gojur:kanbanStageId');
+    
     // When user click on Kanban Button when creating a new appointment, the kanbanStageId is not set yet, so we need to set it with the selectedKanbanPhaseId
     // The option below get by local storage is used when is created by Kanban Page
     if (kanbanStageId == null || kanbanStageId == '') 

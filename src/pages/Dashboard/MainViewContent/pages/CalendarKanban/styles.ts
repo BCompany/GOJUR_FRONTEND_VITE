@@ -280,8 +280,8 @@ export const KanbanArea = styled.div`
 
 /* ── PHASE COLUMN ── */
 export const PhaseColumn = styled.div`
-  min-width: 275px;
-  max-width: 275px;
+  min-width: 280px;
+  max-width: 280px;
   background: white;
   border-radius: 0.75rem;
   box-shadow: 0 1px 3px rgba(2, 6, 23, 0.08);
@@ -400,7 +400,7 @@ export const ColorSwatch = styled.button<{ color: string; selected: boolean }>`
 
 export const CardsList = styled.div`
   flex: 1;
-  overflow-y: auto;
+  // overflow-y: auto;
   padding: 0.5rem;
   display: flex;
   flex-direction: column;

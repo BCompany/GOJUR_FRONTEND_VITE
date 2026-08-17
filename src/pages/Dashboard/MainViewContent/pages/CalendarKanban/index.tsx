@@ -81,7 +81,7 @@ const uid = () => ++nextId;
   // { id: 5, panelId: 2, name: 'Realizado', color: '#bbf7d0', order: 1 },
 //];
 
-const INITIAL_CARDS: ICard[] = [
+// const INITIAL_CARDS: ICard[] = [
   // {
   //   id: 1,
   //   phaseId: 1,
@@ -106,7 +106,7 @@ const INITIAL_CARDS: ICard[] = [
   //   description: 'Oitiva de testemunhas arroladas pelas partes.',
   //   dateTime: '30/05 09:30',
   // },
-];
+// ];
 
 /* ─── Component ─── */
 export default function AgendaKanban() {
@@ -117,7 +117,8 @@ export default function AgendaKanban() {
     handleDeadLineCalculatorText,
     handleCaptureTextPublication,
     handleModalActive,
-    modalActive
+    modalActive,
+    modalActiveId
   } = useModal();
 
   const optionsCalendarFilter = [
@@ -135,6 +136,7 @@ export default function AgendaKanban() {
   const [optionsSubject, setOptionsSubject] = useState<ISelectValues[]>([]);
   const [appointmentSubject, setAppointmentSubject] = useState('');
   const [currentKanbanStageId, setCurrentKanbanStageId] = useState<number>();
+  // const [updateKanbanStageId, setUpdateKanbanStageId] = useState<number>();
   const [currentAppointmentEdit, setCurrentAppointmentEdit] = useState<number>();
   const [appointmentSubjectId, setAppointmentSubjectId] = useState('');
   const [startDate, setStartDate] = useState<string>('');
@@ -154,11 +156,11 @@ export default function AgendaKanban() {
   });
 
   //const [panels, setPanels] = useState<IPanel[]>(INITIAL_PANELS);
+  //const [phases, setPhases] = useState<IPhase[]>(INITIAL_PHASES);
   const [activePanelId, setActivePanelId] = useState<number>();
   const [panels, setPanels] = useState<IPanel[]>([]);
-  //const [phases, setPhases] = useState<IPhase[]>(INITIAL_PHASES);
   const [phases, setPhases] = useState<IPhase[]>();
-  const [cards, setCards] = useState<ICard[]>(INITIAL_CARDS);
+  const [cards, setCards] = useState<ICard[]>([]);
   const [messageEmptyPanel, setMessageEmptyPanel] = useState<string>();
 
   const { addToast } = useToast();
@@ -169,14 +171,89 @@ export default function AgendaKanban() {
     );
   };
 
-const SelectAppointment = async() => {
+  
 
+const RefreshKanbanEvents = async () => {  
+    try 
+    { 
+
+        const promises = phases
+        .filter(phase => currentKanbanStageId > 0 ? phase.id === currentKanbanStageId : true)
+        .map(phase => 
+        {         
+          phasePagination.find(p => p.phaseId === phase.id);
+          return api.get('/KanbanEtapa/ListarEventos', {
+            params: {
+              token,
+              kanbanStageId: phase.id, 
+              startDate: "2026-01-01",
+              endDate: "2026-12-31",
+              lastIdPgDatabase: 0,
+              lastDatePgDatabase: "",
+              lastIdPgRecurrency: 0,
+              lastDatePgRecurrency:"",
+              qtdRecords:20,
+            },
+          }).then((response) => ({ response, phase }));
+      });
+
+      const results = await Promise.all(promises);
+ 
+      setCards(cards.filter(x=> x.phaseId != currentKanbanStageId));
+      results.forEach(({ response, phase }) => {
+        setCards((prevCards) => [
+          ...prevCards,
+          ...response.data.EventList.map((item: any) => ({
+            id: `${uuidv4()}`,
+            eventId: item.id,
+            panelId: activePanelId,
+            phaseId: phase.id, 
+            title: item.subjectText,
+            description: item.title,
+            favorited: item.KanbanFavorite === 'S',
+          })) 
+        ]);
+
+        // Atualiza o controle de paginação 
+        updatePhasePagination({
+          phaseId: phase.id,
+          lastIdEvent: response.data.LastIdEvent,
+          lastDateEvent: new Date(response.data.LastDateEvent),
+          lastIdRecurrency: response.data.LastIdRecurrency,
+          lastDateRecurrency: new Date(response.data.LastDateRecurrency),
+        });
+      });
+
+      setLoadEvents(false)
+      setIsWaiting(false)
+      setCurrentKanbanStageId(0)
+    }
+    catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Operação NÃO Realizada',
+        description: 'Houve uma falha no carregamento dos eventos relacionados as etapas do painel'
+      });
+
+      setIsWaiting(false)
+      console.log(err);
+    }
+  }
+
+const SelectAppointment = async() => {
   try
   {
-      if ((currentAppointmentEdit ?? 0) == 0)
-        return;
+      //alert(currentAppointmentEdit)
 
-      setIsWaiting(true)
+      // When current appointment is zero, is because is a new register, so refresh all list
+      if ((currentAppointmentEdit ?? 0) == 0 && (currentKanbanStageId ?? 0) > 0 )
+      {
+          RefreshKanbanEvents();
+          return; 
+      }
+
+      if ((currentAppointmentEdit ?? 0) == 0)
+          return;
 
       var response = await api.post('Compromisso/Selecionar', {
         token,
@@ -185,18 +262,26 @@ const SelectAppointment = async() => {
 
       if (response.data == null)
       {
-        LoadKanbanEvents();
+          setCards(prevCards =>
+            prevCards.filter(card =>
+              !(String(card.eventId) === String(currentAppointmentEdit) &&
+                String(card.phaseId) === String(currentKanbanStageId))
+            )
+          );
+
+          setCurrentAppointmentEdit(0)
+          setCurrentKanbanStageId(0)
+
         return;
       }
-
+      
       setCards(prevCards =>
         prevCards.map(card =>
           String(card.eventId) === String(response.data.eventId)
-            ? { 
-                ...card, 
+            ? {
+                ...card,
                 title: `${new Date(response.data.startDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} ${new Date(response.data.startDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${capitalize(response.data.subject)}`,
-                description: response.data.description,
-                
+                description: response.data.description
               }
             : card
         )
@@ -209,6 +294,8 @@ const SelectAppointment = async() => {
 
       setIsWaiting(false)
       setCurrentAppointmentEdit(0)
+      setCurrentKanbanStageId(0)
+      // setUpdateKanbanStageId(0)
   }
   catch(err)
   {
@@ -223,17 +310,15 @@ const SelectAppointment = async() => {
   }
 }
 
-function capitalize(text) {
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
-
 useEffect(() => {
+
   if (!modalActive) {
     SelectAppointment();
+    setIsWaiting(false)
   }
+  
 }, [currentAppointmentEdit, modalActive]);
 
-  
 useEffect(() => {
        
     let kanbanStageId = currentKanbanStageId;
@@ -242,11 +327,6 @@ useEffect(() => {
       kanbanStageId = Number(localStorage.getItem('@GoJur:kanbanStageId'));
       setCurrentKanbanStageId(kanbanStageId)
     }
-
-    if (!modalActive && currentKanbanStageId > 0) {
-      LoadKanbanEvents()
-    } 
-    
    }, [modalActive, isWaiting])
 
   useEffect(() => 
@@ -254,12 +334,7 @@ useEffect(() => {
       setIsLoading(true)
       setIsWaiting(true)
   },[])
-
-  // useEffect(() => 
-  // {
-  //     alert(modalActiveId)
-  // },[modalActiveId])
-
+ 
   useEffect(() => 
   {
       if (isLoading) {
@@ -321,7 +396,6 @@ useEffect(() => {
       });
 
       console.log(err);
-
       setIsLoading(false)
       setIsWaiting(false)
     }
@@ -408,7 +482,7 @@ const LoadKanbanEvents = async () => {
             kanbanStageId: phase.id, 
             startDate: "2026-01-01",
             endDate: "2026-12-31",
-            qtdRecords:20,
+            qtdRecords:10,
             lastIdPgDatabase: pagination ? pagination.lastIdEvent : 0,
             lastDatePgDatabase: pagination ? pagination.lastDateEvent.toISOString() : "",
             lastIdPgRecurrency: pagination ? pagination.lastIdRecurrency : 0,
@@ -459,6 +533,11 @@ const LoadKanbanEvents = async () => {
     }
   }
 
+  const handlePaginationStage = async (phaseId: number) => 
+  {
+    
+  }
+
   const handleClickInclude = useCallback((phaseId: number) => {
     
     if (!permissions.canManagePanels)
@@ -478,6 +557,7 @@ const LoadKanbanEvents = async () => {
     handleDeadLineCalculatorText('');
     handleModalActive(true);
     isOpenModal('0');
+
   }, [permissions, handleCaptureTextPublication, handleDeadLineCalculatorText, handleModalActive, isOpenModal]);
 
 
@@ -983,71 +1063,86 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
     }
   }
 
-  function reorderStages(phaseId, destinationIndex) {
+//   function reorderStages(phaseId, destinationIndex) {
 
-    const novaLista = [...activePhases];
+//     const novaLista = [...activePhases];
 
-    const draggedIndex = novaLista.findIndex(item => item.id === phaseId);
-    const [draggedItem] = novaLista.splice(draggedIndex, 1);
+//     const draggedIndex = novaLista.findIndex(item => item.id === phaseId);
+//     const [draggedItem] = novaLista.splice(draggedIndex, 1);
 
-    novaLista.splice(destinationIndex, 0, draggedItem);
+//     novaLista.splice(destinationIndex, 0, draggedItem);
 
-    const listaAtualizada = novaLista.map((item, index) => ({
-      ...item,
-      order: index
-    }));
+//     const listaAtualizada = novaLista.map((item, index) => ({
+//       ...item,
+//       order: index
+//     }));
 
-    return listaAtualizada;
-}
+//     return listaAtualizada;
+// }
 
-  const onDragEnd = useCallback( async (result: DropResult) => 
-  {
-    const { source, destination, draggableId, type } = result;
+  const onDragEnd = useCallback(async (result: DropResult) => {
+  const { source, destination, draggableId, type } = result;
 
-    if (!destination) 
-      return;
+  if (!destination) return;
 
-    if (source.droppableId === destination.droppableId && source.index === destination.index) 
-      return;
-    
-    if (type !== 'COLUMN' && source.droppableId === destination.droppableId) 
-      return;
+  // se não houve mudança de posição
+  if (source.droppableId === destination.droppableId && source.index === destination.index) return;
 
-    if (type === 'COLUMN') {
+  // mover colunas
+  if (type === "COLUMN") {
+    const phaseId = parseInt(draggableId.replace("phase-", ""), 10);
+    const destinationIndex = destination.index;
 
-      setIsWaiting(true);
+    const response = await api.post("/KanbanEtapa/ArrastarEtapa", {
+      kanbanStageId: phaseId,
+      NumPosition: destinationIndex,
+      Token: token,
+    });
 
-      const phaseId = parseInt(draggableId.replace('phase-', ''), 10);
-      const destinationIndex = destination.index;
+    setActivePhases((prev) =>
+      prev
+        .map((item) => {
+          const atualizado = response.data.find((resp: any) => resp.Id === item.id);
+          return atualizado ? { ...item, order: atualizado.NumPosition } : item;
+        })
+        .sort((a, b) => a.order - b.order)
+    );
+  }
 
-      var response = await api.post('/KanbanEtapa/ArrastarEtapa', 
-        {
-            kanbanStageId: phaseId,
-            NumPosition: destinationIndex,
-            Token: token
-        }
-      )
+  // mover cards
+  if (type === "DEFAULT") {
+    const match = draggableId.match(/event-(\d+)-phaseId=(\d+)/);
+    if (match) {
+      const eventId = parseInt(match[1], 10);
+      const phaseIdCurrent = parseInt(match[2], 10);
+      const phaseIdUpdate = parseInt(destination.droppableId);
 
-      console.log('lista antiga', activePhases)
-      console.log('lista nova', response.data)
+      api.post("/KanbanEtapa/ArrastarEvento", {
+        kanbanStageId: destination.droppableId,
+        eventId: eventId,
+        Token: token,
+      });
 
-      setActivePhases(prev =>
-        prev
-          .map(item => {
-            // procura o item correspondente no response.data pelo Id
-            const atualizado = response.data.find(resp => resp.Id === item.id);
-            return atualizado
-              ? { ...item, order: atualizado.NumPosition }
-              : item;
-          })
-          // ordena pelo campo order para refletir visualmente
-          .sort((a, b) => a.order - b.order)
+      setCards(prevCards =>
+        prevCards.map(card =>
+          String(card.eventId) === String(eventId)
+            ? {
+                ...card,
+                phaseId: phaseIdUpdate
+              }
+            : card
+        )
       );
 
-      setIsWaiting(false);
+      setCurrentAppointmentEdit(eventId)
+      setCurrentKanbanStageId(phaseIdCurrent)
+      //setUpdateKanbanStageId(phaseIdUpdate)           
     }
+  }
 
-  }, [activePanelId, activePhases]);
+  setIsWaiting(false);
+}, [token]);
+
 
   /* ── Keyboard shortcuts ── */
   const onPanelKeyDown = (e: React.KeyboardEvent) => {
@@ -1471,152 +1566,158 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
 
         <BoardLayout >
           {activePanel ? (
-
             <DragDropContext  onDragEnd={onDragEnd}>
               <Droppable droppableId="board" direction="horizontal" type="COLUMN">
               {(boardProvided) => (
               <KanbanArea ref={boardProvided.innerRef} {...boardProvided.droppableProps}>
+
               {activePhases.map((phase) => {
                 const phaseCards = cards.filter((c) => c.phaseId === phase.id);
                 return (
-                  <Draggable  key={phase.id} draggableId={`phase-${phase.id}`} index={phase.order}>
-                    {(colDrag, colSnapshot) => (
-                  <PhaseColumn
-                    ref={colDrag.innerRef}
-                    {...colDrag.draggableProps}
-                    style={{
-                      ...colDrag.draggableProps.style,
-                      opacity: colSnapshot.isDragging ? 0.88 : 1,
-                    }}
-                  >
-                    <PhaseHeader color={phase.color} {...colDrag.dragHandleProps}>
-                      <span className="phase-title">
-                        {editingPhaseId === phase.id ? (
-                          <input
-                            autoFocus
-                            value={editingPhaseName}
-                            onChange={(e) => setEditingPhaseName(e.target.value)}
-                            onKeyDown={onPhaseEditKeyDown}
-                            onBlur={handleSavePhaseEdit}
+                   <>
+                    <Draggable  key={phase.id} draggableId={`phase-${phase.id}`} index={phase.order}>
+                      {(colDrag, colSnapshot) => (
+                    <PhaseColumn
+                      ref={colDrag.innerRef}
+                      {...colDrag.draggableProps}
+                      style={{
+                        ...colDrag.draggableProps.style,
+                        overflow:"auto",
+                        opacity: colSnapshot.isDragging ? 0.88 : 1,
+                      }}
+                    >
+                      <PhaseHeader color={phase.color} {...colDrag.dragHandleProps}>
+                        <span className="phase-title">
+                          {editingPhaseId === phase.id ? (
+                            <input
+                              autoFocus
+                              value={editingPhaseName}
+                              onChange={(e) => setEditingPhaseName(e.target.value)}
+                              onKeyDown={onPhaseEditKeyDown}
+                              onBlur={handleSavePhaseEdit}
+                            />
+                          ) : (
+                            permissions.canManagePanels ? (
+                            <span
+                              title="Clique para renomear"
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => handleStartEditPhase(phase)}
+                            >
+                              {phase.name}
+                            </span>
+                          ) : (
+                            <span>{phase.name}</span>
+                          ))
+                        }
+                        </span>
+                        <span className="phase-count">{phaseCards.length}</span>
+                        {permissions.canChangePhaseColor && (
+                          <ColorPickerWrapper>
+                            <ColorDot
+                              color={phase.color}
+                              title="Alterar cor"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                (e.currentTarget.nextElementSibling as HTMLInputElement)?.click();
+                              }}
+                            >
+                              <MdPalette />
+                            </ColorDot>
+                            <input
+                              type="color"
+                              value={phase.color}
+                              style={{ position: 'absolute', opacity: 0, width: 0, height: 0, pointerEvents: 'none' }}
+                              onChange={(e) => handleChangePhaseColor(phase.id, e.target.value)}
+                            />
+                          </ColorPickerWrapper>
+                        )}
+                        {permissions.canDeletePhase && (
+                          <FiTrash2
+                            title="Excluir etapa"
+                            onClick={() => handleDeletePhase(phase.id)}
                           />
-                        ) : (
-                          permissions.canManagePanels ? (
-                          <span
-                            title="Clique para renomear"
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => handleStartEditPhase(phase)}
-                          >
-                            {phase.name}
-                          </span>
-                        ) : (
-                          <span>{phase.name}</span>
-                        ))
-                      }
-                      </span>
-                      <span className="phase-count">{phaseCards.length}</span>
-                      {permissions.canChangePhaseColor && (
-                        <ColorPickerWrapper>
-                          <ColorDot
-                            color={phase.color}
-                            title="Alterar cor"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              (e.currentTarget.nextElementSibling as HTMLInputElement)?.click();
-                            }}
-                          >
-                            <MdPalette />
-                          </ColorDot>
-                          <input
-                            type="color"
-                            value={phase.color}
-                            style={{ position: 'absolute', opacity: 0, width: 0, height: 0, pointerEvents: 'none' }}
-                            onChange={(e) => handleChangePhaseColor(phase.id, e.target.value)}
-                          />
-                        </ColorPickerWrapper>
-                      )}
-                      {permissions.canDeletePhase && (
-                        <FiTrash2
-                          title="Excluir etapa"
-                          onClick={() => handleDeletePhase(phase.id)}
-                        />
-                      )}
-                    </PhaseHeader>
+                        )}
+                      </PhaseHeader>
 
-                    <Droppable droppableId={String(phase.id)}>
-                      {(provided, snapshot) => (
-                        <CardsList
-                          ref={provided.innerRef}
-                          {...provided.droppableProps}
-                          style={{ background: snapshot.isDraggingOver ? '#f0f7ff' : undefined }}
-                        >
-                          {phaseCards.map((card, index) => (
-                            <Draggable key={card.id} draggableId={String(card.id)} index={index}>
-                              {(drag, dragSnapshot) => (
-                                <AppointmentCard
-                                  onClick={(e) => handleClickEdit(phase.id, card.eventId)}
-                                  ref={drag.innerRef}
-                                  {...drag.draggableProps}
-                                  {...drag.dragHandleProps}
-                                  style={{
-                                    cursor: 'pointer',
-                                    ...drag.draggableProps.style,
-                                    opacity: dragSnapshot.isDragging ? 0.85 : 1,
-                                    boxShadow: dragSnapshot.isDragging
-                                      ? '0 8px 24px rgba(2,6,23,0.18)'
-                                      : undefined,
-                                  }}
-                                >
-                                  <div className="card-header">
-                                    <span className="card-title">{card.title}</span>
-                                    {card.favorited ? (
-                                      <MdFavorite
-                                        className="card-favorite active"
-                                        title="Desfavoritar"
-                                        onClick={(e) => { e.stopPropagation(); handleToggleFavorite(card.id, "N"); }}
-                                      />
-                                    ) : (
-                                      <MdFavoriteBorder
-                                        className="card-favorite"
-                                        title="Favoritar"
-                                        onClick={(e) => { e.stopPropagation(); handleToggleFavorite(card.id, "S"); }}
-                                      />
-                                    )}
-                                  </div>
-                                  {card.description && (
-                                    <div className="card-description"
-                                       title={card.description}>
-                                      {card.description.length > 70 ? card.description.substring(0, 70) + '...' : card.description}
+                      <Droppable droppableId={String(phase.id)}>
+                        {(provided, snapshot) => (
+                          <CardsList
+                            ref={provided.innerRef}
+                            {...provided.droppableProps}
+                            style={{ background: snapshot.isDraggingOver ? '#f0f7ff' : undefined }}
+                          >
+                            {phaseCards.map((card, index) => (
+                              // <Draggable key={card.id} draggableId={String(card.id)} index={index}>
+                                <Draggable  key={card.id} draggableId={`event-${card.eventId}-phaseId=${card.phaseId}`} index={index} >
+                                {(drag, dragSnapshot) => (
+                                  <AppointmentCard
+                                    onClick={(e) => handleClickEdit(phase.id, card.eventId)}
+                                    ref={drag.innerRef}
+                                    {...drag.draggableProps}
+                                    {...drag.dragHandleProps}
+                                    style={{
+                                      cursor: 'pointer',
+                                      ...drag.draggableProps.style,
+                                      opacity: dragSnapshot.isDragging ? 0.85 : 1,
+                                      boxShadow: dragSnapshot.isDragging
+                                        ? '0 8px 24px rgba(2,6,23,0.18)'
+                                        : undefined,
+                                    }}
+                                  >
+                                    <div className="card-header">
+                                      <span className="card-title">{card.title}</span>
+                                      {card.favorited ? (
+                                        <MdFavorite
+                                          className="card-favorite active"
+                                          title="Desfavoritar"
+                                          onClick={(e) => { e.stopPropagation(); handleToggleFavorite(card.id, "N"); }}
+                                        />
+                                      ) : (
+                                        <MdFavoriteBorder
+                                          className="card-favorite"
+                                          title="Favoritar"
+                                          onClick={(e) => { e.stopPropagation(); handleToggleFavorite(card.id, "S"); }}
+                                        />
+                                      )}
                                     </div>
-                                  )}
-                                  <div className="card-meta">
-                                    {card.dateTime && (
-                                      <>
-                                        <FiClock />
-                                        <span>{card.dateTime}</span>
-                                      </>
+                                    {card.description && (
+                                      <div className="card-description"
+                                        title={card.description}>
+                                        {card.description.length > 70 ? card.description.substring(0, 70) + '...' : card.description}
+                                      </div>
                                     )}
-                                    {/* <FiTrash2
-                                      style={{ marginLeft: 'auto', cursor: 'pointer', color: '#fca5a5' }}
-                                      title="Excluir compromisso"
-                                      onClick={() => handleDeleteCard(card.id)}
-                                    /> */}
-                                  </div>
-                                </AppointmentCard>
-                              )}
-                            </Draggable>
-                          ))}
-                          {provided.placeholder}
-                        </CardsList>
-                      )}
-                    </Droppable>
+                                    <div className="card-meta">
+                                      {card.dateTime && (
+                                        <>
+                                          <FiClock />
+                                          <span>{card.dateTime}</span>
+                                        </>
+                                      )}
+                                      {/* <FiTrash2
+                                        style={{ marginLeft: 'auto', cursor: 'pointer', color: '#fca5a5' }}
+                                        title="Excluir compromisso"
+                                        onClick={() => handleDeleteCard(card.id)}
+                                      /> */}
+                                    </div>
+                                  </AppointmentCard>
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
+                          </CardsList>
+                        )}
+                      </Droppable>
 
-                      <AddCardButton type="button" onClick={() => handleClickInclude(phase.id)}>
-                        <FiPlus /> Criar Compromisso
-                      </AddCardButton>
-                    </PhaseColumn>
-                   
-                   )}
-                  </Draggable>
+                        <AddCardButton type="button" onClick={() => handleClickInclude(phase.id)}>
+                          <FiPlus /> Criar Compromisso
+                        </AddCardButton>
+                        
+                      </PhaseColumn>
+                    
+                    )}
+                    </Draggable>
+                    
+                  </>
                 );
               })}
               {boardProvided.placeholder}
