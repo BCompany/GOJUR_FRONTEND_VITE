@@ -77,16 +77,17 @@ const Sidebar: React.FC = () => {
         parametersName: '#CalendarView' 
       })
 
+       api.post('/Usuario/SalvarLogNavegacaoUsuario', {
+            token,
+            module: 'MEN_AGENDA'
+          });
+
       const parameterValue = response.data[0].parameterValue;
 
       if (parameterValue.includes('kanban'))
         history.push('/calendar/kanban');
       else
       {
-          api.post('/Usuario/SalvarLogNavegacaoUsuario', {
-            token,
-            module: 'MEN_AGENDA'
-          });
 
           history.push('/calendar');
       }

@@ -1160,11 +1160,6 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
   };
 
   const handleReturnCalendar = () => {
-    api.post('/Usuario/SalvarLogNavegacaoUsuario', {
-      token,
-      module: 'MEN_AGENDA'
-    });
-
     history.push('/calendar');
   }
 
