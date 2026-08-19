@@ -171,8 +171,6 @@ export default function AgendaKanban() {
     );
   };
 
-  
-
 const RefreshKanbanEvents = async () => {  
     try 
     { 
@@ -243,8 +241,6 @@ const RefreshKanbanEvents = async () => {
 const SelectAppointment = async() => {
   try
   {
-      //alert(currentAppointmentEdit)
-
       // When current appointment is zero, is because is a new register, so refresh all list
       if ((currentAppointmentEdit ?? 0) == 0 && (currentKanbanStageId ?? 0) > 0 )
       {
@@ -540,8 +536,7 @@ const LoadKanbanEvents = async () => {
 
   const handleClickInclude = useCallback((phaseId: number) => {
     
-    if (!permissions.canManagePanels)
-    {
+    if (!permissions.canManagePanels){
       addToast({
         type: 'info',
         title: 'Acesso Negado',
@@ -767,8 +762,16 @@ const LoadKanbanEvents = async () => {
       setEditingPanelId(null);
     }
     catch (err) {
-      console.log(err);
+      addToast({
+        type: 'info',
+        title: 'Operação Não Permitida',
+        description: err.response.data.Message
+      });
+
       setIsWaiting(false)
+      setEditingPanelName('');
+      setShowAddPanel(false);
+      setEditingPanelId(null);
     }
   }, [editingPanelId, editingPanelName, showPanelsModal, showAddPanel, editingPanelName]);
 
@@ -807,7 +810,7 @@ const LoadKanbanEvents = async () => {
           description: err.response.data.Message
         });
 
-          setIsWaiting(false)
+        setIsWaiting(false)
       }
     },
     [activePanelId, panels],
@@ -1427,23 +1430,26 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
                     ) : (
                       <span style={{ flex: 1 }}>{panel.name}</span>
                     )}
-                    <span className="panel-actions">
-                      <FiEdit2
-                        title="Renomear painel"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingPanelId(panel.id);
-                          setEditingPanelName(panel.name);
-                        }}
-                      />
-                      <FiTrash2
-                        title="Excluir painel"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeletePanel(panel.id);
-                        }}
-                      />
-                    </span>
+
+                    {permissions.canManagePanels && (
+                      <span className="panel-actions">
+                        <FiEdit2
+                          title="Renomear painel"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingPanelId(panel.id);
+                            setEditingPanelName(panel.name);
+                          }}
+                        />
+                        <FiTrash2
+                          title="Excluir painel"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeletePanel(panel.id);
+                          }}
+                        />
+                      </span>
+                    )}
                   </PanelItem>
                 ))}
               </div>
@@ -1486,6 +1492,7 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
                   </>
                 ) : (
                   <>
+                    {permissions.canManagePanels && (
                     <button
                       type="button"
                       className="buttonClick"
@@ -1494,6 +1501,7 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
                     >
                       <FiPlus size={12} /> Novo Painel
                     </button>
+                    )}
                   </>
                 ))}
               </div>
@@ -1636,14 +1644,14 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
 
                       <Droppable droppableId={String(phase.id)}>
                         {(provided, snapshot) => (
+                          <>
                           <CardsList
                             ref={provided.innerRef}
                             {...provided.droppableProps}
                             style={{ background: snapshot.isDraggingOver ? '#f0f7ff' : undefined }}
                           >
                             {phaseCards.map((card, index) => (
-                              // <Draggable key={card.id} draggableId={String(card.id)} index={index}>
-                                <Draggable  key={card.id} draggableId={`event-${card.eventId}-phaseId=${card.phaseId}`} index={index} >
+                                 <Draggable  key={card.id} draggableId={`event-${card.eventId}-phaseId=${card.phaseId}`} index={index} >
                                 {(drag, dragSnapshot) => (
                                   <AppointmentCard
                                     onClick={(e) => handleClickEdit(phase.id, card.eventId)}
@@ -1700,14 +1708,20 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
                             ))}
                             {provided.placeholder}
                           </CardsList>
+
+                        {/* <AddCardButton type="button" onClick={() => handleClickInclude(phase.id)}>
+                          <FiPlus /> Ver Mais
+                        </AddCardButton> */}
+                          </>
                         )}
+                        
                       </Droppable>
 
-                        <AddCardButton type="button" onClick={() => handleClickInclude(phase.id)}>
-                          <FiPlus /> Criar Compromisso
-                        </AddCardButton>
+                      <AddCardButton type="button" onClick={() => handleClickInclude(phase.id)}>
+                        <FiPlus /> Criar Compromisso
+                      </AddCardButton>
                         
-                      </PhaseColumn>
+                    </PhaseColumn>
                     
                     )}
                     </Draggable>
@@ -1743,16 +1757,20 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
                     </div>
                   </div>
                 ) : (
-                  <button
-                    type="button"
-                    className="add-phase-btn"
-                    onClick={() => {
-                      setAddingPhaseForPanel(activePanelId);
-                      setTimeout(() => phaseNameRef.current?.focus(), 50);
-                    }}
-                  >
-                    <FiPlus /> Nova Etapa
-                  </button>
+                  <>
+                    {permissions.canManagePanels && (
+                      <button
+                        type="button"
+                        className="add-phase-btn"
+                        onClick={() => {
+                          setAddingPhaseForPanel(activePanelId);
+                          setTimeout(() => phaseNameRef.current?.focus(), 50);
+                        }}
+                      >
+                        <FiPlus /> Nova Etapa
+                      </button>
+                    )}
+                  </>
                 )}
               </AddPhaseColumn>
             </KanbanArea>

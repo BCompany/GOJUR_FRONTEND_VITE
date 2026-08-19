@@ -797,7 +797,7 @@ export const ModalKanban = styled.div<SearchProps>`
   box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.45);
   width: 28rem;
   height: auto;
-  min-height: 16rem;
+  min-height: 14rem;
   background-color: var(--white);
   border-radius: 8px;
   overflow: hidden;
@@ -839,7 +839,7 @@ export const ModalKanban = styled.div<SearchProps>`
     font-family: Montserrat;
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 0.2rem;    
   }
 
   .kanban-footer {
@@ -849,7 +849,7 @@ export const ModalKanban = styled.div<SearchProps>`
     justify-content: flex-end;
     padding: 0.4rem 0.5rem;
     gap: 0.25rem;
-
+  
     > button {
       width: 4.5rem;
       height: 2rem;

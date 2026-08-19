@@ -54,6 +54,7 @@ import CalendarReminderModal from './CustomizeCalendarReminderModal';
 import { Container2, Container, ModalContent, ModalDateSettings, Wrapper, WrapperResp, Process, DropArea, Footer, Lembrete, Responsavel, ResponsibleList, ReminderList, ShareList, Privacidade, Share, ModalRecurrence, ModalKanban, Multi, ConfirmOverlay, ModalConfirm } from './styles';
 import { useHistory, useLocation } from 'react-router-dom'
 import { stringify } from 'uuid';
+import { backgroundImages } from 'polished';
 
 export interface IParameterData {
   parameterId: number;
@@ -192,7 +193,6 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   const [selectedKanbanPanelId, setSelectedKanbanPanelId] = useState('');
   const [selectedKanbanPhaseId, setSelectedKanbanPhaseId] = useState('');
 
-
   const history = useHistory();
 
   useEffect(() => {
@@ -241,6 +241,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
   useEffect(() => {
 
+    LoadKanban()
+
     var kanbanStageId = localStorage.getItem('@Gojur:kanbanStageId');
 
     if (kanbanStageId != null && kanbanStageId != '') 
@@ -255,8 +257,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     if (modalActiveId > 0 && caller === 'calendarModal') {
       LoadEvent()
     }
-  }, [caller, modalActiveId])
-
+  }, [])
+  //}, [caller, modalActiveId])
 
   const NewEvent = async () => {
     // Load Lists
@@ -593,6 +595,11 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         var response = await api.get('/Kanban/Listar', {
             params:{ token: userToken }
         })
+
+        if (response.data.length > 0){
+          const hasKanbanPermission = response.data[0].hasKanbanPermission;
+          setShowKanbanButton(hasKanbanPermission)
+        }
 
         setPanels(response.data.map((item: any) => ({
           value: item.Id,
@@ -2319,6 +2326,22 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                   <label htmlFor="kanbanPhase">
                     Etapa
                     <Select
+                      menuPortalTarget={document.body}
+                      styles={{
+                        menuPortal: base => ({ ...base, zIndex: 9999 }),
+                        menuList: base => ({
+                          ...base,
+                          maxHeight: 'none',
+                          fontSize: '0.675rem',       // força a mesma fonte do label
+                          fontFamily: 'Montserrat',   // garante consistência
+                          color: 'var(--secondary)',  // aplica sua cor
+                        }),
+                        option: (base) => ({
+                          ...base,
+                          fontSize: '0.675rem',
+                          fontFamily: 'Montserrat',
+                        }),
+                      }}
                       inputId="kanbanPhase" 
                       placeholder="Selecione"
                       options={phases}

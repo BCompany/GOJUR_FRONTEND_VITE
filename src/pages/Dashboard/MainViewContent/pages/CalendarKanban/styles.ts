@@ -286,6 +286,7 @@ export const PhaseColumn = styled.div`
   border-radius: 0.75rem;
   box-shadow: 0 1px 3px rgba(2, 6, 23, 0.08);
   display: flex;
+  overflow:auto;
   flex-direction: column;
   max-height: calc(100vh - 160px);
 `;
@@ -400,7 +401,7 @@ export const ColorSwatch = styled.button<{ color: string; selected: boolean }>`
 
 export const CardsList = styled.div`
   flex: 1;
-  // overflow-y: auto;
+  overflow-y: auto;
   padding: 0.5rem;
   display: flex;
   flex-direction: column;
@@ -470,7 +471,7 @@ export const AppointmentCard = styled.div`
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
-    // overflow: hidden;
+     overflow: hidden;
   }
 
   .card-meta {
