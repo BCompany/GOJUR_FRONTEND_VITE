@@ -58,6 +58,8 @@ const Dashboard: React.FC = () => {
   const [showButton, setShowButton] = useState<boolean>(false);
 
   useEffect(() => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token, module: 'MEN_DASHBOARD'})
+
     if (tpoUser === 'C') {
       history.push('/clientRedirect');
     }
@@ -65,12 +67,6 @@ const Dashboard: React.FC = () => {
 
   
   useEffect(() => {
-
-    const response = api.post('/Usuario/SalvarLogNavegacaoUsuario', {
-        token,
-        module: 'MEN_DASHBOARD'
-    });
-
     async function handleGraphics() {
       const response = await api.post<dataProps[]>(
         '/Dashboard/ListarPosicionamentos',

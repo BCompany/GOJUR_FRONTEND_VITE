@@ -183,6 +183,7 @@ const DocumentModelEdit: React.FC = () => {
 
 
   const handleHeaderFooterModalClick = async () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_DOCCABECALHORODAPE'})
 
     setFromCaller("headerAndFooter")
 
@@ -321,16 +322,18 @@ const DocumentModelEdit: React.FC = () => {
 
 
   const handleVisualize = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_DOCVISUALIZAR'})
+
     const id = pathname.substr(20)
 
-      if(id == "0")
-      {
-        setVisualize("SaveAndGenerate")
-      }
-      else
-      {
-        VisualizeDocument()
-      }
+    if(id == "0")
+    {
+      setVisualize("SaveAndGenerate")
+    }
+    else
+    {
+      VisualizeDocument()
+    }
   }
 
 
@@ -685,6 +688,13 @@ const DocumentModelEdit: React.FC = () => {
 		},
 		translations: [translations]
 	}
+
+
+
+  const ButtonViewElementsClick = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_DOCEXPANDIREDITOR'})
+    setShowElementsDiv(!showElementsDiv)
+  }
  
 
   return (
@@ -1117,7 +1127,7 @@ Para cadastrar um preposto, utilize a opção de incluir um representante legal 
                 <button 
                   type='button'
                   className="buttonClick"
-                  onClick={() => setShowElementsDiv(!showElementsDiv)}
+                  onClick={() => ButtonViewElementsClick()}
                   style={{width:'145px'}}
                 >
                   {showElementsDiv &&(

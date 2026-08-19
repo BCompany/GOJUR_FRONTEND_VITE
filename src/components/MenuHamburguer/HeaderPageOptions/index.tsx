@@ -8,6 +8,7 @@ import { useMenuHamburguer } from 'context/menuHamburguer'
 import { envProvider } from 'services/hooks/useEnv';
 import { useHistory } from 'react-router-dom';
 import { useSecurity } from 'context/securityContext';
+import api from 'services/api';
 import { SecurityModule } from 'context/Interfaces/ISecurity';
 import { HeaderPageCustom } from './HeaderPageCustom';
 import { ServiceTypeCustom } from './ServiceTypeCustom';
@@ -93,6 +94,7 @@ const HeaderPageOptionsMenu = () => {
     handleRedirect(`/ReportParameters`)
   }, []);
 
+  
   const handleWorkflow = useCallback(() => {
     handleIsOpenMenuConfig(true)
     setShowConfig(false)
@@ -103,11 +105,30 @@ const HeaderPageOptionsMenu = () => {
 
 
   const handleProfile = useCallback(() => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_DASMENUPERFIL'})
     handleIsOpenMenuConfig(true)
     setShowConfig(false)
     setShowConfigOthers(false)
     handleIsMenuOpen(false)
     history.push(`/usuario`)
+  }, []);
+
+
+  const handleConfiguration = useCallback(() => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_DASMENUCONFIG'})
+    setShowConfig(!showConfig)
+  }, []);
+
+
+  const handlePeopleMenuClick = useCallback(() => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_DASMENUPESSOAS'})
+    setShowConfigPeople(!showConfigPeople)
+  }, []);
+
+
+  const handleSuporte = useCallback(() => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_DASMENUSUPORTE'})
+    setShowSuport(!showSuport)
   }, []);
 
   
@@ -137,9 +158,8 @@ const HeaderPageOptionsMenu = () => {
           <FaUser />
           &nbsp;Perfil
         </div>
-
         <hr />
-        <div className="menuSection" onClick={() => setShowConfig(!showConfig)}>
+        <div className="menuSection" onClick={() => handleConfiguration()}>
           <FaTools />
           &nbsp;Configurações
         </div>
@@ -199,9 +219,8 @@ const HeaderPageOptionsMenu = () => {
           </>
         )}
 
-
         <hr />
-        <div className="menuSection" onClick={() => setShowConfigPeople(!showConfigPeople)}>
+        <div className="menuSection" onClick={() => handlePeopleMenuClick()}>
           <FaUsersCog />
           &nbsp;Pessoas
         </div>
@@ -230,7 +249,7 @@ const HeaderPageOptionsMenu = () => {
 
         {/* S U P O R T E */}
         <hr />
-        <div className="menuSection" onClick={() => setShowSuport(!showSuport)}>
+        <div className="menuSection" onClick={() => handleSuporte()}>
           <BiHelpCircle />
           &nbsp;Suporte
         </div>

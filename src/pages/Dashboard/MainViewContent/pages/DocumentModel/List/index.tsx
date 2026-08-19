@@ -191,11 +191,13 @@ const DocumentModelList = () => {
 
   // EDIT
   const handleEdit = async(id: number) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_DOCALTERARDOCUMENTO'})
     history.push(`/documentmodel/edit/${id}`)
   };
 
   // OPEN MODAL
-  const handleOpenModal = () => {    
+  const handleOpenModal = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_DOCCRIARDOCUMENTO'})
     history.push(`/documentmodel/edit/0`)
   }
 

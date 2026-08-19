@@ -4,27 +4,20 @@
 /* eslint-disable no-restricted-globals */
 
 // IMPORTAÇÕES
-import React, { AreaHTMLAttributes, useCallback, useEffect, useState } from 'react';
+import React, { AreaHTMLAttributes, useCallback, useState } from 'react';
+import api from 'services/api';
 import { format } from 'date-fns';
 import { FiClock, FiPlus } from 'react-icons/fi';
 import { BsBookmark, BsBookmarkCheck } from 'react-icons/bs';
 import { ModalProvider, useModal } from 'context/modal';
 import { useToast } from 'context/toast';
 import { useDefaultSettings } from 'context/defaultSettings';
-import HeaderComponent from 'components/HeaderComponent';
 import { useFetch } from 'services/hooks/useFetch';
 import { FormatDate } from 'Shared/utils/commonFunctions';
-import {
-  Container,
-  AppointmentContent,
-  AppointmentItens,
-  AppointmentHeader,
-  AppointmentDescription,
-  ContainerHeader
-} from './styles';
+import { Container, AppointmentContent, AppointmentItens, AppointmentHeader, AppointmentDescription, ContainerHeader} from './styles';
 import { useHeader } from 'context/headerContext';
-import { FaEye } from "react-icons/fa";
 import {  FiX } from 'react-icons/fi';
+
 // DECLARAÇÃO DE TIPOS
 interface CompromissosData {
   eventId: string;
@@ -80,7 +73,8 @@ const Appointments: React.FC<AppointmentProps> = ({ title, idElement, visible, a
   // }, [handleReload, isOpenModal]);
 
   const handleNewAppointment = useCallback(() => {
-    
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: userToken, module: 'EVT_DASVERCRIARCOMPROMISSO'})
+
     isOpenModal('0');
     handleReload('Create');
 

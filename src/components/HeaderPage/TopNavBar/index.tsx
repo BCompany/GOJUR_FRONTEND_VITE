@@ -278,13 +278,13 @@ const TopNavBar: React.FC<NavigationProps> = ({
 
 
   const handleDefaultsSupport = useCallback(() => {
-
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_DASHELPCHAT'})
     SaveChatParameterSupport();
-
   }, [chat, isLoading]);
 
 
   const handleLayoutChange = useCallback(() => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_DASALTERARDASHBOARD'})
     setIsLayoutChange(!isLayoutChange);
 
     if(isLayoutChange) {
@@ -295,6 +295,13 @@ const TopNavBar: React.FC<NavigationProps> = ({
       handleReleaseDrag(true)
     }
   }, [handleDragOn, isLayoutChange]);
+
+
+  const ClickOpenListMessages = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_DASNOTIFICACOES'})
+    handleOpenListMessages(messageIdList);
+    setNewMessages(0);
+  }
 
 
   return (
@@ -309,15 +316,7 @@ const TopNavBar: React.FC<NavigationProps> = ({
       </button>
 
       {openListMessages ? (
-        <button
-          type="button"
-          title="Notificações e andamentos"
-          style={{ marginRight: 15 }}
-          onClick={() => {
-            handleOpenListMessages(messageIdList);
-            setNewMessages(0);
-          }}
-        >
+        <button type="button" title="Notificações e andamentos" style={{ marginRight: 15 }} onClick={() => {ClickOpenListMessages()}}>
           <IconNotification>
             <BsFillEnvelopeFill />
             {newMessages > 0 ? (

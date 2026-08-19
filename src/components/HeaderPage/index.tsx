@@ -430,6 +430,8 @@ export function HeaderPage() {
       try {
         const userToken = localStorage.getItem('@GoJur:token');
 
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: userToken, module: 'EVT_DASPESQUISA'})
+
         const response = await api.post(`/Dashboard/BuscasProcesso`, { token: userToken, term: searchTerm });
         if (response.data.length > 0) {
           setSearchData(response.data);
