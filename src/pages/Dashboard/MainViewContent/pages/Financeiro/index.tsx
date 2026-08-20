@@ -316,10 +316,6 @@ const Financeiro: React.FC = () => {
       setTotalNetExpected(response.data.totalNetExpected);
       setTotalNetPaid(response.data.totalNetPaid);
       setLoadByFilter(false)
-
-      if (isInitialize)
-        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token, module: 'MEN_FINANCEIRO'});
-
     } catch (err) {
       console.log(err);
     }
@@ -342,10 +338,6 @@ const Financeiro: React.FC = () => {
       setTotalNetExpected(response.data.totalNetExpected);
       setTotalNetPaid(response.data.totalNetPaid);
       setLoadByFilter(false)
-
-      if (isInitialize)
-        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token, module: 'MEN_FINANCEIRO'});
-
     } catch (err) {
       console.log(err);
     }
@@ -435,6 +427,11 @@ const Financeiro: React.FC = () => {
 
   // BUILD PARAMETER FOR LIST USING OR NOT A FILTER SAVE
   const CreateParameterList = useCallback(() => {
+
+    if(captureText != "")
+    {
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: localStorage.getItem('@GoJur:token'), module: 'EVT_FINPESQUISA'})
+    }
 
     // build parameters by filter
     if (loadByFilter)  {
@@ -856,10 +853,12 @@ const Financeiro: React.FC = () => {
     setMovementType(props.row.tpo_Movimento)
 
     if (props.column.name === 'paid'){
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_FINLIQUIDACAOGRID'});
       setShowPaymentModal(true)
     }
 
     if (props.column.name === 'edit'){
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_FINEDITARMOVIMENTO'});
       handleSaveState();
 
       if(props.row.cod_AcordoDetalhe == null)

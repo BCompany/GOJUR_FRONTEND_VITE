@@ -188,6 +188,11 @@ const Publication: React.FC = () => {
   const LoadPublication = useCallback(async (firstLoad = false) => {
     // Load publication list using all filters in a unique request
     try {
+
+      if(filterTerm != ""){
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: localStorage.getItem('@GoJur:token'), module: 'EVT_CNTPESQUISA'})
+      }
+
       let filterDatesCustom = "";
       let nameFilterSearch = nameFilterValue;
 

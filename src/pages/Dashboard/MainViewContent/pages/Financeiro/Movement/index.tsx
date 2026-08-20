@@ -1058,6 +1058,8 @@ const FinancialMovement: React.FC = () => {
 
 
   const handlePayments = useCallback(() => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_FINLIQUIDACAOBOTAO'});
+
     if(movementId == '' || movementId == '0'){
       setShowPaymentInformation(true)
     }
@@ -1099,6 +1101,7 @@ const FinancialMovement: React.FC = () => {
 
 
   const handleLogOnDisplay = useCallback(async () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_FINVERHISTORICO'});
     setShowLog(true);
   }, []);
 

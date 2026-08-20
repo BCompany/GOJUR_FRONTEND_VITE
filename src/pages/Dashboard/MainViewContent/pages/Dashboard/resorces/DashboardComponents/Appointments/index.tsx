@@ -73,7 +73,7 @@ const Appointments: React.FC<AppointmentProps> = ({ title, idElement, visible, a
   // }, [handleReload, isOpenModal]);
 
   const handleNewAppointment = useCallback(() => {
-    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: userToken, module: 'EVT_DASVERCRIARCOMPROMISSO'})
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: userToken, module: 'EVT_DASCRIARCOMPROMISSO'})
 
     isOpenModal('0');
     handleReload('Create');

@@ -126,18 +126,22 @@ export function HeaderPage() {
       setDefaultMonthLabel('Mês selecionado')
     }
     else if (item == '2') {
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: localStorage.getItem('@GoJur:token'), module: 'EVT_FINFILTROACORDO'})
       setDefaultMonthValue('2')
       setDefaultMonthLabel('Acordos')
     }
     else if (item == '3') {
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: localStorage.getItem('@GoJur:token'), module: 'EVT_FINFILTRORECEITA'})
       setDefaultMonthValue('3')
       setDefaultMonthLabel('Receitas')
     }
     else if (item == '4') {
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: localStorage.getItem('@GoJur:token'), module: 'EVT_FINFILTRODESPESA'})
       setDefaultMonthValue('4')
       setDefaultMonthLabel('Despesas')
     }
     else {
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: localStorage.getItem('@GoJur:token'), module: 'EVT_FINFILTRO12MESES'})
       setDefaultMonthValue('12')
       setDefaultMonthLabel('Últimos 12 meses')
     }
@@ -374,7 +378,6 @@ export function HeaderPage() {
     setSearchTerm(event.target.value);
 
     if (pathname === '/publication') {
-      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: localStorage.getItem('@GoJur:token'), module: 'EVT_CNTPESQUISA'})
       handleCaptureText(event.target.value) // handle capture is used when only term will be executed by caller view
     }
   }, []);
