@@ -316,10 +316,6 @@ const Financeiro: React.FC = () => {
       setTotalNetExpected(response.data.totalNetExpected);
       setTotalNetPaid(response.data.totalNetPaid);
       setLoadByFilter(false)
-
-      if (isInitialize)
-        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token, module: 'MEN_FINANCEIRO'});
-
     } catch (err) {
       console.log(err);
     }
@@ -342,10 +338,6 @@ const Financeiro: React.FC = () => {
       setTotalNetExpected(response.data.totalNetExpected);
       setTotalNetPaid(response.data.totalNetPaid);
       setLoadByFilter(false)
-
-      if (isInitialize)
-        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token, module: 'MEN_FINANCEIRO'});
-
     } catch (err) {
       console.log(err);
     }
@@ -436,6 +428,11 @@ const Financeiro: React.FC = () => {
   // BUILD PARAMETER FOR LIST USING OR NOT A FILTER SAVE
   const CreateParameterList = useCallback(() => {
 
+    if(captureText != "")
+    {
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: localStorage.getItem('@GoJur:token'), module: 'EVT_FINPESQUISA'})
+    }
+
     // build parameters by filter
     if (loadByFilter)  {
       const jsonFilter = JSON.parse(jsonStateObject);
@@ -496,18 +493,21 @@ const Financeiro: React.FC = () => {
 
 
   const ReceitaOpen = useCallback(async () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_FINCRIARRECEITA'});
     handleSaveState();
     history.push(`/financeiro/movement/R/account=${accountId}/id=0`)
   }, [accountId, year, month, captureText, captureType, visualizeType, currentPage, pageSize]);
 
 
   const DespesaOpen = useCallback(async () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_FINCRIARDESPESA'});
     handleSaveState();
     history.push(`/financeiro/movement/D/account=${accountId}/id=0`)
   }, [accountId, year, month, captureText, captureType, visualizeType, currentPage, pageSize]);
 
 
   const NewDealOpen = useCallback(async () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_FINCRIARACORDO'});
     handleSaveState();
     history.push(`/financeiro/deal/account=${accountId}/installment=1/id=0`)
   }, [accountId, year, month, captureText, captureType, visualizeType, currentPage, pageSize]);
@@ -853,10 +853,12 @@ const Financeiro: React.FC = () => {
     setMovementType(props.row.tpo_Movimento)
 
     if (props.column.name === 'paid'){
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_FINLIQUIDACAOGRID'});
       setShowPaymentModal(true)
     }
 
     if (props.column.name === 'edit'){
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_FINEDITARMOVIMENTO'});
       handleSaveState();
 
       if(props.row.cod_AcordoDetalhe == null)
@@ -1330,6 +1332,18 @@ const Financeiro: React.FC = () => {
   }, [accountId, year, month, captureText, captureType, visualizeType, currentPage, pageSize]);
 
 
+  const ByDueDateButtonClick = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_FINPORVENCIMENTO'});
+    setVisualizeType('V')
+  }
+
+
+  const ByExtractButtonClick = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_FINPOREXTRATO'});
+    setVisualizeType('E')
+  }
+
+
   return (
     <Container>
 
@@ -1501,7 +1515,7 @@ const Financeiro: React.FC = () => {
                           <button
                             className="selectedButton"
                             type='button'
-                            onClick={()=> setVisualizeType('V')}
+                            onClick={()=> ByDueDateButtonClick()}
                             style={{width:'130px'}}
                             disabled={isDeal}
                           >
@@ -1513,7 +1527,7 @@ const Financeiro: React.FC = () => {
                           <button
                             type='button'
                             className="buttonClick"
-                            onClick={() => setVisualizeType('E')}
+                            onClick={() => ByExtractButtonClick()}
                             style={{width:'130px'}}
                             disabled={isDeal}
                           >
@@ -1529,7 +1543,7 @@ const Financeiro: React.FC = () => {
                           <button
                             className="buttonClick"
                             type='button'
-                            onClick={()=> setVisualizeType('V')}
+                            onClick={()=> ByDueDateButtonClick()}
                             style={{width:'130px'}}
                             disabled={isDeal}
                           >
@@ -1541,7 +1555,7 @@ const Financeiro: React.FC = () => {
                           <button
                             type='button'
                             className="selectedButton"
-                            onClick={() => setVisualizeType('E')}
+                            onClick={() => ByExtractButtonClick()}
                             style={{width:'130px'}}
                             disabled={isDeal}
                           >

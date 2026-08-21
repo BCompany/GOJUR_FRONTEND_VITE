@@ -119,6 +119,7 @@ const Sidebar: React.FC = () => {
 
 
   const FinancialRedirect = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token, module: 'MEN_FINANCEIRO'});
     history.push('/financeiro');
   };
 

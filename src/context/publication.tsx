@@ -3,7 +3,7 @@
 /* eslint-disable radix */
 /* eslint-disable no-restricted-globals */
 import React, { createContext, useCallback, useContext, useState } from 'react';
-
+import api from 'services/api';
 import PublicationDatail from 'pages/Dashboard/MainViewContent/pages/Dashboard/resorces/DashboardComponents/Publicacoes/PublicationDetail';
 import AssociatedProcessModal from 'components/Modals/PublicationModal/AssociatedProcessModal';
 import { useToast } from 'context/toast';
@@ -62,6 +62,8 @@ const PublicationProvider: React.FC = ({ children }) => {
   const [eventData, setEventData] = useState<CompromissosData[]>([]);
   const [filterName, setFilterName] = useState<'pubNameAll' | 'filterNameFalse'>('filterNameFalse');
   const [isReportModalOpen , setIsReportModalOpen] = useState(false);
+  const userToken = localStorage.getItem('@GoJur:token');
+
 
   const handleOpenReportModal = useCallback(() => {
     setIsReportModalOpen(true)
@@ -76,6 +78,7 @@ const PublicationProvider: React.FC = ({ children }) => {
       setPublicationData(data);
 
       if (publicationData !== undefined) {
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: userToken, module: 'EVT_DASVERPUBLICACAO'})
         setOpenDetail(true);
       }
 

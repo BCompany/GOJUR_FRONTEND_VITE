@@ -112,26 +112,31 @@ const FinanceOptionsMenu = () => {
 
   // REPORTS
   const IncomeExpense = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_FINRELMOVFINANCEIRA'})
     handleRedirect(`/financeiro/report/incomeexpenselist`)
   }
 
 
   const Honorarium = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_FINRELHONORARIO'})
     handleRedirect(`/financeiro/report/honorariumlist`)
   }
 
 
   const HonorariumSumary = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_FINRELHONORARIORESUMO'})
     handleRedirect(`/financeiro/report/honorariumsummarylist`)
   }
 
 
   const Refund = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_FINRELREEMBOLSO'})
     handleRedirect(`/financeiro/report/refundlist`)
   }
 
 
   const CashFlow = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_FINRELFLUXOCAIXA'})
     handleRedirect(`/financeiro/report/cashflowlist`)
   }
 

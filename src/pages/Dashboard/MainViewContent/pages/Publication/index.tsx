@@ -188,6 +188,11 @@ const Publication: React.FC = () => {
   const LoadPublication = useCallback(async (firstLoad = false) => {
     // Load publication list using all filters in a unique request
     try {
+
+      if(filterTerm != ""){
+        api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: localStorage.getItem('@GoJur:token'), module: 'EVT_CNTPESQUISA'})
+      }
+
       let filterDatesCustom = "";
       let nameFilterSearch = nameFilterValue;
 
@@ -1704,7 +1709,7 @@ const Publication: React.FC = () => {
 
   const handlePublicationGojurAI = async (id: number, type: string) => {
     try {
-
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CNTANALISEIA'})
       setActionType('publicationIA');
 
       var response = await api.post<PublicationAIAnalyserDTO>('/PublicacoesIA/Analisar', {
