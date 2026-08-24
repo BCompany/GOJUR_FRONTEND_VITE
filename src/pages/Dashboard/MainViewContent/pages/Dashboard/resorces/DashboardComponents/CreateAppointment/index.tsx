@@ -336,8 +336,6 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
 
   const SelectAppointment = useCallback(async () => {
-    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: userToken, module: 'EVT_DASVERCOMPROMISSO'})
-
     const appointmentId = modalActiveId
     const recurrenceDate = localStorage.getItem('@GoJur:RecurrenceDate');
 
