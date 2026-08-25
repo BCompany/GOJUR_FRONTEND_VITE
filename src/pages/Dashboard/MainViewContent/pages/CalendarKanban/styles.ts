@@ -90,6 +90,7 @@ export const TaskBar = styled.div`
 export const BoardLayout = styled.div`
   height: calc(100vh - 140px);
   padding: 0 2rem;
+  
 `;
 
 /* ── PANELS MODAL ── */
@@ -263,7 +264,7 @@ export const KanbanArea = styled.div`
   gap: 0.9rem;
   overflow-x: auto;
   overflow-y: hidden;
-  padding-bottom: 0.5rem;
+  padding-bottom: 4.5rem;
   align-items: flex-start;
 
   &::-webkit-scrollbar {
@@ -289,6 +290,7 @@ export const PhaseColumn = styled.div`
   overflow:auto;
   flex-direction: column;
   max-height: calc(100vh - 160px);
+  
 `;
 
 export const PhaseHeader = styled.div<{ color: string }>`
@@ -471,7 +473,7 @@ export const AppointmentCard = styled.div`
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
-     overflow: hidden;
+    // overflow: hidden;
   }
 
   .card-meta {

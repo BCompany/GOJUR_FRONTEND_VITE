@@ -25,6 +25,7 @@ interface ICard {
   phaseId: number;
   panelId: number;
   title: string;
+  start: string;
   description: string;
   dateTime: string;
   favorited?: boolean;
@@ -36,6 +37,7 @@ interface IPhase {
   name: string;
   color: string;
   order: number;
+  showButtonMore: boolean
 }
 
 interface IPanel {
@@ -136,11 +138,8 @@ export default function AgendaKanban() {
   const [optionsSubject, setOptionsSubject] = useState<ISelectValues[]>([]);
   const [appointmentSubject, setAppointmentSubject] = useState('');
   const [currentKanbanStageId, setCurrentKanbanStageId] = useState<number>();
-  // const [updateKanbanStageId, setUpdateKanbanStageId] = useState<number>();
   const [currentAppointmentEdit, setCurrentAppointmentEdit] = useState<number>();
   const [appointmentSubjectId, setAppointmentSubjectId] = useState('');
-  const [startDate, setStartDate] = useState<string>('');
-  const [endDate, setEndDate] = useState<string>('');
   const [filterTerm, setFilterTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isWaiting, setIsWaiting] = useState(false);
@@ -170,73 +169,6 @@ export default function AgendaKanban() {
       prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value],
     );
   };
-
-const RefreshKanbanEvents = async () => {  
-    try 
-    { 
-
-        const promises = phases
-        .filter(phase => currentKanbanStageId > 0 ? phase.id === currentKanbanStageId : true)
-        .map(phase => 
-        {         
-          phasePagination.find(p => p.phaseId === phase.id);
-          return api.get('/KanbanEtapa/ListarEventos', {
-            params: {
-              token,
-              kanbanStageId: phase.id, 
-              startDate: "2026-01-01",
-              endDate: "2026-12-31",
-              lastIdPgDatabase: 0,
-              lastDatePgDatabase: "",
-              lastIdPgRecurrency: 0,
-              lastDatePgRecurrency:"",
-              qtdRecords:20,
-            },
-          }).then((response) => ({ response, phase }));
-      });
-
-      const results = await Promise.all(promises);
- 
-      setCards(cards.filter(x=> x.phaseId != currentKanbanStageId));
-      results.forEach(({ response, phase }) => {
-        setCards((prevCards) => [
-          ...prevCards,
-          ...response.data.EventList.map((item: any) => ({
-            id: `${uuidv4()}`,
-            eventId: item.id,
-            panelId: activePanelId,
-            phaseId: phase.id, 
-            title: item.subjectText,
-            description: item.title,
-            favorited: item.KanbanFavorite === 'S',
-          })) 
-        ]);
-
-        // Atualiza o controle de paginação 
-        updatePhasePagination({
-          phaseId: phase.id,
-          lastIdEvent: response.data.LastIdEvent,
-          lastDateEvent: new Date(response.data.LastDateEvent),
-          lastIdRecurrency: response.data.LastIdRecurrency,
-          lastDateRecurrency: new Date(response.data.LastDateRecurrency),
-        });
-      });
-
-      setLoadEvents(false)
-      setIsWaiting(false)
-      setCurrentKanbanStageId(0)
-    }
-    catch (err) {
-      addToast({
-        type: 'error',
-        title: 'Operação NÃO Realizada',
-        description: 'Houve uma falha no carregamento dos eventos relacionados as etapas do painel'
-      });
-
-      setIsWaiting(false)
-      console.log(err);
-    }
-  }
 
 const SelectAppointment = async() => {
   try
@@ -467,17 +399,85 @@ useEffect(() => {
   });
 }
 
+function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
+  
+  const today = new Date();
+  let startDate: Date;
+  let endDate: Date;
+
+  switch (value) {
+    case 'mes_atual':
+      startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+      endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      break;
+
+    case 'semana':
+      // início da semana (segunda-feira)
+      startDate = new Date(today);
+      startDate.setDate(today.getDate() - today.getDay() + 1);
+      // fim da semana (domingo)
+      endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 6);
+      break;
+
+    case 'proxima_semana':
+      startDate = new Date(today);
+      startDate.setDate(today.getDate() - today.getDay() + 8);
+      endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 6);
+      break;
+
+    case 'proximo_mes':
+      startDate = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+      endDate = new Date(today.getFullYear(), today.getMonth() + 2, 0);
+      break;
+
+    case 'dias_15':
+      startDate = today;
+      endDate = new Date(today);
+      endDate.setDate(today.getDate() + 15);
+      break;
+
+    case 'ultima_semana':
+      startDate = new Date(today);
+      startDate.setDate(today.getDate() - today.getDay() - 6);
+      endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 6);
+      break;
+
+    case 'ultimo_mes':
+      startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+      break;
+
+    case 'custom':
+      // aqui você pode abrir um datepicker e deixar o usuário escolher
+      startDate = today;
+      endDate = today;
+      break;
+
+    default:
+      startDate = today;
+      endDate = today;
+  }
+
+  return { startDate, endDate };
+}
+
+
 const LoadKanbanEvents = async () => {  
     try 
     { 
+        const { startDate, endDate } = getPeriodRange(selectedPeriod.value)
+
         const promises = phases.map((phase) => {
         const pagination = phasePagination.find(p => p.phaseId === phase.id);
         return api.get('/KanbanEtapa/ListarEventos', {
           params: {
             token,
             kanbanStageId: phase.id, 
-            startDate: "2026-01-01",
-            endDate: "2026-12-31",
+            startDate:  startDate.toISOString().split('T')[0],
+            endDate: endDate.toISOString().split('T')[0],
             qtdRecords:10,
             lastIdPgDatabase: pagination ? pagination.lastIdEvent : 0,
             lastDatePgDatabase: pagination ? pagination.lastDateEvent.toISOString() : "",
@@ -490,6 +490,7 @@ const LoadKanbanEvents = async () => {
       const results = await Promise.all(promises);
  
       results.forEach(({ response, phase }) => {
+        
         setCards((prevCards) => [
           ...prevCards,
           ...response.data.EventList.map((item: any) => ({
@@ -500,9 +501,102 @@ const LoadKanbanEvents = async () => {
             title: item.subjectText,
             description: item.title,
             favorited: item.KanbanFavorite === 'S',
+            start: item.start
           })) 
         ]);
 
+        // atualiza a fase correspondente para habilitar o botão
+        setActivePhases(prev =>
+          prev.map(p =>
+            p.id === phase.id
+              ? { ...p, 
+                  showButtonMore: p.showButtonMore === true || response.data.EventList.length == 10 
+                }
+              : p
+          )
+        );
+
+        // Atualiza o controle de paginação 
+        updatePhasePagination({
+          phaseId: phase.id,
+          lastIdEvent: response.data.LastIdEvent,
+          lastDateEvent: new Date(response.data.LastDateEvent),
+          lastIdRecurrency: response.data.LastIdRecurrency,
+          lastDateRecurrency: new Date(response.data.LastDateRecurrency),
+        });
+      });
+
+      setLoadEvents(false)
+      setIsWaiting(false)
+      setCurrentKanbanStageId(0)
+    }
+    catch (err) {
+      // addToast({
+      //   type: 'error',
+      //   title: 'Operação NÃO Realizada',
+      //   description: 'Houve uma falha no carregamento dos eventos relacionados as etapas do painel'
+      // });
+
+      setIsWaiting(false)
+      console.log(err);
+    }
+  }
+
+  const RefreshKanbanEvents = async () => {  
+    try 
+    { 
+        const { startDate, endDate } = getPeriodRange(selectedPeriod.value)
+
+        const promises = phases
+        .filter(phase => currentKanbanStageId > 0 ? phase.id === currentKanbanStageId : true)
+        .map(phase => 
+        {         
+          phasePagination.find(p => p.phaseId === phase.id);
+          return api.get('/KanbanEtapa/ListarEventos', {
+            params: {
+              token,
+              kanbanStageId: phase.id, 
+              startDate:  startDate.toISOString().split('T')[0],
+              endDate: endDate.toISOString().split('T')[0],
+              lastIdPgDatabase: 0,
+              lastDatePgDatabase: "",
+              lastIdPgRecurrency: 0,
+              lastDatePgRecurrency:"",
+              qtdRecords:10,
+            },
+          }).then((response) => ({ response, phase }));
+      });
+
+      const results = await Promise.all(promises);
+ 
+      setCards(cards.filter(x=> x.phaseId != currentKanbanStageId));
+      results.forEach(({ response, phase }) => {
+        setCards((prevCards) => [
+          ...prevCards,
+          ...response.data.EventList.map((item: any) => ({
+            id: `${uuidv4()}`,
+            eventId: item.id,
+            panelId: activePanelId,
+            phaseId: phase.id, 
+            title: item.subjectText,
+            description: item.title,
+            favorited: item.KanbanFavorite === 'S',
+            start: item.start,
+          })) 
+        ]);
+
+        // atualiza a fase correspondente para habilitar o botão
+        setActivePhases(prev =>
+          prev.map(p =>
+            p.id === phase.id
+              ? {
+                   ...p, 
+                   showButtonMore: p.showButtonMore === true || response.data.EventList.length == 10 
+                }
+              : p
+          )
+        );
+        
         // Atualiza o controle de paginação 
         updatePhasePagination({
           phaseId: phase.id,
@@ -527,12 +621,67 @@ const LoadKanbanEvents = async () => {
       setIsWaiting(false)
       console.log(err);
     }
-  }
+}
 
   const handlePaginationStage = async (phaseId: number) => 
   {
-    
+    const { startDate, endDate } = getPeriodRange(selectedPeriod.value)
+
+    setIsWaiting(true);
+
+    var currentPagination = phasePagination.find(x=> x.phaseId == phaseId)
+    var response = await api.get('/KanbanEtapa/ListarEventos', {
+                            params: {
+                              token,
+                              kanbanStageId: phaseId, 
+                              startDate:  startDate.toISOString().split('T')[0],
+                              endDate: endDate.toISOString().split('T')[0],
+                              lastIdPgDatabase: currentPagination.lastIdEvent,
+                              lastDatePgDatabase: currentPagination.lastDateEvent,
+                              lastIdPgRecurrency: currentPagination.lastIdRecurrency,
+                              lastDatePgRecurrency:currentPagination.lastDateRecurrency,
+                              qtdRecords:5,
+                            },
+                          });
+                     
+      if (response.data.EventList.length == 0)                          
+      {
+        addToast({
+          type: 'info',
+          title: 'Não há mais registros',
+          description: 'Todos os eventos relacionados a esta etapa já foram carregados.'
+        });
+
+        setIsWaiting(false)
+      }
+                          
+      setCards((prevCards) => [
+          ...prevCards,
+          ...response.data.EventList.map((item: any) => ({
+            id: `${uuidv4()}`,
+            eventId: item.id,
+            panelId: activePanelId,
+            phaseId: phaseId, 
+            title: item.subjectText,
+            description: item.title,
+            favorited: item.KanbanFavorite === 'S',
+          })) 
+        ]);
+
+
+        // Atualiza o controle de paginação 
+      updatePhasePagination({
+        phaseId: phaseId,
+        lastIdEvent: response.data.LastIdEvent,
+        lastDateEvent: new Date(response.data.LastDateEvent),
+        lastIdRecurrency: response.data.LastIdRecurrency,
+        lastDateRecurrency: new Date(response.data.LastDateRecurrency),
+      });
+
+      setIsWaiting(false);
+
   }
+
 
   const handleClickInclude = useCallback((phaseId: number) => {
     
@@ -558,16 +707,16 @@ const LoadKanbanEvents = async () => {
 
   const handleClickEdit = useCallback((phaseId: number, eventId: number) => {
     
-    if (!permissions.canManagePanels)
-    {
-      addToast({
-        type: 'info',
-        title: 'Acesso Negado',
-        description: 'O seu usuário não possui permissão para o painel kanban, verifique com o administrador do sistema.'
-      });
+    // if (!permissions.canManagePanels)
+    // {
+    //   addToast({
+    //     type: 'info',
+    //     title: 'Acesso Negado',
+    //     description: 'O seu usuário não possui permissão para o painel kanban, verifique com o administrador do sistema.'
+    //   });
 
-      return;
-    }
+    //   return;
+    // }
     
     isOpenModal(eventId.toString());
     setCurrentAppointmentEdit(eventId)
@@ -576,8 +725,6 @@ const LoadKanbanEvents = async () => {
     handleCaptureTextPublication('');
     handleDeadLineCalculatorText('');
   }, [permissions, handleCaptureTextPublication, handleDeadLineCalculatorText, handleModalActive, isOpenModal]);
-
-
 
   useEffect(() => {
     const mapped = optionsCalendarFilter
@@ -1050,7 +1197,18 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
           Token: token
       })
       
-      setCards((prev) => prev.map((c) => (c.id === id ? { ...c, favorited: !c.favorited } : c)));
+
+      setCards((prev) =>  prev.map((c) => c.id === id ? { ...c, favorited: !c.favorited } : c)
+      .sort((a, b) => {
+        if ((a.favorited ? 1 : 0) !== (b.favorited ? 1 : 0)) {
+          return b.favorited ? 1 : -1;
+        }
+        const dateA = new Date(a.start).getTime();
+        const dateB = new Date(b.start).getTime();
+        return dateA - dateB;
+    })
+);
+
 
       setIsWaiting(false);
     }
@@ -1263,6 +1421,11 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
 
     useEffect(() => {  
 
+      setCards([]);
+      setPhasePagination([]);
+
+      setIsWaiting(true);
+
       if (selectedPeriod)
       {
         const parameterName = getKanbanParam(selectedPeriod.value, periodStart, periodEnd);
@@ -1275,6 +1438,7 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
             description:'A data final do periodo não pode ser menor que a data de início',
           });
           
+          setIsWaiting(false)
           setShowDateModal(true);
           return
         }
@@ -1288,6 +1452,15 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
       }
 
   },[selectedPeriod]) 
+
+  useEffect(() => {
+
+      if (isWaiting)
+      {
+        LoadKanbanEvents();
+      } 
+
+  },[isWaiting, selectedPeriod]);
 
   /* ── Render ── */
   return (
@@ -1356,7 +1529,7 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
               <Select
                 styles={selectStyles}
                 options={PERIOD_OPTIONS}
-                value={selectedPeriod}
+                value={PERIOD_OPTIONS.find(p => p.value.toString() === selectedPeriod?.value) || "mes_atual"}
                 onChange={handleChangeDate}
               />
             </div>
@@ -1702,25 +1875,31 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
                                         onClick={() => handleDeleteCard(card.id)}
                                       /> */}
                                     </div>
-                                  </AppointmentCard>
+                                    
+                                  </AppointmentCard>   
+                                                                 
                                 )}
+                                
                               </Draggable>
                             ))}
+
                             {provided.placeholder}
+                              {phase.showButtonMore && (
+                                <AddCardButton type="button" onClick={() => handlePaginationStage(phase.id)}>
+                                  <FiPlus />Ver mais 
+                                </AddCardButton>
+                              )}
+
+                              <AddCardButton type="button" onClick={() => handleClickInclude(phase.id)}>
+                                <FiPlus /> Criar Compromisso
+                              </AddCardButton> 
+
                           </CardsList>
 
-                        {/* <AddCardButton type="button" onClick={() => handleClickInclude(phase.id)}>
-                          <FiPlus /> Ver Mais
-                        </AddCardButton> */}
                           </>
-                        )}
-                        
+                      )}
                       </Droppable>
 
-                      <AddCardButton type="button" onClick={() => handleClickInclude(phase.id)}>
-                        <FiPlus /> Criar Compromisso
-                      </AddCardButton>
-                        
                     </PhaseColumn>
                     
                     )}

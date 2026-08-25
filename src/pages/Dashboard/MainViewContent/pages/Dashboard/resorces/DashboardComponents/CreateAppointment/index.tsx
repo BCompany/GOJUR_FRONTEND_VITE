@@ -597,10 +597,10 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
             params:{ token: userToken }
         })
 
-        if (response.data.length > 0){
-          const hasKanbanPermission = response.data[0].hasKanbanPermission;
-          setShowKanbanButton(hasKanbanPermission)
-        }
+        // if (response.data.length > 0){
+        //   const hasKanbanPermission = response.data[0].hasKanbanPermission;
+        //   setShowKanbanButton(hasKanbanPermission)
+        // }
 
         setPanels(response.data.map((item: any) => ({
           value: item.Id,
