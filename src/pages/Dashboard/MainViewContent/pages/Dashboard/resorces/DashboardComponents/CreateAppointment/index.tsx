@@ -1499,6 +1499,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         workflowExecId:appointmentWorkflowExecId 
       }
 
+      console.log(data)
       try {
         await api.put<AppointmentPropsSave>(`/Compromisso/Salvar`, data)
 
@@ -1524,6 +1525,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     const data: AppointmentPropsSave = {
       eventId: appointmentId,
       publicationId: publicationId == null ? 0 : publicationId,
+      kanbanStageId: kanbanStageId == null ? 0: kanbanStageId,
       description: appointmentDescription,
       eventNote: appointmentObs,
       startDate: startDateN, // v

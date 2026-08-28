@@ -138,6 +138,7 @@ export interface AppointmentPropsSave {
   description: any;
   eventNote?: any;
   subjectId: any;
+  kanbanStageId: any;
   subject?: any;
   userCreator?: any;
   allDay?: any;

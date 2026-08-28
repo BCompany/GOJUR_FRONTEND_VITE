@@ -7,7 +7,7 @@ import Search from 'components/Search';
 import { HeaderPage } from 'components/HeaderPage';
 import { useHistory } from 'react-router-dom';
 import Select from 'react-select';
-import { selectStyles, useDelay } from 'Shared/utils/commonFunctions';
+import { useDelay } from 'Shared/utils/commonFunctions';
 import { IComboData } from 'pages/Dashboard/MainViewContent/pages/Financeiro/Account/Modal';
 import { useModal } from 'context/modal';
 import { v4 as uuidv4 } from 'uuid';
@@ -19,6 +19,7 @@ import { Overlay } from 'Shared/styles/GlobalStyle';
 import Loader from 'react-spinners/ClipLoader';
 import { IParameterData } from '../Matter/Interfaces/IMatter';
 
+
 interface ICard {
   id: number;
   eventId: number;
@@ -29,6 +30,8 @@ interface ICard {
   description: string;
   dateTime: string;
   favorited?: boolean;
+  backgroundColor: string;
+  hasDone:boolean;
 }
 
 interface IPhase {
@@ -110,6 +113,7 @@ const uid = () => ++nextId;
   // },
 // ];
 
+
 /* ─── Component ─── */
 export default function AgendaKanban() {
   const history = useHistory();
@@ -120,7 +124,6 @@ export default function AgendaKanban() {
     handleCaptureTextPublication,
     handleModalActive,
     modalActive,
-    modalActiveId
   } = useModal();
 
   const optionsCalendarFilter = [
@@ -141,34 +144,43 @@ export default function AgendaKanban() {
   const [currentAppointmentEdit, setCurrentAppointmentEdit] = useState<number>();
   const [appointmentSubjectId, setAppointmentSubjectId] = useState('');
   const [filterTerm, setFilterTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isWaiting, setIsWaiting] = useState(false);
-  const [isChangePeriod, setIsChangePeriod] = useState(false);
-  const [loadEvents, setLoadEvents] = useState(false);
   const [isLoadingSearch, setIsLoadingSearch] = useState(false);
+  const [isWaiting, setIsWaiting] = useState(false);
+  const [subjectSelected, setSubjectSelected] = useState<ISelectValues>();
+  const [loadEvents, setLoadEvents] = useState(false);
   const [showSearchList] = useState(false);
-  const[phasePagination, setPhasePagination] = useState<IPhasePagination[]>([])
+  const [phasePagination, setPhasePagination] = useState<IPhasePagination[]>([])
   const [permissions,setPermissions] = useState({
-    canManagePanels: true,   // show "Painéis" button
-    canDeletePhase: true,    // show trash icon on phase header
-    canChangePhaseColor: true, // show palette icon on phase header
+    canManagePanels: true,      // show "Painéis" button
+    canDeletePhase: true,       // show trash icon on phase header
+    canChangePhaseColor: true,  // show palette icon on phase header
   });
 
-  //const [panels, setPanels] = useState<IPanel[]>(INITIAL_PANELS);
-  //const [phases, setPhases] = useState<IPhase[]>(INITIAL_PHASES);
   const [activePanelId, setActivePanelId] = useState<number>();
   const [panels, setPanels] = useState<IPanel[]>([]);
-  const [phases, setPhases] = useState<IPhase[]>();
   const [cards, setCards] = useState<ICard[]>([]);
   const [messageEmptyPanel, setMessageEmptyPanel] = useState<string>();
-
   const { addToast } = useToast();
+  const toggle = (value: string) => { setMultiFilter1(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value],);};
 
-  const toggle = (value: string) => {
-    setMultiFilter1(prev =>
-      prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value],
-    );
-  };
+
+  // const [isLoading, setIsLoading] = useState(true);
+  // const [panels, setPanels] = useState<IPanel[]>(INITIAL_PANELS);
+  // const [phases, setPhases] = useState<IPhase[]>(INITIAL_PHASES);
+  // const [phases, setPhases] = useState<IPhase[]>();
+  //   // useEffect(() => {
+  //   if (isLoadingSearch) {
+  //     LoadKanbanEvents();
+  //   }
+  // }, [isLoadingSearch]);
+
+  // useEffect(() => {
+
+  //     LoadKanbanEvents()
+
+  // },[subjectSelected])
+
+const QTDE_RECORDS_EVENTS = 5;
 
 const SelectAppointment = async() => {
   try
@@ -209,7 +221,8 @@ const SelectAppointment = async() => {
             ? {
                 ...card,
                 title: `${new Date(response.data.startDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} ${new Date(response.data.startDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${capitalize(response.data.subject)}`,
-                description: response.data.description
+                description: response.data.description,
+                hasDone: response.data.status === "L"
               }
             : card
         )
@@ -223,7 +236,6 @@ const SelectAppointment = async() => {
       setIsWaiting(false)
       setCurrentAppointmentEdit(0)
       setCurrentKanbanStageId(0)
-      // setUpdateKanbanStageId(0)
   }
   catch(err)
   {
@@ -259,17 +271,22 @@ useEffect(() => {
 
   useEffect(() => 
   {
-      setIsLoading(true)
-      setIsWaiting(true)
+      GetParameterValue()
+      //setIsLoading(true)
   },[])
- 
+
   useEffect(() => 
   {
-      if (isLoading) {
-        GetParameterValue()
-        LoadKanban();        
-      }
-  },[isLoading])
+      LoadKanban();        
+
+  },[])
+ 
+  // useEffect(() => 
+  // {
+  //     if (isLoading)
+  //       LoadKanban();        
+
+  // },[isLoading])
       
   useEffect(() => {
 
@@ -314,7 +331,7 @@ useEffect(() => {
         setActivePanelId(kanbanId); 
       }
        
-      setIsLoading(false)
+      //setIsLoading(false)
     }
     catch (err) {
       addToast({ 
@@ -324,7 +341,7 @@ useEffect(() => {
       });
 
       console.log(err);
-      setIsLoading(false)
+      //setIsLoading(false)
       setIsWaiting(false)
     }
  };
@@ -332,8 +349,6 @@ useEffect(() => {
  const LoadKanbanEtapa = async (kanbanId: number) => {
     try
     {
-        setIsWaiting(true)
-
         // Salva a flg_Padrao na tabela para recarregar automaticamente na proxima vez
         api.post('/Kanban/DefinirPadrao', {
           token,
@@ -356,7 +371,7 @@ useEffect(() => {
             order: item.NumPosition
         }));
 
-        setPhases(listPhases);
+        // setPhases(listPhases);
 
         if (listPhases.length == 0)
           setMessageEmptyPanel('Nenhum painel selecionado. Crie um novo painel para começar')
@@ -364,7 +379,7 @@ useEffect(() => {
         var orderPhasesList = listPhases.filter((ph) => ph.panelId === activePanelId).sort((a, b) => a.order - b.order) 
         setActivePhases(orderPhasesList);
 
-        setLoadEvents(true)        
+        setLoadEvents(true)   
     }
     catch (err) {
       addToast({
@@ -374,13 +389,6 @@ useEffect(() => {
       });   
     }
  }
-
- useEffect(() => {
-
-  if (loadEvents)
-    LoadKanbanEvents(); 
-  
- },[loadEvents, isWaiting])
 
  function updatePhasePagination(newData: IPhasePagination) {
   setPhasePagination(prev => {
@@ -451,9 +459,19 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
       break;
 
     case 'custom':
-      // aqui você pode abrir um datepicker e deixar o usuário escolher
-      startDate = today;
-      endDate = today;
+
+      console.log('temp', tempPeriodStart, tempPeriodEnd)
+      if (tempPeriodStart && tempPeriodEnd) 
+      {
+          startDate = new Date(tempPeriodStart);
+          endDate = new Date(tempPeriodEnd);
+          endDate.setDate(endDate.getDate() + 1); 
+      } else if (typeof tempPeriodStart === "string" && tempPeriodStart.includes(" - ")) {
+          const [startStr, endStr] = tempPeriodStart.split(" - ");
+          startDate = new Date(startStr.trim());
+          endDate = new Date(endStr.trim());
+          endDate.setDate(endDate.getDate() + 1); 
+      }
       break;
 
     default:
@@ -468,23 +486,54 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
 const LoadKanbanEvents = async () => {  
     try 
     { 
-        const { startDate, endDate } = getPeriodRange(selectedPeriod.value)
 
-        const promises = phases.map((phase) => {
-        const pagination = phasePagination.find(p => p.phaseId === phase.id);
-        return api.get('/KanbanEtapa/ListarEventos', {
-          params: {
-            token,
-            kanbanStageId: phase.id, 
-            startDate:  startDate.toISOString().split('T')[0],
-            endDate: endDate.toISOString().split('T')[0],
-            qtdRecords:10,
-            lastIdPgDatabase: pagination ? pagination.lastIdEvent : 0,
-            lastDatePgDatabase: pagination ? pagination.lastDateEvent.toISOString() : "",
-            lastIdPgRecurrency: pagination ? pagination.lastIdRecurrency : 0,
-            lastDatePgRecurrency: pagination ? pagination.lastDateRecurrency.toISOString() : ""
-          },
-        }).then((response) => ({ response, phase }));
+      const { startDate, endDate } = getPeriodRange(selectedPeriod?.value)
+
+      var filterItens = "";
+        if (filterTerm.length > 0)
+            filterItens += "|" + "KanbanTerm=" + filterTerm;
+
+        if (multiFilter1.length > 0)
+            filterItens += "|" + multiFilter1.join("|")
+
+        if (subjectSelected)
+            filterItens += "|" + "KanbanSubject=" + subjectSelected.id;
+
+        const promises = activePhases?.map((phase) => 
+        {
+            const pagination = phasePagination.find(p => p.phaseId === phase.id);
+            
+            let lastIdPgDatabase =  0;
+            let lastDatePgDatabase = "";
+            let lastIdPgRecurrency = 0;
+            let lastDatePgRecurrency = "";
+
+          // If is a search by term, subject or responsible, clear cards to reload new values
+            const isSearching =(isLoadingSearch || subjectSelected || multiFilter1.length > 0);
+
+            // When is not execution a search by term, considering a pagination
+            if (!isSearching)
+            {
+                lastIdPgDatabase = pagination ? pagination.lastIdEvent : 0;
+                lastDatePgDatabase = pagination ? pagination.lastDateEvent.toISOString() : "";
+                lastIdPgRecurrency = pagination ? pagination.lastIdRecurrency : 0;
+                lastDatePgRecurrency =pagination ? pagination.lastDateRecurrency.toISOString() : "";
+            }
+
+            return api.get('/KanbanEtapa/ListarEventos', {
+              params: {
+                token,
+                kanbanStageId: phase.id, 
+                startDate:  startDate.toISOString().split('T')[0],
+                endDate: endDate.toISOString().split('T')[0],
+                filterItens:filterItens,
+                lastIdPgDatabase: lastIdPgDatabase,
+                lastDatePgDatabase: lastDatePgDatabase,
+                lastIdPgRecurrency: lastIdPgRecurrency,
+                lastDatePgRecurrency: lastDatePgRecurrency,
+                qtdRecords:QTDE_RECORDS_EVENTS,
+              },
+            }).then((response) => ({ response, phase }))
       });
 
       const results = await Promise.all(promises);
@@ -501,16 +550,19 @@ const LoadKanbanEvents = async () => {
             title: item.subjectText,
             description: item.title,
             favorited: item.KanbanFavorite === 'S',
-            start: item.start
+            start: item.start,
+            hasDone: item.hasDone,
+            backgroundColor: item.backgroundColor
           })) 
         ]);
 
+        console.log(response.data.EventList)
         // atualiza a fase correspondente para habilitar o botão
         setActivePhases(prev =>
           prev.map(p =>
             p.id === phase.id
               ? { ...p, 
-                  showButtonMore: p.showButtonMore === true || response.data.EventList.length == 10 
+                  showButtonMore: response.data.EventList.length == 5 
                 }
               : p
           )
@@ -529,15 +581,11 @@ const LoadKanbanEvents = async () => {
       setLoadEvents(false)
       setIsWaiting(false)
       setCurrentKanbanStageId(0)
+      setIsLoadingSearch(false)
     }
     catch (err) {
-      // addToast({
-      //   type: 'error',
-      //   title: 'Operação NÃO Realizada',
-      //   description: 'Houve uma falha no carregamento dos eventos relacionados as etapas do painel'
-      // });
-
       setIsWaiting(false)
+      setIsLoadingSearch(false)
       console.log(err);
     }
   }
@@ -547,7 +595,11 @@ const LoadKanbanEvents = async () => {
     { 
         const { startDate, endDate } = getPeriodRange(selectedPeriod.value)
 
-        const promises = phases
+        var filterItens = "";
+        if (filterTerm.length > 0)
+            filterItens += "KanbanTerm=" + filterTerm;
+
+        const promises = activePhases
         .filter(phase => currentKanbanStageId > 0 ? phase.id === currentKanbanStageId : true)
         .map(phase => 
         {         
@@ -558,11 +610,12 @@ const LoadKanbanEvents = async () => {
               kanbanStageId: phase.id, 
               startDate:  startDate.toISOString().split('T')[0],
               endDate: endDate.toISOString().split('T')[0],
+              filterItens:filterItens,
               lastIdPgDatabase: 0,
               lastDatePgDatabase: "",
               lastIdPgRecurrency: 0,
               lastDatePgRecurrency:"",
-              qtdRecords:10,
+              qtdRecords:QTDE_RECORDS_EVENTS,
             },
           }).then((response) => ({ response, phase }));
       });
@@ -582,6 +635,8 @@ const LoadKanbanEvents = async () => {
             description: item.title,
             favorited: item.KanbanFavorite === 'S',
             start: item.start,
+            hasDone: item.hasDone,
+            backgroundColor: item.backgroundColor
           })) 
         ]);
 
@@ -629,6 +684,10 @@ const LoadKanbanEvents = async () => {
 
     setIsWaiting(true);
 
+     var filterItens = "";
+        if (filterTerm.length > 0)
+            filterItens += "KanbanTerm=" + filterTerm;
+
     var currentPagination = phasePagination.find(x=> x.phaseId == phaseId)
     var response = await api.get('/KanbanEtapa/ListarEventos', {
                             params: {
@@ -636,11 +695,12 @@ const LoadKanbanEvents = async () => {
                               kanbanStageId: phaseId, 
                               startDate:  startDate.toISOString().split('T')[0],
                               endDate: endDate.toISOString().split('T')[0],
+                              filterItens: filterItens,
                               lastIdPgDatabase: currentPagination.lastIdEvent,
                               lastDatePgDatabase: currentPagination.lastDateEvent,
                               lastIdPgRecurrency: currentPagination.lastIdRecurrency,
                               lastDatePgRecurrency:currentPagination.lastDateRecurrency,
-                              qtdRecords:5,
+                              qtdRecords:QTDE_RECORDS_EVENTS,
                             },
                           });
                      
@@ -665,9 +725,10 @@ const LoadKanbanEvents = async () => {
             title: item.subjectText,
             description: item.title,
             favorited: item.KanbanFavorite === 'S',
+            hasDone: item.hasDone,
+            backgroundColor: item.backgroundColor
           })) 
-        ]);
-
+      ]);
 
         // Atualiza o controle de paginação 
       updatePhasePagination({
@@ -727,10 +788,13 @@ const LoadKanbanEvents = async () => {
   }, [permissions, handleCaptureTextPublication, handleDeadLineCalculatorText, handleModalActive, isOpenModal]);
 
   useEffect(() => {
+
     const mapped = optionsCalendarFilter
       .filter(opt => multiFilter1.includes(opt.value))
       .map(opt => ({ value: opt.value, label: opt.label }));
-    setMultiFilter(mapped);
+    
+      setMultiFilter(mapped);
+
   }, [multiFilter1]);
 
 
@@ -768,6 +832,8 @@ const LoadKanbanEvents = async () => {
       setAppointmentSubjectId('');
       LoadSubject(true);
     }
+
+    setSubjectSelected(item)
   };
 
   const PERIOD_OPTIONS: IComboData[] = [
@@ -781,8 +847,6 @@ const LoadKanbanEvents = async () => {
     { value: 'custom', label: 'Selecionar Período' },
   ];
   const [selectedPeriod, setSelectedPeriod] = useState<IComboData>();
-  const [periodStart, setPeriodStart] = useState('');
-  const [periodEnd, setPeriodEnd] = useState('');
   const [showDateModal, setShowDateModal] = useState(false);
   const [tempPeriodStart, setTempPeriodStart] = useState('');
   const [tempPeriodEnd, setTempPeriodEnd] = useState('');
@@ -817,14 +881,8 @@ const LoadKanbanEvents = async () => {
   //   .filter((ph) => ph.panelId === activePanelId)
   //   .sort((a, b) => a.order - b.order);
 
-  useEffect(() => {
-  // const [tempPeriodStart, setTempPeriodStart] = useState('');
-  // const [tempPeriodEnd, setTempPeriodEnd] = useState('');
-
-  },[tempPeriodStart, tempPeriodEnd])
-
   /* ── Panel actions ── */
-    const handleAddPanel = useCallback(async () => {
+  const handleAddPanel = useCallback(async () => {
     setIsWaiting(true)
   
     const name = newPanelName.trim();
@@ -870,7 +928,17 @@ const LoadKanbanEvents = async () => {
     }
 
   }, [newPanelName])
+   
+
+//  useEffect(() => {
+
+//   if (showDateModal)
+//     setIsWaiting(false)
+
+//   if (loadEvents)
+//     LoadKanbanEvents(); 
   
+//  },[loadEvents, isWaiting, showDateModal])
 
   const handleSavePanelEdit = useCallback(async() => {
 
@@ -985,13 +1053,13 @@ const LoadKanbanEvents = async () => {
           addToast({
             type: 'info',
             title: 'Atenção',
-            description:'Defina um nome válido para a etapa do painél',
+            description:'Defina um nome válido para a etapa do painel',
           });
 
           setIsWaiting(false);
           return;
         }
-        const panelPhases = phases.filter((ph) => ph.panelId === addingPhaseForPanel);
+        const panelPhases = activePhases.filter((ph) => ph.panelId === addingPhaseForPanel);
 
         setIsWaiting(true);
 
@@ -1011,15 +1079,13 @@ const LoadKanbanEvents = async () => {
           panelId: addingPhaseForPanel,
           name,
           color: PHASE_COLORS[colorIndex],
-          order: panelPhases.length
+          order: panelPhases.length,
+          showButtonMore: false
         };
 
-        setPhases((prev) => [...prev, newPhase]);
+        setActivePhases((prev) => [...prev, newPhase]);
         setNewPhaseName('');
         setAddingPhaseForPanel(null);
-
-        LoadKanbanEtapa(activePanelId);
-
         setIsWaiting(false)
     }
     catch(err)
@@ -1027,7 +1093,7 @@ const LoadKanbanEvents = async () => {
         console.log(err)
         setIsWaiting(false)
     }
-  }, [newPhaseName, addingPhaseForPanel, phases]); 
+  }, [newPhaseName, addingPhaseForPanel, activePhases]); 
 
   const handleChangePhaseColor = useCallback(async (phaseId: number, color: string) => {
   
@@ -1035,7 +1101,7 @@ const LoadKanbanEvents = async () => {
     {
         setIsWaiting(true);
 
-        var phaseSelected = phases.filter(x=> x.id == phaseId);
+        var phaseSelected = activePhases.filter(x=> x.id == phaseId);
 
         if (phaseSelected.length == 0)
         {
@@ -1069,7 +1135,7 @@ const LoadKanbanEvents = async () => {
         setIsWaiting(false)
     }
 
-  }, [phases, token, isWaiting]);
+  }, [activePhases, token, isWaiting]);
 
   const handleStartEditPhase = useCallback((phase: IPhase) => {
     setEditingPhaseId(phase.id);
@@ -1088,11 +1154,9 @@ const LoadKanbanEvents = async () => {
         }
       })   
 
-      LoadKanbanEtapa(activePanelId);
-
       setIsWaiting(false)
 
-      setPhases((prev) => prev.filter((ph) => ph.id !== phaseId));
+      setActivePhases((prev) => prev.filter((ph) => ph.id !== phaseId));
       setCards((prev) => prev.filter((c) => c.phaseId !== phaseId));
 
     }
@@ -1128,7 +1192,7 @@ const LoadKanbanEvents = async () => {
           return;
         }
 
-        const phaseSelected = phases.filter(x=> x.id == editingPhaseId)
+        const phaseSelected = activePhases.filter(x=> x.id == editingPhaseId)
         if (phaseSelected.length == 0)
         {
           addToast({
@@ -1189,28 +1253,21 @@ const LoadKanbanEvents = async () => {
 const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string) => {
     try
     {
-      setIsWaiting(true);
-
       await api.post('/KanbanEtapa/Favoritar', {
           EventId:eventId,
           FlagFavorite,
           Token: token
       })
       
-
-      setCards((prev) =>  prev.map((c) => c.id === id ? { ...c, favorited: !c.favorited } : c)
-      .sort((a, b) => {
-        if ((a.favorited ? 1 : 0) !== (b.favorited ? 1 : 0)) {
-          return b.favorited ? 1 : -1;
-        }
-        const dateA = new Date(a.start).getTime();
-        const dateB = new Date(b.start).getTime();
-        return dateA - dateB;
-    })
-);
-
-
-      setIsWaiting(false);
+        setCards((prev) =>  prev.map((c) => c.id === id ? { ...c, favorited: !c.favorited } : c)
+        .sort((a, b) => {
+          if ((a.favorited ? 1 : 0) !== (b.favorited ? 1 : 0)) {
+            return b.favorited ? 1 : -1;
+          }
+          const dateA = new Date(a.start).getTime();
+          const dateB = new Date(b.start).getTime();
+          return dateA - dateB;
+      }));
     }
     catch
     {
@@ -1249,10 +1306,14 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
   // se não houve mudança de posição
   if (source.droppableId === destination.droppableId && source.index === destination.index) return;
 
+  console.log(type)
   // mover colunas
   if (type === "COLUMN") {
     const phaseId = parseInt(draggableId.replace("phase-", ""), 10);
     const destinationIndex = destination.index;
+
+    console.log(destinationIndex)
+    console.log(phaseId)
 
     const response = await api.post("/KanbanEtapa/ArrastarEtapa", {
       kanbanStageId: phaseId,
@@ -1325,18 +1386,28 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
   }
 
   const handleChangeDate = item => {
-    setSelectedPeriod(item);
+
     if (item.value === 'custom') {
       const today = new Date();
       const oneYearAgo = new Date(today);
-      oneYearAgo.setFullYear(today.getFullYear() - 1);
+      //oneYearAgo.setFullYear(today.getFullYear() - 1);
+      oneYearAgo.setFullYear(today.getFullYear());
       const fmt = (d: Date) => d.toISOString().slice(0, 10);
-      setTempPeriodStart(periodStart || fmt(oneYearAgo));
-      setTempPeriodEnd(periodEnd || fmt(today));
+            
+      setTempPeriodStart(tempPeriodStart || fmt(oneYearAgo));
+      setTempPeriodEnd(tempPeriodEnd || fmt(today));
       setShowDateModal(true);
     }
-    else{
-      setIsChangePeriod(true);
+    else
+    {
+      setSelectedPeriod(item);
+      setPhasePagination([]);
+      setActivePhases(prevPhases =>
+        prevPhases.map(phase => ({
+          ...phase,
+          showButtonMore: false
+        }))
+      );
     }
     
   }  
@@ -1367,7 +1438,7 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
     if (value === "custom") {
       return mappingSelectToParameter.custom(startDate, endDate);
     }
-
+    
     return mappingSelectToParameter[value];
   }
 
@@ -1394,14 +1465,12 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
           const periodString = parameter.parameterValue.replace("kanbanPeriod=", "");
           const [startDate, endDate] = periodString.split("to");
           
-          setPeriodStart(startDate)
-          setPeriodEnd(endDate)
+          setTempPeriodStart(startDate)
+          setTempPeriodEnd(endDate)
 
           const dateSelected = `${formatDate(startDate)} - ${formatDate(endDate)}`;
 
           setSelectedPeriod({ value: 'custom', label: `${dateSelected}` })
-          // var comboValue = PERIOD_OPTIONS.find(x=> x.value =='custom')
-          // setSelectedPeriod(comboValue);
       }
       else
       {
@@ -1417,31 +1486,47 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
           }
       }
     
-  },[token])
+  },[selectedPeriod, tempPeriodStart, tempPeriodEnd])
 
-    useEffect(() => {  
+  useEffect(() => {  
 
-      setCards([]);
-      setPhasePagination([]);
+        if (!selectedPeriod)
+          return;
 
-      setIsWaiting(true);
+        const parameterName = getKanbanParam(selectedPeriod.value, tempPeriodStart, tempPeriodEnd);
 
-      if (selectedPeriod)
-      {
-        const parameterName = getKanbanParam(selectedPeriod.value, periodStart, periodEnd);
-
-        if (periodEnd < periodStart)
+        if (selectedPeriod.value == "custom")
         {
-          addToast({
-            type: 'info',
-            title: 'Atenção',
-            description:'A data final do periodo não pode ser menor que a data de início',
-          });
-          
-          setIsWaiting(false)
-          setShowDateModal(true);
-          return
+          if (!tempPeriodEnd || !tempPeriodStart)
+          {
+            addToast({
+              type: 'info',
+              title: 'Atenção',
+              description:'A data de inicio e termino do periodo não foi preenchida corretamente',
+            });
+
+            setIsWaiting(false)
+            setShowDateModal(true);
+            return;
+          }
+
+          if (tempPeriodEnd < tempPeriodStart)
+          {
+            addToast({
+              type: 'info',
+              title: 'Atenção',
+              description:'A data final do periodo não pode ser menor que a data de início',
+            });
+            
+            setIsWaiting(false)
+            setShowDateModal(true);
+            return
+          }
         }
+
+        setCards([]);
+        setPhasePagination([]);
+        setLoadEvents(true)
 
         api.post('/Parametro/Salvar', {
           token: token, 
@@ -1449,18 +1534,50 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
           parameterType: 'P',
           parameterValue: parameterName        
         })
-      }
 
-  },[selectedPeriod]) 
+  },[selectedPeriod, tempPeriodStart, tempPeriodEnd]) 
+
+  // useEffect(() => {
+
+  //     if (isWaiting && !showDateModal)
+  //       LoadKanbanEvents();
+
+  // },[isWaiting, selectedPeriod, filterTerm, isLoadingSearch, showDateModal]);
+  
+
+  useDelay(
+    () => {
+
+      if (isLoadingSearch) {
+        RebuildInterface();
+      }
+    },
+
+    [filterTerm, isLoadingSearch], 500,
+  );
 
   useEffect(() => {
 
-      if (isWaiting)
-      {
-        LoadKanbanEvents();
-      } 
+      RebuildInterface();
 
-  },[isWaiting, selectedPeriod]);
+  },[selectedPeriod,  multiFilter, subjectSelected]);
+  
+  useEffect(() => {
+
+      if (loadEvents)
+      {
+         RebuildInterface();
+         LoadKanbanEvents();
+       }
+  },[loadEvents, panels, activePhases, selectedPeriod]);
+
+ const RebuildInterface = () =>
+ {
+      setPhasePagination([])
+      setCards([])
+      setIsWaiting(true)
+      setLoadEvents(true);
+ }
 
   /* ── Render ── */
   return (
@@ -1487,25 +1604,21 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
                   e.preventDefault();
                 }
                 if (e.key === 'Enter') {
-                  setIsLoadingSearch(true);
-                  setIsLoading(true);
+                  RebuildInterface();
                 }
               }}
               placeholder="Pesquisar Compromissos"
               className="search"
               name="search"
               style={{minWidth: '10rem', marginTop: 0, marginLeft: 0 }}
-              value={!isLoadingSearch ? filterTerm : ''}
+              value={filterTerm}
               onChange={(e) => setFilterTerm(e.target.value)}
             />
 
             <FcSearch
               className="icons"
               title="Clique para realizar a pesquisa pelo termo digitado"
-              onClick={() => {
-                setIsLoadingSearch(true);
-                setIsLoading(true);
-              }}
+              onClick={() => { RebuildInterface(); }}
             />
 
             <div style={{ zIndex: 9 }}>
@@ -1519,18 +1632,40 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
                 appointmentSubjectId={appointmentSubjectId}
                 appointmentSubject={appointmentSubject}
                 onSubjectChange={handleSubjectChange}
-                setIsLoading={setIsLoading}
+                setIsLoading={setIsLoadingSearch}
                 setIsLoadingSearch={setIsLoadingSearch}
                 showSearchList={showSearchList}
               />
             </div>
 
             <div style={{ width: '180px' }}>
-              <Select
+              {/* <Select
                 styles={selectStyles}
                 options={PERIOD_OPTIONS}
-                value={PERIOD_OPTIONS.find(p => p.value.toString() === selectedPeriod?.value) || "mes_atual"}
+                value={
+                  selectedPeriod?.value === "custom"
+                    ? selectedPeriod
+                    : (
+                        selectedPeriod
+                          ? PERIOD_OPTIONS.find(p => p.value.toString() === selectedPeriod.value.toString())
+                          : PERIOD_OPTIONS.find(p => p.value === "mes_atual")
+                      )
+                }
+                //value={selectedPeriod}
                 onChange={handleChangeDate}
+              /> */}
+              <Select
+                options={PERIOD_OPTIONS}
+                onChange={handleChangeDate}
+                value={
+                  selectedPeriod?.value === "custom"
+                    ? selectedPeriod 
+                    : (
+                        selectedPeriod
+                          ? PERIOD_OPTIONS.find(p => p.value.toString() === selectedPeriod.value.toString())
+                          : PERIOD_OPTIONS.find(p => p.value === "mes_atual")
+                      )
+                }
               />
             </div>
           </div>
@@ -1688,7 +1823,11 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
             <PanelsModal onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <h4>Selecionar Período</h4>
-                <FiX onClick={() => { setShowDateModal(false); setSelectedPeriod(PERIOD_OPTIONS[0]); }} />
+                <FiX onClick={() => 
+                { 
+                  setShowDateModal(false); 
+                  setSelectedPeriod(PERIOD_OPTIONS[0]); 
+                }} />
               </div>
               <div className="modal-body" style={{ gap: '0.75rem', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
@@ -1717,10 +1856,10 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
                   className="buttonClick"
                   style={{ flex: 1, justifyContent: 'center', display: 'flex' }}
                   onClick={() => {
-                    setPeriodStart(tempPeriodStart);
-                    setPeriodEnd(tempPeriodEnd);
+                    setTempPeriodStart(tempPeriodStart);
+                    setTempPeriodEnd(tempPeriodEnd);
                     setShowDateModal(false);
-                    setIsChangePeriod(true)
+                    //setIsChangePeriod(true)
                     const fmt = (s: string) => { const [, m, d] = s.split('-'); return `${d}/${m}`; };
                     setSelectedPeriod({ value: 'custom', label: `${fmt(tempPeriodStart)} - ${fmt(tempPeriodEnd)}` });
                   }}
@@ -1730,7 +1869,6 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
                 <button
                   type="button"
                   className="buttonLinkClick"
-                  // onClick={() => { setShowDateModal(false); setSelectedPeriod(PERIOD_OPTIONS[0]); }}
                   onClick={() => { setShowDateModal(false)}}
                 >
                   Cancelar
@@ -1832,8 +1970,10 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
                                     {...drag.draggableProps}
                                     {...drag.dragHandleProps}
                                     style={{
-                                      cursor: 'pointer',
+                                      cursor: 'pointer',                                      
                                       ...drag.draggableProps.style,
+                                      borderLeft: `3px solid ${card.backgroundColor}`,
+                                      textDecoration: card.hasDone ? 'line-through' : 'none',
                                       opacity: dragSnapshot.isDragging ? 0.85 : 1,
                                       boxShadow: dragSnapshot.isDragging
                                         ? '0 8px 24px rgba(2,6,23,0.18)'

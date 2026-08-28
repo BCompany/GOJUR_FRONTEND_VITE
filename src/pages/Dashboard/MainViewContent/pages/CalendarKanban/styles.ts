@@ -421,7 +421,7 @@ export const CardsList = styled.div`
 export const AppointmentCard = styled.div`
   background: #fafafa;
   border: 1px solid #e2e8f0;
-  border-left: 3px solid var(--blue-twitter);
+  //border-left: 3px solid var(--blue-twitter);
   border-radius: 0.5rem;
   padding: 0.6rem 0.7rem;
   cursor: pointer;
