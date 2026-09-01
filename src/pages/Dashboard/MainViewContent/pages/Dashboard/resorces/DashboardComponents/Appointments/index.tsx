@@ -93,7 +93,7 @@ const Appointments: React.FC<AppointmentProps> = ({ title, idElement, visible, a
 
       // Click edit appointment
   const handleClickEdit = (item) => {
-      
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: userToken, module: 'EVT_DASVERCOMPROMISSO'})  
     localStorage.setItem('@GoJur:RecurrenceDate', FormatDate(new Date(item.startDate),'yyyy-MM-dd'))
     isOpenModal(item.eventId)
   }
