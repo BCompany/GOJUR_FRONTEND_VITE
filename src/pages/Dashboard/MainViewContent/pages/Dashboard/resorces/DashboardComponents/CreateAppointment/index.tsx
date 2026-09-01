@@ -381,7 +381,6 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
 
   const SelectAppointment = useCallback(async () => {
-
     const appointmentId = modalActiveId
     const recurrenceDate = localStorage.getItem('@GoJur:RecurrenceDate');
 
