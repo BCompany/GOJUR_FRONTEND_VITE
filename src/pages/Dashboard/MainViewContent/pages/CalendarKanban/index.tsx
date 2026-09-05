@@ -66,7 +66,7 @@ export default function AgendaKanban() {
   const panelNameRef = useRef<HTMLInputElement>(null);
   const phaseNameRef = useRef<HTMLInputElement>(null);
   const [dateEventStatus, setDateEventStatus] = useState<string>('');
-  const [eventId, setEventId] = useState<number>(0);
+  const [eventIdButtonClick, setEventIdButtonClick] = useState<number>(0);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [activePhases, setActivePhases] = useState([] as IPhase[]);
   const { addToast } = useToast();
@@ -707,7 +707,7 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
       if (e.button === 2) {
         if (e) {
           setDateEventStatus(event.start);
-          setEventId(event.eventId);
+          setEventIdButtonClick(event.eventId);
           setCurrentKanbanStageId(event.phaseId)
           handleClickMenuCard(e, event.eventId);
           setIsWaiting(false)
@@ -1126,40 +1126,77 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
   //   setCards((prev) => prev.filter((c) => c.id !== cardId));
   // }, []);
   
-  const handleToggleFavorite = useCallback((cardId: number, favorite: string) => {
+  const handleToggleFavorite = useCallback((card: ICard, favorite: string) => {
 
-    var kanbanCardFilter = cards.filter(x=> x.id == cardId);
-
-    var kanbanCard = kanbanCardFilter[0];
-    
-    SalvarFavorito(kanbanCard.id, kanbanCard.eventId, favorite)
+    SalvarFavorito(card, favorite)
 
   }, [cards]);
 
 
-const ReordenarCards = (cardId: number) => 
-{      
-    setCards((prev) =>  prev.map((c) => c.id === cardId ? { ...c, favorited: !c.favorited } : c)
-      .sort((a, b) => {
-        if ((a.favorited ? 1 : 0) !== (b.favorited ? 1 : 0)) {
-          return b.favorited ? 1 : -1;
-        }
-        const dateA = new Date(a.start).getTime();
-        const dateB = new Date(b.start).getTime();
-        return dateA - dateB;
-    }));
-}
+// const ReordenarCards = (cardId: number) => 
+// {      
+//     setCards((prev) =>  prev.map((c) => c.id === cardId ? { ...c, favorited: !c.favorited } : c)
+//       .sort((a, b) => {
+//         if ((a.favorited ? 1 : 0) !== (b.favorited ? 1 : 0)) {
+//           return b.favorited ? 1 : -1;
+//         }
+//         const dateA = new Date(a.start).getTime();
+//         const dateB = new Date(b.start).getTime();
+//         return dateA - dateB;
+//     }));
+// }
 
-const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string) => {
+const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
     try
     {
-      await api.post('/KanbanEtapa/Favoritar', {
-          EventId:eventId,
-          FlagFavorite,
-          Token: token
-      })
+      setCards(prevCards => {
+        return prevCards.map(card => {
+          if (card.recurrence !== 'S' && String(card.eventId) === String(event.eventId)) {
+            return {
+               ...card, 
+               phaseId: card.phaseId,
+               favorited: !card.favorited
+              };
+          }
+          if (
+            card.recurrence === 'S' &&
+            card.eventId == event.eventId &&
+            card.start == event.start
+          ) {
+            return { 
+              ...card, 
+              phaseId: card.phaseId,
+              favorited: !card.favorited,
+              recurrence: "N"
+            };
+          }
 
-      ReordenarCards(id)
+          return card;
+        });
+      });
+      
+      if (event.recurrence == "S")
+      {
+          var response = await api.post('Compromisso/Selecionar', {  
+            token,
+            id: event.eventId,
+            recurrenceDate:event.start
+          })
+
+          var data = response.data;
+          const eventSaveData = buildRecurrenceObject(data, token, event.phaseId);
+          eventSaveData.favorite = FlagFavorite;
+
+          api.put<AppointmentPropsSave>(`/Compromisso/Salvar`, eventSaveData);          
+      }
+      else
+      {
+        api.post('/KanbanEtapa/Favoritar', {
+            EventId:event.eventId,
+            FlagFavorite,
+            Token: token
+        })
+      }
     }
     catch
     {
@@ -1212,54 +1249,100 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
       );
     }
 
-    // mover cards
     if (type === "DEFAULT") {
     
       const match = draggableId.match(/event-(\d+)-phaseId=(\d+)-start=([\dT:-]+)/);
-      if (match) {
-        const eventId = parseInt(match[1], 10);
-        const phaseIdUpdate = parseInt(destination.droppableId,10);
-        const date = normalizeDateUTC(match[3]);
-        const card = cards.find(x=> x.eventId == eventId)
-        
-        setCards(prevCards => {
-          const reordered = reorder(prevCards, source.index, destination.index);
-
-          return reordered.map(card => {
-            if (card.eventId == eventId) {
-              return { 
-                ...card, 
-                phaseId: phaseIdUpdate, 
-                recurrence: "N" 
-              };
-            }
-            return card;
-          });
-        });
-
-      if (card?.recurrence === "S")
+      if (match) 
       {
-          var response = await api.post('Compromisso/Selecionar', {  
-            token,
-            id: eventId,
-            recurrenceDate:date
-          })
+          const idEvent = parseInt(match[1], 10);
+          const phaseIdUpdate = parseInt(destination.droppableId,10);
+          const date = normalizeDateUTC(match[3]);
+          const card = cards.find(c=>Number(c.eventId) === Number(idEvent))
 
-          var data = response.data;
-          const eventSaveData = buildRecurrenceObject(data, token, phaseIdUpdate);
+          setCards(prevCards =>
+            prevCards.map(c => {
 
-          api.put<AppointmentPropsSave>(`/Compromisso/Salvar`, eventSaveData);
+               const currentDate = normalizeDateOnly(c.start);
+              if (c.recurrence === "S" && Number(c.eventId) === Number(idEvent) && currentDate === date)
+              {
+                return { 
+                    ...c, 
+                    phaseId: phaseIdUpdate
+                };
+              }
+              if (c.recurrence !== "S" &&  Number(c.eventId) === Number(idEvent)) 
+              {
+                return { 
+                  ...c,
+                   phaseId: phaseIdUpdate 
+                };
+              }
+              return c;
+            })
+          );
+
+          let response;
+          try
+          {
+            setIsWaiting(true)
+
+            if (card?.recurrence === "S") 
+            {
+              const resSelect = await api.post("Compromisso/Selecionar", {
+                token,
+                id: idEvent,
+                recurrenceDate: date
+              });
+
+              const data = resSelect.data;
+              const eventSaveData = buildRecurrenceObject(data, token, phaseIdUpdate);
+              eventSaveData.eventId = idEvent;
+
+              response = await api.post<AppointmentPropsSave>(
+                "/KanbanEtapa/ArrastarEvento",
+                eventSaveData
+              );
+            } 
+            else 
+            {
+              response = await api.post("/KanbanEtapa/ArrastarEvento", {
+                kanbanStageId: destination.droppableId,
+                idEvent,
+                token,
+                recurrent: "N"
+              });
+            }   
+
+            const newId = response.data;  
+            
+            setCards(prevCards =>
+              prevCards.map(c => {
+                if (c.recurrence !== "S" && Number(c.eventId) === Number(idEvent)) {
+                  return { 
+                    ...c, 
+                    recurrent: "N",
+                    eventId: newId 
+                  };
+                }
+                const currentDate = normalizeDateOnly(c.start);
+                if (c.recurrence === "S" && Number(c.eventId) === Number(idEvent) && currentDate === date) {
+                  return {
+                    ...c, 
+                    recurrent: "N",
+                    eventId: newId 
+                  };
+                }
+                return c;
+              }));
+            
+            setIsWaiting(false)
+          }
+          catch(ex)
+          {
+              setIsWaiting(false)  
+              console.log(ex)
+          }          
       }
-      else
-      {
-          api.post("/KanbanEtapa/ArrastarEvento", {
-            kanbanStageId: destination.droppableId,
-            eventId,
-            Token: token,
-          });
-      }
-    }
-
   }
 
   }, [token, cards]);
@@ -1543,13 +1626,13 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
     try {
        setIsWaiting(true)
        await api.post('/Compromisso/Concluir', {
-         id: eventId,
+         id: eventIdButtonClick,
          recurrenceDate: dateEventStatus,
          token,
        });
  
         setAnchorEl(null);
-        setEventId(0);
+        setEventIdButtonClick(0);
         setIsWaiting(false)
  
        addToast({
@@ -1578,13 +1661,13 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
      try {
        setIsWaiting(true)
        await api.post('/Compromisso/Reabrir', {
-         id: eventId,
+         id: eventIdButtonClick,
          recurrenceDate: dateEventStatus,
          token,
        });
  
         setAnchorEl(null);
-        setEventId(0);
+        setEventIdButtonClick(0);
         setIsWaiting(false)
 
        addToast({
@@ -2051,13 +2134,13 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
                                         <MdFavorite
                                           className="card-favorite active"
                                           title="Desfavoritar"
-                                          onClick={(e) => { e.stopPropagation(); handleToggleFavorite(card.id, "N"); }}
+                                          onClick={(e) => { e.stopPropagation(); handleToggleFavorite(card, "N"); }}
                                         />
                                       ) : (
                                         <MdFavoriteBorder
                                           className="card-favorite"
                                           title="Favoritar"
-                                          onClick={(e) => { e.stopPropagation(); handleToggleFavorite(card.id, "S"); }}
+                                          onClick={(e) => { e.stopPropagation(); handleToggleFavorite(card, "S"); }}
                                         />
                                       )}
                                     </div>
