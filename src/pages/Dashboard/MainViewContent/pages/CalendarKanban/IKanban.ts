@@ -10,6 +10,7 @@ export interface ICard {
   dateTime: string;
   favorited?: boolean;
   backgroundColor: string;
+  recurrence: string
   hasDone:boolean;
 }
 

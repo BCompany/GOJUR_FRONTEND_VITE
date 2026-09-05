@@ -19,6 +19,13 @@ import { Overlay } from 'Shared/styles/GlobalStyle';
 import Loader from 'react-spinners/ClipLoader';
 import { IParameterData } from '../Matter/Interfaces/IMatter';
 import { ICard, IPanel, IPhase, IPhasePagination, PHASE_COLORS } from './IKanban';
+import MenuItem from '@material-ui/core/MenuItem';
+import { BiCalendarCheck, BiCalendarEdit } from 'react-icons/bi';
+import { Menu } from '@material-ui/core';
+import { AppointmentPropsSave } from '../Interfaces/ICalendar';
+import { format } from 'date-fns';
+import { selectedDayProps, selectedWeekProps } from '../Dashboard/resorces/DashboardComponents/CreateAppointment/Interfaces/ICalendar';
+import { dayRecurrence, weekRecurrence } from '../Dashboard/resorces/DashboardComponents/CreateAppointment/ListValues/List';
 
 export default function AgendaKanban() {
   const history = useHistory();
@@ -58,6 +65,9 @@ export default function AgendaKanban() {
   const [editingPhaseName, setEditingPhaseName] = useState('');
   const panelNameRef = useRef<HTMLInputElement>(null);
   const phaseNameRef = useRef<HTMLInputElement>(null);
+  const [dateEventStatus, setDateEventStatus] = useState<string>('');
+  const [eventId, setEventId] = useState<number>(0);
+  const [anchorEl, setAnchorEl] = React.useState(null);
   const [activePhases, setActivePhases] = useState([] as IPhase[]);
   const { addToast } = useToast();
   const toggle = (value: string) => { setMultiFilter1(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value],);};
@@ -289,7 +299,8 @@ const LoadKanbanEvents = async () => {
             favorited: item.KanbanFavorite === 'S',
             start: item.start,
             hasDone: item.hasDone,
-            backgroundColor: item.backgroundColor
+            backgroundColor: item.backgroundColor,
+            recurrence: item.recurrence
           })) 
         ]);
 
@@ -325,6 +336,12 @@ const LoadKanbanEvents = async () => {
       console.log(err);
     }
   }
+
+  const handleClickMenuCard = (event, eventId: number) => {
+    setAnchorEl(event.currentTarget);
+    event.preventDefault();
+    event.stopPropagation();
+  };
 
   const RefreshKanbanEvents = async () => {  
     try 
@@ -372,7 +389,8 @@ const LoadKanbanEvents = async () => {
             favorited: item.KanbanFavorite === 'S',
             start: item.start,
             hasDone: item.hasDone,
-            backgroundColor: item.backgroundColor
+            backgroundColor: item.backgroundColor,
+            recurrence: item.recurrence
           })) 
         ]);
 
@@ -461,8 +479,10 @@ const LoadKanbanEvents = async () => {
             title: item.subjectText,
             description: item.title,
             favorited: item.KanbanFavorite === 'S',
+            start: item.start,
             hasDone: item.hasDone,
-            backgroundColor: item.backgroundColor
+            backgroundColor: item.backgroundColor,
+            recurrence: item.recurrence
           })) 
       ]);
 
@@ -676,15 +696,40 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
   }, [permissions, handleCaptureTextPublication, handleDeadLineCalculatorText, handleModalActive, isOpenModal]);
 
 
-  const handleClickEdit = useCallback((phaseId: number, event: ICard) => {
-    
-    localStorage.setItem('@GoJur:RecurrenceDate', FormatDate(new Date(event.start), 'yyyy-MM-dd'),);
-    isOpenModal(event.eventId.toString());
-    setCurrentAppointmentEdit(event.eventId)
-    localStorage.setItem('@Gojur:kanbanStageId', phaseId.toString());
-    setCurrentKanbanStageId(phaseId)
-    handleCaptureTextPublication('');
-    handleDeadLineCalculatorText('');
+  const handleClickEdit = useCallback(async (e:  React.MouseEvent, phaseId: number, event: ICard) => {
+    try
+    {
+      e.preventDefault();
+      e.stopPropagation();
+
+      setIsWaiting(true)
+
+      if (e.button === 2) {
+        if (e) {
+          setDateEventStatus(event.start);
+          setEventId(event.eventId);
+          setCurrentKanbanStageId(event.phaseId)
+          handleClickMenuCard(e, event.eventId);
+          setIsWaiting(false)
+          return;
+        }
+      }
+      
+      localStorage.setItem('@GoJur:RecurrenceDate', FormatDate(new Date(event.start), 'yyyy-MM-dd'),);
+      isOpenModal(event.eventId.toString());
+      setCurrentAppointmentEdit(event.eventId)
+      localStorage.setItem('@Gojur:kanbanStageId', phaseId.toString());
+      setCurrentKanbanStageId(phaseId)
+      handleCaptureTextPublication('');
+      handleDeadLineCalculatorText('');
+      setIsWaiting(false)
+    }
+    catch(e)
+    {
+        console.log(e)
+        setIsWaiting(false)
+    }
+
   }, [permissions, handleCaptureTextPublication, handleDeadLineCalculatorText, handleModalActive, isOpenModal]);
 
   useEffect(() => {
@@ -1129,67 +1174,164 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
   }
 
   const onDragEnd = useCallback(async (result: DropResult) => {
-  const { source, destination, draggableId, type } = result;
+    
+    const { source, destination, draggableId, type } = result;
 
-  if (!destination) return;
+    if (!destination) 
+      return;
 
-  // se não houve mudança de posição
-  if (source.droppableId === destination.droppableId && source.index === destination.index) return;
+    // se não houve mudança de posição
+    if (source.droppableId === destination.droppableId && source.index === destination.index) 
+      return;
 
-  // mover colunas
-  if (type === "COLUMN") {
-    const phaseId = parseInt(draggableId.replace("phase-", ""), 10);
-    const destinationIndex = destination.index;
+    const reorder = (list: ICard[], startIndex:number, endIndex:number) => {
+      const result = Array.from(list);
+      const [removed] = result.splice(startIndex, 1);
+      result.splice(endIndex, 0, removed);
+      return result;
+    };
 
-    const response = await api.post("/KanbanEtapa/ArrastarEtapa", {
-      kanbanStageId: phaseId,
-      NumPosition: destinationIndex,
-      Token: token,
-    });
+    // mover colunas
+    if (type === "COLUMN") {
+      const phaseId = parseInt(draggableId.replace("phase-", ""), 10);
+      const destinationIndex = destination.index;
 
-    setActivePhases((prev) =>
-      prev
-        .map((item) => {
-          const atualizado = response.data.find((resp: any) => resp.Id === item.id);
-          return atualizado ? { ...item, order: atualizado.NumPosition } : item;
-        })
-        .sort((a, b) => a.order - b.order)
-    );
-  }
-
-  // mover cards
-  if (type === "DEFAULT") {
-    const match = draggableId.match(/event-(\d+)-phaseId=(\d+)/);
-    if (match) {
-      const eventId = parseInt(match[1], 10);
-      const phaseIdCurrent = parseInt(match[2], 10);
-      const phaseIdUpdate = parseInt(destination.droppableId);
-
-      api.post("/KanbanEtapa/ArrastarEvento", {
-        kanbanStageId: destination.droppableId,
-        eventId: eventId,
+      const response = await api.post("/KanbanEtapa/ArrastarEtapa", {
+        kanbanStageId: phaseId,
+        NumPosition: destinationIndex,
         Token: token,
       });
 
-      setCards(prevCards =>
-        prevCards.map(card =>
-          String(card.eventId) === String(eventId)
-            ? {
-                ...card,
-                phaseId: phaseIdUpdate
-              }
-            : card
-        )
+      setActivePhases((prev) =>
+        prev
+          .map((item) => {
+            const atualizado = response.data.find((resp: any) => resp.Id === item.id);
+            return atualizado ? { ...item, order: atualizado.NumPosition } : item;
+          })
+          .sort((a, b) => a.order - b.order)
       );
-
-      setCurrentAppointmentEdit(eventId)
-      setCurrentKanbanStageId(phaseIdCurrent)      
     }
+
+    // mover cards
+    if (type === "DEFAULT") {
+    
+      const match = draggableId.match(/event-(\d+)-phaseId=(\d+)-start=([\dT:-]+)/);
+      if (match) {
+        const eventId = parseInt(match[1], 10);
+        const phaseIdUpdate = parseInt(destination.droppableId,10);
+        const date = normalizeDateUTC(match[3]);
+        const card = cards.find(x=> x.eventId == eventId)
+        
+        setCards(prevCards => {
+          const reordered = reorder(prevCards, source.index, destination.index);
+
+          return reordered.map(card => {
+            if (card.eventId == eventId) {
+              return { 
+                ...card, 
+                phaseId: phaseIdUpdate, 
+                recurrence: "N" 
+              };
+            }
+            return card;
+          });
+        });
+
+      if (card?.recurrence === "S")
+      {
+          var response = await api.post('Compromisso/Selecionar', {  
+            token,
+            id: eventId,
+            recurrenceDate:date
+          })
+
+          var data = response.data;
+          const eventSaveData = buildRecurrenceObject(data, token, phaseIdUpdate);
+
+          api.put<AppointmentPropsSave>(`/Compromisso/Salvar`, eventSaveData);
+      }
+      else
+      {
+          api.post("/KanbanEtapa/ArrastarEvento", {
+            kanbanStageId: destination.droppableId,
+            eventId,
+            Token: token,
+          });
+      }
+    }
+
   }
 
-  setIsWaiting(false);
-}, [token]);
+  }, [token, cards]);
 
+  function buildRecurrenceObject(data: any, token: string, phaseIdUpdate: number) 
+  {
+    const formatDate = (date?: string | null) => date ? format(new Date(date), "yyyy-MM-dd") : undefined;
+
+    const buildDayList = ( source: string, dictionary: { value: string; label: string }[]
+    ) => source.split(",").filter((day) => day.length > 0)
+        .map((day) => {
+          const found = dictionary.find((item) => item.value === day);
+          return {
+            label: found ? found.label : "",
+            value: day,
+          };
+        });
+
+    const joinValues = (list?: { value: string }[]) =>list ? list.map((item) => item.value).join(",") : "";
+
+    const recurrenceRule = JSON.parse(data.recurrenceRule);
+
+    const recurrenceStartDate = formatDate(recurrenceRule.startDate);
+    const recurrenceEndDate = formatDate(recurrenceRule.endDate);
+    const recurrenceQtd = recurrenceRule.num_Quantity;
+    const recurrenceSelectRepete = recurrenceRule.recurrenceType;
+    const sharedParameterEnd = recurrenceRule.recurrenceTypeEnd;
+
+    let selectWeek: selectedWeekProps[] | undefined;
+    let selectDayMonth: selectedDayProps[] | undefined;
+    let selectMonthYear: selectedDayProps[] | undefined;
+    let selectDayYear: selectedDayProps[] | undefined;
+
+    if (recurrenceSelectRepete === "W") {
+      selectWeek = buildDayList(recurrenceRule.recurrenceWeekDays, weekRecurrence);
+    }
+
+    if (recurrenceSelectRepete === "M") {
+      selectDayMonth = buildDayList(recurrenceRule.recurrenceDaysMonth, dayRecurrence);
+    }
+
+    if (recurrenceSelectRepete === "Y") {
+      if (recurrenceRule.recurrenceMonth) {
+        selectMonthYear = recurrenceRule.recurrenceMonth;
+      }
+      selectDayYear = buildDayList(recurrenceRule.recurrenceDaysMonth, dayRecurrence);
+    }
+
+    const daysWeekDesc = joinValues(selectWeek);
+    const daysMonthDesc = joinValues(selectDayMonth);
+    const daysYearDesc = joinValues(selectDayYear);
+
+    return {
+      ...data,
+      recurrenceRuleJSON: JSON.stringify({
+        dta_startDate: recurrenceStartDate,
+        dta_endDate: recurrenceEndDate,
+        recurrenceMonth: selectMonthYear,
+        num_Quantity: recurrenceQtd,
+        Interval: "",
+        recurrenceType: recurrenceSelectRepete,
+        recurrenceTypeEnd: sharedParameterEnd,
+        recurrenceWeekDays: daysWeekDesc,
+        recurrenceDaysMonth:
+          recurrenceSelectRepete === "Y" ? daysYearDesc : daysMonthDesc,
+      }),
+      token,
+      serieRecurrenceChange: "one",
+      isConfirmSave: true,
+      kanbanStageId: phaseIdUpdate,
+    };
+  }
 
   /* ── Keyboard shortcuts ── */
   const onPanelKeyDown = (e: React.KeyboardEvent) => {
@@ -1396,6 +1538,89 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
       setLoadEvents(true);
  }
 
+  const handleEventConclude = async () => {
+
+    try {
+       setIsWaiting(true)
+       await api.post('/Compromisso/Concluir', {
+         id: eventId,
+         recurrenceDate: dateEventStatus,
+         token,
+       });
+ 
+        setAnchorEl(null);
+        setEventId(0);
+        setIsWaiting(false)
+ 
+       addToast({
+         type: 'success',
+         title: 'Compromisso Concluído',
+         description: 'O compromisso foi concluído no sistema.',
+       });
+ 
+       await RefreshKanbanEvents()
+       setDateEventStatus('');
+       setCurrentKanbanStageId(0)
+       
+
+     } catch (err) 
+     {
+        setIsWaiting(false)
+        addToast({
+          type: 'error',
+          title: 'Falha ao concluir compromisso.',
+        });
+     }
+   };
+ 
+   const handleEventReopen = async () => {
+
+     try {
+       setIsWaiting(true)
+       await api.post('/Compromisso/Reabrir', {
+         id: eventId,
+         recurrenceDate: dateEventStatus,
+         token,
+       });
+ 
+        setAnchorEl(null);
+        setEventId(0);
+        setIsWaiting(false)
+
+       addToast({
+         type: 'success',
+         title: 'Compromisso reaberto',
+         description: 'O compromisso foi reaberto no sistema.',
+       });
+ 
+       await RefreshKanbanEvents()
+       setDateEventStatus('');
+       setCurrentKanbanStageId(0)
+     } 
+     catch (err) 
+     {
+        setIsWaiting(false)
+        addToast({
+         type: 'error',
+         title: 'Falha ao reabrir compromisso.',
+       });
+     }
+   };
+
+  const normalizeDateOnly = (dateString: string) => {
+    const d = new Date(dateString);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  };
+
+  const normalizeDateUTC = (dateString: string) => {
+    const d = new Date(dateString.replace(" ", "T") + "Z"); 
+    return d.toISOString().substring(0, 10); // "2026-09-04"
+};
+
   /* ── Render ── */
   return (
 
@@ -1411,6 +1636,31 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
           </div>
         </>
       )}
+      
+      <Menu
+        anchorEl={anchorEl}
+        keepMounted
+        className="headerCard"
+        open={Boolean(anchorEl)}
+        //onClose={handleCloseMenuCard}
+      >
+        <MenuItem
+          style={{ fontSize: '0.75rem', color: 'var(--blue-twitter' }}
+          onClick={() => handleEventConclude()}
+        >
+          <BiCalendarCheck />
+          &nbsp;&nbsp;Concluir
+        </MenuItem>
+
+        <MenuItem
+          style={{ fontSize: '0.75rem', color: 'var(--blue-twitter' }}
+          onClick={() => handleEventReopen()}
+        >
+          <BiCalendarEdit />
+          &nbsp;&nbsp;Reabrir
+        </MenuItem>
+      </Menu>
+
       
       <Content >
         <TaskBar>
@@ -1763,10 +2013,20 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
                             style={{ background: snapshot.isDraggingOver ? '#f0f7ff' : undefined }}
                           >
                             {phaseCards.map((card, index) => (
-                                 <Draggable  key={card.id} draggableId={`event-${card.eventId}-phaseId=${card.phaseId}`} index={index} >
-                                {(drag, dragSnapshot) => (
+                                <Draggable  
+                                  key={card.id}
+                                  draggableId={`event-${card.eventId}-phaseId=${card.phaseId}-start=${normalizeDateOnly(card.start)}`}
+                                  index={index}>
+                                  {(drag, dragSnapshot) => (
                                   <AppointmentCard
-                                    onClick={(e) => handleClickEdit(phase.id, card)}
+                                    onClick={(e) => handleClickEdit(e, phase.id, card)}
+                                    onContextMenu={(e) => {
+                                      e.preventDefault();   // bloqueia menu padrão
+                                      e.stopPropagation();  // evita propagação
+                                      handleClickEdit(e, phase.id, card);
+                                    }}
+                                    // onMouseDown={(e) => handleClickEdit(e, phase.id, card)}
+                                    // onContextMenu={(e) => e.preventDefault()} // evita menu padrão
                                     ref={drag.innerRef}
                                     {...drag.draggableProps}
                                     {...drag.dragHandleProps}
@@ -1774,11 +2034,15 @@ const SalvarFavorito = async (id: number, eventId: number, FlagFavorite: string)
                                       cursor: 'pointer',                                      
                                       ...drag.draggableProps.style,
                                       borderLeft: `3px solid ${card.backgroundColor}`,
-                                      textDecoration: card.hasDone ? 'line-through' : 'none',
                                       opacity: dragSnapshot.isDragging ? 0.85 : 1,
                                       boxShadow: dragSnapshot.isDragging
                                         ? '0 8px 24px rgba(2,6,23,0.18)'
                                         : undefined,
+                                                                WebkitLineClamp: 1,
+                                      textOverflow: 'ellipsis',
+                                      textDecoration:card.backgroundColor.includes('rgba')
+                                        ? 'line-through underline'
+                                        : 'none'
                                     }}
                                   >
                                     <div className="card-header">
