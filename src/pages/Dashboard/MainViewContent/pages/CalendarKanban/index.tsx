@@ -26,6 +26,9 @@ import { AppointmentPropsSave } from '../Interfaces/ICalendar';
 import { format } from 'date-fns';
 import { selectedDayProps, selectedWeekProps } from '../Dashboard/resorces/DashboardComponents/CreateAppointment/Interfaces/ICalendar';
 import { dayRecurrence, weekRecurrence } from '../Dashboard/resorces/DashboardComponents/CreateAppointment/ListValues/List';
+import { Underline } from 'ckeditor5';
+import { AiOutlineLineChart } from 'react-icons/ai';
+import { FaSearch } from 'react-icons/fa';
 
 export default function AgendaKanban() {
   const history = useHistory();
@@ -501,62 +504,47 @@ const LoadKanbanEvents = async () => {
   const SelectAppointment = async() => {
   try
   {      
-      if ((currentAppointmentEdit ?? 0) == 0 && (currentKanbanStageId ?? 0) > 0 )
+      const kanbanEventEdit = localStorage.getItem('@GoJur:KanbanEventStatus');
+
+      if (kanbanEventEdit == '' || kanbanEventEdit == undefined)
+        return
+
+      if (kanbanEventEdit == 'close')
+        return
+
+      // Execute delete of normal event unique, if recurrence = delete_one and normally is delete
+      if (kanbanEventEdit == 'delete_one' || kanbanEventEdit == 'delete')
       {
-          RefreshKanbanEvents();
-          return; 
+        const recurrenceDate = localStorage.getItem('@GoJur:RecurrenceDate');
+
+        setCards(prevCards => {
+          return prevCards.filter(c => {
+            const currentDate = c.start.substring(0, 10);
+
+            // if is recurrence delete by considering event id and a date recurrence
+            if (recurrenceDate) {
+              return !(
+                c.eventId.toString() === currentAppointmentEdit.toString() &&
+                currentDate === recurrenceDate
+              );
+            }
+            
+            // if is NOT recurrence delete by only considering eventId
+            return c.eventId.toString() !== currentAppointmentEdit.toString();
+          });
+        });
+
+        return;
       }
 
-      if ((currentAppointmentEdit ?? 0) == 0)
-          return;
+      localStorage.removeItem('@GoJur:RecurrenceDate');
+      localStorage.removeItem('@GoJur:KanbanEventStatus');
 
-      var response = await api.post('Compromisso/Selecionar', {
-        token,
-        id: currentAppointmentEdit
-      })
-
-      
     RefreshKanbanEvents();
     
     setCurrentAppointmentEdit(0)
     setCurrentKanbanStageId(0)
-
-      // if (response.data == null)
-      // {
-      //     setCards(prevCards =>
-      //       prevCards.filter(card =>
-      //         !(String(card.eventId) === String(currentAppointmentEdit) &&
-      //           String(card.phaseId) === String(currentKanbanStageId))
-      //       )
-      //     );
-
-      //     setCurrentAppointmentEdit(0)
-      //     setCurrentKanbanStageId(0)
-
-      //   return;
-      // }
-      
-      // setCards(prevCards =>
-      //   prevCards.map(card =>
-      //     String(card.eventId) === String(response.data.eventId)
-      //       ? {
-      //           ...card,
-      //           title: `${new Date(response.data.startDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} ${new Date(response.data.startDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${capitalize(response.data.subject)}`,
-      //           description: response.data.description,
-      //           hasDone: response.data.status === "L"
-      //         }
-      //       : card
-      //   )
-      // );
-
-      // // Função para capitalizar primeira letra
-      // function capitalize(text) {
-      //   return text.charAt(0).toUpperCase() + text.slice(1);
-      // }
-
-      setIsWaiting(false)
-      setCurrentAppointmentEdit(0)
-      setCurrentKanbanStageId(0)
+    setIsWaiting(false)
   }
   catch(err)
   {
@@ -574,7 +562,7 @@ useEffect(() => {
 
   if (!modalActive) 
   {
-        SelectAppointment();
+       SelectAppointment();
         
     // SelectAppointment();
     // setIsWaiting(false)
@@ -715,6 +703,7 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
         }
       }
       
+      localStorage.setItem('@GoJur:KanbanEventStatus', '');
       localStorage.setItem('@GoJur:RecurrenceDate', FormatDate(new Date(event.start), 'yyyy-MM-dd'),);
       isOpenModal(event.eventId.toString());
       setCurrentAppointmentEdit(event.eventId)
@@ -1149,6 +1138,7 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
 const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
     try
     {
+      setIsWaiting(true)
       setCards(prevCards => {
         return prevCards.map(card => {
           if (card.recurrence !== 'S' && String(card.eventId) === String(event.eventId)) {
@@ -1186,17 +1176,20 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
           var data = response.data;
           const eventSaveData = buildRecurrenceObject(data, token, event.phaseId);
           eventSaveData.favorite = FlagFavorite;
+          eventSaveData.status = event.hasDone? "L": "P"
 
-          api.put<AppointmentPropsSave>(`/Compromisso/Salvar`, eventSaveData);          
+          api.post<AppointmentPropsSave>(`KanbanEtapa/Favoritar`, eventSaveData);          
       }
       else
       {
         api.post('/KanbanEtapa/Favoritar', {
             EventId:event.eventId,
-            FlagFavorite,
+            favorite: FlagFavorite,
             Token: token
         })
       }
+
+      setIsWaiting(false)
     }
     catch
     {
@@ -1206,7 +1199,7 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
         description: 'Houve uma falha na execução deste comando',
       });
 
-      setIsWaiting(false);
+      setIsWaiting(false)
     }
   }
 
@@ -1218,15 +1211,8 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
       return;
 
     // se não houve mudança de posição
-    if (source.droppableId === destination.droppableId && source.index === destination.index) 
+    if (source.droppableId === destination.droppableId) 
       return;
-
-    const reorder = (list: ICard[], startIndex:number, endIndex:number) => {
-      const result = Array.from(list);
-      const [removed] = result.splice(startIndex, 1);
-      result.splice(endIndex, 0, removed);
-      return result;
-    };
 
     // mover colunas
     if (type === "COLUMN") {
@@ -1259,6 +1245,7 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
           const date = normalizeDateUTC(match[3]);
           const card = cards.find(c=>Number(c.eventId) === Number(idEvent))
 
+          let hasDone = false
           setCards(prevCards =>
             prevCards.map(c => {
 
@@ -1295,8 +1282,9 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
               });
 
               const data = resSelect.data;
-              const eventSaveData = buildRecurrenceObject(data, token, phaseIdUpdate);
-              eventSaveData.eventId = idEvent;
+              const eventSaveData = buildRecurrenceObject(data, token, Number(destination.droppableId));
+              eventSaveData.eventId = idEvent;              
+              eventSaveData.status = card.hasDone? "L": "P"
 
               response = await api.post<AppointmentPropsSave>(
                 "/KanbanEtapa/ArrastarEvento",
@@ -1307,7 +1295,7 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
             {
               response = await api.post("/KanbanEtapa/ArrastarEvento", {
                 kanbanStageId: destination.droppableId,
-                idEvent,
+                eventId: idEvent,
                 token,
                 recurrent: "N"
               });
@@ -1321,7 +1309,7 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
                   return { 
                     ...c, 
                     recurrent: "N",
-                    eventId: newId 
+                    eventId: newId ,
                   };
                 }
                 const currentDate = normalizeDateOnly(c.start);
@@ -1334,7 +1322,9 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
                 }
                 return c;
               }));
-            
+
+            handleRightClick(card.hasDone? "L": "P", newId)
+
             setIsWaiting(false)
           }
           catch(ex)
@@ -1621,30 +1611,72 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
       setLoadEvents(true);
  }
 
-  const handleEventConclude = async () => {
+  const handleRightClick = async (type: string, eventId: number) => {
 
     try {
-       setIsWaiting(true)
-       await api.post('/Compromisso/Concluir', {
-         id: eventIdButtonClick,
-         recurrenceDate: dateEventStatus,
-         token,
-       });
- 
-        setAnchorEl(null);
-        setEventIdButtonClick(0);
-        setIsWaiting(false)
+
+      if (anchorEl == null)
+        return;
+
+      setIsWaiting(true)
+      setAnchorEl(null);
+
+      if (eventId == 0)
+        eventId = eventIdButtonClick
+
+       if (type == 'L')
+          await api.post('/Compromisso/Concluir', { 
+              id: eventId, 
+              recurrenceDate: dateEventStatus, 
+              token
+          });
+       else
+          await api.post('/Compromisso/Reabrir', { 
+              id: eventId, 
+              recurrenceDate: dateEventStatus,
+              token
+          });
+
+      setEventIdButtonClick(0);
+      setIsWaiting(false)
  
        addToast({
          type: 'success',
-         title: 'Compromisso Concluído',
-         description: 'O compromisso foi concluído no sistema.',
+         title: 'Operação Realizada com Sucesso',
+         description: `'O compromisso foi ${type == 'L'? 'concluído': 'reaberto'} com sucesso.'`,
        });
- 
-       await RefreshKanbanEvents()
-       setDateEventStatus('');
-       setCurrentKanbanStageId(0)
-       
+        
+      setDateEventStatus('');
+      setCurrentKanbanStageId(0)       
+      
+      const hasDone = type === "L";
+
+      setCards(prevCards =>
+        prevCards.map(c => {
+          const currentDate = normalizeDateOnly(c.start);
+
+          if (
+            c.recurrence === "S" &&
+            Number(c.eventId) === Number(eventIdButtonClick) &&
+            currentDate === normalizeDateOnly(dateEventStatus)
+          ) {
+            console.log("achei recorrencia");
+            return { ...c, hasDone };
+          }
+
+          if (
+            c.recurrence !== "S" &&
+            Number(c.eventId) === Number(eventIdButtonClick)
+          ) {
+            console.log("achei normal");
+            return { ...c, hasDone };
+          }
+
+          return c;
+        })
+      );
+
+      setIsWaiting(false)
 
      } catch (err) 
      {
@@ -1656,40 +1688,6 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
      }
    };
  
-   const handleEventReopen = async () => {
-
-     try {
-       setIsWaiting(true)
-       await api.post('/Compromisso/Reabrir', {
-         id: eventIdButtonClick,
-         recurrenceDate: dateEventStatus,
-         token,
-       });
- 
-        setAnchorEl(null);
-        setEventIdButtonClick(0);
-        setIsWaiting(false)
-
-       addToast({
-         type: 'success',
-         title: 'Compromisso reaberto',
-         description: 'O compromisso foi reaberto no sistema.',
-       });
- 
-       await RefreshKanbanEvents()
-       setDateEventStatus('');
-       setCurrentKanbanStageId(0)
-     } 
-     catch (err) 
-     {
-        setIsWaiting(false)
-        addToast({
-         type: 'error',
-         title: 'Falha ao reabrir compromisso.',
-       });
-     }
-   };
-
   const normalizeDateOnly = (dateString: string) => {
     const d = new Date(dateString);
     const year = d.getFullYear();
@@ -1707,7 +1705,7 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
   /* ── Render ── */
   return (
 
-    <Container >
+    <Container onClick={(() => setAnchorEl(null))} >
       <HeaderPage />
   
       {isWaiting && (
@@ -1729,7 +1727,7 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
       >
         <MenuItem
           style={{ fontSize: '0.75rem', color: 'var(--blue-twitter' }}
-          onClick={() => handleEventConclude()}
+          onClick={() => handleRightClick('L',0)}
         >
           <BiCalendarCheck />
           &nbsp;&nbsp;Concluir
@@ -1737,7 +1735,7 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
 
         <MenuItem
           style={{ fontSize: '0.75rem', color: 'var(--blue-twitter' }}
-          onClick={() => handleEventReopen()}
+          onClick={() => handleRightClick('P',0)}
         >
           <BiCalendarEdit />
           &nbsp;&nbsp;Reabrir
@@ -2108,8 +2106,6 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
                                       e.stopPropagation();  // evita propagação
                                       handleClickEdit(e, phase.id, card);
                                     }}
-                                    // onMouseDown={(e) => handleClickEdit(e, phase.id, card)}
-                                    // onContextMenu={(e) => e.preventDefault()} // evita menu padrão
                                     ref={drag.innerRef}
                                     {...drag.draggableProps}
                                     {...drag.dragHandleProps}
@@ -2121,9 +2117,9 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
                                       boxShadow: dragSnapshot.isDragging
                                         ? '0 8px 24px rgba(2,6,23,0.18)'
                                         : undefined,
-                                                                WebkitLineClamp: 1,
+                                      WebkitLineClamp: 1,
                                       textOverflow: 'ellipsis',
-                                      textDecoration:card.backgroundColor.includes('rgba')
+                                      textDecoration:card.hasDone
                                         ? 'line-through underline'
                                         : 'none'
                                     }}
