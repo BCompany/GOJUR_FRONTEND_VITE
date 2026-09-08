@@ -453,34 +453,34 @@ const UpdateAfterCloseModalEvents = async() => {
     }
 
    if (kanbanEventEdit === "delete_next") {
-      setCards(prevCards =>
-        prevCards.filter(c => {
-          const currentDate = c.start.substring(0, 10);
+      // setCards(prevCards =>
+      //   prevCards.filter(c => {
+      //     const currentDate = c.start.substring(0, 10);
 
-          // excluir apenas os cards do mesmo eventId e com data >= recurrenceDate
-          if (recurrenceDate) {
-            return !(
-              c.eventId.toString() === currentAppointmentEdit.toString() &&
-              currentDate >= recurrenceDate
-            );
-          }
+      //     // excluir apenas os cards do mesmo eventId e com data >= recurrenceDate
+      //     if (recurrenceDate) {
+      //       return !(
+      //         c.eventId.toString() === currentAppointmentEdit.toString() &&
+      //         currentDate >= recurrenceDate
+      //       );
+      //     }
 
-          // se não for recorrência, exclui só pelo eventId
-          return c.eventId.toString() !== currentAppointmentEdit.toString();
-        })
-      );
+      //     // se não for recorrência, exclui só pelo eventId
+      //     return c.eventId.toString() !== currentAppointmentEdit.toString();
+      //   })
+      // );
 
-      return;
+      // return;
     }
 
     if (kanbanEventEdit === "delete_all") {
-      setCards(prevCards =>
-        prevCards.filter(c =>
-          c.eventId.toString() !== currentAppointmentEdit.toString()
-        )
-      );
+      // setCards(prevCards =>
+      //   prevCards.filter(c =>
+      //     c.eventId.toString() !== currentAppointmentEdit.toString()
+      //   )
+      // );
 
-      return;
+      // return;
     }
 
     RefreshKanbanEvents();
@@ -1323,6 +1323,7 @@ const onDragEnd = useCallback(async (result: DropResult) => {
         );
       })
       
+      setIsWaitingMessage("Aguarde...")
       setIsWaiting(false)
     }
 
