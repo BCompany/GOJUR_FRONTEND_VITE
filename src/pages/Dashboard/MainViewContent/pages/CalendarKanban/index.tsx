@@ -1226,9 +1226,11 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
         });
       });
       
+      let response: any;
+
       if (event.recurrence == "S")
       {
-          var response = await api.post('Compromisso/Selecionar', {  
+          response = await api.post('Compromisso/Selecionar', {  
             token,
             id: event.eventId,
             recurrenceDate:event.start
@@ -1239,16 +1241,39 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
           eventSaveData.favorite = FlagFavorite;
           eventSaveData.status = event.hasDone? "L": "P"
 
-          api.post<AppointmentPropsSave>(`KanbanEtapa/Favoritar`, eventSaveData);          
+          response = await api.post<AppointmentPropsSave>(`KanbanEtapa/Favoritar`, eventSaveData);          
       }
       else
       {
-        api.post('/KanbanEtapa/Favoritar', {
-            EventId:event.eventId,
+        response = await api.post('/KanbanEtapa/Favoritar', {
+            eventId:event.eventId,
             favorite: FlagFavorite,
             Token: token
         })
       }
+
+      const newId = response.data;  
+
+      setCards(prevCards =>
+        prevCards.map(c => {
+          if (c.recurrence !== "S" && Number(c.eventId) === Number(event.eventId)) {
+            return { 
+              ...c, 
+              recurrent: "N",
+              eventId: newId ,
+            };
+          }
+          const currentDate = normalizeDateOnly(c.start);
+          const dateCompare = normalizeDateOnly(event.start);
+          if (c.recurrence === "S" && Number(c.eventId) === Number(event.eventId) && currentDate === dateCompare) {
+            return {
+              ...c, 
+              recurrent: "N",
+              eventId: newId 
+            };
+          }
+          return c;
+        }));
 
       setIsWaiting(false)
     }
