@@ -3,18 +3,16 @@ import styled from 'styled-components';
 export const Container = styled.div`
   background-color: transparent;
   color: #1e293b;
-  min-height: 100vh;
+  height: 100vh;
   width: 95vw;
-  margin: 0 auto;
+  margin: 0 auto;  
   overflow-y: auto;
 `;
 
 export const Content = styled.div`
   flex: 1;
   padding: 0.4rem 0;
-  height: 100%;
 `;
-
 
 export const TaskBar = styled.div`
   display: flex;
@@ -263,12 +261,11 @@ export const KanbanArea = styled.div`
   display: flex;
   gap: 0.9rem;
   overflow-x: auto;
-  overflow-y: hidden;
-  padding-bottom: 4.5rem;
+  padding-bottom: 2rem;
   align-items: flex-start;
 
   &::-webkit-scrollbar {
-    height: 6px;
+    height: 10px;
   }
   &::-webkit-scrollbar-track {
     background: transparent;
@@ -418,6 +415,12 @@ export const CardsList = styled.div`
   }
 `;
 
+export const FixedFooter = styled.div`
+  padding: 8px;
+  border-top: 1px solid #eee;
+  background: #fff; 
+}`
+
 export const AppointmentCard = styled.div`
   background: #fafafa;
   border: 1px solid #e2e8f0;
@@ -482,6 +485,10 @@ export const AppointmentCard = styled.div`
     gap: 0.35rem;
     color: #94a3b8;
     font-size: 0.625rem;
+
+    &:hover {
+      color: #f43f5e;
+    }
 
     svg {
       width: 0.7rem;

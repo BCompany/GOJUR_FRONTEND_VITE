@@ -13,7 +13,7 @@ import { useModal } from 'context/modal';
 import { v4 as uuidv4 } from 'uuid';
 import FilterCalendar, { ISelectValues } from 'components/FilterCalendar';
 import api from 'services/api';
-import {AddCardButton, AddPhaseColumn, AppointmentCard, BoardLayout, CardsList, ColorDot,ColorPickerWrapper,Container,Content,EmptyState,KanbanArea,ModalOverlay,PanelItem,PanelsModal,TaskBar, PhaseColumn, PhaseHeader} from './styles';
+import {AddCardButton, AddPhaseColumn, AppointmentCard, BoardLayout, CardsList, ColorDot,ColorPickerWrapper,Container,Content,EmptyState,KanbanArea,ModalOverlay,PanelItem,PanelsModal,TaskBar, PhaseColumn, PhaseHeader, FixedFooter} from './styles';
 import { useToast } from 'context/toast';
 import { Overlay } from 'Shared/styles/GlobalStyle';
 import Loader from 'react-spinners/ClipLoader';
@@ -26,9 +26,6 @@ import { AppointmentPropsSave } from '../Interfaces/ICalendar';
 import { format } from 'date-fns';
 import { selectedDayProps, selectedWeekProps } from '../Dashboard/resorces/DashboardComponents/CreateAppointment/Interfaces/ICalendar';
 import { dayRecurrence, weekRecurrence } from '../Dashboard/resorces/DashboardComponents/CreateAppointment/ListValues/List';
-import { Underline } from 'ckeditor5';
-import { AiOutlineLineChart } from 'react-icons/ai';
-import { FaSearch } from 'react-icons/fa';
 
 export default function AgendaKanban() {
   const history = useHistory();
@@ -45,6 +42,7 @@ export default function AgendaKanban() {
   const [filterTerm, setFilterTerm] = useState('');
   const [isLoadingSearch, setIsLoadingSearch] = useState(false);
   const [isWaiting, setIsWaiting] = useState(false);
+  const [isWaitingMessage, setIsWaitingMessage] = useState("Aguarde...");
   const [subjectSelected, setSubjectSelected] = useState<ISelectValues>();
   const [loadEvents, setLoadEvents] = useState(false);
   const [showSearchList] = useState(false);
@@ -111,7 +109,7 @@ export default function AgendaKanban() {
     modalActive,
   } = useModal();
 
-  const QTDE_RECORDS_EVENTS = 10;
+  const QTDE_RECORDS_EVENTS = 20;
 
   useEffect(() => {
       GetParameterValue()
@@ -209,8 +207,6 @@ useEffect(() => {
             color: item.ColorCode,  
             order: item.NumPosition
         }));
-
-        // setPhases(listPhases);
 
         if (listPhases.length == 0)
           setMessageEmptyPanel('Nenhum painel selecionado. Crie um novo painel para começar')
@@ -346,95 +342,6 @@ const LoadKanbanEvents = async () => {
     event.stopPropagation();
   };
 
-  const RefreshKanbanEvents = async () => {  
-    try 
-    { 
-        const { startDate, endDate } = getPeriodRange(selectedPeriod.value)
-
-        var filterItens = "";
-        if (filterTerm.length > 0)
-            filterItens += "KanbanTerm=" + filterTerm;
- 
-        const promises = activePhases
-        .filter(phase => currentKanbanStageId > 0 ? phase.id === currentKanbanStageId : true)
-        .map(phase => 
-        {         
-          phasePagination.find(p => p.phaseId === phase.id);
-          return api.get('/KanbanEtapa/ListarEventos', {
-            params: {
-              token,
-              kanbanStageId: phase.id, 
-              startDate:  startDate.toISOString().split('T')[0],
-              endDate: endDate.toISOString().split('T')[0],
-              filterItens:filterItens,
-              lastIdPgDatabase: 0,
-              lastDatePgDatabase: "",
-              lastIdPgRecurrency: 0,
-              lastDatePgRecurrency:"",
-              qtdRecords:QTDE_RECORDS_EVENTS,
-            },
-          }).then((response) => ({ response, phase }));
-      });
-
-      const results = await Promise.all(promises);
- 
-      setCards(cards.filter(x=> x.phaseId != currentKanbanStageId));
-      results.forEach(({ response, phase }) => {
-        setCards((prevCards) => [
-          ...prevCards,
-          ...response.data.EventList.map((item: any) => ({
-            id: `${uuidv4()}`,
-            eventId: item.id,
-            panelId: activePanelId,
-            phaseId: phase.id, 
-            title: item.subjectText,
-            description: item.title,
-            favorited: item.KanbanFavorite === 'S',
-            start: item.start,
-            hasDone: item.hasDone,
-            backgroundColor: item.backgroundColor,
-            recurrence: item.recurrence
-          })) 
-        ]);
-
-        // atualiza a fase correspondente para habilitar o botão
-        setActivePhases(prev =>
-          prev.map(p =>
-            p.id === phase.id
-              ? {
-                   ...p, 
-                   showButtonMore: p.showButtonMore === true || response.data.EventList.length >= QTDE_RECORDS_EVENTS 
-                }
-              : p
-          )
-        );
-        
-        // Atualiza o controle de paginação 
-        updatePhasePagination({
-          phaseId: phase.id,
-          lastIdEvent: response.data.LastIdEvent,
-          lastDateEvent: new Date(response.data.LastDateEvent),
-          lastIdRecurrency: response.data.LastIdRecurrency,
-          lastDateRecurrency: new Date(response.data.LastDateRecurrency),
-        });
-      });
-
-      setLoadEvents(false)
-      setIsWaiting(false)
-      setCurrentKanbanStageId(0)
-    }
-    catch (err) {
-      addToast({
-        type: 'error',
-        title: 'Operação NÃO Realizada',
-        description: 'Houve uma falha no carregamento dos eventos relacionados as etapas do painel'
-      });
-
-      setIsWaiting(false)
-      console.log(err);
-    }
-  }
-
   const handlePaginationStage = async (phaseId: number) => 
   {
     const { startDate, endDate } = getPeriodRange(selectedPeriod.value)
@@ -501,49 +408,88 @@ const LoadKanbanEvents = async () => {
       setIsWaiting(false);
     }
 
-  const SelectAppointment = async() => {
+useEffect(() => {
+
+  if (!modalActive) 
+       UpdateAfterCloseModalEvents();
+  
+}, [currentAppointmentEdit, modalActive]);
+
+
+const UpdateAfterCloseModalEvents = async() => {
   try
   {      
-      const kanbanEventEdit = localStorage.getItem('@GoJur:KanbanEventStatus');
+    const kanbanEventEdit = localStorage.getItem('@GoJur:KanbanEventStatus');
 
-      if (kanbanEventEdit == '' || kanbanEventEdit == undefined)
-        return
+    if (kanbanEventEdit == '' || kanbanEventEdit == undefined)
+      return
 
-      if (kanbanEventEdit == 'close')
-        return
+    if (kanbanEventEdit == 'close')
+      return
 
-      // Execute delete of normal event unique, if recurrence = delete_one and normally is delete
-      if (kanbanEventEdit == 'delete_one' || kanbanEventEdit == 'delete')
-      {
-        const recurrenceDate = localStorage.getItem('@GoJur:RecurrenceDate');
+    const recurrenceDate = localStorage.getItem('@GoJur:RecurrenceDate');
+    
+    // Execute delete of normal event unique, if recurrence = delete_one and normally is delete
+    if (kanbanEventEdit == 'delete_one' || kanbanEventEdit == 'delete')
+    {
+      setCards(prevCards => {
+        return prevCards.filter(c => {
+          const currentDate = c.start.substring(0, 10);
 
-        setCards(prevCards => {
-          return prevCards.filter(c => {
-            const currentDate = c.start.substring(0, 10);
-
-            // if is recurrence delete by considering event id and a date recurrence
-            if (recurrenceDate) {
-              return !(
-                c.eventId.toString() === currentAppointmentEdit.toString() &&
-                currentDate === recurrenceDate
-              );
-            }
-            
-            // if is NOT recurrence delete by only considering eventId
-            return c.eventId.toString() !== currentAppointmentEdit.toString();
-          });
+          // if is recurrence delete by considering event id and a date recurrence
+          if (recurrenceDate) {
+            return !(
+              c.eventId.toString() === currentAppointmentEdit.toString() &&
+              currentDate === recurrenceDate
+            );
+          }
+          
+          // if is NOT recurrence delete by only considering eventId
+          return c.eventId.toString() !== currentAppointmentEdit.toString();
         });
+      });
 
-        return;
-      }
+      return;
+    }
 
-      localStorage.removeItem('@GoJur:RecurrenceDate');
-      localStorage.removeItem('@GoJur:KanbanEventStatus');
+   if (kanbanEventEdit === "delete_next") {
+      setCards(prevCards =>
+        prevCards.filter(c => {
+          const currentDate = c.start.substring(0, 10);
+
+          // excluir apenas os cards do mesmo eventId e com data >= recurrenceDate
+          if (recurrenceDate) {
+            return !(
+              c.eventId.toString() === currentAppointmentEdit.toString() &&
+              currentDate >= recurrenceDate
+            );
+          }
+
+          // se não for recorrência, exclui só pelo eventId
+          return c.eventId.toString() !== currentAppointmentEdit.toString();
+        })
+      );
+
+      return;
+    }
+
+    if (kanbanEventEdit === "delete_all") {
+      setCards(prevCards =>
+        prevCards.filter(c =>
+          c.eventId.toString() !== currentAppointmentEdit.toString()
+        )
+      );
+
+      return;
+    }
 
     RefreshKanbanEvents();
     
+    localStorage.removeItem('@GoJur:RecurrenceDate');
+    localStorage.removeItem('@GoJur:KanbanEventStatus');
     setCurrentAppointmentEdit(0)
     setCurrentKanbanStageId(0)
+
     setIsWaiting(false)
   }
   catch(err)
@@ -558,18 +504,94 @@ const LoadKanbanEvents = async () => {
   }
 }
 
-useEffect(() => {
+const RefreshKanbanEvents = async () => {  
+  try 
+  { 
+      const { startDate, endDate } = getPeriodRange(selectedPeriod.value)
 
-  if (!modalActive) 
-  {
-       SelectAppointment();
-        
-    // SelectAppointment();
-    // setIsWaiting(false)
+      var filterItens = "";
+      if (filterTerm.length > 0)
+          filterItens += "KanbanTerm=" + filterTerm;
+
+      const promises = activePhases
+      .filter(phase => currentKanbanStageId > 0 ? phase.id === currentKanbanStageId : true)
+      .map(phase => 
+      {         
+        phasePagination.find(p => p.phaseId === phase.id);
+        return api.get('/KanbanEtapa/ListarEventos', {
+          params: {
+            token,
+            kanbanStageId: phase.id, 
+            startDate:  startDate.toISOString().split('T')[0],
+            endDate: endDate.toISOString().split('T')[0],
+            filterItens:filterItens,
+            lastIdPgDatabase: 0,
+            lastDatePgDatabase: "",
+            lastIdPgRecurrency: 0,
+            lastDatePgRecurrency:"",
+            qtdRecords:QTDE_RECORDS_EVENTS,
+          },
+        }).then((response) => ({ response, phase }));
+    });
+
+    const results = await Promise.all(promises);
+
+    setCards(cards.filter(x=> x.phaseId != currentKanbanStageId));
+    results.forEach(({ response, phase }) => {
+      setCards((prevCards) => [
+        ...prevCards,
+        ...response.data.EventList.map((item: any) => ({
+          id: `${uuidv4()}`,
+          eventId: item.id,
+          panelId: activePanelId,
+          phaseId: phase.id, 
+          title: item.subjectText,
+          description: item.title,
+          favorited: item.KanbanFavorite === 'S',
+          start: item.start,
+          hasDone: item.hasDone,
+          backgroundColor: item.backgroundColor,
+          recurrence: item.recurrence
+        })) 
+      ]);
+
+      // atualiza a fase correspondente para habilitar o botão
+      setActivePhases(prev =>
+        prev.map(p =>
+          p.id === phase.id
+            ? {
+                  ...p, 
+                  showButtonMore: p.showButtonMore === true || response.data.EventList.length >= QTDE_RECORDS_EVENTS 
+              }
+            : p
+        )
+      );
+      
+      // Atualiza o controle de paginação 
+      updatePhasePagination({
+        phaseId: phase.id,
+        lastIdEvent: response.data.LastIdEvent,
+        lastDateEvent: new Date(response.data.LastDateEvent),
+        lastIdRecurrency: response.data.LastIdRecurrency,
+        lastDateRecurrency: new Date(response.data.LastDateRecurrency),
+      });
+    });
+
+    setLoadEvents(false)
+    setIsWaiting(false)
+    setCurrentKanbanStageId(0)
   }
-  
-}, [currentAppointmentEdit, modalActive]);
+  catch (err) {
+    // addToast({
+    //   type: 'error',
+    //   title: 'Operação NÃO Realizada',
+    //   description: 'Houve uma falha no carregamento dos eventos relacionados as etapas do painel'
+    // });
 
+    setIsWaiting(false)
+    console.log(err);
+  }
+}
 
  function updatePhasePagination(newData: IPhasePagination) {
   setPhasePagination(prev => {
@@ -721,6 +743,63 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
 
   }, [permissions, handleCaptureTextPublication, handleDeadLineCalculatorText, handleModalActive, isOpenModal]);
 
+
+  const handleDeleteCard = useCallback(async (e, event: ICard) => {
+    
+    setIsWaiting(true)
+    setIsWaitingMessage('Deletando...')
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    try
+    {
+      await api.post('Compromisso/Deletar', {
+        eventId: event.eventId,
+        serieRecurrenceChange: "one",
+        dateRecurrence: event.recurrence == "S"? event.start: null,
+        token
+      })
+
+      setCards(prevCards => {
+          return prevCards.filter(c => {
+            const currentDate = c.start.substring(0, 10);
+
+            // if is recurrence delete by considering event id and a date recurrence
+            if (event.start) {
+              return !(
+                c.eventId.toString() === event.eventId.toString() &&
+                currentDate ===  event.start.substring(0, 10)
+              );
+            }
+            
+            return c.eventId.toString() !== currentAppointmentEdit.toString();
+          });
+      });
+
+      addToast({
+          type: 'success',
+          title: 'Compromisso Excluído',
+          description: 'O compromisso foi excluído com sucesso.'
+      });
+
+      setIsWaitingMessage('Aguarde...')
+      setIsWaiting(false)
+    }
+    catch(e)
+    {
+      addToast({
+          type: 'error',
+          title: 'Operação Não Realizada',
+          description: 'Houve uma falha na exclusão deste compromisso.'
+      });
+      
+      setIsWaitingMessage('Aguarde...')
+      setIsWaiting(false)
+    }
+
+  }, []);
+  
   useEffect(() => {
 
     const mapped = optionsCalendarFilter
@@ -1110,30 +1189,12 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
     if (e.key === 'Enter') handleSavePhaseEdit();
     if (e.key === 'Escape') { setEditingPhaseId(null); setEditingPhaseName(''); }
   };
-
-  // const handleDeleteCard = useCallback((cardId: number) => {
-  //   setCards((prev) => prev.filter((c) => c.id !== cardId));
-  // }, []);
   
   const handleToggleFavorite = useCallback((card: ICard, favorite: string) => {
 
     SalvarFavorito(card, favorite)
 
   }, [cards]);
-
-
-// const ReordenarCards = (cardId: number) => 
-// {      
-//     setCards((prev) =>  prev.map((c) => c.id === cardId ? { ...c, favorited: !c.favorited } : c)
-//       .sort((a, b) => {
-//         if ((a.favorited ? 1 : 0) !== (b.favorited ? 1 : 0)) {
-//           return b.favorited ? 1 : -1;
-//         }
-//         const dateA = new Date(a.start).getTime();
-//         const dateB = new Date(b.start).getTime();
-//         return dateA - dateB;
-//     }));
-// }
 
 const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
     try
@@ -1203,38 +1264,44 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
     }
   }
 
-  const onDragEnd = useCallback(async (result: DropResult) => {
+const onDragEnd = useCallback(async (result: DropResult) => {
     
     const { source, destination, draggableId, type } = result;
 
     if (!destination) 
       return;
 
-    // se não houve mudança de posição
-    if (source.droppableId === destination.droppableId) 
+    if (source.droppableId === destination.droppableId && type === "DEFAULT") 
       return;
 
-    // mover colunas
+    // UPDATE POSITION STAGES
     if (type === "COLUMN") {
+      setIsWaiting(true)
+      setIsWaitingMessage("Alterando ordem da etapa...")
+
       const phaseId = parseInt(draggableId.replace("phase-", ""), 10);
       const destinationIndex = destination.index;
 
-      const response = await api.post("/KanbanEtapa/ArrastarEtapa", {
+      api.post("/KanbanEtapa/ArrastarEtapa", {
         kanbanStageId: phaseId,
         NumPosition: destinationIndex,
         Token: token,
-      });
-
-      setActivePhases((prev) =>
-        prev
-          .map((item) => {
-            const atualizado = response.data.find((resp: any) => resp.Id === item.id);
-            return atualizado ? { ...item, order: atualizado.NumPosition } : item;
-          })
-          .sort((a, b) => a.order - b.order)
-      );
+      })
+      .then(response => {
+        setActivePhases(prev =>
+          prev
+            .map(item => {
+              const atualizado = response.data.find((resp: any) => resp.Id === item.id);
+              return atualizado ? { ...item, order: atualizado.NumPosition } : item;
+            })
+            .sort((a, b) => a.order - b.order)
+        );
+      })
+      
+      setIsWaiting(false)
     }
 
+    // UPDATE POSITION EVENTS
     if (type === "DEFAULT") {
     
       const match = draggableId.match(/event-(\d+)-phaseId=(\d+)-start=([\dT:-]+)/);
@@ -1245,7 +1312,6 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
           const date = normalizeDateUTC(match[3]);
           const card = cards.find(c=>Number(c.eventId) === Number(idEvent))
 
-          let hasDone = false
           setCards(prevCards =>
             prevCards.map(c => {
 
@@ -1254,7 +1320,8 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
               {
                 return { 
                     ...c, 
-                    phaseId: phaseIdUpdate
+                    phaseId: phaseIdUpdate,
+                    recurrence: "N"
                 };
               }
               if (c.recurrence !== "S" &&  Number(c.eventId) === Number(idEvent)) 
@@ -1268,10 +1335,11 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
             })
           );
 
-          let response;
+          let response:any;
           try
           {
             setIsWaiting(true)
+            setIsWaitingMessage("Alterando etapa do compromisso...")
 
             if (card?.recurrence === "S") 
             {
@@ -1326,10 +1394,12 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
             handleRightClick(card.hasDone? "L": "P", newId)
 
             setIsWaiting(false)
+            setIsWaitingMessage("Aguarde...")
           }
           catch(ex)
           {
               setIsWaiting(false)  
+              setIsWaitingMessage("Aguarde...")
               console.log(ex)
           }          
       }
@@ -1448,8 +1518,7 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
           showButtonMore: false
         }))
       );
-    }
-    
+    }    
   }  
 
   const mappingSelectToParameter = {
@@ -1552,11 +1621,11 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
 
           if (tempPeriodEnd < tempPeriodStart)
           {
-            // addToast({
-            //   type: 'info',
-            //   title: 'Atenção',
-            //   description:'A data final do periodo não pode ser menor que a data de início',
-            // });
+            addToast({
+              type: 'info',
+              title: 'Atenção',
+              description:'A data final do periodo não pode ser menor que a data de início',
+            });
             
             setIsWaiting(false)
             setShowDateModal(true);
@@ -1566,7 +1635,6 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
 
         setCards([]);
         setPhasePagination([]);
-        setLoadEvents(true)
 
         api.post('/Parametro/Salvar', {
           token: token, 
@@ -1628,12 +1696,14 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
           await api.post('/Compromisso/Concluir', { 
               id: eventId, 
               recurrenceDate: dateEventStatus, 
+              serieRecurrenceChange: "one",
               token
           });
        else
           await api.post('/Compromisso/Reabrir', { 
               id: eventId, 
               recurrenceDate: dateEventStatus,
+              serieRecurrenceChange: "one",
               token
           });
 
@@ -1660,7 +1730,6 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
             Number(c.eventId) === Number(eventIdButtonClick) &&
             currentDate === normalizeDateOnly(dateEventStatus)
           ) {
-            console.log("achei recorrencia");
             return { ...c, hasDone };
           }
 
@@ -1668,7 +1737,6 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
             c.recurrence !== "S" &&
             Number(c.eventId) === Number(eventIdButtonClick)
           ) {
-            console.log("achei normal");
             return { ...c, hasDone };
           }
 
@@ -1713,7 +1781,7 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
           <Overlay />
           <div className="waitingMessage">
             <Loader size={15} color="var(--blue-twitter)" />
-            &nbsp;&nbsp;Aguarde...
+            &nbsp;&nbsp;{isWaitingMessage}
           </div>
         </>
       )}
@@ -2153,8 +2221,13 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
                                           <span>{card.dateTime}</span>
                                         </>
                                       )}
+                                     <FiTrash2
+                                      style={{ marginLeft: 'auto', cursor: 'pointer', color: '#fca5a5' }}
+                                      title="Excluir compromisso"
+                                      onClick={(e) => handleDeleteCard(e, card)}
+                                    />                                    
                                     </div>
-                                    
+
                                   </AppointmentCard>   
                                                                  
                                 )}
@@ -2169,13 +2242,15 @@ const SalvarFavorito = async (event: ICard, FlagFavorite: string) => {
                                 </AddCardButton>
                               )}
 
+                          </CardsList>
+                                      
+                          <FixedFooter>
                               <AddCardButton type="button" onClick={() => handleClickInclude(phase.id)}>
                                 <FiPlus /> Criar Compromisso
-                              </AddCardButton> 
+                              </AddCardButton>
+                          </FixedFooter>
 
-                          </CardsList>
-
-                          </>
+                        </>
                       )}
                       </Droppable>
 

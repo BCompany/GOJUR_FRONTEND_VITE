@@ -68,6 +68,7 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
       closeModal();
       setisSaveThis(false)
       localStorage.removeItem('@GoJur:MatterId');
+      localStorage.setItem('@GoJur:KanbanEventStatus', 'save');
     }
     catch (err:any) {
       setisSaveThis(false)
@@ -97,6 +98,7 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
       close();
       closeModal();
       setisSaveAll(false)
+      localStorage.setItem('@GoJur:KanbanEventStatus', 'save');
     }
     catch (err:any) {
       setisSaveAll(false)
@@ -123,6 +125,7 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
       close();
       closeModal();
       setisSaveNext(false)
+      localStorage.setItem('@GoJur:KanbanEventStatus', 'save');
     }
     catch (err:any) {
       setisSaveNext(false)

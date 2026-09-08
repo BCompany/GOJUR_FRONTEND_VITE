@@ -802,6 +802,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   // Close modal
   const handleCloseModalLog = () => {
     localStorage.setItem('@GoJur:appointmentClose', 'S');
+    localStorage.setItem('@GoJur:KanbanEventStatus', 'close');
     isClosed()
   } // mudança de data final
 
@@ -1506,6 +1507,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         isClosed()
         handleModalActive(false)
         localStorage.removeItem('@Gojur:kanbanStageId');
+        localStorage.setItem('@GoJur:KanbanEventStatus', 'save');
       }
       catch (err: any) {
         if (err.response.data.typeError?.warning == "awareness") {
@@ -1583,10 +1585,12 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
           description: 'Seu compromisso foi deletado com sucesso',
         });
 
+
         isClosed()
         handleModalActiveId(0)
         handleModalActive(false)
         setConfirmDeleteCalendarEvent(false);
+        localStorage.setItem('@GoJur:KanbanEventStatus', 'delete');
       }
       else {
         const data: AppointmentPropsDelete = {
