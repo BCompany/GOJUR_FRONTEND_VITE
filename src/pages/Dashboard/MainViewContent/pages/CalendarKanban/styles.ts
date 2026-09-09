@@ -91,6 +91,50 @@ export const BoardLayout = styled.div`
   
 `;
 
+export const PanelTitleBar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary);
+    font-family: Montserrat;
+  }
+
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.4rem;
+    height: 1.4rem;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--blue-twitter);
+    cursor: pointer;
+    transition: color 0.2s;
+
+    svg {
+      width: 0.9rem;
+      height: 0.9rem;
+    }
+
+    &:hover:not(:disabled) {
+      color: var(--orange);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+  }
+`;
+
 /* ── PANELS MODAL ── */
 export const ModalOverlay = styled.div`
   position: fixed;

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { FiPlus, FiTrash2, FiClock, FiLayout, FiX, FiCheck, FiEdit2, FiEdit } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiClock, FiLayout, FiX, FiCheck, FiEdit2, FiEdit, FiRefreshCw } from 'react-icons/fi';
 import { MdPalette, MdFavorite, MdFavoriteBorder } from 'react-icons/md';
 import { FcSearch } from 'react-icons/fc';
 import Search from 'components/Search';
@@ -13,7 +13,7 @@ import { useModal } from 'context/modal';
 import { v4 as uuidv4 } from 'uuid';
 import FilterCalendar, { ISelectValues } from 'components/FilterCalendar';
 import api from 'services/api';
-import {AddCardButton, AddPhaseColumn, AppointmentCard, BoardLayout, CardsList, ColorDot,ColorPickerWrapper,Container,Content,EmptyState,KanbanArea,ModalOverlay,PanelItem,PanelsModal,TaskBar, PhaseColumn, PhaseHeader, FixedFooter} from './styles';
+import {AddCardButton, AddPhaseColumn, AppointmentCard, BoardLayout, CardsList, ColorDot,ColorPickerWrapper,Container,Content,EmptyState,KanbanArea,ModalOverlay,PanelItem,PanelsModal,PanelTitleBar,TaskBar, PhaseColumn, PhaseHeader, FixedFooter} from './styles';
 import { useToast } from 'context/toast';
 import { Overlay } from 'Shared/styles/GlobalStyle';
 import Loader from 'react-spinners/ClipLoader';
@@ -66,6 +66,8 @@ export default function AgendaKanban() {
   const [editingPhaseName, setEditingPhaseName] = useState('');
   const panelNameRef = useRef<HTMLInputElement>(null);
   const phaseNameRef = useRef<HTMLInputElement>(null);
+  // a ref, not state: LoadKanbanEvents runs in the same tick as RebuildInterface and would read a stale value
+  const forceFirstPageRef = useRef(false);
   const [dateEventStatus, setDateEventStatus] = useState<string>('');
   const [eventIdButtonClick, setEventIdButtonClick] = useState<number>(0);
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -245,17 +247,21 @@ const LoadKanbanEvents = async () => {
         if (currentKanbanStageId > 0)
           listPhases = listPhases.filter(x=> x.id == currentKanbanStageId);
 
-        const promises = listPhases?.map((phase) => 
+        // the refresh button reloads every phase from the first page
+        const forceFirstPage = forceFirstPageRef.current;
+        forceFirstPageRef.current = false;
+
+        const promises = listPhases?.map((phase) =>
         {
             const pagination = phasePagination.find(p => p.phaseId === phase.id);
-            
+
             let lastIdPgDatabase =  0;
             let lastDatePgDatabase = "";
             let lastIdPgRecurrency = 0;
             let lastDatePgRecurrency = "";
 
           // If is a search by term, subject or responsible, clear cards to reload new values
-            const clearPhases =(isLoadingSearch || subjectSelected || multiFilter1.length > 0);
+            const clearPhases =(forceFirstPage || isLoadingSearch || subjectSelected || multiFilter1.length > 0);
 
             // When is not execution a search by term, considering a pagination
             if (!clearPhases && currentKanbanStageId == 0)
@@ -1733,6 +1739,14 @@ const onDragEnd = useCallback(async (result: DropResult) => {
       setLoadEvents(true);
  }
 
+ const handleRefreshPanel = () =>
+ {
+      forceFirstPageRef.current = true;
+      setPhasePagination([])
+      setCurrentKanbanStageId(0)
+      LoadKanbanEtapa(activePanelId);
+ }
+
   const handleRightClick = async (type: string, eventId: number) => {
 
     try {
@@ -1943,7 +1957,19 @@ const onDragEnd = useCallback(async (result: DropResult) => {
           </div>
         </TaskBar>
 
-        <h3 style={{ textAlign: 'center', fontSize: '1.1rem', fontWeight: 600, color: 'var(--primary)', marginBottom: '0.75rem' }}>{activePanel?.name ?? ''}</h3>
+        <PanelTitleBar>
+          <h3>{activePanel?.name ?? ''}</h3>
+          {activePanel && (
+            <button
+              type="button"
+              title="Atualizar etapas e compromissos"
+              disabled={isWaiting}
+              onClick={() => handleRefreshPanel()}
+            >
+              <FiRefreshCw />
+            </button>
+          )}
+        </PanelTitleBar>
 
         {/* ── Panels modal ── */}
         {showPanelsModal && (
