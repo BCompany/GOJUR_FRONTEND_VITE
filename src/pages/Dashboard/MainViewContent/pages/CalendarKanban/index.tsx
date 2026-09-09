@@ -1338,28 +1338,56 @@ const onDragEnd = useCallback(async (result: DropResult) => {
           const date = normalizeDateUTC(match[3]);
           const card = cards.find(c=>Number(c.eventId) === Number(idEvent))
 
-          setCards(prevCards =>
-            prevCards.map(c => {
+          setCards(prevCards => {
+
+            // the rendered order of a column is the order of the flat cards array, so changing
+            // only the phaseId makes the card land wherever its old index falls in the new column
+            const draggedCard = prevCards.filter(c => c.phaseId === Number(source.droppableId))[source.index];
+
+            const updated = prevCards.map(c => {
 
                const currentDate = normalizeDateOnly(c.start);
               if (c.recurrence === "S" && Number(c.eventId) === Number(idEvent) && currentDate === date)
               {
-                return { 
-                    ...c, 
+                return {
+                    ...c,
                     phaseId: phaseIdUpdate,
                     recurrence: "N"
                 };
               }
-              if (c.recurrence !== "S" &&  Number(c.eventId) === Number(idEvent)) 
+              if (c.recurrence !== "S" &&  Number(c.eventId) === Number(idEvent))
               {
-                return { 
+                return {
                   ...c,
-                   phaseId: phaseIdUpdate 
+                   phaseId: phaseIdUpdate
                 };
               }
               return c;
-            })
-          );
+            });
+
+            if (!draggedCard)
+              return updated;
+
+            const draggedIndex = prevCards.indexOf(draggedCard);
+            const moved = updated[draggedIndex];
+            const rest = updated.filter((_, index) => index !== draggedIndex);
+
+            // splice the card back in at the exact slot it was dropped on
+            const destinationCards = rest.filter(c => c.phaseId === phaseIdUpdate);
+            const anchor = destinationCards[destination.index];
+
+            let insertAt: number;
+            if (anchor)
+              insertAt = rest.indexOf(anchor);
+            else if (destinationCards.length > 0)
+              insertAt = rest.indexOf(destinationCards[destinationCards.length - 1]) + 1;
+            else
+              insertAt = rest.length;
+
+            rest.splice(insertAt, 0, moved);
+
+            return rest;
+          });
 
           let response:any;
           try
