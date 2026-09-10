@@ -1313,6 +1313,10 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
           description: 'Seu compromisso foi concluido com sucesso',
         });
 
+        const kanbanEventEdit = localStorage.getItem('@Gojur:KanbanEventStatus');
+        if (kanbanEventEdit == 'open') 
+            localStorage.setItem('@Gojur:KanbanEventStatus', 'concluir');
+
         setStatusEvent('L');
         isClosed();
       } catch (error) {

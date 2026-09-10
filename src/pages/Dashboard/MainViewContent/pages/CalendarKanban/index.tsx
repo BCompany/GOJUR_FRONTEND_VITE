@@ -429,7 +429,7 @@ const UpdateAfterCloseModalEvents = async() => {
   try
   {       
     const kanbanEventEdit = localStorage.getItem('@Gojur:KanbanEventStatus')??'';
-
+    
     if (kanbanEventEdit == '' || kanbanEventEdit == undefined)
       return
 
@@ -440,7 +440,12 @@ const UpdateAfterCloseModalEvents = async() => {
     const recurrenceDate = localStorage.getItem('@GoJur:RecurrenceDate');
 
     // Delete normal event or recurrence ONE
-    if (kanbanEventEdit == 'delete_one' || kanbanEventEdit == 'delete')
+    const isDeleteOperation = (kanbanEventEdit == 'delete_one' 
+                            || kanbanEventEdit == 'delete' 
+                            || kanbanEventEdit == 'delete_all' 
+                            || kanbanEventEdit == 'delete_next')
+
+    if (isDeleteOperation)
     {
       if (!currentAppointmentEdit)
         return;
@@ -465,21 +470,6 @@ const UpdateAfterCloseModalEvents = async() => {
       localStorage.removeItem('@Gojur:KanbanEventStatus');
       return;
     }    
-
-    // Delete all events or next events recurrence
-     if (kanbanEventEdit == 'delete_all' || kanbanEventEdit == 'delete_next')
-    {
-        handleRefreshPanel();
-        localStorage.removeItem('@Gojur:KanbanEventStatus');
-        return;
-    } 
-
-    if (kanbanEventEdit == 'save_next')
-    {
-        handleRefreshPanel();
-        localStorage.removeItem('@Gojur:KanbanEventStatus');
-        return;
-    }
     
     if (!eventKanbanSavedId)
       return;
@@ -490,16 +480,15 @@ const UpdateAfterCloseModalEvents = async() => {
       token,
       recurrenceDate,
     });
-    console.clear()
-    console.log('Compromisso que será atualizado no Kanban', response.data)
-    const eventCorrespondentes = cards.filter(c => c.eventId.toString() === eventKanbanSavedId.toString());
-    console.log(eventCorrespondentes)
+
+    const isRecurrence = response.data.recurrence === 'S';
+    // When currentAppointmentEdit has value = Editing
+    // When currentAppointmentEdit is undefined get from LocalStorage a new Event
+    const eventIdCurrent = currentAppointmentEdit ? currentAppointmentEdit.toString() : eventKanbanSavedId.toString();
 
     setCards(prevCards => {
-      const isRecurrence = response.data.recurrence === 'S';
-
       const updatedCards = prevCards.map(card => {
-      const sameEvent = card.eventId.toString() === eventKanbanSavedId.toString();
+      const sameEvent = card.eventId.toString() ===  eventIdCurrent;
 
         if (!isRecurrence && sameEvent) {
           // atualizar item não recorrente
@@ -517,12 +506,11 @@ const UpdateAfterCloseModalEvents = async() => {
 
         if (isRecurrence && sameEvent) {
           const currentDate = card.start.substring(0, 10);
-          console.log(currentDate)
-          console.log(recurrenceDate)
           if (currentDate === recurrenceDate) {
             // atualizar item recorrente específico
             return {
               ...card,
+              eventId: response.data.id,
               description: response.data.title,
               title: response.data.subjectText,
               favorited: response.data.KanbanFavorite === 'S',
@@ -569,7 +557,6 @@ const UpdateAfterCloseModalEvents = async() => {
         }
       ];
     });
-
 
     setActivePhases(prev => [...prev]); 
 
@@ -2399,13 +2386,13 @@ const onDragEnd = useCallback(async (result: DropResult) => {
                                       {card.recurrence == "S" && (
                                         <FiClock
                                           style={{ marginLeft: 'auto', marginTop: '8px'}}
-                                          title="Compromisso Recorrente, clique caso queira atualizar a página e visualizar as alterações em todas as sequencias"
-                                          onClick={(e) => 
-                                          {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            handleRefreshPanel()
-                                          }}
+                                          title="Compromisso Recorrente"
+                                          // onClick={(e) => 
+                                          // {
+                                          //   e.preventDefault();
+                                          //   e.stopPropagation();
+                                          //   handleRefreshPanel()
+                                          // }}
                                         />                                    
                                       )}                                   
                                     </div>

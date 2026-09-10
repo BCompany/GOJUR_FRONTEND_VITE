@@ -61,7 +61,7 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
       data.dateRecurrence = localStorage.getItem('@GoJur:RecurrenceDate');
       setisSaveThis(true)
       
-      await api.put(`/Compromisso/Salvar`, data);
+      const response = await api.put(`/Compromisso/Salvar`, data);
 
       addToast({type: 'success', title: 'Compromisso Salvo', description: 'Seu compromisso foi salvo com sucesso'});
       close();
@@ -72,7 +72,7 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
       const kanbanEventEdit = localStorage.getItem('@Gojur:KanbanEventStatus');
       if (kanbanEventEdit == 'open') 
       {
-          localStorage.setItem('@Gojur:eventKanbanSavedId', Number(data.eventId).toString());
+          localStorage.setItem('@Gojur:eventKanbanSavedId', Number(response.data).toString());
           localStorage.setItem('@Gojur:KanbanEventStatus', 'save_one');
       }
 
@@ -99,7 +99,7 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
       data.token = userToken;
       setisSaveAll(true)
 
-      await api.put(`/Compromisso/Salvar`, data);
+      const response = await api.put(`/Compromisso/Salvar`, data);
 
       addToast({type: 'success', title: 'Compromisso Salvo', description: 'Seu compromisso foi salvo com sucesso'});
       close();
@@ -109,7 +109,7 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
       const kanbanEventEdit = localStorage.getItem('@Gojur:KanbanEventStatus');
       if (kanbanEventEdit == 'open') 
       {
-          localStorage.setItem('@Gojur:eventKanbanSavedId', Number(data.eventId).toString());
+          localStorage.setItem('@Gojur:eventKanbanSavedId', Number(response.data).toString());
           localStorage.setItem('@Gojur:KanbanEventStatus', 'save_all');
       }
 
@@ -133,7 +133,7 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
       data.serieRecurrenceChange = 'next';
       setisSaveNext(true)
       
-      await api.put(`/Compromisso/Salvar`, data);
+      const response = await api.put(`/Compromisso/Salvar`, data);
 
       addToast({type: 'success', title: 'Compromisso Salvo', description: 'Seu compromisso foi salvo com sucesso'});
       close();
@@ -142,8 +142,8 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
 
       const kanbanEventEdit = localStorage.getItem('@Gojur:KanbanEventStatus');
       if (kanbanEventEdit == 'open') 
-      {
-          localStorage.setItem('@Gojur:eventKanbanSavedId', Number(data.eventId).toString());
+      {        
+          localStorage.setItem('@Gojur:eventKanbanSavedId', Number(response.data).toString());
           localStorage.setItem('@Gojur:KanbanEventStatus', 'save_next');
       }
     }
