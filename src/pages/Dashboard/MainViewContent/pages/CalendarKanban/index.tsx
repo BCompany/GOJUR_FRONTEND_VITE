@@ -22,7 +22,7 @@ import { ICard, IPanel, IPhase, IPhasePagination, PHASE_COLORS } from './IKanban
 import MenuItem from '@material-ui/core/MenuItem';
 import { BiCalendarCheck, BiCalendarEdit } from 'react-icons/bi';
 import { Menu } from '@material-ui/core';
-import { AppointmentPropsSave } from '../Interfaces/ICalendar';
+import { AppointmentPropsSave, Data } from '../Interfaces/ICalendar';
 import { format } from 'date-fns';
 import { selectedDayProps, selectedWeekProps } from '../Dashboard/resorces/DashboardComponents/CreateAppointment/Interfaces/ICalendar';
 import { dayRecurrence, weekRecurrence } from '../Dashboard/resorces/DashboardComponents/CreateAppointment/ListValues/List';
@@ -132,8 +132,8 @@ useEffect(() => {
        
     let kanbanStageId = currentKanbanStageId;
 
-    if (currentKanbanStageId == 0 && localStorage.getItem('@GoJur:kanbanStageId') !== '') {
-      kanbanStageId = Number(localStorage.getItem('@GoJur:kanbanStageId'));
+    if (currentKanbanStageId == 0 && localStorage.getItem('@Gojur:kanbanStageId') !== '') {
+      kanbanStageId = Number(localStorage.getItem('@Gojur:kanbanStageId'));
       setCurrentKanbanStageId(kanbanStageId)
     }
    }, [modalActive, isWaiting])
@@ -416,16 +416,19 @@ const LoadKanbanEvents = async () => {
 
 useEffect(() => {
 
-  if (!modalActive) 
-       UpdateAfterCloseModalEvents();
+  if (!modalActive && !isWaiting) 
+  {
+      UpdateAfterCloseModalEvents();
+  }
+       //UpdateAfterCloseModalEvents();
   
-}, [currentAppointmentEdit, modalActive]);
+}, [modalActive, isWaiting, cards]);
 
 
 const UpdateAfterCloseModalEvents = async() => {
   try
-  {      
-    const kanbanEventEdit = localStorage.getItem('@GoJur:KanbanEventStatus');
+  {       
+    const kanbanEventEdit = localStorage.getItem('@Gojur:KanbanEventStatus')??'';
 
     if (kanbanEventEdit == '' || kanbanEventEdit == undefined)
       return
@@ -433,11 +436,15 @@ const UpdateAfterCloseModalEvents = async() => {
     if (kanbanEventEdit == 'close')
       return
 
+    const eventKanbanSavedId = localStorage.getItem('@Gojur:eventKanbanSavedId');
     const recurrenceDate = localStorage.getItem('@GoJur:RecurrenceDate');
-    
-    // Execute delete of normal event unique, if recurrence = delete_one and normally is delete
+
+    // Delete normal event or recurrence ONE
     if (kanbanEventEdit == 'delete_one' || kanbanEventEdit == 'delete')
     {
+      if (!currentAppointmentEdit)
+        return;
+
       setCards(prevCards => {
         return prevCards.filter(c => {
           const currentDate = c.start.substring(0, 10);
@@ -451,50 +458,124 @@ const UpdateAfterCloseModalEvents = async() => {
           }
           
           // if is NOT recurrence delete by only considering eventId
-          return c.eventId.toString() !== currentAppointmentEdit.toString();
+          return c.eventId.toString() !== eventKanbanSavedId.toString();
         });
       });
 
+      localStorage.removeItem('@Gojur:KanbanEventStatus');
       return;
+    }    
+
+    // Delete all events or next events recurrence
+     if (kanbanEventEdit == 'delete_all' || kanbanEventEdit == 'delete_next')
+    {
+        handleRefreshPanel();
+        localStorage.removeItem('@Gojur:KanbanEventStatus');
+        return;
+    } 
+
+    if (kanbanEventEdit == 'save_next')
+    {
+        handleRefreshPanel();
+        localStorage.removeItem('@Gojur:KanbanEventStatus');
+        return;
     }
-
-   if (kanbanEventEdit === "delete_next") {
-      // setCards(prevCards =>
-      //   prevCards.filter(c => {
-      //     const currentDate = c.start.substring(0, 10);
-
-      //     // excluir apenas os cards do mesmo eventId e com data >= recurrenceDate
-      //     if (recurrenceDate) {
-      //       return !(
-      //         c.eventId.toString() === currentAppointmentEdit.toString() &&
-      //         currentDate >= recurrenceDate
-      //       );
-      //     }
-
-      //     // se não for recorrência, exclui só pelo eventId
-      //     return c.eventId.toString() !== currentAppointmentEdit.toString();
-      //   })
-      // );
-
-      // return;
-    }
-
-    if (kanbanEventEdit === "delete_all") {
-      // setCards(prevCards =>
-      //   prevCards.filter(c =>
-      //     c.eventId.toString() !== currentAppointmentEdit.toString()
-      //   )
-      // );
-
-      // return;
-    }
-
-    RefreshKanbanEvents();
     
+    if (!eventKanbanSavedId)
+      return;
+
+    // If is edit or include select current event edit
+    const response = await api.post<Data>('/KanbanEtapa/SelecionarEvento', {
+      id: eventKanbanSavedId,
+      token,
+      recurrenceDate,
+    });
+    console.clear()
+    console.log('Compromisso que será atualizado no Kanban', response.data)
+    const eventCorrespondentes = cards.filter(c => c.eventId.toString() === eventKanbanSavedId.toString());
+    console.log(eventCorrespondentes)
+
+    setCards(prevCards => {
+      const isRecurrence = response.data.recurrence === 'S';
+
+      const updatedCards = prevCards.map(card => {
+      const sameEvent = card.eventId.toString() === eventKanbanSavedId.toString();
+
+        if (!isRecurrence && sameEvent) {
+          // atualizar item não recorrente
+          return {
+            ...card,
+            description: response.data.title,
+            title: response.data.subjectText,
+            favorited: response.data.KanbanFavorite === 'S',
+            start: response.data.start,
+            hasDone: response.data.hasDone,
+            backgroundColor: response.data.backgroundColor,
+            recurrence: response.data.recurrence
+          };
+        }
+
+        if (isRecurrence && sameEvent) {
+          const currentDate = card.start.substring(0, 10);
+          console.log(currentDate)
+          console.log(recurrenceDate)
+          if (currentDate === recurrenceDate) {
+            // atualizar item recorrente específico
+            return {
+              ...card,
+              description: response.data.title,
+              title: response.data.subjectText,
+              favorited: response.data.KanbanFavorite === 'S',
+              start: response.data.start,
+              hasDone: response.data.hasDone,
+              backgroundColor: response.data.backgroundColor,
+              recurrence: response.data.recurrence
+            };
+          }
+        }
+
+        return card;
+      });
+
+      // checar se houve atualização
+      const found = updatedCards.some(card => {
+        if (isRecurrence) {
+          return (
+            card.eventId.toString() === eventKanbanSavedId.toString() &&
+            card.start.substring(0, 10) === recurrenceDate
+          );
+        }
+        return card.eventId.toString() === eventKanbanSavedId.toString();
+      });
+
+      if (found) {
+        return updatedCards; 
+      }
+
+      return [
+        ...updatedCards,
+        {
+          id: uuidv4(),
+          eventId: response.data.id,
+          panelId: activePanelId,
+          phaseId: currentKanbanStageId,
+          description: response.data.title,
+          title: response.data.subjectText,
+          favorited: response.data.KanbanFavorite === 'S',
+          start: response.data.start,
+          hasDone: response.data.hasDone,
+          backgroundColor: response.data.backgroundColor,
+          recurrence: response.data.recurrence
+        }
+      ];
+    });
+
+
+    setActivePhases(prev => [...prev]); 
+
+    localStorage.removeItem('@Gojur:KanbanEventStatus');
+    localStorage.removeItem('@Gojur:eventKanbanSavedId');
     localStorage.removeItem('@GoJur:RecurrenceDate');
-    localStorage.removeItem('@GoJur:KanbanEventStatus');
-    setCurrentAppointmentEdit(0)
-    setCurrentKanbanStageId(0)
 
     setIsWaiting(false)
   }
@@ -510,94 +591,98 @@ const UpdateAfterCloseModalEvents = async() => {
   }
 }
 
-const RefreshKanbanEvents = async () => {  
-  try 
-  { 
-      const { startDate, endDate } = getPeriodRange(selectedPeriod.value)
+// const RefreshKanbanEvents = async () => {  
+//   try 
+//   { 
+//       const { startDate, endDate } = getPeriodRange(selectedPeriod.value)
 
-      var filterItens = "";
-      if (filterTerm.length > 0)
-          filterItens += "KanbanTerm=" + filterTerm;
+//       var filterItens = "";
+//       if (filterTerm.length > 0)
+//           filterItens += "KanbanTerm=" + filterTerm;
 
-      const promises = activePhases
-      .filter(phase => currentKanbanStageId > 0 ? phase.id === currentKanbanStageId : true)
-      .map(phase => 
-      {         
-        phasePagination.find(p => p.phaseId === phase.id);
-        return api.get('/KanbanEtapa/ListarEventos', {
-          params: {
-            token,
-            kanbanStageId: phase.id, 
-            startDate:  startDate.toISOString().split('T')[0],
-            endDate: endDate.toISOString().split('T')[0],
-            filterItens:filterItens,
-            lastIdPgDatabase: 0,
-            lastDatePgDatabase: "",
-            lastIdPgRecurrency: 0,
-            lastDatePgRecurrency:"",
-            qtdRecords:QTDE_RECORDS_EVENTS,
-          },
-        }).then((response) => ({ response, phase }));
-    });
 
-    const results = await Promise.all(promises);
+//       const promises = activePhases
+//       .filter(phase => currentKanbanStageId > 0 ? phase.id === currentKanbanStageId : true)
+//       .map(phase => 
+//       {         
+//         phasePagination.find(p => p.phaseId === phase.id);
+//         return api.get('/KanbanEtapa/ListarEventos', {
+//           params: {
+//             token,
+//             kanbanStageId: phase.id, 
+//             startDate:  startDate.toISOString().split('T')[0],
+//             endDate: endDate.toISOString().split('T')[0],
+//             filterItens:filterItens,
+//             lastIdPgDatabase: 0,
+//             lastDatePgDatabase: "",
+//             lastIdPgRecurrency: 0,
+//             lastDatePgRecurrency:"",
+//             qtdRecords:1,
+//           },
+//         }).then((response) => ({ response, phase }));
+//     });
 
-    setCards(cards.filter(x=> x.phaseId != currentKanbanStageId));
-    results.forEach(({ response, phase }) => {
-      setCards((prevCards) => [
-        ...prevCards,
-        ...response.data.EventList.map((item: any) => ({
-          id: `${uuidv4()}`,
-          eventId: item.id,
-          panelId: activePanelId,
-          phaseId: phase.id, 
-          title: item.subjectText,
-          description: item.title,
-          favorited: item.KanbanFavorite === 'S',
-          start: item.start,
-          hasDone: item.hasDone,
-          backgroundColor: item.backgroundColor,
-          recurrence: item.recurrence
-        })) 
-      ]);
+//     const results = await Promise.all(promises);
 
-      // atualiza a fase correspondente para habilitar o botão
-      setActivePhases(prev =>
-        prev.map(p =>
-          p.id === phase.id
-            ? {
-                  ...p, 
-                  showButtonMore: p.showButtonMore === true || response.data.EventList.length >= QTDE_RECORDS_EVENTS 
-              }
-            : p
-        )
-      );
+//     console.log(currentAppointmentEdit)
+//     console.log(cards.filter(x=> x.eventId == currentAppointmentEdit))
+//     results.forEach(({ response, phase }) => {
+//       setCards(prevCards =>
+//         prevCards.map(c => {
+//           const updatedItem = response.data.EventList.find(
+//             (item: any) => Number(item.eventId) === Number(currentAppointmentEdit) 
+//           );
+
+//           if (Number(c.eventId) === Number(currentAppointmentEdit) && updatedItem) {
+//             return {
+//               ...c,
+//               panelId: activePanelId,
+//               phaseId: phase.id,
+//               title: updatedItem.subjectText,
+//               description: updatedItem.title,
+//               favorited: updatedItem.KanbanFavorite === 'S',
+//               start: updatedItem.start,
+//               hasDone: updatedItem.hasDone,
+//               backgroundColor: updatedItem.backgroundColor,
+//               recurrence: updatedItem.recurrence
+//             };
+//           }
+
+//           // se não for o card editado, mantém como está
+//           return c;
+//         })
+//   );
+
+//       // setActivePhases(prev =>
+//       //   prev.map(p =>
+//       //     p.id === phase.id
+//       //       ? {
+//       //             ...p, 
+//       //             showButtonMore: p.showButtonMore === true || response.data.EventList.length >= QTDE_RECORDS_EVENTS 
+//       //         }
+//       //       : p
+//       //   )
+//       // );
       
-      // Atualiza o controle de paginação 
-      updatePhasePagination({
-        phaseId: phase.id,
-        lastIdEvent: response.data.LastIdEvent,
-        lastDateEvent: new Date(response.data.LastDateEvent),
-        lastIdRecurrency: response.data.LastIdRecurrency,
-        lastDateRecurrency: new Date(response.data.LastDateRecurrency),
-      });
-    });
+//       // Atualiza o controle de paginação 
+//       updatePhasePagination({
+//         phaseId: phase.id,
+//         lastIdEvent: response.data.LastIdEvent,
+//         lastDateEvent: new Date(response.data.LastDateEvent),
+//         lastIdRecurrency: response.data.LastIdRecurrency,
+//         lastDateRecurrency: new Date(response.data.LastDateRecurrency),
+//       });
+//     });
 
-    setLoadEvents(false)
-    setIsWaiting(false)
-    setCurrentKanbanStageId(0)
-  }
-  catch (err) {
-    // addToast({
-    //   type: 'error',
-    //   title: 'Operação NÃO Realizada',
-    //   description: 'Houve uma falha no carregamento dos eventos relacionados as etapas do painel'
-    // });
-
-    setIsWaiting(false)
-    console.log(err);
-  }
-}
+//     setLoadEvents(false)
+//     setIsWaiting(false)
+//     setCurrentKanbanStageId(0)
+//   }
+//   catch (err) {
+//     setIsWaiting(false)
+//     console.log(err);
+//   }
+// }
 
  function updatePhasePagination(newData: IPhasePagination) {
   setPhasePagination(prev => {
@@ -649,10 +734,16 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
       endDate = new Date(today.getFullYear(), today.getMonth() + 2, 0);
       break;
 
-    case 'dias_15':
-      startDate = today;
-      endDate = new Date(today);
-      endDate.setDate(today.getDate() + 15);
+   case 'dias_15':
+      const base = new Date(today);
+      base.setHours(0, 0, 0, 0);
+
+      startDate = new Date(base);
+      startDate.setDate(base.getDate() - 7);
+
+      endDate = new Date(base);
+      endDate.setDate(base.getDate() + 7);
+
       break;
 
     case 'ultima_semana':
@@ -702,7 +793,9 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
       return;
     }
 
+    localStorage.setItem('@Gojur:KanbanEventStatus', 'open');
     localStorage.setItem('@Gojur:kanbanStageId', phaseId.toString());
+    
     setCurrentKanbanStageId(phaseId)
     handleCaptureTextPublication('');
     handleDeadLineCalculatorText('');
@@ -731,7 +824,7 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
         }
       }
       
-      localStorage.setItem('@GoJur:KanbanEventStatus', '');
+      localStorage.setItem('@Gojur:KanbanEventStatus', 'open');
       localStorage.setItem('@GoJur:RecurrenceDate', FormatDate(new Date(event.start), 'yyyy-MM-dd'),);
       isOpenModal(event.eventId.toString());
       setCurrentAppointmentEdit(event.eventId)
@@ -2295,18 +2388,28 @@ const onDragEnd = useCallback(async (result: DropResult) => {
                                       </div>
                                     )}
                                     <div className="card-meta">
-                                      {card.dateTime && (
-                                        <>
-                                          <FiClock />
-                                          <span>{card.dateTime}</span>
-                                        </>
-                                      )}
-                                     <FiTrash2
-                                      style={{ marginLeft: 'auto', cursor: 'pointer', color: '#fca5a5' }}
-                                      title="Excluir compromisso"
-                                      onClick={(e) => handleDeleteCard(e, card)}
-                                    />                                    
+                                      <FiTrash2
+                                        style={{ marginLeft: 'auto', cursor: 'pointer' }}
+                                        title="Excluir compromisso"
+                                        onClick={(e) => handleDeleteCard(e, card)}
+                                      /> 
                                     </div>
+
+                                    <div className="card-meta">
+                                      {card.recurrence == "S" && (
+                                        <FiClock
+                                          style={{ marginLeft: 'auto', marginTop: '8px'}}
+                                          title="Compromisso Recorrente, clique caso queira atualizar a página e visualizar as alterações em todas as sequencias"
+                                          onClick={(e) => 
+                                          {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            handleRefreshPanel()
+                                          }}
+                                        />                                    
+                                      )}                                   
+                                    </div>
+
 
                                   </AppointmentCard>   
                                                                  

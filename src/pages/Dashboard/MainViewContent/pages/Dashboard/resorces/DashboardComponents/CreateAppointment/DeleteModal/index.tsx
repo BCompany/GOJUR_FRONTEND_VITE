@@ -54,7 +54,7 @@ const DeleteModal: React.FC<ModalProps> = ({
       closeModal();
       handleModalActiveId(0)
       setisSaveThis(false)
-      localStorage.setItem('@GoJur:KanbanEventStatus', 'delete_one')
+      localStorage.setItem('@Gojur:KanbanEventStatus', 'delete_one')
 
     } catch (err) {
 
@@ -91,7 +91,7 @@ const DeleteModal: React.FC<ModalProps> = ({
       closeModal();
       setisSaveAll(false)
       handleModalActiveId(0)
-      localStorage.setItem('@GoJur:KanbanEventStatus', 'delete_all');
+      localStorage.setItem('@Gojur:KanbanEventStatus', 'delete_all');
       
     } catch (err) {
 
@@ -128,7 +128,7 @@ const DeleteModal: React.FC<ModalProps> = ({
       closeModal();
       setisSaveNext(false)
       handleModalActiveId(0)
-      localStorage.setItem('@GoJur:KanbanEventStatus', 'delete_next');
+      localStorage.setItem('@Gojur:KanbanEventStatus', 'delete_next');
 
     } catch (err) {
       setisSaveNext(false)

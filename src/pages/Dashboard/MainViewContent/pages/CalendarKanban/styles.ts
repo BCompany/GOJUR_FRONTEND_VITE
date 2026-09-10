@@ -527,7 +527,7 @@ export const AppointmentCard = styled.div`
     display: flex;
     align-items: center;
     gap: 0.35rem;
-    color: #94a3b8;
+    color: #cbd5e1;
     font-size: 0.625rem;
 
     &:hover {

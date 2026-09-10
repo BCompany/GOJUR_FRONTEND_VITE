@@ -802,7 +802,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   // Close modal
   const handleCloseModalLog = () => {
     localStorage.setItem('@GoJur:appointmentClose', 'S');
-    localStorage.setItem('@GoJur:KanbanEventStatus', 'close');
+    localStorage.setItem('@Gojur:KanbanEventStatus', 'close');
     isClosed()
   } // mudança de data final
 
@@ -1498,16 +1498,20 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         workflowExecId:appointmentWorkflowExecId 
       }
 
-      console.log(data)
       try {
-        await api.put<AppointmentPropsSave>(`/Compromisso/Salvar`, data)
+        var response = await api.put<AppointmentPropsSave>(`/Compromisso/Salvar`, data)
 
         selectProcess(null)
         addToast({ type: 'success', title: 'Compromisso Salvo', description: 'Seu compromisso foi salvo com sucesso' });
         isClosed()
         handleModalActive(false)
-        localStorage.removeItem('@Gojur:kanbanStageId');
-        localStorage.setItem('@GoJur:KanbanEventStatus', 'save');
+
+        const kanbanEventEdit = localStorage.getItem('@Gojur:KanbanEventStatus');
+        if (kanbanEventEdit == 'open') 
+        {
+            localStorage.setItem('@Gojur:eventKanbanSavedId', Number(response.data).toString());
+            localStorage.setItem('@Gojur:KanbanEventStatus', 'save');
+        }
       }
       catch (err: any) {
         if (err.response.data.typeError?.warning == "awareness") {
@@ -1590,7 +1594,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         handleModalActiveId(0)
         handleModalActive(false)
         setConfirmDeleteCalendarEvent(false);
-        localStorage.setItem('@GoJur:KanbanEventStatus', 'delete');
+        localStorage.setItem('@Gojur:KanbanEventStatus', 'delete');
       }
       else {
         const data: AppointmentPropsDelete = {

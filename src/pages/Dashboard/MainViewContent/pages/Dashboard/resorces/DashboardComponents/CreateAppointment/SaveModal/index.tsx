@@ -68,7 +68,14 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
       closeModal();
       setisSaveThis(false)
       localStorage.removeItem('@GoJur:MatterId');
-      localStorage.setItem('@GoJur:KanbanEventStatus', 'save');
+      
+      const kanbanEventEdit = localStorage.getItem('@Gojur:KanbanEventStatus');
+      if (kanbanEventEdit == 'open') 
+      {
+          localStorage.setItem('@Gojur:eventKanbanSavedId', Number(data.eventId).toString());
+          localStorage.setItem('@Gojur:KanbanEventStatus', 'save_one');
+      }
+
     }
     catch (err:any) {
       setisSaveThis(false)
@@ -98,7 +105,14 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
       close();
       closeModal();
       setisSaveAll(false)
-      localStorage.setItem('@GoJur:KanbanEventStatus', 'save');
+
+      const kanbanEventEdit = localStorage.getItem('@Gojur:KanbanEventStatus');
+      if (kanbanEventEdit == 'open') 
+      {
+          localStorage.setItem('@Gojur:eventKanbanSavedId', Number(data.eventId).toString());
+          localStorage.setItem('@Gojur:KanbanEventStatus', 'save_all');
+      }
+
     }
     catch (err:any) {
       setisSaveAll(false)
@@ -125,7 +139,13 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
       close();
       closeModal();
       setisSaveNext(false)
-      localStorage.setItem('@GoJur:KanbanEventStatus', 'save');
+
+      const kanbanEventEdit = localStorage.getItem('@Gojur:KanbanEventStatus');
+      if (kanbanEventEdit == 'open') 
+      {
+          localStorage.setItem('@Gojur:eventKanbanSavedId', Number(data.eventId).toString());
+          localStorage.setItem('@Gojur:KanbanEventStatus', 'save_next');
+      }
     }
     catch (err:any) {
       setisSaveNext(false)
