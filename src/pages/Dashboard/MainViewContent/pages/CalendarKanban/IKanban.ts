@@ -32,10 +32,7 @@ export interface IPanel {
 export interface IPhasePagination
 {
   phaseId: number | any;
-  lastIdEvent: number | any;
-  lastDateEvent: Date | any;
-  lastIdRecurrency: number | any;
-  lastDateRecurrency: number | any;
+  skipRecordsQty: number | any;
 }
 
 /* ─── Colors for auto-assignment ─── */

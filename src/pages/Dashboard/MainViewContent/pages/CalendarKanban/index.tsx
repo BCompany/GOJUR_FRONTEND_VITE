@@ -255,10 +255,7 @@ const LoadKanbanEvents = async () => {
         {
             const pagination = phasePagination.find(p => p.phaseId === phase.id);
 
-            let lastIdPgDatabase =  0;
-            let lastDatePgDatabase = "";
-            let lastIdPgRecurrency = 0;
-            let lastDatePgRecurrency = "";
+            let skipRecordsQty = 0;
 
           // If is a search by term, subject or responsible, clear cards to reload new values
             const clearPhases =(forceFirstPage || isLoadingSearch || subjectSelected || multiFilter1.length > 0);
@@ -266,10 +263,7 @@ const LoadKanbanEvents = async () => {
             // When is not execution a search by term, considering a pagination
             if (!clearPhases && currentKanbanStageId == 0)
             {
-                lastIdPgDatabase = pagination ? pagination.lastIdEvent : 0;
-                lastDatePgDatabase = pagination ? pagination.lastDateEvent.toISOString() : "";
-                lastIdPgRecurrency = pagination ? pagination.lastIdRecurrency : 0;
-                lastDatePgRecurrency =pagination ? pagination.lastDateRecurrency.toISOString() : "";
+                skipRecordsQty = pagination ? pagination.skipRecordsQty : 0;
             }
 
             return api.get('/KanbanEtapa/ListarEventos', {
@@ -279,11 +273,8 @@ const LoadKanbanEvents = async () => {
                 startDate:  startDate.toISOString().split('T')[0],
                 endDate: endDate.toISOString().split('T')[0],
                 filterItens:filterItens,
-                lastIdPgDatabase: lastIdPgDatabase,
-                lastDatePgDatabase: lastDatePgDatabase,
-                lastIdPgRecurrency: lastIdPgRecurrency,
-                lastDatePgRecurrency: lastDatePgRecurrency,
                 qtdRecords:QTDE_RECORDS_EVENTS,
+                skipRecordsQty : skipRecordsQty
               },
             }).then((response) => ({ response, phase }))
       });
@@ -323,10 +314,7 @@ const LoadKanbanEvents = async () => {
         // Atualiza o controle de paginação 
         updatePhasePagination({
           phaseId: phase.id,
-          lastIdEvent: response.data.LastIdEvent,
-          lastDateEvent: new Date(response.data.LastDateEvent),
-          lastIdRecurrency: response.data.LastIdRecurrency,
-          lastDateRecurrency: new Date(response.data.LastDateRecurrency),
+          skipRecordsQty :response.data.SkipRecordsQty
         });
       });
 
@@ -366,11 +354,8 @@ const LoadKanbanEvents = async () => {
           startDate:  startDate.toISOString().split('T')[0],
           endDate: endDate.toISOString().split('T')[0],
           filterItens: filterItens,
-          lastIdPgDatabase: currentPagination.lastIdEvent,
-          lastDatePgDatabase: currentPagination.lastDateEvent,
-          lastIdPgRecurrency: currentPagination.lastIdRecurrency,
-          lastDatePgRecurrency:currentPagination.lastDateRecurrency,
           qtdRecords:QTDE_RECORDS_EVENTS,
+          skipRecordsQty : currentPagination.skipRecordsQty
         },
       });
                      
@@ -405,10 +390,7 @@ const LoadKanbanEvents = async () => {
         // Atualiza o controle de paginação 
       updatePhasePagination({
         phaseId: phaseId,
-        lastIdEvent: response.data.LastIdEvent,
-        lastDateEvent: new Date(response.data.LastDateEvent),
-        lastIdRecurrency: response.data.LastIdRecurrency,
-        lastDateRecurrency: new Date(response.data.LastDateRecurrency),
+        skipRecordsQty : response.data.SkipRecordsQty
       });
 
       setIsWaiting(false);
