@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import React, { useEffect, useState } from 'react';
+import { envProvider } from 'services/hooks/useEnv';
 import SwaggerUI from 'swagger-ui-react';
 import 'swagger-ui-react/swagger-ui.css';
 import { Container, Center } from './styles';
@@ -29,7 +30,9 @@ const APIDocumentation = () => {
 
 
   useEffect(() => {
-    const url = 'https://api.gojur.com.br/swagger/docs/v1';
+    const url = envProvider.doctUrl
+
+    console.log(url)
 
     fetch(url)
       .then(response => response.json())
