@@ -13,7 +13,7 @@ import { useModal } from 'context/modal';
 import { v4 as uuidv4 } from 'uuid';
 import FilterCalendar, { ISelectValues } from 'components/FilterCalendar';
 import api from 'services/api';
-import {AddCardButton, AddPhaseColumn, AppointmentCard, BoardLayout, CardsList, ColorDot,ColorPickerWrapper,Container,Content,EmptyState,KanbanArea,ModalOverlay,PanelItem,PanelsModal,PanelTitleBar,TaskBar, PhaseColumn, PhaseHeader, FixedFooter} from './styles';
+import {AddCardButton, AddPhaseColumn, AppointmentCard, BoardLayout, CardsList, ColorDot,ColorPickerWrapper,Container,Content,EmptyState,KanbanArea,ModalOverlay,PanelItem,PanelsModal,PanelTitleBar,TaskBar, PhaseColumn, PhaseHeader, FixedFooter, InsertSlot} from './styles';
 import { useToast } from 'context/toast';
 import { Overlay } from 'Shared/styles/GlobalStyle';
 import Loader from 'react-spinners/ClipLoader';
@@ -37,6 +37,9 @@ export default function AgendaKanban() {
   const [optionsSubject, setOptionsSubject] = useState<ISelectValues[]>([]);
   const [appointmentSubject, setAppointmentSubject] = useState('');
   const [currentKanbanStageId, setCurrentKanbanStageId] = useState<number>();
+  const [insertAnchor, setInsertAnchor] = useState<{ phaseId: number; beforeCardId: string } | null>(null);
+  const [insertedCardId, setInsertedCardId] = useState<string | null>(null);
+  const pendingScrollCardId = useRef<string | null>(null);
   const [currentAppointmentEdit, setCurrentAppointmentEdit] = useState<number>();
   const [appointmentSubjectId, setAppointmentSubjectId] = useState('');
   const [filterTerm, setFilterTerm] = useState('');
@@ -416,7 +419,12 @@ const UpdateAfterCloseModalEvents = async() => {
       return
 
     if (kanbanEventEdit == 'close')
+    {
+      if (insertAnchor)
+        setInsertAnchor(null);
+
       return
+    }
 
     const eventKanbanSavedId = localStorage.getItem('@Gojur:eventKanbanSavedId');
     const recurrenceDate = localStorage.getItem('@GoJur:RecurrenceDate');
@@ -467,6 +475,9 @@ const UpdateAfterCloseModalEvents = async() => {
     // When currentAppointmentEdit has value = Editing
     // When currentAppointmentEdit is undefined get from LocalStorage a new Event
     const eventIdCurrent = currentAppointmentEdit ? currentAppointmentEdit.toString() : eventKanbanSavedId.toString();
+
+    // generated outside the updater so the id stays the same if React replays it
+    const newCardId = uuidv4();
 
     setCards(prevCards => {
       const updatedCards = prevCards.map(card => {
@@ -519,26 +530,39 @@ const UpdateAfterCloseModalEvents = async() => {
       });
 
       if (found) {
-        return updatedCards; 
+        return updatedCards;
       }
 
-      return [
-        ...updatedCards,
-        {
-          id: uuidv4(),
-          eventId: response.data.id,
-          panelId: activePanelId,
-          phaseId: currentKanbanStageId,
-          description: response.data.title,
-          title: response.data.subjectText,
-          favorited: response.data.KanbanFavorite === 'S',
-          start: response.data.start,
-          hasDone: response.data.hasDone,
-          backgroundColor: response.data.backgroundColor,
-          recurrence: response.data.recurrence
-        }
-      ];
+      pendingScrollCardId.current = newCardId;
+
+      const newCard = {
+        id: newCardId,
+        eventId: response.data.id,
+        panelId: activePanelId,
+        phaseId: currentKanbanStageId,
+        description: response.data.title,
+        title: response.data.subjectText,
+        favorited: response.data.KanbanFavorite === 'S',
+        start: response.data.start,
+        hasDone: response.data.hasDone,
+        backgroundColor: response.data.backgroundColor,
+        recurrence: response.data.recurrence
+      };
+
+      const anchorIndex = insertAnchor && insertAnchor.phaseId === currentKanbanStageId
+        ? updatedCards.findIndex(c => String(c.id) === insertAnchor.beforeCardId)
+        : -1;
+
+      if (anchorIndex < 0) {
+        return [...updatedCards, newCard];
+      }
+
+      const reordered = [...updatedCards];
+      reordered.splice(anchorIndex, 0, newCard);
+      return reordered;
     });
+
+    setInsertAnchor(null);
 
     setActivePhases(prev => [...prev]); 
 
@@ -560,7 +584,32 @@ const UpdateAfterCloseModalEvents = async() => {
   }
 }
 
-// const RefreshKanbanEvents = async () => {  
+// runs on the commit that already contains the new card, so the element exists
+useEffect(() => {
+
+  const cardId = pendingScrollCardId.current;
+
+  if (!cardId)
+    return;
+
+  pendingScrollCardId.current = null;
+
+  const cardElement = document.querySelector(`[data-card-id="${cardId}"]`);
+
+  if (!cardElement)
+    return;
+
+  // nearest on both axes so the vertical scroll does not drag the board sideways
+  cardElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+  setInsertedCardId(cardId);
+
+  const timer = setTimeout(() => setInsertedCardId(null), 1200);
+
+  return () => clearTimeout(timer);
+
+}, [cards]);
+
+// const RefreshKanbanEvents = async () => {
 //   try 
 //   { 
 //       const { startDate, endDate } = getPeriodRange(selectedPeriod.value)
@@ -750,8 +799,8 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
   return { startDate, endDate };
 }
 
-  const handleClickInclude = useCallback((phaseId: number) => {
-    
+  const handleClickInclude = useCallback((phaseId: number, beforeCardId?: string) => {
+
     if (!permissions.canManagePanels){
       addToast({
         type: 'info',
@@ -764,7 +813,10 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
 
     localStorage.setItem('@Gojur:KanbanEventStatus', 'open');
     localStorage.setItem('@Gojur:kanbanStageId', phaseId.toString());
-    
+
+    // anchor by card id, not by index: "Ver mais" can load records while the modal is open
+    setInsertAnchor(beforeCardId ? { phaseId, beforeCardId } : null);
+
     setCurrentKanbanStageId(phaseId)
     handleCaptureTextPublication('');
     handleDeadLineCalculatorText('');
@@ -2304,12 +2356,23 @@ const onDragEnd = useCallback(async (result: DropResult) => {
                             style={{ background: snapshot.isDraggingOver ? '#f0f7ff' : undefined }}
                           >
                             {phaseCards.map((card, index) => (
-                                <Draggable  
-                                  key={card.id}
+                              <React.Fragment key={card.id}>
+                                <InsertSlot>
+                                  <AddCardButton
+                                    type="button"
+                                    title="Criar compromisso"
+                                    onClick={() => handleClickInclude(phase.id, String(card.id))}
+                                  >
+                                    <FiPlus /> Criar Compromisso
+                                  </AddCardButton>
+                                </InsertSlot>
+                                <Draggable
                                   draggableId={`event-${card.eventId}-phaseId=${card.phaseId}-start=${normalizeDateOnly(card.start)}`}
                                   index={index}>
                                   {(drag, dragSnapshot) => (
                                   <AppointmentCard
+                                    data-card-id={card.id}
+                                    className={String(card.id) === insertedCardId ? 'card-inserted' : undefined}
                                     onClick={(e) => handleClickEdit(e, phase.id, card)}
                                     onContextMenu={(e) => {
                                       e.preventDefault();   // bloqueia menu padrão
@@ -2383,8 +2446,9 @@ const onDragEnd = useCallback(async (result: DropResult) => {
                                   </AppointmentCard>   
                                                                  
                                 )}
-                                
+
                               </Draggable>
+                              </React.Fragment>
                             ))}
 
                             {provided.placeholder}

@@ -1,4 +1,15 @@
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
+
+const insertedFlash = keyframes`
+  0% {
+    background: #dbeafe;
+    box-shadow: 0 0 0 2px var(--blue);
+  }
+  100% {
+    background: #fafafa;
+    box-shadow: 0 0 0 2px transparent;
+  }
+`;
 
 export const Container = styled.div`
   background-color: transparent;
@@ -459,6 +470,36 @@ export const CardsList = styled.div`
   }
 `;
 
+/* Zero-height slot between cards; the negative margin cancels the extra
+   CardsList gap so adding it does not change the column layout.
+   The button inside is the AddCardButton, floated over the gap. */
+export const InsertSlot = styled.div`
+  position: relative;
+  height: 0;
+  margin: -0.25rem 0;
+
+  > button {
+    position: absolute;
+    top: -13px;
+    left: 0;
+    right: 0;
+    height: 26px;
+    padding: 0 0.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    background: #f8fafc;
+    box-shadow: 0 2px 6px rgba(2, 6, 23, 0.08);
+    opacity: 0;
+    transition: opacity 0.12s ease;
+    z-index: 2;
+  }
+
+  > button:hover {
+    opacity: 1;
+    color: var(--blue);
+  }
+`;
+
 export const FixedFooter = styled.div`
   padding: 8px;
   border-top: 1px solid #eee;
@@ -478,6 +519,10 @@ export const AppointmentCard = styled.div`
   &:hover {
     box-shadow: 0 4px 12px rgba(2, 6, 23, 0.1);
     transform: translateY(-2px);
+  }
+
+  &.card-inserted {
+    animation: ${insertedFlash} 1.2s ease-out;
   }
 
   .card-header {
