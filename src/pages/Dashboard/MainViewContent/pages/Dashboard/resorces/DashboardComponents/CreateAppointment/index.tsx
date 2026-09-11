@@ -1368,8 +1368,9 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         recurrenceRuleJSON: JSON.stringify(dataRecurrence),
         workflowActionsExecId: appointmentWorkflowActionsExecId,
         workflowExecId:appointmentWorkflowExecId,
+        companyId: localStorage.getItem('@GoJur:companyId'),
         apiKey: localStorage.getItem('@GoJur:apiKey'),
-        companyId: localStorage.getItem('@GoJur:companyId')
+        cod_Empresa: localStorage.getItem('@GoJur:companyId'),
       }
 
       try {

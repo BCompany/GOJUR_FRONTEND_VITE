@@ -22,6 +22,8 @@ const APIDocumentation = () => {
     '/Compromisso/Salvar',
     '/Compromisso/Selecionar',
     '/Compromisso/Deletar',
+    '/Assunto/ContarPorEmpresa',
+    '/Assunto/ListarPorFiltro',
     '/Usuario/ListarUsuariosPorEmpresa'
     ];
 

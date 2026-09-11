@@ -121,7 +121,9 @@ const SubjectList = () => {
         page,
         rows:20,
         filterClause: captureText,
-        token
+        token,
+        apiKey: localStorage.getItem('@GoJur:apiKey'),
+        companyId: localStorage.getItem('@GoJur:companyId')
         }
     })
 
