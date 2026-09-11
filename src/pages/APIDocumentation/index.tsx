@@ -10,7 +10,20 @@ import { Container, Center } from './styles';
 const APIDocumentation = () => {
   const [swaggerSpec, setSwaggerSpec] = useState(null);
   const [filteredSpec, setFilteredSpec] = useState(null);
-  const initialFilters = ['/Processo/Listar', '/Processo/SelecionarProcesso', '/ProcessoAcompanhamento/CriarAcompanhamentoWall', '/TipoAcompanhamento/Listar', '/ProcessoAcompanhamentos/Listar', '/Publicacao/Listar', '/Publicacao/ListarNomesPublicacao', '/Usuario/ListarUsuariosPorEmpresa'];
+  const initialFilters = [
+    '/Processo/Listar', 
+    '/Processo/SelecionarProcesso', 
+    '/ProcessoAcompanhamento/CriarAcompanhamentoWall', 
+    '/TipoAcompanhamento/Listar', 
+    '/ProcessoAcompanhamentos/Listar', 
+    '/Publicacao/Listar', 
+    '/Publicacao/ListarNomesPublicacao', 
+    '/Compromisso/ListarCalendario',
+    '/Compromisso/Salvar',
+    '/Compromisso/Selecionar',
+    '/Compromisso/Deletar',
+    '/Usuario/ListarUsuariosPorEmpresa'
+    ];
 
 
   useEffect(() => {
