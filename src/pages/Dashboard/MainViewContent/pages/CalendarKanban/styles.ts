@@ -1,12 +1,13 @@
 import styled, { keyframes } from 'styled-components';
 
-const insertedFlash = keyframes`
+/* lands on the resting colour of .card-highlight, so the card simply stays darker */
+const highlightFlash = keyframes`
   0% {
     background: #dbeafe;
     box-shadow: 0 0 0 2px var(--blue);
   }
   100% {
-    background: #fafafa;
+    background: #e9eef5;
     box-shadow: 0 0 0 2px transparent;
   }
 `;
@@ -521,8 +522,10 @@ export const AppointmentCard = styled.div`
     transform: translateY(-2px);
   }
 
-  &.card-inserted {
-    animation: ${insertedFlash} 1.2s ease-out;
+  &.card-highlight {
+    background: #e9eef5;
+    border-color: #cbd5e1;
+    animation: ${highlightFlash} 1.2s ease-out;
   }
 
   .card-header {

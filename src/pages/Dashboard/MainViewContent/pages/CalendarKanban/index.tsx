@@ -38,8 +38,8 @@ export default function AgendaKanban() {
   const [appointmentSubject, setAppointmentSubject] = useState('');
   const [currentKanbanStageId, setCurrentKanbanStageId] = useState<number>();
   const [insertAnchor, setInsertAnchor] = useState<{ phaseId: number; beforeCardId: string } | null>(null);
-  const [insertedCardId, setInsertedCardId] = useState<string | null>(null);
-  const pendingScrollCardId = useRef<string | null>(null);
+  const [highlightedCardId, setHighlightedCardId] = useState<string | null>(null);
+  const pendingHighlightCardId = useRef<string | null>(null);
   const [currentAppointmentEdit, setCurrentAppointmentEdit] = useState<number>();
   const [appointmentSubjectId, setAppointmentSubjectId] = useState('');
   const [filterTerm, setFilterTerm] = useState('');
@@ -476,6 +476,10 @@ const UpdateAfterCloseModalEvents = async() => {
     // When currentAppointmentEdit is undefined get from LocalStorage a new Event
     const eventIdCurrent = currentAppointmentEdit ? currentAppointmentEdit.toString() : eventKanbanSavedId.toString();
 
+    // same signal as the line above, and a snapshot of this render: no card under
+    // edit means this is an inclusion, the only case allowed to add a card
+    const isIncludeOperation = !currentAppointmentEdit;
+
     // generated outside the updater so the id stays the same if React replays it
     const newCardId = uuidv4();
 
@@ -485,6 +489,8 @@ const UpdateAfterCloseModalEvents = async() => {
 
         if (!isRecurrence && sameEvent) {
           // atualizar item não recorrente
+          pendingHighlightCardId.current = String(card.id);
+
           return {
             ...card,
             description: response.data.title,
@@ -501,6 +507,8 @@ const UpdateAfterCloseModalEvents = async() => {
           const currentDate = card.start.substring(0, 10);
           if (currentDate === recurrenceDate) {
             // atualizar item recorrente específico
+            pendingHighlightCardId.current = String(card.id);
+
             return {
               ...card,
               eventId: response.data.id,
@@ -529,11 +537,13 @@ const UpdateAfterCloseModalEvents = async() => {
         return card.eventId.toString() === eventKanbanSavedId.toString();
       });
 
-      if (found) {
+      // an edit must never add a card: if the match above failed the card stays
+      // where it is instead of being appended to the end of the column
+      if (found || !isIncludeOperation) {
         return updatedCards;
       }
 
-      pendingScrollCardId.current = newCardId;
+      pendingHighlightCardId.current = newCardId;
 
       const newCard = {
         id: newCardId,
@@ -584,15 +594,19 @@ const UpdateAfterCloseModalEvents = async() => {
   }
 }
 
-// runs on the commit that already contains the new card, so the element exists
+// runs on the commit that already contains the saved card, so the element exists
 useEffect(() => {
 
-  const cardId = pendingScrollCardId.current;
+  const cardId = pendingHighlightCardId.current;
 
   if (!cardId)
     return;
 
-  pendingScrollCardId.current = null;
+  pendingHighlightCardId.current = null;
+
+  // the highlight stays until another card is saved; reloading the panel
+  // regenerates the card ids, so it clears on its own
+  setHighlightedCardId(cardId);
 
   const cardElement = document.querySelector(`[data-card-id="${cardId}"]`);
 
@@ -601,11 +615,6 @@ useEffect(() => {
 
   // nearest on both axes so the vertical scroll does not drag the board sideways
   cardElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
-  setInsertedCardId(cardId);
-
-  const timer = setTimeout(() => setInsertedCardId(null), 1200);
-
-  return () => clearTimeout(timer);
 
 }, [cards]);
 
@@ -816,6 +825,10 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
 
     // anchor by card id, not by index: "Ver mais" can load records while the modal is open
     setInsertAnchor(beforeCardId ? { phaseId, beforeCardId } : null);
+
+    // marks this as an inclusion: left over from a previous edit it would make this
+    // inclusion overwrite that card, and would block the new one from being added
+    setCurrentAppointmentEdit(undefined);
 
     setCurrentKanbanStageId(phaseId)
     handleCaptureTextPublication('');
@@ -2372,7 +2385,7 @@ const onDragEnd = useCallback(async (result: DropResult) => {
                                   {(drag, dragSnapshot) => (
                                   <AppointmentCard
                                     data-card-id={card.id}
-                                    className={String(card.id) === insertedCardId ? 'card-inserted' : undefined}
+                                    className={String(card.id) === highlightedCardId ? 'card-highlight' : undefined}
                                     onClick={(e) => handleClickEdit(e, phase.id, card)}
                                     onContextMenu={(e) => {
                                       e.preventDefault();   // bloqueia menu padrão
