@@ -3,6 +3,7 @@ interface envProps {
   enviroment: string;
   redirectUrl: string;
   mainUrl: string;
+  doctUrl: string;
   version: string;
 }
 
@@ -21,6 +22,10 @@ if (envProvider.redirectUrl != undefined) {
 
 if (envProvider.mainUrl != undefined) { 
   localStorage.setItem('@GoJur:mainUrl', envProvider.mainUrl)
+}
+
+if (envProvider.doctUrl != undefined) { 
+  localStorage.setItem('@GoJur:doctUrl', envProvider.doctUrl)
 }
 
 // get value saved in storade if is not possible take from web.config
@@ -44,6 +49,13 @@ if (envProvider.mainUrl === undefined){
   const mainUrlStorage = localStorage.getItem('@GoJur:mainUrl')?.toString()
   if (mainUrlStorage){
     envProvider.mainUrl = mainUrlStorage;
+  }
+}
+
+if (envProvider.doctUrl === undefined){
+  const doctUrlStorage = localStorage.getItem('@GoJur:doctUrl')?.toString()
+  if (doctUrlStorage){
+    envProvider.doctUrl = doctUrlStorage;
   }
 }
 

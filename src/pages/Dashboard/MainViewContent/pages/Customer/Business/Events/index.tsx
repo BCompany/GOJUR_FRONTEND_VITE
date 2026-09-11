@@ -130,7 +130,9 @@ const BusinessEvents = (props) => {
 
       await api.post(`/Compromisso/Deletar`, {
         eventId: appointmentId,
-        token
+        token,
+        apiKey: localStorage.getItem('@GoJur:apiKey'),
+        companyId: localStorage.getItem('@GoJur:companyId')
       });
       
       LoadEvents();
