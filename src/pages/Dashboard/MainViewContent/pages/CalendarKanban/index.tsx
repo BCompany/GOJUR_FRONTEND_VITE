@@ -76,6 +76,8 @@ export default function AgendaKanban() {
   const phaseNameRef = useRef<HTMLInputElement>(null);
   // a ref, not state: LoadKanbanEvents runs in the same tick as RebuildInterface and would read a stale value
   const forceFirstPageRef = useRef(false);
+  // blocks a second drop while the first one is still in flight, without repainting
+  const isDraggingRef = useRef(false);
   const [dateEventStatus, setDateEventStatus] = useState<string>('');
   const [eventIdButtonClick, setEventIdButtonClick] = useState<number>(0);
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -1501,14 +1503,18 @@ const onDragEnd = useCallback(async (result: DropResult) => {
     if (!destination) 
       return;
 
-    if (source.droppableId === destination.droppableId && type === "DEFAULT") 
+    if (source.droppableId === destination.droppableId && type === "DEFAULT")
       return;
 
+    if (isDraggingRef.current)
+      return;
+
+    isDraggingRef.current = true;
+
+    try
+    {
     // UPDATE POSITION STAGES
     if (type === "COLUMN") {
-      setIsWaiting(true)
-      setIsWaitingMessage("Alterando ordem da etapa...")
-
       const phaseId = parseInt(draggableId.replace("phase-", ""), 10);
       const destinationIndex = destination.index;
 
@@ -1527,9 +1533,6 @@ const onDragEnd = useCallback(async (result: DropResult) => {
             .sort((a, b) => a.order - b.order)
         );
       })
-      
-      setIsWaitingMessage("Aguarde...")
-      setIsWaiting(false)
     }
 
     // UPDATE POSITION EVENTS
@@ -1597,10 +1600,7 @@ const onDragEnd = useCallback(async (result: DropResult) => {
           let response:any;
           try
           {
-            setIsWaiting(true)
-            setIsWaitingMessage("Alterando etapa do compromisso...")
-
-            if (card?.recurrence === "S") 
+            if (card?.recurrence === "S")
             {
               const resSelect = await api.post("Compromisso/Selecionar", {
                 token,
@@ -1651,20 +1651,27 @@ const onDragEnd = useCallback(async (result: DropResult) => {
               }));
 
             handleRightClick(card.hasDone? "L": "P", newId)
-
-            setIsWaiting(false)
-            setIsWaitingMessage("Aguarde...")
           }
           catch(ex)
           {
-              setIsWaiting(false)  
-              setIsWaitingMessage("Aguarde...")
+              addToast({
+                type: 'error',
+                title: 'Operação NÃO Realizada',
+                description: 'Houve uma falha ao arrastar o compromisso'
+              });
+
               console.log(ex)
-          }          
+          }
       }
   }
 
-  }, [token, cards]);
+  }
+  finally
+  {
+    isDraggingRef.current = false;
+  }
+
+  }, [token, cards, addToast]);
 
   function buildRecurrenceObject(data: any, token: string, phaseIdUpdate: number) 
   {
