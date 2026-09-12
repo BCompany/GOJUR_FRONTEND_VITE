@@ -432,14 +432,31 @@ const UpdateAfterCloseModalEvents = async(result: KanbanEventResult) => {
       return
     }
 
+    // a recurrence change that is not "somente este" hits occurrences we cannot single
+    // out from the card list: reload the whole panel instead, so an exclusion leaves no
+    // ghost cards behind and an edit shows up on every occurrence at once
+    const isWholeSeriesChange = (kanbanEventEdit == 'save_all'
+                              || kanbanEventEdit == 'save_next'
+                              || kanbanEventEdit == 'delete_all'
+                              || kanbanEventEdit == 'delete_next')
+
+    if (isWholeSeriesChange)
+    {
+      // the reload regenerates every card id, so neither of these can still match
+      setInsertAnchor(null);
+      setHighlightedCardId(null);
+      localStorage.removeItem('@GoJur:RecurrenceDate');
+      handleRefreshPanel();
+      return;
+    }
+
     const savedEventId = result.eventId;
     const recurrenceDate = localStorage.getItem('@GoJur:RecurrenceDate');
 
     // Delete normal event or recurrence ONE
-    const isDeleteOperation = (kanbanEventEdit == 'delete_one' 
-                            || kanbanEventEdit == 'delete' 
-                            || kanbanEventEdit == 'delete_all' 
-                            || kanbanEventEdit == 'delete_next')
+    // delete_all / delete_next never reach here: they reload the whole panel above
+    const isDeleteOperation = (kanbanEventEdit == 'delete_one'
+                            || kanbanEventEdit == 'delete')
 
     if (isDeleteOperation)
     {
