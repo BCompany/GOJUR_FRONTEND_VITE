@@ -502,6 +502,17 @@ const UpdateAfterCloseModalEvents = async(result: KanbanEventResult) => {
     // edit means this is an inclusion, the only case allowed to add a card
     const isIncludeOperation = !currentAppointmentEdit;
 
+    // a new recurring appointment creates several occurrences in one go, and splicing a
+    // single card in would leave the rest hidden until the next reload
+    if (isIncludeOperation && isRecurrence)
+    {
+      setInsertAnchor(null);
+      setHighlightedCardId(null);
+      localStorage.removeItem('@GoJur:RecurrenceDate');
+      handleRefreshPanel();
+      return;
+    }
+
     // generated outside the updater so the id stays the same if React replays it
     const newCardId = uuidv4();
 
