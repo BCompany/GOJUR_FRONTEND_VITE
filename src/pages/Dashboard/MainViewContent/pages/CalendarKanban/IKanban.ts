@@ -1,13 +1,13 @@
 
 export interface ICard {
-  id: number;
+  // a uuid generated on load, not a record id — the record is eventId
+  id: string;
   eventId: number;
   phaseId: number;
   panelId: number;
   title: string;
   start: string;
   description: string;
-  dateTime: string;
   favorited?: boolean;
   backgroundColor: string;
   recurrence: string;
@@ -45,3 +45,24 @@ export const PHASE_COLORS = [
   '#fed7aa',
   '#a5f3fc',
 ];
+
+// what /KanbanEtapa/SelecionarEvento actually returns — card-shaped, not the
+// appointment-modal shaped `Data` from ICalendar.ts this call used to be typed with
+export interface IKanbanEventData {
+  id: number;
+  title: string;
+  subjectText: string;
+  KanbanFavorite: 'S' | 'N';
+  start: string;
+  hasDone: boolean;
+  backgroundColor: string;
+  recurrence: 'S' | 'N';
+}
+
+// payload the shared recurrence DeleteModal expects
+export interface IRecurrenceDelete {
+  eventId: number;
+  token: string | null;
+  dateRecurrence: string;
+  serieRecurrenceChange?: string | null;
+}

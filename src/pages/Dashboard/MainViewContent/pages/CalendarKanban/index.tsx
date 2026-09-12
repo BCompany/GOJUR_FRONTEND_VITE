@@ -17,13 +17,15 @@ import api from 'services/api';
 import {AddCardButton, AddPhaseColumn, AppointmentCard, BoardLayout, CardsList, ColorDot,ColorPickerWrapper,Container,Content,EmptyState,KanbanArea,ModalOverlay,PanelItem,PanelsModal,PanelTitleBar,TaskBar, PhaseColumn, PhaseHeader, FixedFooter, InsertSlot} from './styles';
 import { useToast } from 'context/toast';
 import { Overlay } from 'Shared/styles/GlobalStyle';
+import ConfirmDeleteModal from 'components/ConfirmDeleteModal';
+import DeleteModal from 'pages/Dashboard/MainViewContent/pages/Dashboard/resorces/DashboardComponents/CreateAppointment/DeleteModal';
 import Loader from 'react-spinners/ClipLoader';
 import { IParameterData } from '../Matter/Interfaces/IMatter';
-import { ICard, IPanel, IPhase, IPhasePagination, PHASE_COLORS } from './IKanban';
+import { ICard, IKanbanEventData, IPanel, IPhase, IPhasePagination, IRecurrenceDelete, PHASE_COLORS } from './IKanban';
 import MenuItem from '@material-ui/core/MenuItem';
 import { BiCalendarCheck, BiCalendarEdit } from 'react-icons/bi';
 import { Menu } from '@material-ui/core';
-import { AppointmentPropsSave, Data } from '../Interfaces/ICalendar';
+import { AppointmentPropsSave } from '../Interfaces/ICalendar';
 import { format } from 'date-fns';
 import { selectedDayProps, selectedWeekProps } from '../Dashboard/resorces/DashboardComponents/CreateAppointment/Interfaces/ICalendar';
 import { dayRecurrence, weekRecurrence } from '../Dashboard/resorces/DashboardComponents/CreateAppointment/ListValues/List';
@@ -40,6 +42,8 @@ export default function AgendaKanban() {
   const [currentKanbanStageId, setCurrentKanbanStageId] = useState<number>();
   const [insertAnchor, setInsertAnchor] = useState<{ phaseId: number; beforeCardId: string } | null>(null);
   const [highlightedCardId, setHighlightedCardId] = useState<string | null>(null);
+  const [cardPendingDelete, setCardPendingDelete] = useState<ICard | null>(null);
+  const [recurrenceDeleteData, setRecurrenceDeleteData] = useState<IRecurrenceDelete | null>(null);
   const pendingHighlightCardId = useRef<string | null>(null);
   const [currentAppointmentEdit, setCurrentAppointmentEdit] = useState<number>();
   const [appointmentSubjectId, setAppointmentSubjectId] = useState('');
@@ -466,7 +470,7 @@ const UpdateAfterCloseModalEvents = async(result: KanbanEventResult) => {
       return;
 
     // If is edit or include select current event edit
-    const response = await api.post<Data>('/KanbanEtapa/SelecionarEvento', {
+    const response = await api.post<IKanbanEventData>('/KanbanEtapa/SelecionarEvento', {
       id: savedEventId,
       token,
       recurrenceDate,
@@ -876,13 +880,10 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
   }, [permissions, handleCaptureTextPublication, handleDeadLineCalculatorText, handleModalActive, isOpenModal, handleKanbanCaller, handleKanbanStageId]);
 
 
-  const handleDeleteCard = useCallback(async (e, event: ICard) => {
-    
+  const deleteCard = useCallback(async (event: ICard) => {
+
     setIsWaiting(true)
     setIsWaitingMessage('Deletando...')
-
-    e.preventDefault();
-    e.stopPropagation();
 
     try
     {
@@ -931,7 +932,51 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
     }
 
   }, []);
-  
+
+
+  // same two questions the appointment modal asks: a plain confirmation for a normal
+  // event, and the "somente este / todos / este e os seguintes" modal for a recurrence
+  const handleDeleteCard = useCallback((e: React.MouseEvent, event: ICard) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (event.recurrence !== 'S') {
+      setCardPendingDelete(event);
+      return;
+    }
+
+    const dateRecurrence = FormatDate(new Date(event.start), 'yyyy-MM-dd');
+
+    // the shared DeleteModal reports back through kanbanEventResult, and the delete
+    // branch that consumes it matches the card by currentAppointmentEdit + this date
+    localStorage.setItem('@GoJur:RecurrenceDate', dateRecurrence);
+    setCurrentAppointmentEdit(event.eventId);
+    handleKanbanCaller(true);
+
+    setRecurrenceDeleteData({
+      eventId: event.eventId,
+      token,
+      dateRecurrence,
+      serieRecurrenceChange: null,
+    });
+  }, [token, handleKanbanCaller]);
+
+  const handleCloseRecurrenceDelete = useCallback(() => {
+    setRecurrenceDeleteData(null);
+    handleKanbanCaller(false);
+  }, [handleKanbanCaller]);
+
+  const handleCloseConfirmDelete = useCallback(() => {
+    setCardPendingDelete(null);
+  }, []);
+
+  const handleConfirmDelete = useCallback(() => {
+    if (cardPendingDelete)
+      deleteCard(cardPendingDelete);
+
+    setCardPendingDelete(null);
+  }, [cardPendingDelete, deleteCard]);
+
   useEffect(() => {
 
     const mapped = optionsCalendarFilter
@@ -2546,6 +2591,21 @@ const onDragEnd = useCallback(async (result: DropResult) => {
           )}
         </BoardLayout>
       </Content>
+
+      {cardPendingDelete && <Overlay />}
+      {cardPendingDelete && (
+        <ConfirmDeleteModal
+          appointmentWorkflowActionsExecId={0}
+          callbackFunction={{ handleCloseConfirmDelete, handleConfirmDelete }} />
+      )}
+
+      {recurrenceDeleteData && (
+        <DeleteModal
+          close={handleCloseRecurrenceDelete}
+          closeModal={handleCloseRecurrenceDelete}
+          data={recurrenceDeleteData}
+        />
+      )}
     </Container>
   );
 }
