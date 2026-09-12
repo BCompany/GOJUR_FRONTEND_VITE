@@ -15,6 +15,24 @@ interface ProcessData {
   currentInstance: string;
   currentCourt: string;
 }
+
+export type KanbanEventOutcome =
+  | 'close'
+  | 'save'
+  | 'save_one'
+  | 'save_all'
+  | 'save_next'
+  | 'concluir'
+  | 'delete'
+  | 'delete_one'
+  | 'delete_all'
+  | 'delete_next';
+
+export interface KanbanEventResult {
+  outcome: KanbanEventOutcome;
+  eventId?: string;
+}
+
 interface ModalContextData {
   isOpenModal(id: string): string;
   isCloseModal(): void;
@@ -40,12 +58,18 @@ interface ModalContextData {
   handleShowSalesFunnelStepModal(value: boolean): void;
   handleReferenceId(value: number): void;
   handleJsonModalObjectResult(value: string):void;
+  handleKanbanCaller(value: boolean): void;
+  handleKanbanStageId(value: string): void;
+  handleKanbanEventResult(value: KanbanEventResult | null): void;
   openSelectProcess: string;
   reload: string;
   modalActive: boolean;
   modalActiveId: number;
   caller: string;
   jsonModalObjectResult: string;
+  isKanbanCaller: boolean;
+  kanbanStageId: string;
+  kanbanEventResult: KanbanEventResult | null;
   matterSelected: ProcessData | null;
   hasMatterAssociated: boolean;
   dateEnd: string | null;  
@@ -89,6 +113,9 @@ const ModalProvider: React.FC = ({ children }) => {
   const [showCustomerModal, setShowCustomerModal] = useState<boolean>(false);
   const [referenceId, setReferenceId] = useState<number>(0);
   const [jsonModalObjectResult, setJsonModalObjectResult] = useState<string>('');
+  const [isKanbanCaller, setIsKanbanCaller] = useState<boolean>(false);
+  const [kanbanStageId, setKanbanStageId] = useState<string>('');
+  const [kanbanEventResult, setKanbanEventResult] = useState<KanbanEventResult | null>(null);
 
   const { addToast } = useToast();
 
@@ -137,7 +164,22 @@ const ModalProvider: React.FC = ({ children }) => {
     setJsonModalObjectResult(json)
 
   },[jsonModalObjectResult])
-  
+
+  // gates the appointment modal's kanban callbacks: without it a save made from the
+  // calendar would leave a result behind for the kanban to pick up when it mounts
+  const handleKanbanCaller = useCallback((value: boolean) => {
+    setIsKanbanCaller(value)
+  },[])
+
+  const handleKanbanStageId = useCallback((value: string) => {
+    setKanbanStageId(value)
+  },[])
+
+  // a fresh object per emission, so the kanban effect runs exactly once for each one
+  const handleKanbanEventResult = useCallback((value: KanbanEventResult | null) => {
+    setKanbanEventResult(value)
+  },[])
+
   const handleShowSalesChannelModal = useCallback(state => {
     setSalesChannelModal(state)
 
@@ -271,7 +313,10 @@ const ModalProvider: React.FC = ({ children }) => {
     localStorage.removeItem('@GoJur:MatterEventId');
     localStorage.removeItem('@GoJur:PublicationHasMatter');
     localStorage.removeItem('@fullCalendarDate')
-    localStorage.removeItem('@Gojur:kanbanStageId')
+    // kanbanEventResult is NOT cleared here: the modal emits a 'close' outcome on its
+    // way out and the kanban still has to consume it. The kanban clears it itself.
+    setKanbanStageId('')
+    setIsKanbanCaller(false)
     handleModalActiveId(0)
   }
 
@@ -302,6 +347,12 @@ const ModalProvider: React.FC = ({ children }) => {
         handleShowCustomerModal,
         handleShowSalesFunnelStepModal,
         handleJsonModalObjectResult,
+        handleKanbanCaller,
+        handleKanbanStageId,
+        handleKanbanEventResult,
+        isKanbanCaller,
+        kanbanStageId,
+        kanbanEventResult,
         reload: appointmentTrigger,
         openSelectProcess: abrirModalProcess,
         matterSelected: processSelect,

@@ -31,7 +31,7 @@ const DeleteModal: React.FC<ModalProps> = ({
   const [isSaveThis, setisSaveThis] = useState(false);
   const [isSaveNext, setisSaveNext] = useState(false);
   const [isSaveAll, setisSaveAll] = useState(false);
-  const { handleModalActiveId } = useModal();
+  const { handleModalActiveId, isKanbanCaller, handleKanbanEventResult } = useModal();
 
   const handleSaveThis = useCallback(async () => {
     try {
@@ -54,7 +54,8 @@ const DeleteModal: React.FC<ModalProps> = ({
       closeModal();
       handleModalActiveId(0)
       setisSaveThis(false)
-      localStorage.setItem('@Gojur:KanbanEventStatus', 'delete_one')
+      if (isKanbanCaller)
+        handleKanbanEventResult({ outcome: 'delete_one' });
 
     } catch (err) {
 
@@ -66,7 +67,7 @@ const DeleteModal: React.FC<ModalProps> = ({
         description: 'Não foi possível apagar o compromisso',
       });
     }
-  }, [addToast, close, closeModal, data]); // Salva apenas o compromisso de hoje
+  }, [addToast, close, closeModal, data, isKanbanCaller, handleKanbanEventResult]); // Salva apenas o compromisso de hoje
 
 
   const handleSaveAll = useCallback(async () => {
@@ -91,7 +92,8 @@ const DeleteModal: React.FC<ModalProps> = ({
       closeModal();
       setisSaveAll(false)
       handleModalActiveId(0)
-      localStorage.setItem('@Gojur:KanbanEventStatus', 'delete_all');
+      if (isKanbanCaller)
+        handleKanbanEventResult({ outcome: 'delete_all' });
       
     } catch (err) {
 
@@ -103,7 +105,7 @@ const DeleteModal: React.FC<ModalProps> = ({
         description: 'Não foi possível apagar o compromisso',
       });
     }
-  }, [addToast, close, closeModal, data]); // Salva todo o compromisso usando a recorrencia
+  }, [addToast, close, closeModal, data, isKanbanCaller, handleKanbanEventResult]); // Salva todo o compromisso usando a recorrencia
 
 
   const handleSaveThisAndOthers = useCallback(async () => {
@@ -128,7 +130,8 @@ const DeleteModal: React.FC<ModalProps> = ({
       closeModal();
       setisSaveNext(false)
       handleModalActiveId(0)
-      localStorage.setItem('@Gojur:KanbanEventStatus', 'delete_next');
+      if (isKanbanCaller)
+        handleKanbanEventResult({ outcome: 'delete_next' });
 
     } catch (err) {
       setisSaveNext(false)
@@ -139,7 +142,7 @@ const DeleteModal: React.FC<ModalProps> = ({
         description: 'Não foi possível apagar o compromisso',
       });
     }
-  }, [addToast, close, closeModal, data]); // Apaga o compromisso recorrente de hoje em diante
+  }, [addToast, close, closeModal, data, isKanbanCaller, handleKanbanEventResult]); // Apaga o compromisso recorrente de hoje em diante
 
   return (
     <Container {...rest}>

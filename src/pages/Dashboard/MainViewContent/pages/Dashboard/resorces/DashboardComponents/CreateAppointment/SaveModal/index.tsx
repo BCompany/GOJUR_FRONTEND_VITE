@@ -2,6 +2,7 @@
 import React, { useCallback, useState } from 'react';
 import HeaderComponent from 'components/HeaderComponent';
 import { useToast } from 'context/toast';
+import { useModal } from 'context/modal';
 import Loader from 'react-spinners/ClipLoader';
 import api from 'services/api';
 
@@ -51,6 +52,8 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
   const [isSaveAll, setisSaveAll] = useState(false);
 
 
+  const { isKanbanCaller, handleKanbanEventResult } = useModal();
+
   const handleSaveThis = useCallback(async () => {
     try {
       const userToken = localStorage.getItem('@GoJur:token');
@@ -69,12 +72,8 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
       setisSaveThis(false)
       localStorage.removeItem('@GoJur:MatterId');
       
-      const kanbanEventEdit = localStorage.getItem('@Gojur:KanbanEventStatus');
-      if (kanbanEventEdit == 'open') 
-      {
-          localStorage.setItem('@Gojur:eventKanbanSavedId', Number(response.data).toString());
-          localStorage.setItem('@Gojur:KanbanEventStatus', 'save_one');
-      }
+      if (isKanbanCaller)
+        handleKanbanEventResult({ outcome: 'save_one', eventId: Number(response.data).toString() });
 
     }
     catch (err:any) {
@@ -88,7 +87,7 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
         addToast({type: 'error', title: 'Falha ao salvar o compromisso', description: err.response.data.Message});
       }
     }
-  }, [addToast, close, closeModal, data]); // Salva apenas o compromisso de hoje
+  }, [addToast, close, closeModal, data, isKanbanCaller, handleKanbanEventResult]); // Salva apenas o compromisso de hoje
 
 
   const handleSaveAll = useCallback(async () => {
@@ -106,12 +105,8 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
       closeModal();
       setisSaveAll(false)
 
-      const kanbanEventEdit = localStorage.getItem('@Gojur:KanbanEventStatus');
-      if (kanbanEventEdit == 'open') 
-      {
-          localStorage.setItem('@Gojur:eventKanbanSavedId', Number(response.data).toString());
-          localStorage.setItem('@Gojur:KanbanEventStatus', 'save_all');
-      }
+      if (isKanbanCaller)
+        handleKanbanEventResult({ outcome: 'save_all', eventId: Number(response.data).toString() });
 
     }
     catch (err:any) {
@@ -125,7 +120,7 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
         addToast({type: 'error', title: 'Falha ao salvar o compromisso', description: err.response.data.Message});
       }
     }
-  }, [addToast, close, closeModal, data]); // Salva todo o compromisso usando a recorrencia
+  }, [addToast, close, closeModal, data, isKanbanCaller, handleKanbanEventResult]); // Salva todo o compromisso usando a recorrencia
 
 
   const handleSaveThisAndOthers = useCallback(async () => {
@@ -140,12 +135,8 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
       closeModal();
       setisSaveNext(false)
 
-      const kanbanEventEdit = localStorage.getItem('@Gojur:KanbanEventStatus');
-      if (kanbanEventEdit == 'open') 
-      {        
-          localStorage.setItem('@Gojur:eventKanbanSavedId', Number(response.data).toString());
-          localStorage.setItem('@Gojur:KanbanEventStatus', 'save_next');
-      }
+      if (isKanbanCaller)
+        handleKanbanEventResult({ outcome: 'save_next', eventId: Number(response.data).toString() });
     }
     catch (err:any) {
       setisSaveNext(false)
@@ -158,7 +149,7 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
         addToast({type: 'error', title: 'Falha ao salvar o compromisso', description: err.response.data.Message});
       }
     }
-  }, [addToast, close, closeModal, data]); // Salva o compromisso recorrente de hoje em diante
+  }, [addToast, close, closeModal, data, isKanbanCaller, handleKanbanEventResult]); // Salva o compromisso recorrente de hoje em diante
 
 
   return (

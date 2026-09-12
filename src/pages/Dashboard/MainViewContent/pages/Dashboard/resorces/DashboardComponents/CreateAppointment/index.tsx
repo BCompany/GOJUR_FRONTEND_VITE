@@ -105,7 +105,7 @@ const layoutBig = [{
 // };
 
 const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
-  const { matterSelected, dateEnd, handleModalActiveId, selectProcess, handleModalActive, openSelectProcess, handleSelectProcess, jsonModalObjectResult, handleJsonModalObjectResult, deadLineText, publicationText, modalActiveId, caller } = useModal();
+  const { matterSelected, dateEnd, handleModalActiveId, selectProcess, handleModalActive, openSelectProcess, handleSelectProcess, jsonModalObjectResult, handleJsonModalObjectResult, deadLineText, publicationText, modalActiveId, caller, isKanbanCaller, kanbanStageId, handleKanbanStageId, handleKanbanEventResult } = useModal();
   const { addToast } = useToast();
   const [appointmentAllowEdit, setAppointmentAllowEdit] = useState<string>('N'); // Pode editar
   const [appointmentBlockUpdate, setAppointmentBlockUpdate] = useState(true);
@@ -243,9 +243,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
     LoadKanban()
 
-    var kanbanStageId = localStorage.getItem('@Gojur:kanbanStageId');
-
-    if (kanbanStageId != null && kanbanStageId != '') 
+    if (kanbanStageId !== '')
       setShowKanbanButton(false)
 
     // New event - Open modal with defaults
@@ -654,7 +652,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       return;
     }
 
-    localStorage.setItem('@Gojur:kanbanStageId', selectedKanbanPhaseId)
+    handleKanbanStageId(selectedKanbanPhaseId)
     setShowKanbanModal(false)
   }
 
@@ -802,7 +800,10 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   // Close modal
   const handleCloseModalLog = () => {
     localStorage.setItem('@GoJur:appointmentClose', 'S');
-    localStorage.setItem('@Gojur:KanbanEventStatus', 'close');
+
+    if (isKanbanCaller)
+      handleKanbanEventResult({ outcome: 'close' });
+
     isClosed()
   } // mudança de data final
 
@@ -1313,9 +1314,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
           description: 'Seu compromisso foi concluido com sucesso',
         });
 
-        const kanbanEventEdit = localStorage.getItem('@Gojur:KanbanEventStatus');
-        if (kanbanEventEdit == 'open') 
-            localStorage.setItem('@Gojur:KanbanEventStatus', 'concluir');
+        if (isKanbanCaller)
+          handleKanbanEventResult({ outcome: 'concluir' });
 
         setStatusEvent('L');
         isClosed();
@@ -1359,7 +1359,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     }
 
     setLoadingDone(loadingDone);
-  }, [addToast, isClosed, statusEvent, loadingDone]); // muda de concluido para reaberto
+  }, [addToast, isClosed, statusEvent, loadingDone, isKanbanCaller, handleKanbanEventResult]); // muda de concluido para reaberto
 
 
   const handleSaveModal = useCallback(async () => {
@@ -1373,12 +1373,9 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     const endDateN = `${appointmentDateEnd}T${appointmentHourEnd}`;
     const newStartDate = new Date(startDateN);
     const newEndDate = new Date();
-    var kanbanStageId = localStorage.getItem('@Gojur:kanbanStageId');
-    
     // When user click on Kanban Button when creating a new appointment, the kanbanStageId is not set yet, so we need to set it with the selectedKanbanPhaseId
-    // The option below get by local storage is used when is created by Kanban Page
-    if (kanbanStageId == null || kanbanStageId == '') 
-       kanbanStageId = selectedKanbanPhaseId
+    // The context value is the one set by the Kanban Page when it opened this modal
+    const stageId = kanbanStageId !== '' ? kanbanStageId : selectedKanbanPhaseId
 
     const diference = Math.floor(
       (Date.UTC(newEndDate.getFullYear(), newEndDate.getMonth(), newEndDate.getDate())
@@ -1474,7 +1471,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         eventId: appointmentId,
         publicationId: publicationId == null ? 0 : publicationId,
         matterEventId: matterEventId == null ? 0 : matterEventId,
-        kanbanStageId: kanbanStageId == null ? 0: kanbanStageId,
+        kanbanStageId: stageId == null ? 0: stageId,
         description: appointmentDescription,
         eventNote: appointmentObs,
         startDate: startDateN, // v
@@ -1510,12 +1507,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         isClosed()
         handleModalActive(false)
 
-        const kanbanEventEdit = localStorage.getItem('@Gojur:KanbanEventStatus');
-        if (kanbanEventEdit == 'open') 
-        {
-            localStorage.setItem('@Gojur:eventKanbanSavedId', Number(response.data).toString());
-            localStorage.setItem('@Gojur:KanbanEventStatus', 'save');
-        }
+        if (isKanbanCaller)
+          handleKanbanEventResult({ outcome: 'save', eventId: Number(response.data).toString() });
       }
       catch (err: any) {
         if (err.response.data.typeError?.warning == "awareness") {
@@ -1533,7 +1526,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     const data: AppointmentPropsSave = {
       eventId: appointmentId,
       publicationId: publicationId == null ? 0 : publicationId,
-      kanbanStageId: kanbanStageId == null ? 0: kanbanStageId,
+      kanbanStageId: stageId == null ? 0: stageId,
       description: appointmentDescription,
       eventNote: appointmentObs,
       startDate: startDateN, // v
@@ -1562,7 +1555,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     setLoadingSave(loadingSave);
     localStorage.removeItem('@fullCalendarDate')
 
-  }, [loadingSave, appointmentDateBeggin, appointmentHourBeggin, appointmentDateEnd, appointmentHourEnd, appointmentRecurrent, appointmentDescription, appointmentObs, appointmentSubjectId, appointmentSubject, appointmentUser, appointmentAllDay, appointmentStatus, appointmentAllowEdit, appointmentPrivateEvent, appointmentResponsibleList, appointmentRemindersList, appointmentSharedList, appointmentMatter, addToast, jsonModalObjectResult, selectProcess, isClosed, handleModalActive, handleJsonModalObjectResult, openSaveModal, selectDayMonth, recurrenceStartDate, recurrenceEndDate, selectWeek, selectDay, recurrenceSelectRepete, selectMonthYear, selectDayYear, isRecurrence, confirmSave]); // Salva o compromisso
+  }, [loadingSave, appointmentDateBeggin, appointmentHourBeggin, appointmentDateEnd, appointmentHourEnd, appointmentRecurrent, appointmentDescription, appointmentObs, appointmentSubjectId, appointmentSubject, appointmentUser, appointmentAllDay, appointmentStatus, appointmentAllowEdit, appointmentPrivateEvent, appointmentResponsibleList, appointmentRemindersList, appointmentSharedList, appointmentMatter, addToast, jsonModalObjectResult, selectProcess, isClosed, handleModalActive, handleJsonModalObjectResult, openSaveModal, selectDayMonth, recurrenceStartDate, recurrenceEndDate, selectWeek, selectDay, recurrenceSelectRepete, selectMonthYear, selectDayYear, isRecurrence, confirmSave, isKanbanCaller, kanbanStageId, handleKanbanEventResult]); // Salva o compromisso
 
 
   const handleDeleteModal = useCallback(async () => {
@@ -1598,7 +1591,9 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         handleModalActiveId(0)
         handleModalActive(false)
         setConfirmDeleteCalendarEvent(false);
-        localStorage.setItem('@Gojur:KanbanEventStatus', 'delete');
+
+        if (isKanbanCaller)
+          handleKanbanEventResult({ outcome: 'delete' });
       }
       else {
         const data: AppointmentPropsDelete = {
@@ -1620,7 +1615,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
           'Não foi possivel deletar seu comprimisso, tente novamente!',
       });
     }
-  }, [appointmentRecurrent, openDeleteModal, addToast, confirmDeleteCalendarEvent]);
+  }, [appointmentRecurrent, openDeleteModal, addToast, confirmDeleteCalendarEvent, isKanbanCaller, handleKanbanEventResult]);
 
 
   const handleUserDragInDrop = (e: any, origin: string) => {

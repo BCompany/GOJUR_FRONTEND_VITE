@@ -10,6 +10,7 @@ import Select from 'react-select';
 import { FormatDate, useDelay } from 'Shared/utils/commonFunctions';
 import { IComboData } from 'pages/Dashboard/MainViewContent/pages/Financeiro/Account/Modal';
 import { useModal } from 'context/modal';
+import type { KanbanEventResult } from 'context/modal';
 import { v4 as uuidv4 } from 'uuid';
 import FilterCalendar, { ISelectValues } from 'components/FilterCalendar';
 import api from 'services/api';
@@ -112,6 +113,11 @@ export default function AgendaKanban() {
     handleCaptureTextPublication,
     handleModalActive,
     modalActive,
+    kanbanStageId,
+    kanbanEventResult,
+    handleKanbanCaller,
+    handleKanbanStageId,
+    handleKanbanEventResult,
   } = useModal();
 
   const QTDE_RECORDS_EVENTS = 20;
@@ -133,13 +139,10 @@ export default function AgendaKanban() {
 
 useEffect(() => {
        
-    let kanbanStageId = currentKanbanStageId;
+    if (currentKanbanStageId == 0 && kanbanStageId !== '')
+      setCurrentKanbanStageId(Number(kanbanStageId))
 
-    if (currentKanbanStageId == 0 && localStorage.getItem('@Gojur:kanbanStageId') !== '') {
-      kanbanStageId = Number(localStorage.getItem('@Gojur:kanbanStageId'));
-      setCurrentKanbanStageId(kanbanStageId)
-    }
-   }, [modalActive, isWaiting])
+   }, [modalActive, isWaiting, currentKanbanStageId, kanbanStageId])
 
   const LoadKanban = async () => {
     try
@@ -401,22 +404,21 @@ const LoadKanbanEvents = async () => {
 
 useEffect(() => {
 
-  if (!modalActive && !isWaiting) 
-  {
-      UpdateAfterCloseModalEvents();
-  }
-       //UpdateAfterCloseModalEvents();
-  
-}, [modalActive, isWaiting, cards]);
+  if (!kanbanEventResult)
+    return;
+
+  // consumed before any await: the effect can re-run on unrelated renders and the
+  // same result must never be processed twice
+  handleKanbanEventResult(null);
+  UpdateAfterCloseModalEvents(kanbanEventResult);
+
+}, [kanbanEventResult, handleKanbanEventResult]);
 
 
-const UpdateAfterCloseModalEvents = async() => {
+const UpdateAfterCloseModalEvents = async(result: KanbanEventResult) => {
   try
-  {       
-    const kanbanEventEdit = localStorage.getItem('@Gojur:KanbanEventStatus')??'';
-    
-    if (kanbanEventEdit == '' || kanbanEventEdit == undefined)
-      return
+  {
+    const kanbanEventEdit = result.outcome;
 
     if (kanbanEventEdit == 'close')
     {
@@ -426,7 +428,7 @@ const UpdateAfterCloseModalEvents = async() => {
       return
     }
 
-    const eventKanbanSavedId = localStorage.getItem('@Gojur:eventKanbanSavedId');
+    const savedEventId = result.eventId;
     const recurrenceDate = localStorage.getItem('@GoJur:RecurrenceDate');
 
     // Delete normal event or recurrence ONE
@@ -453,20 +455,19 @@ const UpdateAfterCloseModalEvents = async() => {
           }
           
           // if is NOT recurrence delete by only considering eventId
-          return c.eventId.toString() !== eventKanbanSavedId.toString();
+          return c.eventId.toString() !== savedEventId.toString();
         });
       });
 
-      localStorage.removeItem('@Gojur:KanbanEventStatus');
       return;
-    }    
+    }
     
-    if (!eventKanbanSavedId)
+    if (!savedEventId)
       return;
 
     // If is edit or include select current event edit
     const response = await api.post<Data>('/KanbanEtapa/SelecionarEvento', {
-      id: eventKanbanSavedId,
+      id: savedEventId,
       token,
       recurrenceDate,
     });
@@ -474,7 +475,7 @@ const UpdateAfterCloseModalEvents = async() => {
     const isRecurrence = response.data.recurrence === 'S';
     // When currentAppointmentEdit has value = Editing
     // When currentAppointmentEdit is undefined get from LocalStorage a new Event
-    const eventIdCurrent = currentAppointmentEdit ? currentAppointmentEdit.toString() : eventKanbanSavedId.toString();
+    const eventIdCurrent = currentAppointmentEdit ? currentAppointmentEdit.toString() : savedEventId.toString();
 
     // same signal as the line above, and a snapshot of this render: no card under
     // edit means this is an inclusion, the only case allowed to add a card
@@ -530,11 +531,11 @@ const UpdateAfterCloseModalEvents = async() => {
       const found = updatedCards.some(card => {
         if (isRecurrence) {
           return (
-            card.eventId.toString() === eventKanbanSavedId.toString() &&
+            card.eventId.toString() === savedEventId.toString() &&
             card.start.substring(0, 10) === recurrenceDate
           );
         }
-        return card.eventId.toString() === eventKanbanSavedId.toString();
+        return card.eventId.toString() === savedEventId.toString();
       });
 
       // an edit must never add a card: if the match above failed the card stays
@@ -576,8 +577,6 @@ const UpdateAfterCloseModalEvents = async() => {
 
     setActivePhases(prev => [...prev]); 
 
-    localStorage.removeItem('@Gojur:KanbanEventStatus');
-    localStorage.removeItem('@Gojur:eventKanbanSavedId');
     localStorage.removeItem('@GoJur:RecurrenceDate');
 
     setIsWaiting(false)
@@ -820,8 +819,8 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
       return;
     }
 
-    localStorage.setItem('@Gojur:KanbanEventStatus', 'open');
-    localStorage.setItem('@Gojur:kanbanStageId', phaseId.toString());
+    handleKanbanCaller(true);
+    handleKanbanStageId(phaseId.toString());
 
     // anchor by card id, not by index: "Ver mais" can load records while the modal is open
     setInsertAnchor(beforeCardId ? { phaseId, beforeCardId } : null);
@@ -836,7 +835,7 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
     handleModalActive(true);
     isOpenModal('0');
 
-  }, [permissions, handleCaptureTextPublication, handleDeadLineCalculatorText, handleModalActive, isOpenModal]);
+  }, [permissions, handleCaptureTextPublication, handleDeadLineCalculatorText, handleModalActive, isOpenModal, handleKanbanCaller, handleKanbanStageId]);
 
 
   const handleClickEdit = useCallback(async (e:  React.MouseEvent, phaseId: number, event: ICard) => {
@@ -858,11 +857,11 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
         }
       }
       
-      localStorage.setItem('@Gojur:KanbanEventStatus', 'open');
+      handleKanbanCaller(true);
       localStorage.setItem('@GoJur:RecurrenceDate', FormatDate(new Date(event.start), 'yyyy-MM-dd'),);
       isOpenModal(event.eventId.toString());
       setCurrentAppointmentEdit(event.eventId)
-      localStorage.setItem('@Gojur:kanbanStageId', phaseId.toString());
+      handleKanbanStageId(phaseId.toString());
       setCurrentKanbanStageId(phaseId)
       handleCaptureTextPublication('');
       handleDeadLineCalculatorText('');
@@ -874,7 +873,7 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
         setIsWaiting(false)
     }
 
-  }, [permissions, handleCaptureTextPublication, handleDeadLineCalculatorText, handleModalActive, isOpenModal]);
+  }, [permissions, handleCaptureTextPublication, handleDeadLineCalculatorText, handleModalActive, isOpenModal, handleKanbanCaller, handleKanbanStageId]);
 
 
   const handleDeleteCard = useCallback(async (e, event: ICard) => {
