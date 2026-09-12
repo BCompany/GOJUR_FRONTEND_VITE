@@ -17,12 +17,17 @@ export const Container = styled.div`
   color: #1e293b;
   height: 100vh;
   width: 95vw;
-  margin: 0 auto;  
-  overflow-y: auto;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 `;
 
 export const Content = styled.div`
   flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   padding: 0.4rem 0;
 `;
 
@@ -97,10 +102,12 @@ export const TaskBar = styled.div`
   }
 `;
 
+/* takes whatever height the header, taskbar and title leave, so the board never
+   pushes the horizontal scrollbar below the fold */
 export const BoardLayout = styled.div`
-  height: calc(100vh - 140px);
+  flex: 1;
+  min-height: 0;
   padding: 0 2rem;
-  
 `;
 
 export const PanelTitleBar = styled.div`
@@ -316,8 +323,10 @@ export const AddPanelForm = styled.div`
 export const KanbanArea = styled.div`
   display: flex;
   gap: 0.9rem;
+  height: 100%;
   overflow-x: auto;
-  padding-bottom: 2rem;
+  overflow-y: hidden;
+  padding-bottom: 0.5rem;
   align-items: flex-start;
 
   &::-webkit-scrollbar {
@@ -342,8 +351,7 @@ export const PhaseColumn = styled.div`
   display: flex;
   overflow:auto;
   flex-direction: column;
-  max-height: calc(100vh - 160px);
-  
+  max-height: 100%;
 `;
 
 export const PhaseHeader = styled.div<{ color: string }>`
