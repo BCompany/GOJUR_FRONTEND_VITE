@@ -23,6 +23,7 @@ export type KanbanEventOutcome =
   | 'save_all'
   | 'save_next'
   | 'concluir'
+  | 'reabrir'
   | 'delete'
   | 'delete_one'
   | 'delete_all'

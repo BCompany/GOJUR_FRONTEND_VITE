@@ -1315,7 +1315,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         });
 
         if (isKanbanCaller)
-          handleKanbanEventResult({ outcome: 'concluir' });
+          handleKanbanEventResult({ outcome: 'concluir', eventId: appointment.toString() });
 
         setStatusEvent('L');
         isClosed();
@@ -1345,6 +1345,10 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
           title: 'Compromisso Reaberto',
           description: 'Seu compromisso foi reaberto com sucesso',
         });
+
+        if (isKanbanCaller)
+          handleKanbanEventResult({ outcome: 'reabrir', eventId: appointment.toString() });
+
         setStatusEvent('P');
         isClosed();
 
