@@ -63,6 +63,8 @@ export default function AgendaKanban() {
   const [showDateModal, setShowDateModal] = useState(false);
   const [tempPeriodStart, setTempPeriodStart] = useState('');
   const [tempPeriodEnd, setTempPeriodEnd] = useState('');
+  const [draftPeriodStart, setDraftPeriodStart] = useState('');
+  const [draftPeriodEnd, setDraftPeriodEnd] = useState('');
   const [showPanelsModal, setShowPanelsModal] = useState(false);
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [newPanelName, setNewPanelName] = useState('');
@@ -824,7 +826,7 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
       {
           startDate = new Date(tempPeriodStart);
           endDate = new Date(tempPeriodEnd);
-          endDate.setDate(endDate.getDate() + 1); 
+          endDate.setDate(endDate.getDate()); 
       } else if (typeof tempPeriodStart === "string" && tempPeriodStart.includes(" - ")) {
           const [startStr, endStr] = tempPeriodStart.split(" - ");
           startDate = new Date(startStr.trim());
@@ -1782,8 +1784,8 @@ const onDragEnd = useCallback(async (result: DropResult) => {
       oneYearAgo.setFullYear(today.getFullYear());
       const fmt = (d: Date) => d.toISOString().slice(0, 10);
             
-      setTempPeriodStart(tempPeriodStart || fmt(oneYearAgo));
-      setTempPeriodEnd(tempPeriodEnd || fmt(today));
+      setDraftPeriodStart(tempPeriodStart || fmt(oneYearAgo));
+      setDraftPeriodEnd(tempPeriodEnd || fmt(today));
       setShowDateModal(true);
     }
     else
@@ -1882,46 +1884,24 @@ const onDragEnd = useCallback(async (result: DropResult) => {
 
         const parameterName = getKanbanParam(selectedPeriod.value, tempPeriodStart, tempPeriodEnd);
 
-        if (selectedPeriod.value == "custom")
+        // the date modal only confirms a valid range, so this guards a malformed saved parameter
+        if (selectedPeriod.value == "custom" && (!tempPeriodEnd || !tempPeriodStart || tempPeriodEnd < tempPeriodStart))
         {
-          if (!tempPeriodEnd || !tempPeriodStart)
-          {
-            addToast({
-              type: 'info',
-              title: 'Atenção',
-              description:'A data de inicio e termino do periodo não foi preenchida corretamente',
-            });
-
-            setIsWaiting(false)
-            setShowDateModal(true);
-            return;
-          }
-
-          if (tempPeriodEnd < tempPeriodStart)
-          {
-            addToast({
-              type: 'info',
-              title: 'Atenção',
-              description:'A data final do periodo não pode ser menor que a data de início',
-            });
-            
-            setIsWaiting(false)
-            setShowDateModal(true);
-            return
-          }
+          setIsWaiting(false)
+          return;
         }
 
         setCards([]);
         setPhasePagination([]);
 
         api.post('/Parametro/Salvar', {
-          token: token, 
+          token: token,
           parametersName: '#calendarView',
           parameterType: 'P',
-          parameterValue: parameterName        
+          parameterValue: parameterName
         })
 
-  },[selectedPeriod, tempPeriodStart, tempPeriodEnd]) 
+  },[selectedPeriod])
 
   useDelay(
     () => {
@@ -2332,8 +2312,8 @@ const onDragEnd = useCallback(async (result: DropResult) => {
                   <label style={{ fontSize: '0.75rem', color: 'var(--secondary)' }}>De</label>
                   <input
                     type="date"
-                    value={tempPeriodStart}
-                    onChange={(e) => setTempPeriodStart(e.target.value)}
+                    value={draftPeriodStart}
+                    onChange={(e) => setDraftPeriodStart(e.target.value)}
                     style={{ padding: '0.35rem 0.5rem', borderRadius: '4px', border: '1px solid #ddd', fontSize: '0.8rem' }}
                   />
                 </div>
@@ -2341,9 +2321,9 @@ const onDragEnd = useCallback(async (result: DropResult) => {
                   <label style={{ fontSize: '0.75rem', color: 'var(--secondary)' }}>Até</label>
                   <input
                     type="date"
-                    value={tempPeriodEnd}
-                    min={tempPeriodStart}
-                    onChange={(e) => setTempPeriodEnd(e.target.value)}
+                    value={draftPeriodEnd}
+                    min={draftPeriodStart}
+                    onChange={(e) => setDraftPeriodEnd(e.target.value)}
                     style={{ padding: '0.35rem 0.5rem', borderRadius: '4px', border: '1px solid #ddd', fontSize: '0.8rem' }}
                   />
                 </div>
@@ -2354,12 +2334,31 @@ const onDragEnd = useCallback(async (result: DropResult) => {
                   className="buttonClick"
                   style={{ flex: 1, justifyContent: 'center', display: 'flex' }}
                   onClick={() => {
-                    setTempPeriodStart(tempPeriodStart);
-                    setTempPeriodEnd(tempPeriodEnd);
+                    if (!draftPeriodStart || !draftPeriodEnd)
+                    {
+                      addToast({
+                        type: 'info',
+                        title: 'Atenção',
+                        description:'A data de inicio e termino do periodo não foi preenchida corretamente',
+                      });
+                      return;
+                    }
+
+                    if (draftPeriodEnd < draftPeriodStart)
+                    {
+                      addToast({
+                        type: 'info',
+                        title: 'Atenção',
+                        description:'A data final do periodo não pode ser menor que a data de início',
+                      });
+                      return;
+                    }
+
+                    setTempPeriodStart(draftPeriodStart);
+                    setTempPeriodEnd(draftPeriodEnd);
                     setShowDateModal(false);
-                    //setIsChangePeriod(true)
                     const fmt = (s: string) => { const [, m, d] = s.split('-'); return `${d}/${m}`; };
-                    setSelectedPeriod({ value: 'custom', label: `${fmt(tempPeriodStart)} - ${fmt(tempPeriodEnd)}` });
+                    setSelectedPeriod({ value: 'custom', label: `${fmt(draftPeriodStart)} - ${fmt(draftPeriodEnd)}` });
                   }}
                 >
                   <FiCheck size={12} /> Confirmar
