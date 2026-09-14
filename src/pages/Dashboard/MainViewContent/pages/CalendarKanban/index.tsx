@@ -826,12 +826,10 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
       {
           startDate = new Date(tempPeriodStart);
           endDate = new Date(tempPeriodEnd);
-          endDate.setDate(endDate.getDate()); 
       } else if (typeof tempPeriodStart === "string" && tempPeriodStart.includes(" - ")) {
           const [startStr, endStr] = tempPeriodStart.split(" - ");
           startDate = new Date(startStr.trim());
           endDate = new Date(endStr.trim());
-          endDate.setDate(endDate.getDate() + 1); 
       }
       break;
 
@@ -2297,15 +2295,11 @@ const onDragEnd = useCallback(async (result: DropResult) => {
 
         {/* ── Date range modal ── */}
         {showDateModal && (
-          <ModalOverlay onClick={() => { setShowDateModal(false); setSelectedPeriod(PERIOD_OPTIONS[0]); }}>
+          <ModalOverlay onClick={() => setShowDateModal(false)}>
             <PanelsModal onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
                 <h4>Selecionar Período</h4>
-                <FiX onClick={() => 
-                { 
-                  setShowDateModal(false); 
-                  setSelectedPeriod(PERIOD_OPTIONS[0]); 
-                }} />
+                <FiX onClick={() => setShowDateModal(false)} />
               </div>
               <div className="modal-body" style={{ gap: '0.75rem', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
