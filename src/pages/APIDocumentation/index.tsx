@@ -30,9 +30,7 @@ const APIDocumentation = () => {
 
 
   useEffect(() => {
-    const url = envProvider.doctUrl
-
-    console.log(url)
+    const url = envProvider.ApiBaseUrl + '/swagger/docs/v1'
 
     fetch(url)
       .then(response => response.json())
