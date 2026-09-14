@@ -1186,7 +1186,7 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
       catch(err)
       {
         addToast({
-          type: 'error',
+          type: 'info',
           title: 'Operação Não Permitida',
           description: err.response.data.Message
         });
@@ -1255,8 +1255,14 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
     }
     catch(err)
     {
-        console.log(err)
-        setIsWaiting(false)
+      console.log(err)
+      addToast({
+        type: 'info',
+        title: 'Operação Não Permitida',
+        description: err.response.data.Message
+      });
+
+      setIsWaiting(false)
     }
   }, [newPhaseName, addingPhaseForPanel, activePhases]); 
 
@@ -1327,7 +1333,7 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
     catch(err)
     {
       addToast({
-        type: 'error',
+        type: 'info',
         title: 'Operação Não Permitida',
         description: err.response.data.Message
       });
@@ -1387,8 +1393,14 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
     }
     catch(err)
     {
-        console.log(err)
-        setIsWaiting(false)
+      console.log(err)
+      addToast({
+        type: 'info',
+        title: 'Operação Não Permitida',
+        description: err.response.data.MessageFromDomain
+      });
+
+      setIsWaiting(false)
     }
   }, [editingPhaseId, editingPhaseName]);
 
@@ -1610,7 +1622,7 @@ const onDragEnd = useCallback(async (result: DropResult) => {
 
               const data = resSelect.data;
               const eventSaveData = buildRecurrenceObject(data, token, Number(destination.droppableId));
-              eventSaveData.eventId = idEvent;              
+              eventSaveData.eventId = idEvent;     
               eventSaveData.status = card.hasDone? "L": "P"
 
               response = await api.post<AppointmentPropsSave>(
