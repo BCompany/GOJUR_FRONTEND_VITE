@@ -25,7 +25,7 @@ const APIDocumentation = () => {
     '/Compromisso/Deletar',
     '/Assunto/ContarPorEmpresa',
     '/Assunto/ListarPorFiltro',
-    '/Usuario/ListarUsuariosPorEmpresa'
+    '/Usuario/ListarUsuariosComToken'
     ];
 
 
