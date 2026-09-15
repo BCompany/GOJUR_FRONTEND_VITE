@@ -977,11 +977,11 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
 
     const dateRecurrence = FormatDate(new Date(event.start), 'yyyy-MM-dd');
 
-    // the shared DeleteModal reports back through kanbanEventResult, and the delete
-    // branch that consumes it matches the card by currentAppointmentEdit + this date
+    // this modal belongs to the board, so it reports back through close/closeModal
+    // instead of the kanbanEventResult round trip the appointment modal needs
     localStorage.setItem('@GoJur:RecurrenceDate', dateRecurrence);
     setCurrentAppointmentEdit(event.eventId);
-    handleKanbanCaller(true);
+    handleKanbanCaller(false);
 
     setRecurrenceDeleteData({
       eventId: event.eventId,
@@ -995,6 +995,34 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
     setRecurrenceDeleteData(null);
     handleKanbanCaller(false);
   }, [handleKanbanCaller]);
+
+  // DeleteModal only calls closeModal after the exclusion succeeded, and writes the
+  // chosen scope back into the object it was handed
+  const handleRecurrenceDeleteDone = () => {
+    const scope = recurrenceDeleteData?.serieRecurrenceChange;
+    const eventId = recurrenceDeleteData?.eventId;
+    const dateRecurrence = recurrenceDeleteData?.dateRecurrence;
+
+    setRecurrenceDeleteData(null);
+    handleKanbanCaller(false);
+
+    // "todos" and "este e os seguintes" hit occurrences that are not in the card list:
+    // only a full reload leaves the board without ghost cards
+    if (scope === 'all' || scope === 'next')
+    {
+      setInsertAnchor(null);
+      setHighlightedCardId(null);
+      localStorage.removeItem('@GoJur:RecurrenceDate');
+      handleRefreshPanel();
+      return;
+    }
+
+    // "somente este": drop this occurrence only, keeping scroll, filters and highlight
+    setCards(prevCards => prevCards.filter(c => !(
+      c.eventId.toString() === eventId?.toString() &&
+      c.start.substring(0, 10) === dateRecurrence
+    )));
+  };
 
   const handleCloseConfirmDelete = useCallback(() => {
     setCardPendingDelete(null);
@@ -2639,12 +2667,16 @@ const onDragEnd = useCallback(async (result: DropResult) => {
           callbackFunction={{ handleCloseConfirmDelete, handleConfirmDelete }} />
       )}
 
+      {/* the shared DeleteModal carries z-index 1, which the phase columns and their
+          "Criar Compromisso" footer paint over: the overlay lifts it above the board */}
       {recurrenceDeleteData && (
-        <DeleteModal
-          close={handleCloseRecurrenceDelete}
-          closeModal={handleCloseRecurrenceDelete}
-          data={recurrenceDeleteData}
-        />
+        <ModalOverlay>
+          <DeleteModal
+            close={handleCloseRecurrenceDelete}
+            closeModal={handleRecurrenceDeleteDone}
+            data={recurrenceDeleteData}
+          />
+        </ModalOverlay>
       )}
     </Container>
   );
