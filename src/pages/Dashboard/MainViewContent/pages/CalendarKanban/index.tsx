@@ -508,7 +508,7 @@ const UpdateAfterCloseModalEvents = async(result: KanbanEventResult) => {
 
     // a new recurring appointment creates several occurrences in one go, and splicing a
     // single card in would leave the rest hidden until the next reload
-    if (isIncludeOperation && isRecurrence)
+    if (isIncludeOperation || isRecurrence)
     {
       setInsertAnchor(null);
       setHighlightedCardId(null);
@@ -778,7 +778,7 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
     case 'semana':
       // início da semana (segunda-feira)
       startDate = new Date(today);
-      startDate.setDate(today.getDate() - today.getDay() + 1);
+      startDate.setDate(today.getDate() - today.getDay());
       // fim da semana (domingo)
       endDate = new Date(startDate);
       endDate.setDate(startDate.getDate() + 6);
