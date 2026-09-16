@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import React, { useEffect, useState } from 'react';
+import { envProvider } from 'services/hooks/useEnv';
 import SwaggerUI from 'swagger-ui-react';
 import 'swagger-ui-react/swagger-ui.css';
 import { Container, Center } from './styles';
@@ -10,11 +11,26 @@ import { Container, Center } from './styles';
 const APIDocumentation = () => {
   const [swaggerSpec, setSwaggerSpec] = useState(null);
   const [filteredSpec, setFilteredSpec] = useState(null);
-  const initialFilters = ['/Processo/Listar', '/Processo/SelecionarProcesso', '/ProcessoAcompanhamento/CriarAcompanhamentoWall', '/TipoAcompanhamento/Listar', '/ProcessoAcompanhamentos/Listar', '/Publicacao/Listar', '/Publicacao/ListarNomesPublicacao', '/Usuario/ListarUsuariosPorEmpresa'];
+  const initialFilters = [
+    '/Processo/Listar', 
+    '/Processo/SelecionarProcesso', 
+    '/ProcessoAcompanhamento/CriarAcompanhamentoWall', 
+    '/TipoAcompanhamento/Listar', 
+    '/ProcessoAcompanhamentos/Listar', 
+    '/Publicacao/Listar', 
+    '/Publicacao/ListarNomesPublicacao', 
+    '/Compromisso/ListarCalendario',
+    '/Compromisso/Salvar',
+    '/Compromisso/Selecionar',
+    '/Compromisso/Deletar',
+    '/Assunto/ContarPorEmpresa',
+    '/Assunto/ListarPorFiltro',
+    '/Usuario/ListarUsuariosComToken'
+    ];
 
 
   useEffect(() => {
-    const url = 'https://api.gojur.com.br/swagger/docs/v1';
+    const url = envProvider.ApiBaseUrl + '/swagger/docs/v1'
 
     fetch(url)
       .then(response => response.json())

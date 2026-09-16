@@ -47,6 +47,4 @@ if (envProvider.mainUrl === undefined){
   }
 }
 
-console.log(envProvider)
-
 export { envProvider };

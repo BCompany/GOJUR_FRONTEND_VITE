@@ -34,6 +34,15 @@ export interface filterProps {
   label: string;
 }
 
+// the API may return null for userPhoto, which localStorage persists as the string "null"
+const getStoredAvatar = (): string => {
+  const stored = localStorage.getItem('@GoJur:Avatar');
+  return stored && stored !== 'null' && stored !== 'undefined' ? stored : '';
+};
+
+const getDefaultAvatar = (): string =>
+  `https://ui-avatars.com/api/?background=2C8ED6&color=ccc&name=${localStorage.getItem('@GoJur:name')}`;
+
 export function HeaderPage() {
   const { addToast } = useToast();
   const history = useHistory();
@@ -41,15 +50,15 @@ export function HeaderPage() {
   const { name, companyId, signOut } = useAuth();
   const [searchData, setSearchData] = useState<SearchData[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [defaultImage, setDefaultImage] = useState<boolean>(false);
-  const [imagePathDefault, setImagePathDefault] = useState<string>('');
-  const [imagePath, setImagePath] = useState<string>('');
+  const [defaultImage, setDefaultImage] = useState<boolean>(() => getStoredAvatar() === '');
+  const [imagePathDefault, setImagePathDefault] = useState<string>(getDefaultAvatar);
+  const [imagePath, setImagePath] = useState<string>(getStoredAvatar);
   const [placeholder, setPlaceholder] = useState<string>('');
   const [toolTipSearch, setToolTipSearch] = useState<string>('');
   const [timerAutoComplete, setTimerAutoComplete] = useState<any>(null); // useState for keep timer delay	//HOOK QUE ARMAZENA O SETTIMEOUT
   const [hideSearchInput, setHideSearchInput] = useState<boolean>(false); // useState for keep timer delay	//HOOK QUE ARMAZENA O SETTIMEOUT
   const [loading, setLoading] = useState(false);
-  const { listOpen, imageT, captureText, LoadingData, captureType, handleCaptureText, handleDispathCallback, handleLoadingData, handleShowListSearch, handleCaptureType } = useHeader();
+  const { listOpen, captureText, LoadingData, captureType, handleCaptureText, handleDispathCallback, handleLoadingData, handleShowListSearch, handleCaptureType } = useHeader();
   const { isMOBILE } = useDevice();
   const [options, setOptions] = useState<IComboData[]>([]);
   const optionsList: IComboData[] = [];
@@ -193,19 +202,16 @@ export function HeaderPage() {
 
 
   useEffect(() => {
-    const imageStorage = localStorage.getItem("@GoJur:Avatar")
+    const imageStorage = getStoredAvatar()
 
-    if (imageStorage != '') {
-      const path = `${imageStorage}`
-      setImagePath(path)
-    }
+    setImagePath(imageStorage)
+    setDefaultImage(imageStorage === '')
 
     // default avatar
     // We've decided to use this default avatar when USERPHOTO2 doen't exists
     // For now we put here on the FrontEnd to handle on OnError from image handle inside a try catch
-    const defaultImagePath = `https://ui-avatars.com/api/?background=2C8ED6&color=ccc&name=${localStorage.getItem('@GoJur:name')}`
-    setImagePathDefault(defaultImagePath);
-  }, [imagePath, signOut])
+    setImagePathDefault(getDefaultAvatar());
+  }, [signOut])
 
 
   useEffect(() => {
@@ -501,46 +507,27 @@ export function HeaderPage() {
 
 
   const LoadUserAvatar = useCallback(() => {
-    // set default avatar by name user
-    const hasError = () => {
-      setDefaultImage(true)
-    }
-
-    // render default user photo avatar by your name
-    const RenderImage = () => {
-      if (defaultImage) {
-        return (
-          <Avatar
-            onClick={handleChangeAvatar}
-            src={imagePathDefault}
-            alt="avatar"
-          />
-        )
-      }
-      // render user photo normal when is saved
+    // render default avatar by user name when there is no photo or the photo failed to load
+    if (defaultImage || imagePath === '') {
       return (
-        <>
-          {imageT === null ? (
-            <Avatar
-              onError={() => hasError()}
-              onClick={handleChangeAvatar}
-              src={imagePath}
-              alt="avatar"
-            />
-          ) : (
-            <Avatar
-              onError={() => hasError()}
-              onClick={handleChangeAvatar}
-              src={imagePath}
-              alt="avatar"
-            />
-          )}
-        </>
+        <Avatar
+          onClick={handleChangeAvatar}
+          src={imagePathDefault}
+          alt="avatar"
+        />
       )
     }
 
-    return RenderImage();
-  }, [imagePathDefault, imagePath, defaultImage])
+    // render user photo normal when is saved
+    return (
+      <Avatar
+        onError={() => setDefaultImage(true)}
+        onClick={handleChangeAvatar}
+        src={imagePath}
+        alt="avatar"
+      />
+    )
+  }, [imagePathDefault, imagePath, defaultImage, handleChangeAvatar])
 
 
   const handleClearText = () => {
