@@ -357,7 +357,7 @@ const FinancialFileModal =  (props) => {
       // save each file in a collection
       for (let index = 0; index < files.length; index++) {
 
-        if (files[index].size > 11000000){
+        if (files[index].size > 53477376){
           errorList += `${files[index].name  } `;
         }
         else{
@@ -411,7 +411,7 @@ const FinancialFileModal =  (props) => {
       else{
         setUploadingStatus('none')
         setIsLoading(false)
-        addToast({type: "info", title: "Operação não realizada", description: `O(s) arquivo(s) ${ errorList } excedem o tamanho máximo de 10MB, remova-os e tente novamente`})
+        addToast({type: "info", title: "Operação não realizada", description: `O(s) arquivo(s) ${ errorList } excedem o tamanho máximo de 50MB, remova-os e tente novamente`})
       }
 
       ref.current.value = "";
