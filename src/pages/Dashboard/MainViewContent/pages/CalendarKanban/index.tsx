@@ -16,6 +16,8 @@ import FilterCalendar, { ISelectValues } from 'components/FilterCalendar';
 import api from 'services/api';
 import {AddCardButton, AddPhaseColumn, AppointmentCard, BoardLayout, CardsList, ColorDot,ColorPickerWrapper,Container,Content,EmptyState,KanbanArea,ModalOverlay,PanelItem,PanelsModal,PanelTitleBar,TaskBar, PhaseColumn, PhaseHeader, FixedFooter, InsertSlot, ModalParameters} from './styles';
 import { useToast } from 'context/toast';
+import { useSecurity } from 'context/securityContext';
+import { SecurityModule } from 'context/Interfaces/ISecurity';
 import { ImMenu3, ImMenu4 } from 'react-icons/im';
 import { FaRegTimesCircle } from 'react-icons/fa';
 import { useMenuHamburguer } from 'context/menuHamburguer';
@@ -93,6 +95,7 @@ export default function AgendaKanban() {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [activePhases, setActivePhases] = useState([] as IPhase[]);
   const { addToast } = useToast();
+  const { permissionsSecurity, handleValidateSecurity } = useSecurity();
   const {
     isMenuOpen,
     handleIsMenuOpen,
@@ -168,6 +171,24 @@ export default function AgendaKanban() {
   useEffect(() => {
       LoadKanban();        
   },[])
+
+  // Call security permission - passing module
+  useEffect(() => {
+    handlePermission()
+  }, [])
+
+  const handlePermission = async () => {
+    await handleValidateSecurity(SecurityModule.calendar)
+
+    const hasKanbanPermission = permissionsSecurity.find(item => item.name === 'CLDKBPNL');
+
+    if (!hasKanbanPermission)
+      setPermissions({
+        canManagePanels: false,
+        canDeletePhase: false,
+        canChangePhaseColor: false,
+      });
+  }
 
   useEffect(() => {
     handleIsMenuOpen(false);
@@ -370,18 +391,6 @@ useEffect(() => {
           params:{ token }
       })
 
-      if (response.data.length > 0)
-      {
-         const hasKanbanPermission = response.data[0].hasKanbanPermission;
-         
-         if (!hasKanbanPermission)
-            setPermissions({
-              canManagePanels: false,
-              canDeletePhase: false,
-              canChangePhaseColor: false,
-            });
-      }
-      
       setPanels(response.data.map((item: any) => ({
         id: item.Id,
         name: item.Description
@@ -1317,8 +1326,7 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
 
       const newPanel: IPanel = { 
         id: dadosKanban.Id, 
-        name: dadosKanban.Description,
-        hasKanbanPermission: true
+        name: dadosKanban.Description
       };
         
       setPanels((prev) => [...prev, newPanel]);

@@ -26,7 +26,6 @@ export interface IPhase {
 export interface IPanel {
   id: number;
   name: string;
-  hasKanbanPermission: boolean;
 }
 
 export interface IPhasePagination
