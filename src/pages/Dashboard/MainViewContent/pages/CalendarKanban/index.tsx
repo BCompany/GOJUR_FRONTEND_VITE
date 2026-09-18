@@ -1599,6 +1599,10 @@ const onDragEnd = useCallback(async (result: DropResult) => {
     if (!destination) 
       return;
 
+    // arrastar fase e gerenciamento de painel: mesma permissao dos botoes de editar/excluir
+    if (type === "COLUMN" && !permissions.canManagePanels)
+      return;
+
     if (source.droppableId === destination.droppableId && type === "DEFAULT")
       return;
 
@@ -1767,7 +1771,7 @@ const onDragEnd = useCallback(async (result: DropResult) => {
     isDraggingRef.current = false;
   }
 
-  }, [token, cards, addToast]);
+  }, [token, cards, addToast, permissions]);
 
   function buildRecurrenceObject(data: any, token: string, phaseIdUpdate: number) 
   {
@@ -2496,7 +2500,7 @@ const onDragEnd = useCallback(async (result: DropResult) => {
                 const phaseCards = cards.filter((c) => c.phaseId === phase.id);
                 return (
                    <>
-                    <Draggable  key={phase.id} draggableId={`phase-${phase.id}`} index={phase.order}>
+                    <Draggable  key={phase.id} draggableId={`phase-${phase.id}`} index={phase.order} isDragDisabled={!permissions.canManagePanels}>
                       {(colDrag, colSnapshot) => (
                     <PhaseColumn
                       ref={colDrag.innerRef}
