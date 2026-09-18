@@ -165,11 +165,12 @@ export const ModalParameters = styled.div<SearchProps>`
   width:22rem;
   height:25rem;
   background-color:var(--white);
-  position:absolute;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index:99999;
   justify-content:center;
-  margin-left:35%;
-  margin-top:-6%;
   display: ${props => (props.show ? 'block' : 'none')};
 
   input, select {
@@ -195,11 +196,12 @@ export const ModalParametersMobile = styled.div<SearchProps>`
   width:22rem;
   height:34rem;
   background-color:var(--white);
-  position:absolute;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index:99999;
   justify-content:center;
-  margin-left:35%;
-  margin-top:-6%;
   display: ${props => (props.show ? 'block' : 'none')};
 
   input, select {

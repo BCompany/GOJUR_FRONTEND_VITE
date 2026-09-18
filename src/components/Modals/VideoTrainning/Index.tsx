@@ -64,7 +64,7 @@ export default function VideoTrainningModal() {
       setVideoSrc('https://www.youtube.com/embed/HJ5HZeWrES4')
       setVideoTitle('Treinamento virtual - módulo de publicação')
     }
-    if (pathname ==='/calendar'){
+    if (pathname ==='/calendar' || pathname ==='/calendar/kanban'){
       setVideoSrc('https://www.youtube.com/embed/3CCCpt-dQks')
       setVideoTitle('Treinamento virtual - módulo de compromissos / agendamentos')
     }

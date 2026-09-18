@@ -74,6 +74,26 @@ export const TaskBar = styled.div`
     gap: 0.5rem;
   }
 
+  .buttonHamburguer {
+    justify-content: end;
+    text-align: center;
+    position: relative;
+
+    /* o wrapper encolhe ao redor do icone: sem isto o menu absoluto herda essa largura minima */
+    > div {
+      margin-right: -1rem;
+      margin-top: -4.5rem;
+      position: absolute;
+      width: max-content;
+    }
+
+    .iconMenu {
+      color: var(--blue);
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+  }
+
   .date-range {
     display: flex;
     align-items: center;
@@ -738,5 +758,37 @@ export const EmptyState = styled.div`
   p {
     max-width: 240px;
     line-height: 1.5;
+  }
+`;
+
+
+export const ModalParameters = styled.div<{ show: boolean }>`
+  border: 1px solid var(--blue-twitter);
+  font-size: 0.665rem;
+  box-shadow: 1px 1px 4px 0.5px rgba(0, 0, 0, 0.15);
+  width: 22rem;
+  height: 25rem;
+  background-color: var(--white);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 99999;
+  justify-content: center;
+  display: ${props => (props.show ? 'block' : 'none')};
+
+  input,
+  select {
+    flex: 1;
+    font-size: 0.675rem;
+    padding: 0.25rem;
+    background-color: rgba(255, 255, 255, 0.25);
+    width: 99%;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+    color: var(--secondary);
+
+    &:focus {
+      border-bottom: 1px solid var(--orange);
+    }
   }
 `;
