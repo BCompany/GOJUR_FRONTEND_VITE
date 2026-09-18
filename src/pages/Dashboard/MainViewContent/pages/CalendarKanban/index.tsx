@@ -39,12 +39,12 @@ import { AppointmentPropsSave, IParameter, ISelectData, ISubject } from '../Inte
 import { format } from 'date-fns';
 import { selectedDayProps, selectedWeekProps } from '../Dashboard/resorces/DashboardComponents/CreateAppointment/Interfaces/ICalendar';
 import { dayRecurrence, weekRecurrence } from '../Dashboard/resorces/DashboardComponents/CreateAppointment/ListValues/List';
+import { useAuth } from 'context/AuthContext';
 
 export default function AgendaKanban() {
   const history = useHistory();
-
+  const { signOut } = useAuth();
   const token = localStorage.getItem('@GoJur:token');
-
   const [multiFilter1, setMultiFilter1] = useState<string[]>([]);
   const [multiFilter, setMultiFilter] = useState<{ value: string; label: string }[]>([]);
   const [optionsSubject, setOptionsSubject] = useState<ISelectValues[]>([]);
@@ -408,13 +408,21 @@ useEffect(() => {
       }
     }
     catch (err) {
-      addToast({ 
-        type: 'error',
-        title: 'Operação NÃO Realizada',
-        description: 'Houve uma falha no carregamento do Painel'
-      });
-
-      console.log(err);
+      if (err.response.data.statusCode == 1002) {
+              addToast({
+                type: 'info',
+                title: 'Permissão negada',
+                description:
+                  'Seu usuário não tem permissão para acessar esse módulo, contate o administrador do sistema',
+              });
+              signOut();
+            } else {
+              addToast({
+                type: 'info',
+                title: 'Falha ao exibir os compromissos da agenda',
+                description: 'Houve uma falha no carregamento do Painel',
+              });
+            }
       setIsWaiting(false)
     }
  };
