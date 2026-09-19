@@ -1328,7 +1328,7 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
           panelId: addingPhaseForPanel,
           name,
           color: PHASE_COLORS[colorIndex],
-          order: panelPhases.length,
+          order: dadosKanban.NumPosition,
           showButtonMore: false
         };
 
