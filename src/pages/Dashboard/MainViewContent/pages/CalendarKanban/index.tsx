@@ -119,8 +119,8 @@ export default function AgendaKanban() {
     { value: 'proxima_semana', label: 'Próxima Semana' },
     { value: 'proximo_mes', label: 'Próxima Mês' },
     { value: 'dias_15', label: '15 dias' },
-    { value: 'ultima_semana', label: 'Última Semana' },
-    { value: 'ultimo_mes', label: 'Último Mês' },
+    { value: 'semana_anterior', label: 'Semana Anterior' },
+    { value: 'mes_anterior', label: 'Mês Anterior' },
     { value: 'custom', label: 'Selecionar Período' },
   ];
   
@@ -874,14 +874,14 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
 
       break;
 
-    case 'ultima_semana':
+    case 'semana_anterior':
       startDate = new Date(today);
       startDate.setDate(today.getDate() - today.getDay() - 6);
       endDate = new Date(startDate);
       endDate.setDate(startDate.getDate() + 6);
       break;
 
-    case 'ultimo_mes':
+    case 'mes_anterior':
       startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
       endDate = new Date(today.getFullYear(), today.getMonth(), 0);
       break;
@@ -1892,8 +1892,8 @@ const onDragEnd = useCallback(async (result: DropResult) => {
       semana: "kanbanWeek",
       proxima_semana: "kanbanNextWeek",
       proximo_mes: "kanbanNextMonth",
-      ultima_semana: "kanbanLastWeek",
-      ultimo_mes: "kanbanLastMonth",
+      semana_anterior: "kanbanLastWeek",
+      mes_anterior: "kanbanLastMonth",
       dias_15: "kanban15dias",
       custom: (startDate, endDate) => `kanbanPeriod=${startDate}to${endDate}`
   };
@@ -1903,8 +1903,8 @@ const onDragEnd = useCallback(async (result: DropResult) => {
       kanbanWeek: "semana",
       kanbanNextWeek: "proxima_semana",
       kanbanNextMonth: "proximo_mes",
-      kanbanLastWeek: "ultima_semana",
-      kanbanLastMonth: "ultimo_mes",
+      kanbanLastWeek: "semana_anterior",
+      kanbanLastMonth: "mes_anterior",
       kanban15dias: "dias_15",
       custom: (startDate, endDate) => `kanbanPeriod=${startDate}to${endDate}`
   };
