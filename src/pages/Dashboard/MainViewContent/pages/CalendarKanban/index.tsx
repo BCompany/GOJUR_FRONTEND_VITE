@@ -41,6 +41,11 @@ import { selectedDayProps, selectedWeekProps } from '../Dashboard/resorces/Dashb
 import { dayRecurrence, weekRecurrence } from '../Dashboard/resorces/DashboardComponents/CreateAppointment/ListValues/List';
 import { useAuth } from 'context/AuthContext';
 
+// The import shortcut on an empty panel is a migration aid, not a permanent
+// feature. After this date it disappears and importing stays available only
+// through the hamburger menu, so the whole screen can be dropped later.
+const EMPTY_PANEL_IMPORT_UNTIL = new Date('2027-12-31T23:59:59').getTime();
+
 export default function AgendaKanban() {
   const history = useHistory();
   const { signOut } = useAuth();
@@ -1156,6 +1161,7 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
   const activePanel = panels.find((p) => p.id === activePanelId);
   // panel is set up but still has no appointments - that is when importing makes sense
   const isPanelEmpty = !!activePanel && !isWaiting && cards.length === 0;
+  const showEmptyPanelImport = isPanelEmpty && Date.now() <= EMPTY_PANEL_IMPORT_UNTIL;
 
   const handleAddPanel = useCallback(async () => {
     setIsWaiting(true)
@@ -2773,7 +2779,7 @@ const onDragEnd = useCallback(async (result: DropResult) => {
             </EmptyState>
           )}
 
-          {isPanelEmpty && (
+          {showEmptyPanelImport && (
             <EmptyPanelAction>
               <button
                 type="button"
