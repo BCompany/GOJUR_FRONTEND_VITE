@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { FiPlus, FiTrash2, FiClock, FiLayout, FiX, FiCheck, FiEdit2, FiEdit, FiRefreshCw } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiClock, FiLayout, FiX, FiCheck, FiEdit2, FiEdit, FiRefreshCw, FiDownload } from 'react-icons/fi';
 import { MdPalette, MdFavorite, MdFavoriteBorder } from 'react-icons/md';
 import { FcSearch } from 'react-icons/fc';
 import Search from 'components/Search';
@@ -31,6 +31,7 @@ import DeleteModal from 'pages/Dashboard/MainViewContent/pages/Dashboard/resorce
 import Loader from 'react-spinners/ClipLoader';
 import { IParameterData } from '../Matter/Interfaces/IMatter';
 import { ICard, IKanbanEventData, IPanel, IPhase, IPhasePagination, IRecurrenceDelete, PHASE_COLORS } from './IKanban';
+import KanbanImport from './Import';
 import MenuItem from '@material-ui/core/MenuItem';
 import { BiCalendarCheck, BiCalendarEdit } from 'react-icons/bi';
 import { Menu } from '@material-ui/core';
@@ -75,6 +76,7 @@ export default function AgendaKanban() {
   const [draftPeriodStart, setDraftPeriodStart] = useState('');
   const [draftPeriodEnd, setDraftPeriodEnd] = useState('');
   const [showPanelsModal, setShowPanelsModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [newPanelName, setNewPanelName] = useState('');
   const [addingPhaseForPanel, setAddingPhaseForPanel] = useState<number | null>(null);
@@ -2231,6 +2233,16 @@ const onDragEnd = useCallback(async (result: DropResult) => {
             >
               <FiLayout size={12} /> Painéis
             </button>
+
+            {permissions.canManagePanels && (
+              <button
+                type="button"
+                className="buttonClick"
+                onClick={() => setShowImportModal(true)}
+              >
+                <FiDownload size={12} /> Importar
+              </button>
+            )}
             <button
               type="button"
               className="buttonClick"
@@ -2411,6 +2423,14 @@ const onDragEnd = useCallback(async (result: DropResult) => {
               </div>
             </PanelsModal>
           </ModalOverlay>
+        )}
+
+        {showImportModal && (
+          <KanbanImport
+            defaultPanelId={activePanelId}
+            onClose={() => setShowImportModal(false)}
+            onImported={() => RebuildInterface()}
+          />
         )}
 
         {/* ── Date range modal ── */}
