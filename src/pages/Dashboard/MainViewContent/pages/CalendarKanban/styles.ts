@@ -128,6 +128,7 @@ export const BoardLayout = styled.div`
   flex: 1;
   min-height: 0;
   padding: 0 2rem;
+  position: relative;
 `;
 
 export const PanelTitleBar = styled.div`
@@ -171,6 +172,25 @@ export const PanelTitleBar = styled.div`
       opacity: 0.4;
       cursor: default;
     }
+  }
+`;
+
+/* Sits below the phase columns, around the middle of the board. Absolute so the
+   empty KanbanArea, which still fills the full height, does not push it to the
+   bottom; pointer-events let the columns underneath stay clickable. */
+export const EmptyPanelAction = styled.div`
+  position: absolute;
+  top: 45%;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+
+  button {
+    margin-right: 0;
+    float: none;
+    pointer-events: auto;
   }
 `;
 

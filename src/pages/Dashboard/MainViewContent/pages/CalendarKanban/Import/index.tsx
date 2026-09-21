@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FiX, FiDownload } from 'react-icons/fi';
+import { FcAbout } from 'react-icons/fc';
 import Select from 'react-select';
 import Loader from 'react-spinners/ClipLoader';
 import { useToast } from 'context/toast';
@@ -24,7 +25,7 @@ interface IStageResponse {
   NumPosition: number;
 }
 
-// mesma origem do combo de assunto do formulário de compromissos: POST /Assunto/Listar
+// same source as the subject combo on the appointment form: POST /Assunto/Listar
 interface ISubjectResponse {
   id: string;
   value: string;
@@ -40,14 +41,25 @@ type StatusKey = 'inProgress' | 'future' | 'closed' | 'overdue';
 interface IStatusRow {
   key: StatusKey;
   label: string;
-  // etapa sugerida — casada pelo nome ao carregar as etapas do painel
+  // suggested phase, matched by name when the panel phases are loaded
   suggestedPhase: string;
+  hint?: string;
 }
 
 const STATUS_ROWS: IStatusRow[] = [
-  { key: 'inProgress', label: 'Em andamento', suggestedPhase: 'Em Andamento' },
+  {
+    key: 'inProgress',
+    label: 'Em andamento',
+    suggestedPhase: 'Em Andamento',
+    hint: 'Compromissos em andamento são compromissos não concluídos com data de início de até 5 dias atrás',
+  },
   { key: 'future', label: 'Futuros', suggestedPhase: 'A Fazer' },
-  { key: 'closed', label: 'Encerrados', suggestedPhase: 'Concluido' },
+  {
+    key: 'closed',
+    label: 'Encerrados',
+    suggestedPhase: 'Concluido',
+    hint: 'Serão considerados compromissos encerrados aqueles que foram marcados como concluídos no GOJUR',
+  },
   { key: 'overdue', label: 'Em atraso', suggestedPhase: 'Em Atraso' },
 ];
 
@@ -58,7 +70,7 @@ const PERIOD_OPTIONS = [
   { value: 1, label: '1 mês' },
 ];
 
-// react-select no tamanho dos formulários do calendário (0.675rem), mantendo o realce padrão das opções
+// react-select sized like the calendar forms (0.675rem), keeping the default option highlight
 const compactSelectStyles = {
   ...selectStyles,
   control: styles => ({ ...styles, minHeight: '2.3rem', height: '2.3rem', fontSize: '0.675rem' }),
@@ -68,11 +80,11 @@ const compactSelectStyles = {
   singleValue: styles => ({ ...styles, fontSize: '0.675rem' }),
   menu: styles => ({ ...styles, fontSize: '0.675rem' }),
   noOptionsMessage: styles => ({ ...styles, fontSize: '0.675rem' }),
-  // menu renderizado em portal: o body do modal tem overflow, senão a lista fica cortada
+  // menu rendered in a portal: the modal body has overflow, otherwise the list gets clipped
   menuPortal: styles => ({ ...styles, zIndex: 99999, fontSize: '0.675rem' }),
 };
 
-// o multi cresce conforme as tags selecionadas, então não pode ter altura fixa
+// the multi grows with the selected tags, so it cannot have a fixed height
 const compactMultiSelectStyles = {
   ...compactSelectStyles,
   control: styles => ({ ...styles, minHeight: '2.3rem', height: 'auto', fontSize: '0.675rem' }),
@@ -82,7 +94,7 @@ const compactMultiSelectStyles = {
   multiValueLabel: styles => ({ ...styles, fontSize: '0.625rem', padding: '0 0.2rem' }),
 };
 
-// comparação de nome de etapa ignorando acento e caixa (Concluido == Concluído)
+// phase name comparison ignoring accents and case (Concluido == Concluído)
 const isSameName = (a: string, b: string) =>
   a.trim().localeCompare(b.trim(), 'pt-BR', { sensitivity: 'base' }) === 0;
 
@@ -121,7 +133,7 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
       LoadPhases(selectedPanel.value);
   }, [selectedPanel]);
 
-  // carrega na abertura e refaz a busca no servidor conforme o termo digitado
+  // loads on open and re-runs the server search as the term is typed
   useDelay(() => {
     LoadSubjects(subjectTerm);
   }, [subjectTerm], 1000);
@@ -259,7 +271,7 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
         futureStageId: phaseByStatus.future?.value,
         closedStageId: phaseByStatus.closed?.value,
         overdueStageId: phaseByStatus.overdue?.value,
-        // vazio = importa compromissos de todos os assuntos
+        // empty = import appointments from every subject
         subjectIds: selectedSubjects.map(subject => subject.value),
       });
 
@@ -290,7 +302,10 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
     <ModalOverlay>
       <ImportModal onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h4>Importar Compromissos para o Kanban</h4>
+          <div className="modal-title">
+            <h4>Importar Compromissos para o Kanban</h4>
+            <span>Esta função importa compromissos do calendário GOJUR para o modo Kanban. Serão importados os compromissos em que o seu usuário for o responsável.</span>
+          </div>
           <FiX onClick={onClose} />
         </div>
 
@@ -322,7 +337,12 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
 
               {STATUS_ROWS.map(row => (
                 <div className="table-row" key={row.key}>
-                  <span className="status">{row.label}</span>
+                  <span className="status">
+                    {row.label}
+                    {row.hint && (
+                      <FcAbout className="aboutMessage" title={row.hint} />
+                    )}
+                  </span>
                   <Select
                     options={phases}
                     styles={compactSelectStyles}

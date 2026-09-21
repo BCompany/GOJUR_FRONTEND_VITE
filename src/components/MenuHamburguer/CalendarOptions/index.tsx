@@ -5,8 +5,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { FaTools }from 'react-icons/fa';
 import { AiOutlinePrinter } from 'react-icons/ai';
 import { BsFillCameraVideoFill } from 'react-icons/bs';
+import { FiDownload } from 'react-icons/fi';
 import { useMenuHamburguer } from 'context/menuHamburguer'
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useModal } from 'context/modal';
 import { useDevice } from "react-use-device";
 import { useSecurity } from 'context/securityContext';
@@ -20,6 +21,8 @@ const CalendarListOptionsMenu = () => {
   const { handleIsOpenMenuReport, handleIsOpenMenuConfig, handleIsMenuOpen, handleCaller, isOpenMenuConfig, isOpenMenuReport, handleOpenOldVersion, isOpenOldVersion } = useMenuHamburguer();
   const { handleShowVideoTrainning } = useModal();
   const history = useHistory();
+  // this menu is shared with /calendar; importing only makes sense inside the Kanban
+  const isKanban = useLocation().pathname.toLowerCase().startsWith('/calendar/kanban');
   const [showReportMenu, setShowReportMenu] = useState<boolean>(false);
   const [showReportConfig, setShowReportConfig] = useState<boolean>(false);
   const {permissionsSecurity, handleValidateSecurity } = useSecurity();
@@ -90,6 +93,13 @@ const CalendarListOptionsMenu = () => {
     handleIsOpenMenuReport(true)
     handleCaller('calendarReportModal')
     setShowReportMenu(false)
+    handleIsMenuOpen(false)
+  }, []);
+
+  const handleImportKanbanModal = useCallback(() => {
+    handleIsOpenMenuConfig(true)
+    handleCaller("importKanban")
+    setShowReportConfig(false)
     handleIsMenuOpen(false)
   }, []);
 
@@ -179,6 +189,19 @@ const CalendarListOptionsMenu = () => {
             </>
           )}
 
+          {isKanban && (
+            <>
+              <hr />
+              <div
+                className="menuSection"
+                onClick={() => { handleImportKanbanModal() }}
+              >
+                <FiDownload />
+                &nbsp;Importar Kanban
+              </div>
+            </>
+          )}
+
           <hr />
           <div
             className="menuSection"
@@ -254,6 +277,19 @@ const CalendarListOptionsMenu = () => {
               >
                 <AiOutlinePrinter />
                 &nbsp;Relatório de Compromissos
+              </div>
+            </>
+          )}
+
+          {isKanban && (
+            <>
+              <hr />
+              <div
+                className="menuSection"
+                onClick={() => { handleImportKanbanModal() }}
+              >
+                <FiDownload />
+                &nbsp;Importar Kanban
               </div>
             </>
           )}

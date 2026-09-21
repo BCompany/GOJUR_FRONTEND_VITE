@@ -14,7 +14,7 @@ import type { KanbanEventResult } from 'context/modal';
 import { v4 as uuidv4 } from 'uuid';
 import FilterCalendar, { ISelectValues } from 'components/FilterCalendar';
 import api from 'services/api';
-import {AddCardButton, AddPhaseColumn, AppointmentCard, BoardLayout, CardsList, ColorDot,ColorPickerWrapper,Container,Content,EmptyState,KanbanArea,ModalOverlay,PanelItem,PanelsModal,PanelTitleBar,TaskBar, PhaseColumn, PhaseHeader, FixedFooter, InsertSlot} from './styles';
+import {AddCardButton, AddPhaseColumn, AppointmentCard, BoardLayout, CardsList, ColorDot,ColorPickerWrapper,Container,Content,EmptyPanelAction,EmptyState,KanbanArea,ModalOverlay,PanelItem,PanelsModal,PanelTitleBar,TaskBar, PhaseColumn, PhaseHeader, FixedFooter, InsertSlot} from './styles';
 import { useToast } from 'context/toast';
 import { useSecurity } from 'context/securityContext';
 import { SecurityModule } from 'context/Interfaces/ISecurity';
@@ -190,7 +190,17 @@ export default function AgendaKanban() {
     if (caller == 'exportConfig' && isOpenMenuConfig) {
       setOpenExportConfig(true);
     }
+
+    if (caller == 'importKanban' && isOpenMenuConfig) {
+      setShowImportModal(true);
+    }
   }, [caller, isMenuOpen]);
+
+  const handleCloseImport = () => {
+    setShowImportModal(false);
+    handleCaller('');
+    handleIsMenuOpen(false);
+  };
 
   const handleParametersClose = () => {
     setOpenModalParameters(false);
@@ -1144,6 +1154,8 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
   };
 
   const activePanel = panels.find((p) => p.id === activePanelId);
+  // panel is set up but still has no appointments - that is when importing makes sense
+  const isPanelEmpty = !!activePanel && !isWaiting && cards.length === 0;
 
   const handleAddPanel = useCallback(async () => {
     setIsWaiting(true)
@@ -2234,15 +2246,6 @@ const onDragEnd = useCallback(async (result: DropResult) => {
               <FiLayout size={12} /> Painéis
             </button>
 
-            {permissions.canManagePanels && (
-              <button
-                type="button"
-                className="buttonClick"
-                onClick={() => setShowImportModal(true)}
-              >
-                <FiDownload size={12} /> Importar
-              </button>
-            )}
             <button
               type="button"
               className="buttonClick"
@@ -2428,7 +2431,7 @@ const onDragEnd = useCallback(async (result: DropResult) => {
         {showImportModal && (
           <KanbanImport
             defaultPanelId={activePanelId}
-            onClose={() => setShowImportModal(false)}
+            onClose={handleCloseImport}
             onImported={() => RebuildInterface()}
           />
         )}
@@ -2768,6 +2771,18 @@ const onDragEnd = useCallback(async (result: DropResult) => {
               <FiLayout />
               <p>{messageEmptyPanel}</p>
             </EmptyState>
+          )}
+
+          {isPanelEmpty && (
+            <EmptyPanelAction>
+              <button
+                type="button"
+                className="buttonClick"
+                onClick={() => setShowImportModal(true)}
+              >
+                <FiDownload size={12} /> Importar Kanban
+              </button>
+            </EmptyPanelAction>
           )}
         </BoardLayout>
       </Content>

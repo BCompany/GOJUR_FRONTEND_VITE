@@ -28,10 +28,23 @@ export const ImportModal = styled.div`
 
   .modal-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
+    gap: 0.75rem;
     padding: 0.6rem 0.85rem;
     border-bottom: 1px solid #e2e8f0;
+
+    .modal-title {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+
+      span {
+        font-size: 0.625rem;
+        font-weight: 400;
+        color: #94a3b8;
+      }
+    }
 
     h4 {
       font-size: 0.7rem;
@@ -40,6 +53,8 @@ export const ImportModal = styled.div`
     }
 
     svg {
+      flex-shrink: 0;
+      margin-top: 0.1rem;
       cursor: pointer;
       color: #94a3b8;
       width: 0.85rem;
@@ -112,8 +127,17 @@ export const StatusTable = styled.div`
     align-items: center;
 
     span.status {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
       font-size: 0.665rem;
       color: var(--secondary);
+
+      .aboutMessage {
+        width: 0.85rem;
+        flex-shrink: 0;
+        cursor: pointer;
+      }
     }
   }
 `;
