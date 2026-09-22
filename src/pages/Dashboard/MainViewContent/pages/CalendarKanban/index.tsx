@@ -1937,7 +1937,8 @@ const onDragEnd = useCallback(async (result: DropResult) => {
   const handleWorkflow = () => {
     api.post('/Usuario/SalvarLogNavegacaoUsuario', { token, module: 'EVT_AGEWORKFLOW' });
 
-    localStorage.setItem('@Gojur:calendarRedirect', 'S');
+    // 'K' brings the workflow return back here instead of the calendar
+    localStorage.setItem('@Gojur:calendarRedirect', 'K');
 
     localStorage.removeItem('@Gojur:publicationId');
     localStorage.removeItem('@Gojur:followUpId');
