@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { FiX, FiDownload } from 'react-icons/fi';
+import { FiX, FiDownload, FiCheck, FiAlertCircle } from 'react-icons/fi';
 import { FcAbout } from 'react-icons/fc';
 import Select from 'react-select';
 import Loader from 'react-spinners/ClipLoader';
 import { useToast } from 'context/toast';
+import { useConfirmBox } from 'context/confirmBox';
+import ConfirmBoxModal from 'components/ConfirmBoxModal';
 import { selectStyles, useDelay } from 'Shared/utils/commonFunctions';
 import api from 'services/api';
-import { ModalOverlay, ImportModal, Field, StatusTable, PeriodOptions } from './styles';
+import { ModalOverlay, ImportModal, Field, StatusTable, PeriodOptions, ProgressScreen } from './styles';
 
 interface IOption {
   value: number;
@@ -43,6 +45,8 @@ interface IStatusRow {
   label: string;
   // suggested phase, matched by name when the panel phases are loaded
   suggestedPhase: string;
+  // StatusFilter expected by /KanbanEtapa/MigrarCompromissos
+  statusFilter: 'inprogress' | 'future' | 'completed' | 'late';
   hint?: string;
 }
 
@@ -51,24 +55,55 @@ const STATUS_ROWS: IStatusRow[] = [
     key: 'inProgress',
     label: 'Em andamento',
     suggestedPhase: 'Em Andamento',
+    statusFilter: 'inprogress',
     hint: 'Compromissos em andamento são compromissos não concluídos com data de início de até 5 dias atrás',
   },
-  { key: 'future', label: 'Futuros', suggestedPhase: 'A Fazer' },
+  { key: 'future', label: 'Futuros', suggestedPhase: 'A Fazer', statusFilter: 'future' },
   {
     key: 'closed',
     label: 'Encerrados',
     suggestedPhase: 'Concluido',
+    statusFilter: 'completed',
     hint: 'Serão considerados compromissos encerrados aqueles que foram marcados como concluídos no GOJUR',
   },
-  { key: 'overdue', label: 'Em atraso', suggestedPhase: 'Em Atraso' },
+  { key: 'overdue', label: 'Em atraso', suggestedPhase: 'Em Atraso', statusFilter: 'late' },
 ];
 
-const PERIOD_OPTIONS = [
-  { value: 12, label: 'A 1 Ano' },
-  { value: 6, label: '6 meses' },
-  { value: 3, label: '3 meses' },
-  { value: 1, label: '1 mês' },
+// Period expected by /KanbanEtapa/MigrarCompromissos
+type PeriodValue = '12m' | '6m' | '3m' | '1m';
+
+const PERIOD_OPTIONS: { value: PeriodValue; label: string }[] = [
+  { value: '12m', label: '1 Ano' },
+  { value: '6m', label: '6 meses' },
+  { value: '3m', label: '3 meses' },
+  { value: '1m', label: '1 mês' },
 ];
+
+// the endpoint migrates up to 100 appointments per call, so each stage is called
+// in a loop until it reports nothing left; the cap only guards against a backend
+// that keeps returning a positive count and would otherwise spin forever
+const MAX_BATCHES_PER_STAGE = 500;
+
+type ProgressState = 'pending' | 'running' | 'done' | 'failed';
+
+interface IProgressRow {
+  key: StatusKey;
+  label: string;
+  phaseName: string;
+  migrated: number;
+  state: ProgressState;
+}
+
+const withRow = (
+  rows: IProgressRow[] | null,
+  key: StatusKey,
+  change: (row: IProgressRow) => IProgressRow,
+): IProgressRow[] | null => rows ? rows.map(row => (row.key === key ? change(row) : row)) : null;
+
+const CONFIRM_CALLER = 'confirmKanbanImport';
+
+const CONFIRM_MESSAGE = 'Essa importação ira inserir os compromissos em que você é responsável no Kanban, '
+  + 'em lote, de acordo com os parâmetros informados, essa operação é irreversível';
 
 // react-select sized like the calendar forms (0.675rem), keeping the default option highlight
 const compactSelectStyles = {
@@ -106,6 +141,14 @@ interface KanbanImportProps {
 
 const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaultPanelId }: KanbanImportProps) => {
   const { addToast } = useToast();
+  const {
+    isConfirmMessage,
+    isCancelMessage,
+    caller,
+    handleConfirmMessage,
+    handleCancelMessage,
+    handleCheckConfirm,
+  } = useConfirmBox();
   const token = localStorage.getItem('@GoJur:token');
 
   const [panels, setPanels] = useState<IOption[]>([]);
@@ -117,7 +160,11 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
     closed: null,
     overdue: null,
   });
-  const [monthsBack, setMonthsBack] = useState<number>(12);
+  const [period, setPeriod] = useState<PeriodValue>('12m');
+  const [progress, setProgress] = useState<IProgressRow[] | null>(null);
+  const [isMigrating, setIsMigrating] = useState(false);
+  const [migrationError, setMigrationError] = useState('');
+  const [showConfirm, setShowConfirm] = useState(false);
   const [optionsSubject, setOptionsSubject] = useState<ISubjectOption[]>([]);
   const [selectedSubjects, setSelectedSubjects] = useState<ISubjectOption[]>([]);
   const [subjectTerm, setSubjectTerm] = useState('');
@@ -137,6 +184,23 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
   useDelay(() => {
     LoadSubjects(subjectTerm);
   }, [subjectTerm], 1000);
+
+  useEffect(() => {
+    if (isCancelMessage && caller === CONFIRM_CALLER) {
+      setShowConfirm(false);
+      handleCancelMessage(false);
+    }
+  }, [isCancelMessage, caller]);
+
+  useEffect(() => {
+    if (isConfirmMessage && caller === CONFIRM_CALLER) {
+      setShowConfirm(false);
+      // reset before clearing the checkbox: handleConfirmMessage only writes while it is checked
+      handleConfirmMessage(false);
+      handleCheckConfirm(false);
+      RunMigration();
+    }
+  }, [isConfirmMessage, caller]);
 
   const LoadPanels = async () => {
     setIsWaiting(true);
@@ -239,7 +303,12 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
     setPhaseByStatus(current => ({ ...current, [statusKey]: option }));
   };
 
-  const handleImport = async () => {
+  const totalMigrated = progress?.reduce((sum, row) => sum + row.migrated, 0) ?? 0;
+
+  // statuses left without a phase are simply skipped, not reported as an error
+  const selectedRows = STATUS_ROWS.filter(row => phaseByStatus[row.key]);
+
+  const handleRequestImport = () => {
     if (!selectedPanel) {
       addToast({
         type: 'info',
@@ -249,56 +318,74 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
       return;
     }
 
-    const missing = STATUS_ROWS.filter(row => !phaseByStatus[row.key]);
-
-    if (missing.length > 0) {
+    if (selectedRows.length === 0) {
       addToast({
         type: 'info',
         title: 'Atenção',
-        description: `Informe a etapa de destino para: ${missing.map(row => row.label).join(', ')}`,
+        description: 'Informe a etapa de destino de ao menos um status',
       });
       return;
     }
 
-    setIsWaiting(true);
+    setShowConfirm(true);
+  };
+
+  const RunMigration = async () => {
+    // empty = migrate appointments from every subject
+    const subjectFilter = selectedSubjects.map(subject => subject.value).join('|');
+
+    setMigrationError('');
+    setIsMigrating(true);
+    setProgress(selectedRows.map(row => ({
+      key: row.key,
+      label: row.label,
+      phaseName: phaseByStatus[row.key]?.label ?? '',
+      migrated: 0,
+      state: 'pending',
+    })));
 
     try {
-      await api.post('/Kanban/ImportarCompromissos', {
-        token,
-        kanbanId: selectedPanel.value,
-        monthsBack,
-        inProgressStageId: phaseByStatus.inProgress?.value,
-        futureStageId: phaseByStatus.future?.value,
-        closedStageId: phaseByStatus.closed?.value,
-        overdueStageId: phaseByStatus.overdue?.value,
-        // empty = import appointments from every subject
-        subjectIds: selectedSubjects.map(subject => subject.value),
-      });
+      // one status per call, one stage at a time, looping until the stage is drained
+      for (const row of selectedRows) {
+        setProgress(current => withRow(current, row.key, item => ({ ...item, state: 'running' })));
 
-      addToast({
-        type: 'success',
-        title: 'Operação Realizada',
-        description: 'Os compromissos foram importados para o painel selecionado',
-      });
+        for (let batch = 0; batch < MAX_BATCHES_PER_STAGE; batch++) {
+          const response = await api.post<number>('/KanbanEtapa/MigrarCompromissos', {
+            KanbanStageId: phaseByStatus[row.key]?.value,
+            StatusFilter: row.statusFilter,
+            Period: period,
+            SubjectFilter: subjectFilter,
+            Token: token,
+          });
+
+          const affected = Number(response.data) || 0;
+
+          if (affected <= 0)
+            break;
+
+          setProgress(current => withRow(current, row.key, item => ({ ...item, migrated: item.migrated + affected })));
+        }
+
+        setProgress(current => withRow(current, row.key, item => ({ ...item, state: 'done' })));
+      }
 
       if (onImported)
         onImported();
-
-      onClose();
     }
     catch {
-      addToast({
-        type: 'error',
-        title: 'Operação NÃO Realizada',
-        description: 'Houve uma falha na importação dos compromissos',
-      });
+      setProgress(current => current?.map(item => (
+        item.state === 'running' ? { ...item, state: 'failed' } : item
+      )) ?? null);
+
+      setMigrationError('Houve uma falha durante a importação. Os compromissos já migrados foram mantidos no painel.');
     }
     finally {
-      setIsWaiting(false);
+      setIsMigrating(false);
     }
   };
 
   return (
+  <>
     <ModalOverlay>
       <ImportModal onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
@@ -306,7 +393,7 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
             <h4>Importar Compromissos para o Kanban</h4>
             <span>Esta função importa compromissos do calendário GOJUR para o modo Kanban. Serão importados os compromissos em que o seu usuário for o responsável.</span>
           </div>
-          <FiX onClick={onClose} />
+          {!isMigrating && <FiX onClick={onClose} />}
         </div>
 
         <div className="modal-body">
@@ -366,15 +453,15 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
             </span>
 
             <PeriodOptions>
-              {PERIOD_OPTIONS.map(period => (
-                <label key={period.value}>
+              {PERIOD_OPTIONS.map(option => (
+                <label key={option.value}>
                   <input
                     type="radio"
                     name="importPeriod"
-                    checked={monthsBack === period.value}
-                    onChange={() => setMonthsBack(period.value)}
+                    checked={period === option.value}
+                    onChange={() => setPeriod(option.value)}
                   />
-                  {period.label}
+                  {option.label}
                 </label>
               ))}
             </PeriodOptions>
@@ -411,7 +498,7 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
             type="button"
             className="buttonClick"
             disabled={isWaiting}
-            onClick={handleImport}
+            onClick={handleRequestImport}
           >
             <FiDownload size={12} /> Importar
           </button>
@@ -424,8 +511,73 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
             Cancelar
           </button>
         </div>
+
+        {progress && (
+          <ProgressScreen>
+            <h4>
+              {isMigrating
+                ? 'Importando compromissos...'
+                : migrationError ? 'Importação interrompida' : 'Importação concluída'}
+            </h4>
+
+            <span className="subtitle">
+              {isMigrating
+                ? 'Não feche esta janela enquanto a importação estiver em andamento.'
+                : migrationError || 'Os compromissos foram distribuídos nas etapas do painel.'}
+            </span>
+
+            <ul>
+              {progress.map(row => (
+                <li key={row.key} className={row.state}>
+                  <span className="icon">
+                    {row.state === 'running' && <Loader size={12} color="#1da1f2" />}
+                    {row.state === 'done' && <FiCheck />}
+                    {row.state === 'failed' && <FiAlertCircle />}
+                  </span>
+
+                  <span className="name">
+                    {row.label}
+                    {row.phaseName && <small>{row.phaseName}</small>}
+                  </span>
+
+                  <span className="count">
+                    {row.state === 'pending' ? 'Aguardando' : `${row.migrated} compromisso(s)`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="total">
+              Total importado: <strong>{totalMigrated}</strong>
+            </div>
+
+            {!isMigrating && (
+              <button
+                type="button"
+                className="buttonClick"
+                onClick={onClose}
+              >
+                Fechar
+              </button>
+            )}
+          </ProgressScreen>
+        )}
       </ImportModal>
     </ModalOverlay>
+
+    {showConfirm && (
+      <ConfirmBoxModal
+        caller={CONFIRM_CALLER}
+        title="Importar Compromissos"
+        message={CONFIRM_MESSAGE}
+        checkMessage="Estou ciente sobre a operação e desejo continuar"
+        buttonOkText="Importar"
+        useCheckBoxConfirm
+        showButtonCancel
+        showMainButtonCancel={false}
+      />
+    )}
+  </>
   );
 };
 

@@ -11,13 +11,13 @@ export const ModalOverlay = styled.div`
 `;
 
 export const ImportModal = styled.div`
+  position: relative;
   background: var(--white);
   border: 1px solid var(--blue-twitter);
   border-radius: 0.5rem;
   box-shadow: 1px 1px 4px 0.5px rgba(0, 0, 0, 0.15);
   width: 30rem;
   max-width: 95vw;
-  min-height: 26rem;
   max-height: 94vh;
   display: flex;
   flex-direction: column;
@@ -163,5 +163,98 @@ export const PeriodOptions = styled.div`
       width: 0.75rem;
       height: 0.75rem;
     }
+  }
+`;
+
+/* Covers the whole form while the migration runs, one line per status. */
+export const ProgressScreen = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: var(--white);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1.25rem;
+
+  h4 {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--primary);
+  }
+
+  span.subtitle {
+    font-size: 0.625rem;
+    color: #94a3b8;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0.4rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  li {
+    display: grid;
+    grid-template-columns: 1.1rem 1fr auto;
+    gap: 0.4rem;
+    align-items: center;
+    padding: 0.35rem 0.5rem;
+    border-radius: 0.35rem;
+    background: #f8fafc;
+    font-size: 0.665rem;
+    color: var(--secondary);
+
+    &.pending { opacity: 0.55; }
+    &.done .count { color: var(--blue-twitter); }
+    &.failed .count { color: var(--red); }
+  }
+
+  .icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      width: 0.8rem;
+      height: 0.8rem;
+    }
+  }
+
+  .done .icon svg { color: var(--blue-twitter); }
+  .failed .icon svg { color: var(--red); }
+
+  .name {
+    display: flex;
+    flex-direction: column;
+
+    small {
+      font-size: 0.6rem;
+      color: #94a3b8;
+    }
+  }
+
+  .count {
+    font-size: 0.625rem;
+    white-space: nowrap;
+  }
+
+  .total {
+    margin-top: 0.4rem;
+    font-size: 0.665rem;
+    color: var(--secondary);
+
+    strong { color: var(--primary); }
+  }
+
+  > button {
+    align-self: flex-end;
+    margin-top: 0.5rem;
+    margin-right: 0;
+    float: none;
   }
 `;
