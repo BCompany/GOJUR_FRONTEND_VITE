@@ -13,6 +13,8 @@ interface AppointmentPropsDelete {
   token: any;
   dateRecurrence: any;
   serieRecurrenceChange?: any;
+  apiKey: any;
+  companyId: any;
 }
 
 interface ModalProps {
@@ -41,6 +43,8 @@ const DeleteModal: React.FC<ModalProps> = ({
       data.serieRecurrenceChange = 'one';
       data.token = userToken;
       data.dateRecurrence = localStorage.getItem('@GoJur:RecurrenceDate');
+      data.apiKey = localStorage.getItem('@GoJur:apiKey'),
+      data.companyId= localStorage.getItem('@GoJur:companyId')
       setisSaveThis(true)
       
       await api.post(`/Compromisso/Deletar`, data);
@@ -78,6 +82,8 @@ const DeleteModal: React.FC<ModalProps> = ({
       data.serieRecurrenceChange = 'all';
       data.token = userToken;
       data.dateRecurrence = localStorage.getItem('@GoJur:RecurrenceDate');
+      data.apiKey = localStorage.getItem('@GoJur:apiKey'),
+      data.companyId= localStorage.getItem('@GoJur:companyId')
       setisSaveAll(true)
 
       await api.post(`/Compromisso/Deletar`, data);
@@ -116,6 +122,8 @@ const DeleteModal: React.FC<ModalProps> = ({
       data.serieRecurrenceChange = 'next';
       data.token = userToken;
       data.dateRecurrence = localStorage.getItem('@GoJur:RecurrenceDate');
+      data.apiKey = localStorage.getItem('@GoJur:apiKey'),
+      data.companyId= localStorage.getItem('@GoJur:companyId')
       setisSaveNext(true)
       
       await api.post(`/Compromisso/Deletar`, data);

@@ -280,6 +280,8 @@ const Calendar: React.FC = () => {
             filterItens,
             subjectId,
             token,
+            apiKey: localStorage.getItem('@GoJur:apiKey'),
+            companyId: localStorage.getItem('@GoJur:companyId')
           },
         },
       );

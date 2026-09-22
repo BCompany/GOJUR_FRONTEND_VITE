@@ -36,6 +36,8 @@ interface AppointmentPropsSave {
   recurrenceRuleJSON:any;
   serieRecurrenceChange?: any;
   isConfirmSave:any;
+  apiKey: any;
+  cod_Empresa: any;
 }
 
 interface ModalProps {
@@ -62,6 +64,8 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
       data.token = userToken;
       data.matter = {matterId: localStorage.getItem('@GoJur:MatterId')};
       data.dateRecurrence = localStorage.getItem('@GoJur:RecurrenceDate');
+      data.apiKey = localStorage.getItem('@GoJur:apiKey'),
+      data.cod_Empresa = localStorage.getItem('@GoJur:companyId')
       setisSaveThis(true)
       
       const response = await api.put(`/Compromisso/Salvar`, data);
@@ -96,6 +100,8 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
 
       data.serieRecurrenceChange = 'all';
       data.token = userToken;
+      data.apiKey = localStorage.getItem('@GoJur:apiKey'),
+      data.cod_Empresa = localStorage.getItem('@GoJur:companyId')
       setisSaveAll(true)
 
       const response = await api.put(`/Compromisso/Salvar`, data);
@@ -126,6 +132,8 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
   const handleSaveThisAndOthers = useCallback(async () => {
     try {
       data.serieRecurrenceChange = 'next';
+      data.apiKey = localStorage.getItem('@GoJur:apiKey'),
+      data.cod_Empresa = localStorage.getItem('@GoJur:companyId')
       setisSaveNext(true)
       
       const response = await api.put(`/Compromisso/Salvar`, data);

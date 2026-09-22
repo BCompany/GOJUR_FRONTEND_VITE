@@ -228,6 +228,8 @@ const ModalProvider: React.FC = ({ children }) => {
         token: userToken,
         recurrenceDate,
         serieRecurrenceChange: 'one',
+        apiKey: localStorage.getItem('@GoJur:apiKey'),
+        companyId: localStorage.getItem('@GoJur:companyId')
       });
 
       addToast({

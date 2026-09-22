@@ -387,6 +387,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         id: appointmentId,
         token: userToken,
         recurrenceDate,
+        apiKey: localStorage.getItem('@GoJur:apiKey'),
+        companyId: localStorage.getItem('@GoJur:companyId')
       });
 
       const { data } = response;
@@ -1500,7 +1502,10 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
         isConfirmSave: confirmSave,
         recurrenceRuleJSON: JSON.stringify(dataRecurrence),
         workflowActionsExecId: appointmentWorkflowActionsExecId,
-        workflowExecId:appointmentWorkflowExecId 
+        workflowExecId:appointmentWorkflowExecId,
+        companyId: localStorage.getItem('@GoJur:companyId'),
+        apiKey: localStorage.getItem('@GoJur:apiKey'),
+        cod_Empresa: localStorage.getItem('@GoJur:companyId'),
       }
 
       try {
@@ -1581,6 +1586,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
           token: userToken,
           dateRecurrence: recurrenceDate,
           serieRecurrenceChange: 'one',
+          apiKey: localStorage.getItem('@GoJur:apiKey'),
+          companyId: localStorage.getItem('@GoJur:companyId')
         });
 
 
