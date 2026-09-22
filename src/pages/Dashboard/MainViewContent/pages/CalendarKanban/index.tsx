@@ -101,6 +101,8 @@ export default function AgendaKanban() {
   const [dateEventStatus, setDateEventStatus] = useState<string>('');
   const [eventIdButtonClick, setEventIdButtonClick] = useState<number>(0);
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [addMenuAnchor, setAddMenuAnchor] = React.useState(null);
+  const [addMenuTarget, setAddMenuTarget] = useState<{ phaseId: number; beforeCardId?: string } | null>(null);
   const [activePhases, setActivePhases] = useState([] as IPhase[]);
   const { addToast } = useToast();
   const { permissionsSecurity, handleValidateSecurity } = useSecurity();
@@ -966,6 +968,33 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
     isOpenModal('0');
 
   }, [permissions, handleCaptureTextPublication, handleDeadLineCalculatorText, handleModalActive, isOpenModal, handleKanbanCaller, handleKanbanStageId]);
+
+  const handleOpenAddMenu = (e: React.MouseEvent, phaseId: number, beforeCardId?: string) => {
+    setAddMenuTarget({ phaseId, beforeCardId });
+    setAddMenuAnchor(e.currentTarget);
+  };
+
+  const handleCloseAddMenu = () => {
+    setAddMenuAnchor(null);
+    setAddMenuTarget(null);
+  };
+
+  // opens the deadline calculator already bound to this phase: the calculator
+  // finishes by opening the appointment modal, which then reads the stage below
+  const handleClickIncludeDeadLine = useCallback((phaseId: number, beforeCardId?: string) => {
+    handleKanbanCaller(true);
+    handleKanbanStageId(phaseId.toString());
+
+    setInsertAnchor(beforeCardId ? { phaseId, beforeCardId } : null);
+    setCurrentAppointmentEdit(undefined);
+    setCurrentKanbanStageId(phaseId);
+
+    handleCaptureTextPublication('');
+    handleDeadLineCalculatorText('');
+
+    handleDetailsAnyType(null);
+    handlePublicationModal('Calc');
+  }, [handleCaptureTextPublication, handleDeadLineCalculatorText, handleKanbanCaller, handleKanbanStageId, handleDetailsAnyType, handlePublicationModal]);
 
 
   const handleClickEdit = useCallback(async (e:  React.MouseEvent, phaseId: number, event: ICard) => {
@@ -2232,6 +2261,37 @@ const onDragEnd = useCallback(async (result: DropResult) => {
         </MenuItem>
       </Menu>
 
+      <Menu
+        anchorEl={addMenuAnchor}
+        keepMounted
+        open={Boolean(addMenuAnchor)}
+        onClose={handleCloseAddMenu}
+      >
+        <MenuItem
+          style={{ fontSize: '0.75rem', color: 'var(--blue-twitter' }}
+          onClick={() => {
+            const target = addMenuTarget;
+            handleCloseAddMenu();
+            if (target) handleClickInclude(target.phaseId, target.beforeCardId);
+          }}
+        >
+          <BiCalendarEdit />
+          &nbsp;&nbsp;Compromisso
+        </MenuItem>
+
+        <MenuItem
+          style={{ fontSize: '0.75rem', color: 'var(--blue-twitter' }}
+          onClick={() => {
+            const target = addMenuTarget;
+            handleCloseAddMenu();
+            if (target) handleClickIncludeDeadLine(target.phaseId, target.beforeCardId);
+          }}
+        >
+          <FaCalculator />
+          &nbsp;&nbsp;Prazos
+        </MenuItem>
+      </Menu>
+
       
       <Content >
         <TaskBar>
@@ -2300,15 +2360,6 @@ const onDragEnd = useCallback(async (result: DropResult) => {
               />
             </div>
 
-            <button
-              type="button"
-              className="buttonLinkClick"
-              onClick={() => handleOpenDeadLineCalculator()}
-              title="Calculadora de Prazos"
-            >
-              <FaCalculator />
-              Prazos
-            </button>
 
             {checkWorkflow && (
               <button
@@ -2688,8 +2739,8 @@ const onDragEnd = useCallback(async (result: DropResult) => {
                                 <InsertSlot>
                                   <AddCardButton
                                     type="button"
-                                    title="Criar compromisso"
-                                    onClick={() => handleClickInclude(phase.id, String(card.id))}
+                                    title="Criar compromisso ou prazo"
+                                    onClick={(e) => handleOpenAddMenu(e, phase.id, String(card.id))}
                                   >
                                     <FiPlus /> Criar Compromisso
                                   </AddCardButton>
@@ -2789,7 +2840,11 @@ const onDragEnd = useCallback(async (result: DropResult) => {
                           </CardsList>
                                       
                           <FixedFooter>
-                              <AddCardButton type="button" onClick={() => handleClickInclude(phase.id)}>
+                              <AddCardButton
+                                type="button"
+                                title="Criar compromisso ou prazo"
+                                onClick={(e) => handleOpenAddMenu(e, phase.id)}
+                              >
                                 <FiPlus /> Criar Compromisso
                               </AddCardButton>
                           </FixedFooter>

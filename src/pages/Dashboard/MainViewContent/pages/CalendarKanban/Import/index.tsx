@@ -394,8 +394,8 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
           <div className="modal-title">
             <h4>Importar Compromissos para o Kanban</h4>
             <span>
-              Esta função importa compromissos do calendário GOJUR para o modo Kanban, serão importados apenas os compromisssos em que você é o responsável. 
-              Os compromissos importados para o Kanban continuam presentes no modo calendário.
+              Serão importados para o Kanban apenas os compromissos em que você é o responsável.
+              Os compromissos continuam disponíveis no calendário GOJUR, <b> é o mesmo compromisso</b>, que pode ser visualizado e editado tanto no Calendário quanto no Kanban.
             </span>
           </div>
           {!isMigrating && <FiX onClick={onClose} />}
