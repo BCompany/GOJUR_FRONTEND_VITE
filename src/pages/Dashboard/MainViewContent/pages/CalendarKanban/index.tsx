@@ -871,7 +871,7 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
       startDate = new Date(today);
       startDate.setDate(today.getDate() - today.getDay() + 8);
       endDate = new Date(startDate);
-      endDate.setDate(startDate.getDate() + 6);
+      endDate.setDate(startDate.getDate() + 6 );
       break;
 
     case 'proximo_mes':

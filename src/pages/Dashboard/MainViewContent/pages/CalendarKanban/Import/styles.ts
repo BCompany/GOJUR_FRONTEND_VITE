@@ -37,12 +37,16 @@ export const ImportModal = styled.div`
     .modal-title {
       display: flex;
       flex-direction: column;
-      gap: 0.15rem;
 
       span {
         font-size: 0.625rem;
         font-weight: 400;
         color: #94a3b8;
+      }
+
+      /* same title-to-caption rhythm used by Field */
+      h4 + span {
+        margin-top: 0.5rem;
       }
     }
 
@@ -83,14 +87,17 @@ export const ImportModal = styled.div`
   }
 `;
 
+/* Spacing comes from adjacent-sibling margins instead of gap: gap applies a
+   single value to every child, and the label/hint pair has to sit tighter than
+   the caption-to-control distance. Do not add gap back here - it would stack on
+   top of these margins. */
 export const Field = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
 
   label {
     font-size: 0.675rem;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--secondary);
   }
 
@@ -98,6 +105,21 @@ export const Field = styled.div`
     font-size: 0.600rem;
     font-weight: 400;
     color: #94a3b8;
+  }
+
+  /* the hint belongs to the label, so it stays close to it */
+  label + span.hint {
+    margin-top: 0.1rem;
+  }
+
+  /* no hint: the control comes right after the label */
+  label + *:not(span.hint) {
+    margin-top: 0.5rem;
+  }
+
+  /* after the hint: separates the whole caption block from the control */
+  span.hint + * {
+    margin-top: 1rem;
   }
 `;
 
@@ -146,7 +168,6 @@ export const PeriodOptions = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  margin-top: 0.15rem;
 
   label {
     display: flex;
@@ -172,7 +193,6 @@ export const ProgressScreen = styled.div`
   background: var(--white);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
   padding: 0.85rem;
 
   h4 {
@@ -186,9 +206,22 @@ export const ProgressScreen = styled.div`
     color: #94a3b8;
   }
 
+  /* same title/caption rhythm used by Field */
+  h4 + span.subtitle {
+    margin-top: 0.1rem;
+  }
+
+  h4 + *:not(span.subtitle) {
+    margin-top: 0.35rem;
+  }
+
+  span.subtitle + * {
+    margin-top: 0.4rem;
+  }
+
   ul {
     list-style: none;
-    margin: 0.4rem 0 0;
+    margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;

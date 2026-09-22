@@ -59,17 +59,17 @@ const STATUS_ROWS: IStatusRow[] = [
     label: 'Futuros', 
     statusFilter: 'future',
     hint: 'Conmpromissos que serão iniciados a partir de amanhã.', },
-  {
-    key: 'closed',
-    label: 'Encerrados',
-    statusFilter: 'completed',
-    hint: 'Conmpromissos que foram marcados como concluídos no GOJUR.',
-  },
   { key: 'overdue',
     label: 'Antigos', 
     statusFilter: 'late',
     hint: 'Compromissos não concluídos com início há mais de 5 dias.',
    },
+   {
+    key: 'closed',
+    label: 'Encerrados',
+    statusFilter: 'completed',
+    hint: 'Conmpromissos que foram marcados como concluídos no GOJUR.',
+  },
 ];
 
 // Period expected by /KanbanEtapa/MigrarCompromissos
@@ -452,9 +452,9 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
           </Field>
 
           <Field>
-            <label>Período a partir de:</label>
+            <label>Período</label>
             <span className="hint">
-              Informe a data de início para os compromissos que serão importados.
+              Selecione quanto tempo de histórico deseja importar.
             </span>
 
             <PeriodOptions>
