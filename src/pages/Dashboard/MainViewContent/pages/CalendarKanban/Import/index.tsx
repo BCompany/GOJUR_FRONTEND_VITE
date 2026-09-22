@@ -73,13 +73,13 @@ const STATUS_ROWS: IStatusRow[] = [
 ];
 
 // Period expected by /KanbanEtapa/MigrarCompromissos
-type PeriodValue = '12m' | '6m' | '3m' | '1m';
+type PeriodValue = '1m' | '3m' | '6m' | '12m';
 
 const PERIOD_OPTIONS: { value: PeriodValue; label: string }[] = [
-  { value: '12m', label: '1 Ano' },
-  { value: '6m', label: '6 meses' },
-  { value: '3m', label: '3 meses' },
   { value: '1m', label: '1 mês' },
+  { value: '3m', label: '3 meses' },
+  { value: '6m', label: '6 meses' },
+  { value: '12m', label: '1 Ano' },
 ];
 
 // the endpoint migrates up to 100 appointments per call, so each stage is called
@@ -158,7 +158,7 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
     closed: null,
     overdue: null,
   });
-  const [period, setPeriod] = useState<PeriodValue>('12m');
+  const [period, setPeriod] = useState<PeriodValue>('1m');
   const [progress, setProgress] = useState<IProgressRow[] | null>(null);
   const [isMigrating, setIsMigrating] = useState(false);
   const [migrationError, setMigrationError] = useState('');
@@ -393,7 +393,10 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
         <div className="modal-header">
           <div className="modal-title">
             <h4>Importar Compromissos para o Kanban</h4>
-            <span>Esta função importa compromissos do calendário GOJUR para o modo Kanban. Serão importados os compromissos em que o seu usuário for o responsável.</span>
+            <span>
+              Esta função importa compromissos do calendário GOJUR para o modo Kanban, serão importados apenas os compromisssos em que você é o responsável. 
+              Os compromissos importados para o Kanban continuam presentes no modo calendário.
+            </span>
           </div>
           {!isMigrating && <FiX onClick={onClose} />}
         </div>
