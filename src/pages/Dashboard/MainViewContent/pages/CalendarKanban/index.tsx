@@ -2,7 +2,9 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { FiPlus, FiTrash2, FiClock, FiLayout, FiX, FiCheck, FiEdit2, FiEdit, FiRefreshCw, FiDownload } from 'react-icons/fi';
 import { MdPalette, MdFavorite, MdFavoriteBorder } from 'react-icons/md';
-import { FcSearch } from 'react-icons/fc';
+import { FcSearch, FcAbout, FcParallelTasks, FcCalendar } from 'react-icons/fc';
+import { FaCalculator } from 'react-icons/fa';
+import { usePublication } from 'context/publication';
 import Search from 'components/Search';
 import { HeaderPage } from 'components/HeaderPage';
 import { useHistory } from 'react-router-dom';
@@ -102,6 +104,9 @@ export default function AgendaKanban() {
   const [activePhases, setActivePhases] = useState([] as IPhase[]);
   const { addToast } = useToast();
   const { permissionsSecurity, handleValidateSecurity } = useSecurity();
+  const { handlePublicationModal, handleDetailsAnyType } = usePublication();
+  const [workflowView, setWorkflowView] = useState('');
+  const checkWorkflow = permissionsSecurity.find(item => item.name === 'CFGWKFEX');
   const {
     isMenuOpen,
     handleIsMenuOpen,
@@ -168,7 +173,24 @@ export default function AgendaKanban() {
   // Call security permission - passing module
   useEffect(() => {
     handlePermission()
+    LoadDefaultProps()
   }, [])
+
+  // which workflow view the Workflow button lands on
+  const LoadDefaultProps = async () => {
+    try {
+      const response = await api.post('/Defaults/Listar', { token });
+
+      const workflowViewDefault = response.data.find(
+        item => item.id === 'defaultWorkflowParameter' || item.id === 'adm'
+      );
+
+      setWorkflowView(workflowViewDefault ? workflowViewDefault.value : 'KANBAN');
+    }
+    catch (err) {
+      console.log(err);
+    }
+  }
 
   const handlePermission = async () => {
     await handleValidateSecurity(SecurityModule.calendar)
@@ -1878,7 +1900,35 @@ const onDragEnd = useCallback(async (result: DropResult) => {
   };
 
   const handleReturnCalendar = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', { token, module: 'EVT_AGENDA' });
     history.push('/calendar');
+  }
+
+  const handleOpenDeadLineCalculator = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', { token, module: 'EVT_AGECALCULADORAPRAZO' });
+
+    handleDetailsAnyType(null);
+    handlePublicationModal('Calc');
+  }
+
+  // same navigation the calendar does: the landing view comes from the user default
+  const handleWorkflow = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', { token, module: 'EVT_AGEWORKFLOW' });
+
+    localStorage.setItem('@Gojur:calendarRedirect', 'S');
+
+    localStorage.removeItem('@Gojur:publicationId');
+    localStorage.removeItem('@Gojur:followUpId');
+    localStorage.removeItem('@Gojur:notificationTag');
+    localStorage.removeItem('@Gojur:filterCustomerId');
+    localStorage.removeItem('@Gojur:filterCustomer');
+    localStorage.removeItem('@Gojur:customer');
+    localStorage.removeItem('@Gojur:filterMatterId');
+
+    if (workflowView == 'LISTA')
+      history.push('/workflowexec/list');
+    else
+      history.push('/workflowexec/kanban');
   }
 
   const handleChangeDate = item => {
@@ -2186,6 +2236,9 @@ const onDragEnd = useCallback(async (result: DropResult) => {
       <Content >
         <TaskBar>
           <div className="taskbar-left">
+            {/* Search forwards className to the inner input, so the box itself can
+                only be sized through the style prop below - without it the container
+                keeps its own flex:1 and swallows the whole taskbar */}
             <Search
               onKeyPress={(e: React.KeyboardEvent) => {
                 if (e.key === 'Delete' || e.key === 'Backspace' || e.which === 8) {
@@ -2198,7 +2251,7 @@ const onDragEnd = useCallback(async (result: DropResult) => {
               placeholder="Pesquisar Compromissos"
               className="search"
               name="search"
-              style={{minWidth: '10rem', marginTop: 0, marginLeft: 0 }}
+              style={{ flex: 'unset', width: '22rem', minWidth: 'unset', marginTop: 0, marginLeft: 0 }}
               value={filterTerm}
               onChange={(e) => setFilterTerm(e.target.value)}
             />
@@ -2209,9 +2262,14 @@ const onDragEnd = useCallback(async (result: DropResult) => {
               onClick={() => { RebuildInterface(); }}
             />
 
+            <FcAbout
+              className="icons"
+              title="Pesquisa de compromissos por assunto, descrição e observação"
+            />
+
             <div style={{ zIndex: 9 }}>
               <FilterCalendar
-                width={300} 
+                width={250} 
                 optionsCalendarFilter={optionsCalendarFilter}
                 multiFilter={multiFilter}
                 selectedFilterValues={multiFilter1}
@@ -2226,7 +2284,7 @@ const onDragEnd = useCallback(async (result: DropResult) => {
               />
             </div>
 
-            <div style={{ width: '180px' }}>
+            <div style={{ width: '160px', flexShrink: 0 }}>
               <Select
                 options={PERIOD_OPTIONS}
                 onChange={handleChangeDate}
@@ -2241,6 +2299,38 @@ const onDragEnd = useCallback(async (result: DropResult) => {
                 }
               />
             </div>
+
+            <button
+              type="button"
+              className="buttonLinkClick"
+              onClick={() => handleOpenDeadLineCalculator()}
+              title="Calculadora de Prazos"
+            >
+              <FaCalculator />
+              Prazos
+            </button>
+
+            {checkWorkflow && (
+              <button
+                type="button"
+                className="buttonLinkClick"
+                onClick={() => handleWorkflow()}
+                title="Workflow"
+              >
+                <FcParallelTasks />
+                Workflow
+              </button>
+            )}
+
+            <button
+              type="button"
+              className="buttonLinkClick"
+              onClick={() => handleReturnCalendar()}
+              title="Retornar para a Agenda"
+            >
+              <FcCalendar />
+              Calendário
+            </button>
           </div>
 
           <div className="taskbar-right">
@@ -2250,14 +2340,6 @@ const onDragEnd = useCallback(async (result: DropResult) => {
               onClick={() => setShowPanelsModal(true)}
             >
               <FiLayout size={12} /> Painéis
-            </button>
-
-            <button
-              type="button"
-              className="buttonClick"
-              onClick={() => handleReturnCalendar()}
-            >
-              Retornar Calendário
             </button>
 
             <div className="buttonHamburguer">

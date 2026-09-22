@@ -46,18 +46,25 @@ export const TaskBar = styled.div`
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    width: 70%;
+    flex: 1;
+    min-width: 0;
 
-    .search {
-      flex: unset;
-      min-width: unset;
-    }
+    /* the Search box is sized by its style prop in the page: className lands on
+       the inner input, not on the container, so it cannot be sized from here */
 
     .icons {
       width: 1rem;
       height: 1rem;
       cursor: pointer;
       flex-shrink: 0;
+    }
+
+    /* same shape the calendar taskbar gives these buttons */
+    .buttonLinkClick {
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
+      margin-right: 0;
     }
   }
 
@@ -72,6 +79,7 @@ export const TaskBar = styled.div`
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    flex-shrink: 0;
   }
 
   .buttonHamburguer {
