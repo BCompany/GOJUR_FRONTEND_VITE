@@ -14,6 +14,7 @@ interface DefaultsProps {
   value: string;
 }
 
+
 export default function VideoTrainningModal() {
 
   const { handleShowVideoTrainning, showVideoTrainning } = useModal();
@@ -64,9 +65,13 @@ export default function VideoTrainningModal() {
       setVideoSrc('https://www.youtube.com/embed/HJ5HZeWrES4')
       setVideoTitle('Treinamento virtual - módulo de publicação')
     }
-    if (pathname ==='/calendar' || pathname ==='/calendar/kanban'){
+    if (pathname ==='/calendar'){
       setVideoSrc('https://www.youtube.com/embed/3CCCpt-dQks')
       setVideoTitle('Treinamento virtual - módulo de compromissos / agendamentos')
+    }
+    if (pathname ==='/calendar/kanban'){
+      setVideoSrc('https://www.youtube.com/embed/3CCCpt-dQks')
+      setVideoTitle('Treinamento virtual - agenda no modo Kanban')
     }
     if (pathname ==='/matter/list'){
 
