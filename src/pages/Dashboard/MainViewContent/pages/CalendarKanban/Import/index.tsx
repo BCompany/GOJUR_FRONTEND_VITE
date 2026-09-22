@@ -58,7 +58,7 @@ const STATUS_ROWS: IStatusRow[] = [
   { key: 'future', 
     label: 'Futuros', 
     statusFilter: 'future',
-    hint: 'Conmpromissos que serão iniciados a partir de amanhã.', },
+    hint: 'Compromissos que serão iniciados a partir de amanhã.', },
   { key: 'overdue',
     label: 'Antigos', 
     statusFilter: 'late',
@@ -103,10 +103,14 @@ const withRow = (
   change: (row: IProgressRow) => IProgressRow,
 ): IProgressRow[] | null => rows ? rows.map(row => (row.key === key ? change(row) : row)) : null;
 
+const HEADER_HINT = 'Os compromissos continuam disponíveis no calendário GOJUR, é o MESMO compromisso '
+  + 'que poderá ser visualizado e editado tanto no Calendário quanto no Kanban.';
+
 const CONFIRM_CALLER = 'confirmKanbanImport';
 
-const CONFIRM_MESSAGE = 'Essa importação ira inserir os compromissos em que você é responsável no Kanban, '
-  + 'em lote, de acordo com os parâmetros informados, essa operação é irreversível';
+const CONFIRM_MESSAGE = 'Essa importação irá inserir os compromissos em que você é responsável no Kanban, '
+                      +  'em lote, de acordo com os parâmetros informados. Os compromissos continuam disponíveis no calendário GOJUR, é o MESMO compromisso que poderá ser visualizado '
+                       + 'e editado tanto no Calendário quanto no Kanban, essa operação é irreversível';
 
 // react-select sized like the calendar forms (0.675rem), keeping the default option highlight
 const compactSelectStyles = {
@@ -395,7 +399,10 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
             <h4>Importar Compromissos para o Kanban</h4>
             <span>
               Serão importados para o Kanban apenas os compromissos em que você é o responsável.
-              Os compromissos continuam disponíveis no calendário GOJUR, <b> é o mesmo compromisso</b>, que pode ser visualizado e editado tanto no Calendário quanto no Kanban.
+              <FcAbout
+                className="aboutMessage"
+                title={HEADER_HINT}
+              />
             </span>
           </div>
           {!isMigrating && <FiX onClick={onClose} />}

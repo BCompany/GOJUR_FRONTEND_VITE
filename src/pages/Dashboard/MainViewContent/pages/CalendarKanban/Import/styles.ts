@@ -47,6 +47,20 @@ export const ImportModal = styled.div`
       /* same title-to-caption rhythm used by Field */
       h4 + span {
         margin-top: 0.5rem;
+        text-align: justify
+      }
+
+      /* sits inline after the last word, so it has to undo the close-icon rules
+         that .modal-header svg applies to every icon in the header */
+      .aboutMessage {
+        display: inline;
+        vertical-align: -0.15rem;
+        margin: 0 0 0 0.25rem;
+        width: 0.8rem;
+        height: 0.8rem;
+        cursor: help;
+
+        &:hover { color: inherit; }
       }
     }
 

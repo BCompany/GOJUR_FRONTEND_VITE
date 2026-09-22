@@ -1933,13 +1933,6 @@ const onDragEnd = useCallback(async (result: DropResult) => {
     history.push('/calendar');
   }
 
-  const handleOpenDeadLineCalculator = () => {
-    api.post('/Usuario/SalvarLogNavegacaoUsuario', { token, module: 'EVT_AGECALCULADORAPRAZO' });
-
-    handleDetailsAnyType(null);
-    handlePublicationModal('Calc');
-  }
-
   // same navigation the calendar does: the landing view comes from the user default
   const handleWorkflow = () => {
     api.post('/Usuario/SalvarLogNavegacaoUsuario', { token, module: 'EVT_AGEWORKFLOW' });
