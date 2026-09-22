@@ -53,16 +53,23 @@ const STATUS_ROWS: IStatusRow[] = [
     key: 'inProgress',
     label: 'Em andamento',
     statusFilter: 'inprogress',
-    hint: 'Compromissos em andamento são compromissos não concluídos com data de início de até 5 dias atrás',
+    hint: 'Compromissos não concluídos com início hoje ou nos últimos 5 dias.',
   },
-  { key: 'future', label: 'Futuros', statusFilter: 'future' },
+  { key: 'future', 
+    label: 'Futuros', 
+    statusFilter: 'future',
+    hint: 'Conmpromissos que serão iniciados a partir de amanhã.', },
   {
     key: 'closed',
     label: 'Encerrados',
     statusFilter: 'completed',
-    hint: 'Serão considerados compromissos encerrados aqueles que foram marcados como concluídos no GOJUR',
+    hint: 'Conmpromissos que foram marcados como concluídos no GOJUR.',
   },
-  { key: 'overdue', label: 'Em atraso', statusFilter: 'late' },
+  { key: 'overdue',
+    label: 'Antigos', 
+    statusFilter: 'late',
+    hint: 'Compromissos não concluídos com início há mais de 5 dias.',
+   },
 ];
 
 // Period expected by /KanbanEtapa/MigrarCompromissos
@@ -409,12 +416,10 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
 
           <Field>
             <label>
-              Informe abaixo a etapa para onde deseja importar cada compromisso de acordo com o seu status
+              Informe abaixo a etapa para onde deseja importar cada compromisso de acordo com o seu status.
+              
             </label>
-            <span className="hint">
-              (Status sem etapa informada não será importado)
-            </span>
-
+          
             <StatusTable>
               <div className="table-header">
                 <span>Status</span>
@@ -449,7 +454,7 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
           <Field>
             <label>Período a partir de:</label>
             <span className="hint">
-              (Informe a data de início para os compromissos que serão importados)
+              Informe a data de início para os compromissos que serão importados.
             </span>
 
             <PeriodOptions>
@@ -468,9 +473,9 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
           </Field>
 
           <Field>
-            <label>Assunto (opcional)</label>
+            <label>Assunto</label>
             <span className="hint">
-              (Selecione um ou mais assuntos; em branco importa compromissos de todos os assuntos)
+              Selecione um ou mais assuntos; em branco importa compromissos de todos os assuntos.
             </span>
             <Select
               isMulti

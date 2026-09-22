@@ -95,7 +95,7 @@ export const Field = styled.div`
   }
 
   span.hint {
-    font-size: 0.625rem;
+    font-size: 0.600rem;
     font-weight: 400;
     color: #94a3b8;
   }
