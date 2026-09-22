@@ -43,8 +43,6 @@ type StatusKey = 'inProgress' | 'future' | 'closed' | 'overdue';
 interface IStatusRow {
   key: StatusKey;
   label: string;
-  // suggested phase, matched by name when the panel phases are loaded
-  suggestedPhase: string;
   // StatusFilter expected by /KanbanEtapa/MigrarCompromissos
   statusFilter: 'inprogress' | 'future' | 'completed' | 'late';
   hint?: string;
@@ -54,19 +52,17 @@ const STATUS_ROWS: IStatusRow[] = [
   {
     key: 'inProgress',
     label: 'Em andamento',
-    suggestedPhase: 'Em Andamento',
     statusFilter: 'inprogress',
     hint: 'Compromissos em andamento são compromissos não concluídos com data de início de até 5 dias atrás',
   },
-  { key: 'future', label: 'Futuros', suggestedPhase: 'A Fazer', statusFilter: 'future' },
+  { key: 'future', label: 'Futuros', statusFilter: 'future' },
   {
     key: 'closed',
     label: 'Encerrados',
-    suggestedPhase: 'Concluido',
     statusFilter: 'completed',
     hint: 'Serão considerados compromissos encerrados aqueles que foram marcados como concluídos no GOJUR',
   },
-  { key: 'overdue', label: 'Em atraso', suggestedPhase: 'Em Atraso', statusFilter: 'late' },
+  { key: 'overdue', label: 'Em atraso', statusFilter: 'late' },
 ];
 
 // Period expected by /KanbanEtapa/MigrarCompromissos
@@ -129,10 +125,6 @@ const compactMultiSelectStyles = {
   multiValueLabel: styles => ({ ...styles, fontSize: '0.625rem', padding: '0 0.2rem' }),
 };
 
-// phase name comparison ignoring accents and case (Concluido == Concluído)
-const isSameName = (a: string, b: string) =>
-  a.trim().localeCompare(b.trim(), 'pt-BR', { sensitivity: 'base' }) === 0;
-
 interface KanbanImportProps {
   onClose: () => void;
   onImported?: () => void;
@@ -144,7 +136,6 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
   const {
     isConfirmMessage,
     isCancelMessage,
-    caller,
     handleConfirmMessage,
     handleCancelMessage,
     handleCheckConfirm,
@@ -185,22 +176,25 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
     LoadSubjects(subjectTerm);
   }, [subjectTerm], 1000);
 
+  // the confirm box is only mounted while showConfirm is on, so any answer that
+  // arrives then is ours - the cancel button rewrites the caller to 'hasCanceled',
+  // which is why the caller cannot be used to tell the answers apart
   useEffect(() => {
-    if (isCancelMessage && caller === CONFIRM_CALLER) {
+    if (showConfirm && isCancelMessage) {
       setShowConfirm(false);
       handleCancelMessage(false);
     }
-  }, [isCancelMessage, caller]);
+  }, [isCancelMessage, showConfirm]);
 
   useEffect(() => {
-    if (isConfirmMessage && caller === CONFIRM_CALLER) {
+    if (showConfirm && isConfirmMessage) {
       setShowConfirm(false);
       // reset before clearing the checkbox: handleConfirmMessage only writes while it is checked
       handleConfirmMessage(false);
       handleCheckConfirm(false);
       RunMigration();
     }
-  }, [isConfirmMessage, caller]);
+  }, [isConfirmMessage, showConfirm]);
 
   const LoadPanels = async () => {
     setIsWaiting(true);
@@ -254,12 +248,8 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
 
       setPhases(list);
 
-      const suggested = STATUS_ROWS.reduce((acc, row) => {
-        acc[row.key] = list.find(phase => isSameName(phase.label, row.suggestedPhase)) || null;
-        return acc;
-      }, {} as Record<StatusKey, IOption | null>);
-
-      setPhaseByStatus(suggested);
+      // phases belong to the panel, so a selection made for another panel is stale
+      setPhaseByStatus({ inProgress: null, future: null, closed: null, overdue: null });
     }
     catch {
       addToast({
@@ -299,7 +289,7 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
     }
   };
 
-  const handleChangePhase = (statusKey: StatusKey, option: IOption) => {
+  const handleChangePhase = (statusKey: StatusKey, option: IOption | null) => {
     setPhaseByStatus(current => ({ ...current, [statusKey]: option }));
   };
 
@@ -327,6 +317,11 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
       return;
     }
 
+    // the confirm context is global and keeps the last answer given anywhere in
+    // the app, so clear it before opening or the box answers itself
+    handleCheckConfirm(true);
+    handleConfirmMessage(false);
+    handleCancelMessage(false);
     setShowConfirm(true);
   };
 
@@ -396,6 +391,7 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
           {!isMigrating && <FiX onClick={onClose} />}
         </div>
 
+        {!progress && (
         <div className="modal-body">
           <Field>
             <label>Informe o Painel</label>
@@ -415,6 +411,9 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
             <label>
               Informe abaixo a etapa para onde deseja importar cada compromisso de acordo com o seu status
             </label>
+            <span className="hint">
+              (Status sem etapa informada não será importado)
+            </span>
 
             <StatusTable>
               <div className="table-header">
@@ -437,9 +436,10 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
                     menuPosition="fixed"
                     value={phaseByStatus[row.key]}
                     isDisabled={!selectedPanel}
-                    placeholder="Selecione a etapa"
+                    isClearable
+                    placeholder="Não importar"
                     noOptionsMessage={() => 'Nenhuma etapa encontrada'}
-                    onChange={(option: IOption) => handleChangePhase(row.key, option)}
+                    onChange={(option: IOption | null) => handleChangePhase(row.key, option)}
                   />
                 </div>
               ))}
@@ -490,7 +490,9 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
             />
           </Field>
         </div>
+        )}
 
+        {!progress && (
         <div className="modal-footer">
           {isWaiting && <Loader size={18} color="#a9a9a9" />}
 
@@ -511,6 +513,7 @@ const KanbanImport: React.FC<KanbanImportProps> = ({ onClose, onImported, defaul
             Cancelar
           </button>
         </div>
+        )}
 
         {progress && (
           <ProgressScreen>

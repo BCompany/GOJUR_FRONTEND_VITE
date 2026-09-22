@@ -166,17 +166,14 @@ export const PeriodOptions = styled.div`
   }
 `;
 
-/* Covers the whole form while the migration runs, one line per status. */
+/* Replaces the form while the migration runs, one line per status. It sits in
+   the normal flow, not over the form, so the modal shrinks to this content. */
 export const ProgressScreen = styled.div`
-  position: absolute;
-  inset: 0;
-  z-index: 2;
   background: var(--white);
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 0.6rem;
-  padding: 1.25rem;
+  gap: 0.5rem;
+  padding: 0.85rem;
 
   h4 {
     font-size: 0.7rem;
