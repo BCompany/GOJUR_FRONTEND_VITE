@@ -330,17 +330,12 @@ const Calendar: React.FC = () => {
 
   useEffect(() => {
     GetParameterValue();
-    SaveLogNavigation();
   }, []);
 
   useEffect(() => {
     //alert('PASSO 1 ' + appointmentSubjectId);
     LoadCalendar(Number(appointmentSubjectId));
   }, [appointmentSubjectId]);
-
-  const SaveLogNavigation = () => {
-      api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_AGENDACALENDAR'})
-  };
 
 
   // LOAD CALENDAR SEARCH VIEW

@@ -1948,7 +1948,7 @@ const onDragEnd = useCallback(async (result: DropResult) => {
   }
 
   const handleReturnCalendar = () => {
-    api.post('/Usuario/SalvarLogNavegacaoUsuario', { token, module: 'EVT_AGENDA' });
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', { token, module: 'EVT_AGENDACALENDAR' });
     history.push('/calendar');
   }
 
