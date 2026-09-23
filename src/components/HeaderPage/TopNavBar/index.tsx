@@ -10,7 +10,7 @@ import { useHeader } from 'context/headerContext';
 import { useAlert } from 'context/alert';
 import { envProvider } from 'services/hooks/useEnv';
 import MenuHamburguer from 'components/MenuHamburguer';
-import { ValidateAuthenticationError } from 'Shared/utils/commonFunctions';
+import { IsTrainingVideoWatched, ValidateAuthenticationError } from 'Shared/utils/commonFunctions';
 import api from 'services/api';
 import VideoTrainningModal from 'components/Modals/VideoTrainning/Index';
 import { useToast } from 'context/toast';
@@ -91,7 +91,7 @@ const TopNavBar: React.FC<NavigationProps> = ({
       const videoTrainningConfig = response.data.find(item => item.id === 'defaultUserLogFirstAccess');
       if (videoTrainningConfig) {
         if (pathname.includes('/calendar') || pathname.includes('/matter/list') || pathname.includes('/publication')) {
-          const seeTrainningVideo = !(videoTrainningConfig.value ?? "").includes(pathname.replace('/', ''));
+          const seeTrainningVideo = !IsTrainingVideoWatched(videoTrainningConfig.value, pathname.replace('/', ''));
           handleShowVideoTrainning(seeTrainningVideo);
         }
       }

@@ -7,12 +7,14 @@ import Modal from 'react-modal';
 import { useLocation } from 'react-router-dom';
 import api from 'services/api';
 import { Overlay } from 'Shared/styles/GlobalStyle';
+import { IsTrainingVideoWatched } from 'Shared/utils/commonFunctions';
 import { Container } from './styles';
 
 interface DefaultsProps {
   id: string;
   value: string;
 }
+
 
 export default function VideoTrainningModal() {
 
@@ -40,7 +42,7 @@ export default function VideoTrainningModal() {
 
     if (userConfiguration) {
       // verify if default value config for this used inform that video is already watched
-      const videoAlreadyWatched = (userConfiguration.value??"").includes(moduleName);
+      const videoAlreadyWatched = IsTrainingVideoWatched(userConfiguration.value, moduleName);
 
       // if is the first time,  call endpoint to save log marking video as read
       if (!videoAlreadyWatched){
@@ -67,6 +69,10 @@ export default function VideoTrainningModal() {
     if (pathname ==='/calendar'){
       setVideoSrc('https://www.youtube.com/embed/3CCCpt-dQks')
       setVideoTitle('Treinamento virtual - módulo de compromissos / agendamentos')
+    }
+    if (pathname ==='/calendar/kanban'){
+      setVideoSrc('https://www.youtube.com/embed/3CCCpt-dQks')
+      setVideoTitle('Treinamento virtual - agenda no modo Kanban')
     }
     if (pathname ==='/matter/list'){
 

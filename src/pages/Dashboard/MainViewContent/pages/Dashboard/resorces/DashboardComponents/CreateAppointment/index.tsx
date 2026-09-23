@@ -18,7 +18,7 @@ import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { Responsive as ResponsiveGridLayout } from 'react-grid-layout';
 import { RiFolder2Fill, RiEraserLine } from 'react-icons/ri';
 import { IoIosPaper } from 'react-icons/io';
-import { FiClock, FiTrash, FiSave, FiMail } from 'react-icons/fi';
+import { FiClock, FiTrash, FiSave, FiMail, FiCheck } from 'react-icons/fi';
 import { FcAbout, FcSearch, FcParallelTasks } from 'react-icons/fc';
 import { GoGitMerge } from "react-icons/go"
 import { FaRegTimesCircle, FaWhatsapp } from 'react-icons/fa';
@@ -51,16 +51,27 @@ import DeleteModal from './DeleteModal';
 import { selectedDayProps, selectedWeekProps } from './Interfaces/ICalendar';
 import { dayRecurrence, optionsLembrete, weekRecurrence } from './ListValues/List';
 import CalendarReminderModal from './CustomizeCalendarReminderModal';
-import { Container2, Container, ModalContent, ModalDateSettings, Wrapper, WrapperResp, Process, DropArea, Footer, Lembrete, Responsavel, ResponsibleList, ReminderList, ShareList, Privacidade, Share, ModalRecurrence, Multi, ConfirmOverlay, ModalConfirm } from './styles';
+import { Container2, Container, ModalContent, ModalDateSettings, Wrapper, WrapperResp, Process, DropArea, Footer, Lembrete, Responsavel, ResponsibleList, ReminderList, ShareList, Privacidade, Share, ModalRecurrence, ModalKanban, Multi, ConfirmOverlay, ModalConfirm } from './styles';
 import { useHistory, useLocation } from 'react-router-dom'
-
-
+import { stringify } from 'uuid';
+import { backgroundImages } from 'polished';
 
 export interface IParameterData {
   parameterId: number;
   parameterName: string;
   parameterValue: string;
   message: string;
+}
+
+interface IPhase {
+  value: number;
+  kanbanId: number;
+  label: string;
+}
+
+interface IPanel {
+  value: number;
+  label: string;
 }
 
 const layout = [{
@@ -77,8 +88,24 @@ const layoutBig = [{
   positions: { i: '1', x: 2.2, y: 4, w: 7, h: (isMobile ? 12 : 17) },
 }];
 
+// const KANBAN_PANELS_OPTIONS = [
+//   // { value: '1', label: 'Agenda Geral' },
+//   // { value: '2', label: 'Audiências' },
+// ];
+// const KANBAN_PHASES_OPTIONS: Record<string, { value: string; label: string }[]> = {
+//   // '1': [
+//   //   { value: '1', label: 'Aguardando' },
+//   //   { value: '2', label: 'Fazendo' },
+//   //   { value: '3', label: 'Concluído' },
+//   // ],
+//   // '2': [
+//   //   { value: '4', label: 'A Realizar' },
+//   //   { value: '5', label: 'Realizado' },
+//   // ],
+// };
+
 const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
-  const { matterSelected, dateEnd, handleModalActiveId, selectProcess, handleModalActive, openSelectProcess, handleSelectProcess, jsonModalObjectResult, handleJsonModalObjectResult, deadLineText, publicationText, modalActiveId, caller } = useModal();
+  const { matterSelected, dateEnd, handleModalActiveId, selectProcess, handleModalActive, openSelectProcess, handleSelectProcess, jsonModalObjectResult, handleJsonModalObjectResult, deadLineText, publicationText, modalActiveId, caller, isKanbanCaller, kanbanStageId, handleKanbanStageId, handleKanbanEventResult } = useModal();
   const { addToast } = useToast();
   const [appointmentAllowEdit, setAppointmentAllowEdit] = useState<string>('N'); // Pode editar
   const [appointmentBlockUpdate, setAppointmentBlockUpdate] = useState(true);
@@ -86,6 +113,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   const [layoutComp, setLayoutComp] = useState<dataProps[]>(layout);
   const [layoutCompBig, setLayoutBig] = useState<dataProps[]>(layoutBig);
   const [onDrag, setOnDrag] = useState(false);
+  const [showKanbanButton, setShowKanbanButton] = useState<Boolean>(true);
   const [isLoading, setIsLoading] = useState(true);
   const { pathname } = useLocation();
   const [appointmentStore, setAppointmentStore] = useState<AppointmentPropsSave>({} as AppointmentPropsSave); // Armazena os dados para salvar o compromisso
@@ -159,24 +187,33 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   const [completeLink, setCompleteLink] = useState<boolean>(false);
   const [appointmentWorkflowActionsExecId, setAppointmentWorkflowActionsExecId] = useState(0);
   const [appointmentWorkflowExecId, setAppointmentWorkflowExecId] = useState(0);
+  const [showKanbanModal, setShowKanbanModal] = useState(false);
+  const [panels, setPanels] = useState<IPanel[]>([]);
+  const [phases, setPhases] = useState<IPhase[]>([]);
+  const [selectedKanbanPanelId, setSelectedKanbanPanelId] = useState('');
+  const [selectedKanbanPhaseId, setSelectedKanbanPhaseId] = useState('');
+
   const history = useHistory();
 
   useEffect(() => {
     if (isCancelMessage) {
-      alert("CANCELA")
-      handleCancelMessage(false)
+        handleCancelMessage(false)
     }
   }, [isCancelMessage]);
 
-
   useEffect(() => {
-    if (isConfirmMessage) {
-      alert("CONFIRMA")
+    if (isConfirmMessage) {      
       handleConfirmMessage(false)
       // handleDeleteModal()
     }
   }, [isConfirmMessage]);
 
+  useEffect(() => {
+
+    if (showKanbanModal) 
+      LoadKanban()
+    
+  }, [showKanbanModal]);
 
   useEffect(() => {
     if (pathname != '/publication') {
@@ -203,6 +240,12 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
 
 
   useEffect(() => {
+
+    LoadKanban()
+
+    if (kanbanStageId !== '')
+      setShowKanbanButton(false)
+
     // New event - Open modal with defaults
     if (caller === 'calendarModalInclude') {
       NewEvent()
@@ -212,8 +255,8 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     if (modalActiveId > 0 && caller === 'calendarModal') {
       LoadEvent()
     }
-  }, [caller, modalActiveId])
-
+  }, [])
+  //}, [caller, modalActiveId])
 
   const NewEvent = async () => {
     // Load Lists
@@ -369,6 +412,10 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       setAppointmentUser(data.userCreator); // criador do compromisso
       setAppointmentWorkflowActionsExecId(data.workflowActionsExecId); //Workflow actions Exec relacionado
       setAppointmentWorkflowExecId(data.workflowExecId); //Workflow Exec relacionado
+
+      
+      setSelectedKanbanPanelId(data.kanbanId.toString())
+      setSelectedKanbanPhaseId(data.kanbanStageId.toString())
 
       setIsLoading(false)
       setAppointmentId(Number(appointmentId))
@@ -541,13 +588,88 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     setHideRecurrenceButton(businessId > 0)
   }
 
+  const LoadKanban = async () => {
+      try
+      {
+        var response = await api.get('/Kanban/Listar', {
+            params:{ token: userToken }
+        })
+
+        // if (response.data.length > 0){
+        //   const hasKanbanPermission = response.data[0].hasKanbanPermission;
+        //   setShowKanbanButton(hasKanbanPermission)
+        // }
+
+        setPanels(response.data.map((item: any) => ({
+          value: item.Id,
+          label: item.Description
+        })));
+      }
+      catch (err) {
+        addToast({
+          type: 'error',
+          title: 'Operação NÃO Realizada',
+          description: 'Houve uma falha no carregamento do Painel'
+        });
+      }
+   };
+  
+   const LoadKanbanEtapa = async (kanbanId: number) => {
+      try
+      {
+          var response = await api.get('/KanbanEtapa/Listar', {
+              params:{ 
+                token: userToken,
+                kanbanId
+              }
+            })
+
+          var listPhases = response.data.map((item: any) => ({ 
+              value: item.Id, 
+              label: item.Description, 
+              kanbanId: item.KanbanId
+          }));
+
+          setPhases(listPhases);
+      }
+      catch (err) {
+        addToast({
+          type: 'error',
+          title: 'Operação NÃO Realizada',
+          description: 'Houve uma falha no carregamento das etapas do painel'
+        });   
+      }
+   }
+
+  const handleSaveKanbanOptions = () => {
+    
+    if (selectedKanbanPanelId == '' || selectedKanbanPhaseId == '') 
+    {
+      addToast({
+        type: 'info',
+        title: 'Atenção',
+        description: 'Defina um painel e uma etapa do Kanban para salvar o compromisso'
+      });
+
+      return;
+    }
+
+    handleKanbanStageId(selectedKanbanPhaseId)
+    setShowKanbanModal(false)
+  }
+
+  useEffect(() => {
+
+      if (selectedKanbanPanelId != '')
+          LoadKanbanEtapa(parseInt(selectedKanbanPanelId))
+
+  },[selectedKanbanPanelId])  
 
   useEffect(() => {
     if (openModalRecurrence && recurrenceStartDate === '') {
       setRecurrenceStartDate(appointmentDateBeggin)
     }
   }, [appointmentDateBeggin, openModalRecurrence, recurrenceStartDate])
-
 
   useEffect(() => {
     // Validação se é criação ou edição do compromisso
@@ -680,6 +802,10 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
   // Close modal
   const handleCloseModalLog = () => {
     localStorage.setItem('@GoJur:appointmentClose', 'S');
+
+    if (isKanbanCaller)
+      handleKanbanEventResult({ outcome: 'close' });
+
     isClosed()
   } // mudança de data final
 
@@ -1190,6 +1316,9 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
           description: 'Seu compromisso foi concluido com sucesso',
         });
 
+        if (isKanbanCaller)
+          handleKanbanEventResult({ outcome: 'concluir', eventId: appointment.toString() });
+
         setStatusEvent('L');
         isClosed();
       } catch (error) {
@@ -1218,6 +1347,10 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
           title: 'Compromisso Reaberto',
           description: 'Seu compromisso foi reaberto com sucesso',
         });
+
+        if (isKanbanCaller)
+          handleKanbanEventResult({ outcome: 'reabrir', eventId: appointment.toString() });
+
         setStatusEvent('P');
         isClosed();
 
@@ -1232,7 +1365,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     }
 
     setLoadingDone(loadingDone);
-  }, [addToast, isClosed, statusEvent, loadingDone]); // muda de concluido para reaberto
+  }, [addToast, isClosed, statusEvent, loadingDone, isKanbanCaller, handleKanbanEventResult]); // muda de concluido para reaberto
 
 
   const handleSaveModal = useCallback(async () => {
@@ -1244,9 +1377,11 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     const deadLineJson = localStorage.getItem('@GoJur:DeadLineJson');
     const startDateN = `${appointmentDateBeggin}T${appointmentHourBeggin}`;
     const endDateN = `${appointmentDateEnd}T${appointmentHourEnd}`;
-
     const newStartDate = new Date(startDateN);
     const newEndDate = new Date();
+    // When user click on Kanban Button when creating a new appointment, the kanbanStageId is not set yet, so we need to set it with the selectedKanbanPhaseId
+    // The context value is the one set by the Kanban Page when it opened this modal
+    const stageId = kanbanStageId !== '' ? kanbanStageId : selectedKanbanPhaseId
 
     const diference = Math.floor(
       (Date.UTC(newEndDate.getFullYear(), newEndDate.getMonth(), newEndDate.getDate())
@@ -1338,11 +1473,11 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       catch {
         businessId = 0;
       }
-
       const data = {
         eventId: appointmentId,
         publicationId: publicationId == null ? 0 : publicationId,
         matterEventId: matterEventId == null ? 0 : matterEventId,
+        kanbanStageId: stageId == null ? 0: stageId,
         description: appointmentDescription,
         eventNote: appointmentObs,
         startDate: startDateN, // v
@@ -1374,16 +1509,18 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
       }
 
       try {
-        await api.put<AppointmentPropsSave>(`/Compromisso/Salvar`, data)
+        var response = await api.put<AppointmentPropsSave>(`/Compromisso/Salvar`, data)
 
         selectProcess(null)
         addToast({ type: 'success', title: 'Compromisso Salvo', description: 'Seu compromisso foi salvo com sucesso' });
         isClosed()
         handleModalActive(false)
-        handleJsonModalObjectResult('')
+
+        if (isKanbanCaller)
+          handleKanbanEventResult({ outcome: 'save', eventId: Number(response.data).toString() });
       }
       catch (err: any) {
-        if (err.response.data.typeError.warning == "awareness") {
+        if (err.response.data.typeError?.warning == "awareness") {
           setCheckMessage(true)
         }
         else {
@@ -1398,6 +1535,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     const data: AppointmentPropsSave = {
       eventId: appointmentId,
       publicationId: publicationId == null ? 0 : publicationId,
+      kanbanStageId: stageId == null ? 0: stageId,
       description: appointmentDescription,
       eventNote: appointmentObs,
       startDate: startDateN, // v
@@ -1426,7 +1564,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
     setLoadingSave(loadingSave);
     localStorage.removeItem('@fullCalendarDate')
 
-  }, [loadingSave, appointmentDateBeggin, appointmentHourBeggin, appointmentDateEnd, appointmentHourEnd, appointmentRecurrent, appointmentDescription, appointmentObs, appointmentSubjectId, appointmentSubject, appointmentUser, appointmentAllDay, appointmentStatus, appointmentAllowEdit, appointmentPrivateEvent, appointmentResponsibleList, appointmentRemindersList, appointmentSharedList, appointmentMatter, addToast, jsonModalObjectResult, selectProcess, isClosed, handleModalActive, handleJsonModalObjectResult, openSaveModal, selectDayMonth, recurrenceStartDate, recurrenceEndDate, selectWeek, selectDay, recurrenceSelectRepete, selectMonthYear, selectDayYear, isRecurrence, confirmSave]); // Salva o compromisso
+  }, [loadingSave, appointmentDateBeggin, appointmentHourBeggin, appointmentDateEnd, appointmentHourEnd, appointmentRecurrent, appointmentDescription, appointmentObs, appointmentSubjectId, appointmentSubject, appointmentUser, appointmentAllDay, appointmentStatus, appointmentAllowEdit, appointmentPrivateEvent, appointmentResponsibleList, appointmentRemindersList, appointmentSharedList, appointmentMatter, addToast, jsonModalObjectResult, selectProcess, isClosed, handleModalActive, handleJsonModalObjectResult, openSaveModal, selectDayMonth, recurrenceStartDate, recurrenceEndDate, selectWeek, selectDay, recurrenceSelectRepete, selectMonthYear, selectDayYear, isRecurrence, confirmSave, isKanbanCaller, kanbanStageId, handleKanbanEventResult]); // Salva o compromisso
 
 
   const handleDeleteModal = useCallback(async () => {
@@ -1459,10 +1597,14 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
           description: 'Seu compromisso foi deletado com sucesso',
         });
 
+
         isClosed()
         handleModalActiveId(0)
         handleModalActive(false)
         setConfirmDeleteCalendarEvent(false);
+
+        if (isKanbanCaller)
+          handleKanbanEventResult({ outcome: 'delete' });
       }
       else {
         const data: AppointmentPropsDelete = {
@@ -1484,7 +1626,7 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
           'Não foi possivel deletar seu comprimisso, tente novamente!',
       });
     }
-  }, [appointmentRecurrent, openDeleteModal, addToast, confirmDeleteCalendarEvent]);
+  }, [appointmentRecurrent, openDeleteModal, addToast, confirmDeleteCalendarEvent, isKanbanCaller, handleKanbanEventResult]);
 
 
   const handleUserDragInDrop = (e: any, origin: string) => {
@@ -2183,6 +2325,67 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                 <br />
               </ModalRecurrence>
 
+              <ModalKanban id='ModalKanban' show={showKanbanModal}>
+                <div className="kanban-header">
+                  <p>Kanban</p>
+                </div>
+
+                <div className="kanban-body">
+                  <label htmlFor="kanbanPanel">
+                    Painel
+                    <Select
+                      inputId="kanbanPanel"
+                      placeholder="Selecione"
+                      options={panels}
+                      value={panels.find(p => p.value.toString() === selectedKanbanPanelId) || null}
+                      onChange={opt => { setSelectedKanbanPanelId(opt ? opt.value.toString() : ''); setSelectedKanbanPhaseId(''); }}
+                      isClearable
+                    />
+                  </label>
+
+                  <label htmlFor="kanbanPhase">
+                    Etapa
+                    <Select
+                      menuPortalTarget={document.body}
+                      styles={{
+                        menuPortal: base => ({ ...base, zIndex: 9999 }),
+                        menuList: base => ({
+                          ...base,
+                          maxHeight: 'none',
+                          fontSize: '0.675rem',       // força a mesma fonte do label
+                          fontFamily: 'Montserrat',   // garante consistência
+                          color: 'var(--secondary)',  // aplica sua cor
+                        }),
+                        option: (base) => ({
+                          ...base,
+                          fontSize: '0.675rem',
+                          fontFamily: 'Montserrat',
+                        }),
+                      }}
+                      inputId="kanbanPhase" 
+                      placeholder="Selecione"
+                      options={phases}
+                      value={phases.find(p => p.value.toString() === selectedKanbanPhaseId) || null}
+                      onChange={opt => setSelectedKanbanPhaseId(opt ? opt.value.toString() : '')}
+                      //isDisabled={!selectedKanbanPanelId}
+                      isClearable
+                    />
+                  </label>
+                </div>
+
+                <div className="kanban-footer">
+
+                  <button type="button" onClick={handleSaveKanbanOptions}>
+                    Confirmar
+                  </button>
+
+                  <button type="button" onClick={() => setShowKanbanModal(false)}>
+                    Fechar
+                  </button>
+
+                </div>
+              </ModalKanban>
+
               <HeaderComponent
                 id='HeaderComponent'
                 title="Agenda"
@@ -2701,6 +2904,13 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                     {textButton}
                     {loadingDone ? <Loader size={20} color="#f19000" /> : null}
                   </button>
+
+                  {showKanbanButton && (
+                    <button type="button" title="Vincular ao Kanban" onClick={() => setShowKanbanModal(true)}>
+                      Kanban
+                    </button>
+                  )}
+
                   <button type="button" onClick={handleCloseModalLog}>
                     Fechar
                   </button>
@@ -2981,6 +3191,51 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                 </div>
                 <br />
               </ModalRecurrence>
+
+              {/* <ModalKanban id='ModalKanban' show={showKanbanModal}>
+                <div className="kanban-header">
+                  <p>Kanban</p>
+                </div>
+
+                <div className="kanban-body">
+                  <label htmlFor="kanbanPanel">
+                    Painel
+                    <Select
+                      inputId="kanbanPanel"
+                      placeholder="Selecione"
+                      options={panels}
+                      value={panels.find(p => p.value === selectedKanbanPanelId) || null}
+                      onChange={opt => { setSelectedKanbanPanelId(opt ? opt.value : '')}}
+                      isClearable
+                    />
+                  </label>
+
+                  <label htmlFor="kanbanPhase">
+                    Etapa
+                    <Select
+                      inputId="kanbanPhase"
+                      placeholder="Selecione"
+                      options={phases}
+                      onChange={opt => setSelectedKanbanPhaseId(opt ? opt.value.toString() : '')}
+                      isDisabled={!selectedKanbanPanelId}
+                      isClearable
+                    />
+                  </label>
+                </div>
+
+                <div className="kanban-footer">
+                  
+                  <button type="button" onClick={() => setShowKanbanModal(false)}>
+                    <FiCheck size={12} />
+                    Confirmar
+                  </button>
+                  
+                  <button type="button" onClick={() => setShowKanbanModal(false)}>
+                    Fechar
+                  </button>
+
+                </div>
+              </ModalKanban> */}
 
               <HeaderComponent
                 id='HeaderComponent'
@@ -3483,6 +3738,12 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
                     {textButton}
                     {loadingDone ? <Loader size={20} color="#f19000" /> : null}
                   </button>
+
+                  {showKanbanButton && (
+                    <button type="button" title="Vincular ao Kanban" onClick={() => setShowKanbanModal(true)}>
+                      Kanban
+                    </button>
+                  )}
                   <button type="button" onClick={handleCloseModalLog}>
                     Fechar
                   </button>
@@ -3543,7 +3804,6 @@ const CreateAppointment: React.FC<ModalProps> = ({ isClosed }) => {
           appointmentWorkflowActionsExecId={appointmentWorkflowActionsExecId}
           callbackFunction={{ handleCloseConfirmDelete, handleConfirmDelete }} />
       )}
-
 
     </DropArea>
   );

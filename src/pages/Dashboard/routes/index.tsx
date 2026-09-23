@@ -23,6 +23,7 @@ import CreateWorkflow from '../MainViewContent/pages/Workflow/Edit';
 import WorkflowExec from '../MainViewContent/pages/Workflow/WorkflowExec/List';
 import CreateWorkflowExec from '../MainViewContent/pages/Workflow/WorkflowExec/Edit';
 import WorkflowExecKanban from '../MainViewContent/pages/Workflow/WorkflowExec/Kanban';
+import AgendaKanban from '../MainViewContent/pages/CalendarKanban';
 
 
 import Coverages from '../../Coverages';
@@ -137,6 +138,7 @@ const Routes: React.FC = () => {
       <Route path="/workflowexec/list" exact component={WorkflowExec} isPrivate />
       <Route path="/workflowexec/edit/:id" component={CreateWorkflowExec} isPrivate />
       <Route path="/workflowexec/kanban" component={WorkflowExecKanban} isPrivate />
+      <Route path="/calendar/kanban" exact component={AgendaKanban} isPrivate />
  
       <Route path="/documentModel/list" exact component={DocumentModel} isPrivate />
       <Route path="/documentModel/edit/:cod_DocumentoModelo" exact component={DocumentModelEdit} isPrivate />

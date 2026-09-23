@@ -25,11 +25,10 @@ import Loader from 'react-spinners/ClipLoader';
 import { AiOutlineReload, AiOutlineCheckCircle } from 'react-icons/ai';
 import { BiCalendarCheck, BiCalendarEdit, BiLoader } from 'react-icons/bi';
 import { FaRegTimesCircle } from 'react-icons/fa';
-import { FiX } from 'react-icons/fi';
+import { FiX, FiSave } from 'react-icons/fi';
 import { useAlert } from 'context/alert';
 import ProcessModal from 'components/HeaderPage/TopNavBar/EnvelopeNotificationList/ProcessModal';
 import ptbr from '@fullcalendar/core/locales/pt-br';
-import { FiSave } from 'react-icons/fi';
 import { envProvider } from 'services/hooks/useEnv';
 import { useDevice } from 'react-use-device';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -43,7 +42,7 @@ import { useDefaultSettings } from 'context/defaultSettings';
 import { useModal } from 'context/modal';
 import { useAuth } from 'context/AuthContext';
 import { FaCalculator } from 'react-icons/fa';
-import { FcAbout, FcSearch, FcParallelTasks } from 'react-icons/fc';
+import { FcAbout, FcSearch, FcParallelTasks, FcTemplate } from 'react-icons/fc';
 import { useMenuHamburguer } from 'context/menuHamburguer';
 import MenuHamburguer from 'components/MenuHamburguer';
 import FilterCalendar from 'components/FilterCalendar'
@@ -83,16 +82,16 @@ import {
   ListSearch,
   ModalFast,
   TaskBar,
-  ModalParameters,
   TaskBarMobile,
   ModalFastMobile,
   ListSearchMobile,
   ModalDateSelect,
   ModalDateSelectMobile,
-  ModalParametersMobile,
 } from './styles';
 import CalendarReport from './Report';
 import CalendarExportConfig from './Export';
+import CalendarParameters from './Parameters';
+import { IParameterData } from '../Interfaces/IMatter';
 
 
 export interface IDefaultsProps {
@@ -167,21 +166,6 @@ const Calendar: React.FC = () => {
   const [endDateDrop, setEndDateDrop] = useState<string>('');
   const [defaultUserCompanyId, setDefaultUserCompanyId] = useState('');
   const [defaultUserCompanyName, setDefaultUserCompanyName] = useState('');
-  const [subjectParameter, setSubjectParameter] = useState<ISelectData[]>([]);
-  const [subjectParameterTerm, setSubjectParameterTerm] = useState('');
-  const [subjectParameterId, setSubjectParameterId] = useState('');
-  const [subjectParameterValue, setSubjectParameterValue] = useState('');
-  const [sharedParameter, setSharedParameter] = useState<string>('R');
-  const [viewParameter, setViewParameter] = useState<string>('');
-  const [updatePermissionParameter, setUpdatePermissionParameter] =
-    useState<string>('restricted');
-  const [userTypeParameter, setUserTypeParameter] = useState<string>('RC');
-  const [sendEmailParameter, setSendEmailParameter] = useState<string>('R');
-  const [customerNotification, setCustomerNotification] =
-    useState<string>('EM');
-  const [integrationParameter, setIntegrationParameter] = useState<string>('N');
-  const [periodIntegrationParameter, setTimeZoneCalendarParameter] =
-    useState('-3');
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [idReportGenerate, setIdReportGenerate] = useState<number>(0);
   const [states, setStates] = useState<IAutoCompleteData[]>([]);
@@ -345,6 +329,10 @@ const Calendar: React.FC = () => {
 
 
   useEffect(() => {
+    GetParameterValue();
+  }, []);
+
+  useEffect(() => {
     //alert('PASSO 1 ' + appointmentSubjectId);
     LoadCalendar(Number(appointmentSubjectId));
   }, [appointmentSubjectId]);
@@ -425,12 +413,6 @@ const Calendar: React.FC = () => {
     handleIsMenuOpen(false);
   }, []);
 
-  // OPEN MODAL FAST
-  useEffect(() => {
-    if (openModalParameters) {
-      LoadParameterSubjects();
-    }
-  }, [openModalParameters]);
 
   // WHEN EXISTS REPORT ID VERIFY IF IS AVAIABLE EVERY 5 SECONDS
   useEffect(() => {
@@ -510,7 +492,6 @@ const Calendar: React.FC = () => {
 
   useEffect(() => {
     if (caller == 'parameterCalendarModal' && isOpenMenuConfig) {
-      LoadCalendarParameters();
       setOpenModalParameters(true);
     }
 
@@ -528,18 +509,10 @@ const Calendar: React.FC = () => {
   }, [multiFilter]);
 
   useEffect(() => {
+
     LoadCalendar();
   }, [startDate, endDate]);
 
-  useDelay(
-    () => {
-      if (subjectParameterTerm.length > 0) {
-        LoadParameterSubjects();
-      }
-    },
-    [subjectParameterTerm],
-    1000,
-  );
 
   useEffect(() => {
     handleOpenOldVersion(false);
@@ -560,79 +533,16 @@ const Calendar: React.FC = () => {
   }, []);
 
   // LOAD CALENDAR PARAMETERS
+  // o <FullCalendar> so e montado quando finishDefaultView vira true. a chamada
+  // abaixo nao usa mais o retorno (o formulario de parametros vive em ./Parameters),
+  // ela existe para manter a mesma espera que havia antes de renderizar o calendario
   const LoadCalendarParameters = async () => {
-    const calendarRedirect = localStorage.getItem('@GoJur:CalendarRedirect');
-
     try {
-      const response = await api.get<IParameter[]>(
-        '/Parametro/ListarPorModulo',
-        {
-          params: {
-            moduleName: 'calendarModule',
-            token,
-          },
+      await api.get<IParameter[]>('/Parametro/ListarPorModulo', {
+        params: {
+          moduleName: 'calendarModule',
+          token,
         },
-      );
-
-      response.data.map(item => {
-        if (item.parameterName == '#CALENDARSHARED') {
-          if (item.parameterValue == 'S') setSharedParameter('U');
-          else setSharedParameter('R');
-        }
-
-        if (item.parameterName == '#CALENDARVIEW') {
-          setViewParameter(item.parameterValue);
-
-          if (calendarRedirect == 'dayGridWeek') {
-            setDefaultView('dayGridWeek');
-            localStorage.removeItem('@GoJur:CalendarRedirect');
-          } else {
-            if (item.parameterValue == 'month') {
-              setDefaultView('dayGridMonth');
-            }
-            if (item.parameterValue == 'agendaWeek') {
-              setDefaultView('timeGridWeek');
-            }
-            if (item.parameterValue == 'basicWeek') {
-              setDefaultView('dayGridWeek');
-            }
-            if (item.parameterValue == 'agendaDay') {
-              setDefaultView('timeGridDay');
-            }
-            if (item.parameterValue == 'basicDay') {
-              setDefaultView('listDay');
-            }
-          }
-        }
-
-        if (item.parameterName == '#CALENDARUPDATE') {
-          setUpdatePermissionParameter(item.parameterValue);
-        }
-        if (item.parameterName == '#CALENDARSUBJ') {
-          setSubjectParameterId(item.parameterValue);
-          setSubjectParameterValue(item.parameterDesc);
-        }
-        if (item.parameterName == '#CALENDARSUBJNAME') {
-          setSubjectParameterId(item.parameterValue);
-          setSubjectParameterValue(item.parameterDesc);
-        }
-        if (item.parameterName == '#CALENDARUSERS') {
-          setUserTypeParameter(item.parameterValue);
-        }
-        if (item.parameterName == '#CALENDAREMAIL') {
-          setSendEmailParameter(item.parameterValue);
-        }
-        if (item.parameterName == '#CALENDAREXPORT') {
-          setIntegrationParameter(item.parameterValue);
-        }
-        if (item.parameterName == '#CALENDARTIMEZO') {
-          setTimeZoneCalendarParameter(item.parameterValue);
-        }
-        if (item.parameterName == '#WPNOTIFICATION') {
-          setCustomerNotification(item.parameterValue);
-        }
-
-        return;
       });
 
       setFinishDefaultView(true);
@@ -643,7 +553,7 @@ const Calendar: React.FC = () => {
 
   // CLICK EDIT APPOINTMENT
   const handleClickEdit = item => {
-    localStorage.setItem(
+     localStorage.setItem(
       '@GoJur:RecurrenceDate',
       FormatDate(new Date(item.event.start), 'yyyy-MM-dd'),
     );
@@ -665,6 +575,7 @@ const Calendar: React.FC = () => {
 
   // CLICK INCLUDE NEW FAST APPOINTMENT
   const handleClickIncludeFast = e => {
+  
     setOpenModalFast(true);
     LoadSubjects();
 
@@ -824,113 +735,11 @@ const Calendar: React.FC = () => {
     setSubjectId('');
   };
 
-  const handleSubjectParameterSelected = item => {
-    if (item) {
-      setSubjectParameterValue(item.label);
-      setSubjectParameterId(item.id);
-    } else {
-      setSubjectParameterValue('');
-      LoadParameterSubjects('reset');
-      setSubjectParameterId('');
-    }
-  };
-
-  const LoadParameterSubjects = async (stateValue?: string) => {
-    if (isLoadingComboData) {
-      return false;
-    }
-
-    // when is a first initialization get value from edit if not load from state as term typing
-    let filter =
-      stateValue == 'initialize' ? subjectParameterValue : subjectParameterTerm;
-    if (stateValue == 'reset') {
-      filter = '';
-    }
-
-    try {
-      const response = await api.post<ISubject[]>(
-        '/Assunto/ListarPorParametros',
-        {
-          description: filter,
-          token,
-        },
-      );
-
-      const listSubject: ISelectData[] = [];
-
-      response.data.map(item => {
-        return listSubject.push({
-          id: item.id,
-          label: item.value,
-        });
-      });
-
-      setSubjectParameter(listSubject);
-
-      setIsLoadingComboData(false);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
   const handleParametersClose = () => {
     setOpenModalParameters(false);
     setOpenExportConfig(false);
     handleCaller('');
     handleIsMenuOpen(false);
-  };
-
-  const saveParameter = async () => {
-    try {
-      const token = localStorage.getItem('@GoJur:token');
-
-      setIsLoading(true);
-
-      await api.post('/Compromisso/SalvarParametrosCalendario', {
-        subjectIdParameter: subjectParameterId,
-        sharedParameter,
-        viewParameter,
-        updatePermissionParameter,
-        userTypeParameter,
-        sendEmailParameter,
-        integrationParameter,
-        periodIntegrationParameter,
-        customerNotificationParameter: customerNotification,
-        token,
-      });
-
-      setOpenModalParameters(false);
-      setOpenExportConfig(false);
-      handleCaller('');
-      handleIsMenuOpen(false);
-
-      await LoadCalendar();
-
-      if (viewParameter == 'month') {
-        setDefaultView('dayGridMonth');
-      }
-      if (viewParameter == 'agendaWeek') {
-        setDefaultView('timeGridWeek');
-      }
-
-      window.location.reload();
-
-      setIsLoading(false);
-
-      addToast({
-        type: 'success',
-        title: 'Parâmetros salvos',
-        description: 'Os parâmetros foram adicionado no sistema.',
-      });
-    } catch (err) {
-      setIsLoading(false);
-
-      addToast({
-        type: 'error',
-        title: 'Falha ao salvar parâmetros.',
-        // description:  err.response.data.Message
-      });
-    }
   };
 
   // REPORT
@@ -1283,14 +1092,74 @@ const Calendar: React.FC = () => {
     }
   };
 
+  const mappingToParameter =  {
+      dayGridMonth: "calendarMonth",
+      timeGridWeek: "calendarWeek",
+      dayGridWeek: "calendarListWeek",
+      timeGridDay: "calendarDay",
+      listDay: "calendarListDay",
+      custom: (startDate, endDate) => `calendarPeriod=${startDate}to${endDate}`
+  };
+
+  function getCalendarParam(value, startDate, endDate) {
+    if (value === "custom") {
+      return mappingToParameter.custom(startDate, endDate);
+    }
+    return mappingToParameter[value];
+  }
+
+  const mappingToCalendarView =  {
+      calendarMonth: "dayGridMonth",
+      calendarWeek: "timeGridWeek",
+      calendarListWeek: "dayGridWeek",
+      calendarDay: "timeGridDay",
+      calendarListDay: "listDay",
+      custom: (startDate, endDate) => `calendarPeriod=${startDate}to${endDate}`
+  };
+
+  function getCalendarView(value, startDate, endDate) {
+    if (value === "custom") {
+      return mappingToCalendarView.custom(startDate, endDate);
+    }
+    return mappingToCalendarView[value];
+  }
+
   const handleDatesChange = (e: any) => {
     const sDate = format(e.start, 'yyyy-MM-dd');
     const eDate = format(e.end, 'yyyy-MM-dd');
 
     setStartDate(sDate);
     setEndDate(eDate);
-    
+
+    const comboValue = getCalendarParam(e.view.type, sDate, eDate)
+
+    SalvarParametroCalendarView(comboValue)
   };
+  
+  const SalvarParametroCalendarView = (parameterName:string) =>
+  {
+    api.post('/Parametro/Salvar', {
+          token: token, 
+          parametersName: '#calendarView',
+          parameterType: 'P',
+          parameterValue: parameterName        
+        })
+  }
+  
+  const GetParameterValue = useCallback(async () => {
+
+      const response = await api.post<IParameterData[]>('/Parametro/Selecionar', {
+        token,
+        parametersName: '#CalendarView' 
+      })
+
+      var parameter = response.data[0];
+      
+      const defaultView = getCalendarView(parameter.parameterValue, "", "")
+      setDefaultView(defaultView)
+
+    
+  },[token])
 
   const handleOpenDeadLineCalculator = () => {
     api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_AGECALCULADORAPRAZO'})
@@ -1317,7 +1186,11 @@ const Calendar: React.FC = () => {
       history.push(`/workflowexec/list`)
     else if (workflowView == "KANBAN")
       history.push(`/workflowexec/kanban`)
-
+  };
+  
+  const RedirectToKanban = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_AGENDAKANBAN'})
+    history.push('/calendar/kanban')
   };
 
 
@@ -1570,7 +1443,7 @@ const Calendar: React.FC = () => {
                 title="Pesquisa de compromissos por assunto, descrição e observação"
               />
 
-              <div className="calendar-filter-wrapper" style={{ zIndex: 9997 }}>
+              <div className="calendar-filter-wrapper" style={{ zIndex: 9 }}>
 
                 <FilterCalendar
                   optionsCalendarFilter={optionsCalendarFilter}
@@ -1593,26 +1466,35 @@ const Calendar: React.FC = () => {
               <button
                 className="buttonLinkClick"
                 onClick={() => handleOpenDeadLineCalculator()}
-                title="Clique para abrir a calculadora de prazos"
-                type="submit"
+                title="Calculadora de Prazos"
+                type="button"
               >
                 <FaCalculator />
-                Calculadora de Prazos
+                Prazos
               </button>
 
-              {(checkWorkflow) && (
-                <>
-                  <button
-                    className="buttonLinkClick"
-                    onClick={() => handleWorkflow()}
-                    title="Clique para abrir o workflow"
-                    type="submit"
-                  >
-                    <FcParallelTasks />
-                    Workflow
-                  </button>
-                </>
+              {checkWorkflow && (
+                <button
+                  className="buttonLinkClick"
+                  onClick={() => handleWorkflow()}
+                  title="Workflow"
+                  type="button"
+                >
+                  <FcParallelTasks />
+                  Workflow
+                </button>
               )}
+
+              <button
+                className="buttonLinkClick"
+                onClick={RedirectToKanban}
+                title="Agenda Modo Kanban"
+                type="button"
+              >
+                
+                <FcTemplate />
+                Kanban
+              </button>
 
             </div>
 
@@ -1799,170 +1681,13 @@ const Calendar: React.FC = () => {
               </div>
             </ModalFast>
 
-            <ModalParameters
-              show={openModalParameters && caller === 'parameterCalendarModal'}
-            >
-              <div
-                style={{
-                  marginLeft: '15px',
-                  marginTop: '10px',
-                  marginRight: '10px',
-                }}
-              >
-                <label htmlFor="type">
-                  Privacidade padrão
-                  <br />
-                  <select
-                    name="userType"
-                    value={sharedParameter}
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                      setSharedParameter(e.target.value)
-                    }
-                  >
-                    <option value="U">Público</option>
-                    <option value="R">Privado</option>
-                  </select>
-                </label>
-                <br />
-                <br />
-
-                <label htmlFor="type">
-                  Visualização padrão
-                  <br />
-                  <select
-                    name="userType"
-                    value={viewParameter}
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                      setViewParameter(e.target.value)
-                    }
-                  >
-                    <option value="month">Mensal</option>
-                    <option value="agendaWeek">Semanal</option>
-                    <option value="basicWeek">Semanal Lista</option>
-                    <option value="agendaDay">Diária</option>
-                    <option value="basicDay">Diária Lista</option>
-                  </select>
-                </label>
-                <br />
-                <br />
-
-                <label htmlFor="type">
-                  Permissão atualização
-                  <br />
-                  <select
-                    name="userType"
-                    value={updatePermissionParameter}
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                      setUpdatePermissionParameter(e.target.value)
-                    }
-                  >
-                    <option value="restricted">Não</option>
-                    <option value="allowed">Sim</option>
-                  </select>
-                </label>
-
-                <div style={{ marginTop: '10px', marginBottom: '10px' }}>
-                  <p>Prazo Padrão</p>
-                  <Select
-                    isSearchable
-                    value={subjectParameter.filter(
-                      options => options.id == subjectParameterId,
-                    )}
-                    onChange={handleSubjectParameterSelected}
-                    onInputChange={term => setSubjectParameterTerm(term)}
-                    isClearable
-                    placeholder=""
-                    isLoading={isLoadingComboData}
-                    loadingMessage={loadingMessage}
-                    noOptionsMessage={noOptionsMessage}
-                    styles={selectStyles}
-                    options={subjectParameter}
-                  />
-                </div>
-
-                <label htmlFor="type">
-                  Mostrar na agenda:
-                  <br />
-                  <select
-                    name="userType"
-                    value={userTypeParameter}
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                      setUserTypeParameter(e.target.value)
-                    }
-                  >
-                    <option value="RC">Responsável e Compartilhado</option>
-                    <option value="R">Responsável</option>
-                  </select>
-                </label>
-                <br />
-                <br />
-
-                <label htmlFor="type">
-                  Receber alertas e-mail:
-                  <br />
-                  <select
-                    name="userType"
-                    value={sendEmailParameter}
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                      setSendEmailParameter(e.target.value)
-                    }
-                  >
-                    <option value="RC">Responsável e Compartilhado</option>
-                    <option value="R">Responsável</option>
-                  </select>
-                </label>
-                <br />
-                <br />
-
-                <label htmlFor="type">
-                  Notificar cliente por:
-                  <br />
-                  <select
-                    name="userType"
-                    value={customerNotification}
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                      setCustomerNotification(e.target.value)
-                    }
-                  >
-                    <option value="">Selecione</option>
-                    <option value="EM">E-Mail</option>
-                    <option value="WA">WhatsApp</option>
-                    <option value="AM">E-Mail e WhatsApp</option>
-                  </select>
-                </label>
-                <br />
-                <br />
-                <br />
-
-                <div
-                  id="Buttons"
-                  style={{ float: 'right', marginRight: '-40px' }}
-                >
-                  <div style={{ float: 'left' }}>
-                    <button
-                      className="buttonClick"
-                      type="button"
-                      onClick={() => saveParameter()}
-                    >
-                      <FiSave />
-                      Salvar
-                    </button>
-                  </div>
-
-                  <div style={{ float: 'left', width: '150px' }}>
-                    <button
-                      type="button"
-                      className="buttonClick"
-                      onClick={() => handleParametersClose()}
-                    >
-                      <FaRegTimesCircle />
-                      Fechar
-                    </button>
-                  </div>
-                </div>
-                <br />
-              </div>
-            </ModalParameters>
+            {openModalParameters && caller === 'parameterCalendarModal' && (
+              <CalendarParameters
+                handleCloseParameters={handleParametersClose}
+                handleParametersState={setIsLoading}
+                onSaved={() => LoadCalendar()}
+              />
+            )}
 
             {isOpenMenuReport && <CalendarReport />}
 
@@ -2142,7 +1867,7 @@ const Calendar: React.FC = () => {
                     click() {
                       selectDate();
                     },
-                  },
+                  }
                 }}
                 headerToolbar={{
                   left: 'today',
@@ -2233,7 +1958,7 @@ const Calendar: React.FC = () => {
                 </div>
               </div>
 
-              <div style={{ zIndex: 9997 }}>
+              <div style={{ zIndex: 9 }}>
               
              
 
@@ -2450,169 +2175,13 @@ const Calendar: React.FC = () => {
               </div>
             </ModalFastMobile>
 
-            <ModalParametersMobile
-              show={openModalParameters && caller === 'parameterCalendarModal'}
-            >
-              <div
-                style={{
-                  marginLeft: '15px',
-                  marginTop: '10px',
-                  marginRight: '10px',
-                }}
-              >
-                <label htmlFor="type">
-                  Privacidade padrão
-                  <br />
-                  <select
-                    name="userType"
-                    value={sharedParameter}
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                      setSharedParameter(e.target.value)
-                    }
-                  >
-                    <option value="U">Público</option>
-                    <option value="R">Privado</option>
-                  </select>
-                </label>
-                <br />
-                <br />
-
-                <label htmlFor="type">
-                  Visualização padrão
-                  <br />
-                  <select
-                    name="userType"
-                    value={viewParameter}
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                      setViewParameter(e.target.value)
-                    }
-                  >
-                    <option value="month">Mensal</option>
-                    <option value="agendaWeek">Semanal</option>
-                    <option value="basicWeek">Semanal Lista</option>
-                    <option value="agendaDay">Diária</option>
-                    <option value="basicDay">Diária Lista</option>
-                  </select>
-                </label>
-                <br />
-                <br />
-
-                <label htmlFor="type">
-                  Permissão atualização
-                  <br />
-                  <select
-                    name="userType"
-                    value={updatePermissionParameter}
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                      setUpdatePermissionParameter(e.target.value)
-                    }
-                  >
-                    <option value="restricted">Não</option>
-                    <option value="allowed">Sim</option>
-                  </select>
-                </label>
-                <br />
-                <br />
-
-                <AutoCompleteSelect className="selectSubjectParameter">
-                  <p>Prazo Padrão</p>
-                  <Select
-                    isSearchable
-                    value={subjectParameter.filter(
-                      options => options.id == subjectParameterId,
-                    )}
-                    onChange={handleSubjectParameterSelected}
-                    onInputChange={term => setSubjectParameterTerm(term)}
-                    isClearable
-                    placeholder=""
-                    isLoading={isLoadingComboData}
-                    loadingMessage={loadingMessage}
-                    noOptionsMessage={noOptionsMessage}
-                    styles={selectStyles}
-                    options={subjectParameter}
-                  />
-                </AutoCompleteSelect>
-                <br />
-                <br />
-
-                <label htmlFor="type">
-                  Mostrar na agenda:
-                  <br />
-                  <select
-                    name="userType"
-                    value={userTypeParameter}
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                      setUserTypeParameter(e.target.value)
-                    }
-                  >
-                    <option value="RC">Responsável e Compartilhado</option>
-                    <option value="R">Responsável</option>
-                  </select>
-                </label>
-                <br />
-                <br />
-
-                <label htmlFor="type">
-                  Receber alertas e-mail:
-                  <br />
-                  <select
-                    name="userType"
-                    value={sendEmailParameter}
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                      setSendEmailParameter(e.target.value)
-                    }
-                  >
-                    <option value="RC">Responsável e Compartilhado</option>
-                    <option value="R">Responsável</option>
-                  </select>
-                </label>
-                <br />
-                <br />
-
-                <label htmlFor="type">
-                  Notificar cliente por:
-                  <br />
-                  <select
-                    name="userType"
-                    value={customerNotification}
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                      setCustomerNotification(e.target.value)
-                    }
-                  >
-                    <option value="">Selecione</option>
-                    <option value="EM">E-Mail</option>
-                    <option value="WA">WhatsApp</option>
-                    <option value="AM">E-Mail e WhatsApp</option>
-                  </select>
-                </label>
-                <br />
-                <br />
-
-                <div style={{ float: 'right', marginRight: '-40px' }}>
-                  <div style={{ float: 'left' }}>
-                    <button
-                      className="buttonClick"
-                      type="button"
-                      onClick={() => saveParameter()}
-                    >
-                      <FiSave />
-                      Salvar
-                    </button>
-                  </div>
-
-                  <div style={{ float: 'left', width: '150px' }}>
-                    <button
-                      type="button"
-                      className="buttonClick"
-                      onClick={() => handleParametersClose()}
-                    >
-                      <FaRegTimesCircle />
-                      Fechar
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </ModalParametersMobile>
+            {openModalParameters && caller === 'parameterCalendarModal' && (
+              <CalendarParameters
+                handleCloseParameters={handleParametersClose}
+                handleParametersState={setIsLoading}
+                onSaved={() => LoadCalendar()}
+              />
+            )}
 
             {isOpenMenuReport && <CalendarReport />}
 

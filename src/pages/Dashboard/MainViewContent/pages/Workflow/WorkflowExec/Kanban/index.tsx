@@ -661,7 +661,12 @@ export default function PainelWorkflows() {
     //  history.push('../workflowexec/kanban')
     //}
     else if (calendarRedirect) {
-      history.push('../calendar')
+      // the launching screen records which calendar view to go back to; it is
+      // consumed here so a stale value cannot hijack a later return
+      const origin = localStorage.getItem('@Gojur:calendarRedirect')
+      localStorage.removeItem('@Gojur:calendarRedirect')
+
+      history.push(origin === 'K' ? '../calendar/kanban' : '../calendar')
     }
 
   }

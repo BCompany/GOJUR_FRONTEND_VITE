@@ -2,6 +2,7 @@
 import React, { useCallback, useState } from 'react';
 import HeaderComponent from 'components/HeaderComponent';
 import { useToast } from 'context/toast';
+import { useModal } from 'context/modal';
 import Loader from 'react-spinners/ClipLoader';
 import api from 'services/api';
 
@@ -53,6 +54,8 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
   const [isSaveAll, setisSaveAll] = useState(false);
 
 
+  const { isKanbanCaller, handleKanbanEventResult } = useModal();
+
   const handleSaveThis = useCallback(async () => {
     try {
       const userToken = localStorage.getItem('@GoJur:token');
@@ -65,13 +68,17 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
       data.cod_Empresa = localStorage.getItem('@GoJur:companyId')
       setisSaveThis(true)
       
-      await api.put(`/Compromisso/Salvar`, data);
+      const response = await api.put(`/Compromisso/Salvar`, data);
 
       addToast({type: 'success', title: 'Compromisso Salvo', description: 'Seu compromisso foi salvo com sucesso'});
       close();
       closeModal();
       setisSaveThis(false)
       localStorage.removeItem('@GoJur:MatterId');
+      
+      if (isKanbanCaller)
+        handleKanbanEventResult({ outcome: 'save_one', eventId: Number(response.data).toString() });
+
     }
     catch (err:any) {
       setisSaveThis(false)
@@ -84,7 +91,7 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
         addToast({type: 'error', title: 'Falha ao salvar o compromisso', description: err.response.data.Message});
       }
     }
-  }, [addToast, close, closeModal, data]); // Salva apenas o compromisso de hoje
+  }, [addToast, close, closeModal, data, isKanbanCaller, handleKanbanEventResult]); // Salva apenas o compromisso de hoje
 
 
   const handleSaveAll = useCallback(async () => {
@@ -97,12 +104,16 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
       data.cod_Empresa = localStorage.getItem('@GoJur:companyId')
       setisSaveAll(true)
 
-      await api.put(`/Compromisso/Salvar`, data);
+      const response = await api.put(`/Compromisso/Salvar`, data);
 
       addToast({type: 'success', title: 'Compromisso Salvo', description: 'Seu compromisso foi salvo com sucesso'});
       close();
       closeModal();
       setisSaveAll(false)
+
+      if (isKanbanCaller)
+        handleKanbanEventResult({ outcome: 'save_all', eventId: Number(response.data).toString() });
+
     }
     catch (err:any) {
       setisSaveAll(false)
@@ -115,7 +126,7 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
         addToast({type: 'error', title: 'Falha ao salvar o compromisso', description: err.response.data.Message});
       }
     }
-  }, [addToast, close, closeModal, data]); // Salva todo o compromisso usando a recorrencia
+  }, [addToast, close, closeModal, data, isKanbanCaller, handleKanbanEventResult]); // Salva todo o compromisso usando a recorrencia
 
 
   const handleSaveThisAndOthers = useCallback(async () => {
@@ -125,12 +136,15 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
       data.cod_Empresa = localStorage.getItem('@GoJur:companyId')
       setisSaveNext(true)
       
-      await api.put(`/Compromisso/Salvar`, data);
+      const response = await api.put(`/Compromisso/Salvar`, data);
 
       addToast({type: 'success', title: 'Compromisso Salvo', description: 'Seu compromisso foi salvo com sucesso'});
       close();
       closeModal();
       setisSaveNext(false)
+
+      if (isKanbanCaller)
+        handleKanbanEventResult({ outcome: 'save_next', eventId: Number(response.data).toString() });
     }
     catch (err:any) {
       setisSaveNext(false)
@@ -143,7 +157,7 @@ const SaveModal: React.FC<ModalProps> = ({handleCheckMessage, close, closeModal,
         addToast({type: 'error', title: 'Falha ao salvar o compromisso', description: err.response.data.Message});
       }
     }
-  }, [addToast, close, closeModal, data]); // Salva o compromisso recorrente de hoje em diante
+  }, [addToast, close, closeModal, data, isKanbanCaller, handleKanbanEventResult]); // Salva o compromisso recorrente de hoje em diante
 
 
   return (

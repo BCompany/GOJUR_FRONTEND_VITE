@@ -94,7 +94,7 @@ const SecurityProvider: React.FC = ({ children }) => {
 
     // Calendar Permissions access Codes
     if (module === SecurityModule.calendar){
-      return "CLDRPT,CLDISSUE";
+      return "CLDRPT,CLDISSUE,CLDKBPNL";
     }
 
     // Publication Permissions access Codes

@@ -68,6 +68,7 @@ const Routes: React.FC = () => {
       <Route path="/workflowexec/list" exact component={DashBoard} isPrivate />
       <Route path="/workflowexec/edit/:id" exact component={DashboardPath} isPrivate /> 
       <Route path="/workflowexec/kanban" exact component={DashBoard} isPrivate />
+      <Route path="/calendar/kanban" exact component={DashBoard} isPrivate />
       <Route path="/calendar" exact component={DashboardPath} isPrivate />
       <Route path="/cadastro" exact component={DashboardPath} isPrivate />
       <Route path="/conta" exact component={DashboardPath} isPrivate />

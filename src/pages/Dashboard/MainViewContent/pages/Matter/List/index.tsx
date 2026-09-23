@@ -38,7 +38,7 @@ import { useToast } from 'context/toast';
 import api from 'services/api';
 import { useMenuHamburguer } from 'context/menuHamburguer'
 import { useDocument } from 'context/document'
-import { FormatDate, selectStyles } from 'Shared/utils/commonFunctions';
+import { FormatDate, IsTrainingVideoWatched, selectStyles } from 'Shared/utils/commonFunctions';
 import { matterFilteOrderBy, matterFilterOptions } from 'Shared/utils/commonListValues';
 import { Tab, Tabs } from 'Shared/styles/Tabs';
 import MenuHamburguer from 'components/MenuHamburguer';
@@ -631,7 +631,7 @@ const Matter: React.FC = () => {
       const buttonDocumentGenerate = permissiosnModule.find(item => item === 'matterDocumentGeneration' || item === 'adm')
       const videoTrainningConfig = response.data.find(item => item.id === 'defaultUserLogFirstAccess')
       if (videoTrainningConfig) {
-        const seeTrainningVideo = !(videoTrainningConfig.value ?? "").includes('matter') && pathname === '/matter/list'
+        const seeTrainningVideo = !IsTrainingVideoWatched(videoTrainningConfig.value, 'matter/list') && pathname === '/matter/list'
         handleShowVideoTrainning(seeTrainningVideo)
       }
 

@@ -430,7 +430,8 @@ const CalendarReport: React.FC = () => {
 
 
   const SaveUserNavigationLog = async (stateValue?: string) => {
-    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_AGERELCOMPROMISSO'})
+    const module = pathname === '/calendar/kanban' ? 'EVT_KBNRELCOMPROMISSO' : 'EVT_AGERELCOMPROMISSO'
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module})
   }
   
 

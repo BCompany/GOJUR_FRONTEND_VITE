@@ -235,6 +235,12 @@ export function RemoveSpecialCharacters(text: string) {
   return text?.replaceAll("(", "").replaceAll(")", "").replaceAll("/", "");
 }
 
+// defaultUserLogFirstAccess is a ';' separated list; exact match keeps 'calendar' distinct from 'calendar/kanban'
+export function IsTrainingVideoWatched(firstAccessLog: string | null | undefined, moduleName: string) {
+  if (moduleName.includes("kanban")) return true;
+  return (firstAccessLog ?? "").split(";").includes(moduleName);
+}
+
 // format field global
 export function formatField(
   value: string,

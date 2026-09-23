@@ -71,6 +71,8 @@ export interface Data {
   recurrenceRule: string;
   workflowActionsExecId:number; 
   workflowExecId:number; 
+  kanbanId:number;
+  kanbanStageId:number;
 }
 
 export interface SelectValues {
@@ -136,6 +138,7 @@ export interface AppointmentPropsSave {
   description: any;
   eventNote?: any;
   subjectId: any;
+  kanbanStageId: any;
   subject?: any;
   userCreator?: any;
   allDay?: any;
