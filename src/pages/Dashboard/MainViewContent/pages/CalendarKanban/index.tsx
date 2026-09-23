@@ -119,7 +119,19 @@ export default function AgendaKanban() {
   } = useMenuHamburguer();
   const [openModalParameters, setOpenModalParameters] = useState<boolean>(false);
   const [openExportConfig, setOpenExportConfig] = useState<boolean>(false);
-  const toggle = (value: string) => { setMultiFilter1(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value],);};
+  const FILTER_LOG_EVENTS: Record<string, string> = {
+    S_A: 'EVT_KBNFILTROAUDIENCIA',
+    S_P: 'EVT_KBNFILTROPRAZO',
+    U_R: 'EVT_KBNFILTRORESPONSAVEL',
+    U_RC: 'EVT_KBNFILTRORESPCOMPART',
+  };
+
+  const toggle = (value: string, checkBox: boolean) => {
+    if (checkBox && FILTER_LOG_EVENTS[value])
+      api.post('/Usuario/SalvarLogNavegacaoUsuario', { token, module: FILTER_LOG_EVENTS[value] });
+
+    setMultiFilter1(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value],);
+  };
   
   const [permissions,setPermissions] = useState({
     canManagePanels: true,      // show "Painéis" button
@@ -982,6 +994,8 @@ function getPeriodRange(value: string): { startDate: Date; endDate: Date } {
   // opens the deadline calculator already bound to this phase: the calculator
   // finishes by opening the appointment modal, which then reads the stage below
   const handleClickIncludeDeadLine = useCallback((phaseId: number, beforeCardId?: string) => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', { token, module: 'EVT_KBNCALCULADORAPRAZO' });
+
     handleKanbanCaller(true);
     handleKanbanStageId(phaseId.toString());
 
@@ -1928,6 +1942,11 @@ const onDragEnd = useCallback(async (result: DropResult) => {
     if (e.key === 'Escape') { setAddingPhaseForPanel(null); setNewPhaseName(''); }
   };
 
+  const handleSearch = () => {
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', { token, module: 'EVT_KBNPESQUISA' });
+    RebuildInterface();
+  }
+
   const handleReturnCalendar = () => {
     api.post('/Usuario/SalvarLogNavegacaoUsuario', { token, module: 'EVT_AGENDA' });
     history.push('/calendar');
@@ -1935,7 +1954,7 @@ const onDragEnd = useCallback(async (result: DropResult) => {
 
   // same navigation the calendar does: the landing view comes from the user default
   const handleWorkflow = () => {
-    api.post('/Usuario/SalvarLogNavegacaoUsuario', { token, module: 'EVT_AGEWORKFLOW' });
+    api.post('/Usuario/SalvarLogNavegacaoUsuario', { token, module: 'EVT_KBNWORKFLOW' });
 
     // 'K' brings the workflow return back here instead of the calendar
     localStorage.setItem('@Gojur:calendarRedirect', 'K');
@@ -2299,7 +2318,7 @@ const onDragEnd = useCallback(async (result: DropResult) => {
                   e.preventDefault();
                 }
                 if (e.key === 'Enter') {
-                  RebuildInterface();
+                  handleSearch();
                 }
               }}
               placeholder="Pesquisar Compromissos"
@@ -2313,7 +2332,7 @@ const onDragEnd = useCallback(async (result: DropResult) => {
             <FcSearch
               className="icons"
               title="Clique para realizar a pesquisa pelo termo digitado"
-              onClick={() => { RebuildInterface(); }}
+              onClick={handleSearch}
             />
 
             <FcAbout
