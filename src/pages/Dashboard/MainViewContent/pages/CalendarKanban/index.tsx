@@ -2693,15 +2693,17 @@ export default function AgendaKanban() {
                                       >
                                         {phaseCards.map((card, index) => (
                                           <React.Fragment key={card.id}>
-                                            <InsertSlot>
-                                              <AddCardButton
-                                                type="button"
-                                                title="Criar compromisso ou prazo"
-                                                onClick={(e) => handleOpenAddMenu(e, phase.id, String(card.id))}
-                                              >
-                                                <FiPlus /> Criar Compromisso
-                                              </AddCardButton>
-                                            </InsertSlot>
+                                            {index > 0 && (
+                                              <InsertSlot>
+                                                <AddCardButton
+                                                  type="button"
+                                                  title="Criar compromisso ou prazo"
+                                                  onClick={(e) => handleOpenAddMenu(e, phase.id, String(card.id))}
+                                                >
+                                                  <FiPlus /> Criar Compromisso
+                                                </AddCardButton>
+                                              </InsertSlot>
+                                            )}
                                             <Draggable
                                               draggableId={`event-${card.eventId}-phaseId=${card.phaseId}-start=${normalizeDateOnly(card.start)}`}
                                               index={index}>
