@@ -230,6 +230,7 @@ const Calendar: React.FC = () => {
     useState<boolean>(false);
   const [selectDateStart, setSelectDateStart] = useState<string>('');
   const calendarRef = useRef<any>(null);
+  const savedCalendarViewRef = useRef<string>('');
 
   const [optionsSubject, setOptionsSubject] = useState<ISelectValues[]>([]);
   const [appointmentSubject, setAppointmentSubject] = useState<string>('');
@@ -1136,8 +1137,14 @@ const Calendar: React.FC = () => {
     SalvarParametroCalendarView(comboValue)
   };
   
+  // datesSet also fires on mount and on prev/next navigation, so only a real view change is persisted
   const SalvarParametroCalendarView = (parameterName:string) =>
   {
+    if (parameterName === savedCalendarViewRef.current)
+      return;
+
+    savedCalendarViewRef.current = parameterName;
+
     api.post('/Parametro/Salvar', {
           token: token, 
           parametersName: '#calendarView',
@@ -1148,17 +1155,21 @@ const Calendar: React.FC = () => {
   
   const GetParameterValue = useCallback(async () => {
 
+    // FullCalendar ignores initialView changes after mount, so it is only rendered once defaultView is set
+    try {
       const response = await api.post<IParameterData[]>('/Parametro/Selecionar', {
         token,
-        parametersName: '#CalendarView' 
+        parametersName: '#CalendarView'
       })
 
       var parameter = response.data[0];
-      
-      const defaultView = getCalendarView(parameter.parameterValue, "", "")
-      setDefaultView(defaultView)
 
-    
+      savedCalendarViewRef.current = parameter?.parameterValue ?? '';
+
+      setDefaultView(getCalendarView(parameter?.parameterValue, "", "") ?? 'dayGridMonth')
+    } catch (err) {
+      setDefaultView('dayGridMonth')
+    }
   },[token])
 
   const handleOpenDeadLineCalculator = () => {
@@ -1835,7 +1846,7 @@ const Calendar: React.FC = () => {
               </div>
             </ListSearch>
 
-            {finishDefaultView && (
+            {finishDefaultView && defaultView !== '' && (
               <FullCalendar
                 ref={calendarRef}
                 locale={ptbr}
@@ -2331,7 +2342,7 @@ const Calendar: React.FC = () => {
               </div>
             </ListSearchMobile>
 
-            {finishDefaultView && (
+            {finishDefaultView && defaultView !== '' && (
               <FullCalendar
                 ref={calendarRef}
                 locale={ptbr}
