@@ -40,8 +40,7 @@ export default function BussinessList( props ) {
 
   const handleEdit = (id:string, customerId: string) =>{
     api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CRMEDITARNEGOCIO'})
-    localStorage.setItem('@GoJur:businessCustomerId', customerId)
-    history.push(`/customer/business/edit/${id}`)
+    history.push(`/customer/business/edit/${id}?customerId=${customerId}`)
   }
 
   const handleDeleteCheck  = async (id:string) =>{

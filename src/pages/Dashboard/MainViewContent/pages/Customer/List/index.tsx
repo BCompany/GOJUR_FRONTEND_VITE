@@ -275,25 +275,22 @@ const CustomerList: React.FC = () => {
     );
   }, []); // inicia a conversa no whatsapp
 
-  // save businessCustomerId to redirect to tab business automatically
+  // the tab param makes the customer screen open directly on that tab
   const handleBusinessCustomer = (customerId) => {
     api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CLINEGOCIOS'})
-    localStorage.setItem('@GoJur:businessCustomerId', customerId.toString())
-    const href = `/customer/edit/${customerId.toString()}`
+    const href = `/customer/edit/${customerId.toString()}?tab=business`
     history.push(href)
   }
 
   const handleMatterCustomer = (customerId) => {
     api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CLIPROCESSO'})
-    localStorage.setItem('@GoJur:matterCustomerId', customerId.toString())
-    const href = `/customer/edit/${customerId.toString()}`
+    const href = `/customer/edit/${customerId.toString()}?tab=matterList`
     history.push(href)
   }
 
   const handleDocumentCustomer = (customerId) => {
     api.post('/Usuario/SalvarLogNavegacaoUsuario', {token: token, module: 'EVT_CLIANEXARDOCUMENTOS'})
-    localStorage.setItem('@GoJur:documentCustomerId', customerId.toString())
-    const href = `/customer/edit/${customerId.toString()}`
+    const href = `/customer/edit/${customerId.toString()}?tab=documentList`
     history.push(href)
   }
 

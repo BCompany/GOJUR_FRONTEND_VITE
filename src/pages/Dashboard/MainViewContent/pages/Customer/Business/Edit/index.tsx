@@ -47,18 +47,20 @@ export default function BusinessCardEdit( ) {
   const token = localStorage.getItem('@GoJur:token');
   const history = useHistory();
   const formRef = useRef<HTMLFormElement>(null);
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
+  // Only present when the screen is opened from the customer record
+  const urlCustomerId = Number(new URLSearchParams(search).get('customerId')) || 0
   const { addToast} = useToast();
   const { handleTriggerCaller, triggerCaller } = useTrigger();
   const {isConfirmMessage, isCancelMessage, handleCancelMessage,handleConfirmMessage,handleCheckConfirm, handleCaller, caller } = useConfirmBox();
   const { handleSubmit} = useForm() 
   const { handleUserPermission } = useDefaultSettings(); 
   const [isLoading, setIsLoading] = useState<boolean>(true)
-  const [businessId, setBusinessId] = useState<number>(0)
+  const [businessId, setBusinessId] = useState<number>(Number(pathname.substr(24)))
   const [salesFunnelId, setSalesFunnelId] = useState<number>(0)
   const [salesFunnelStepId, setSalesFunnelStepId] = useState<number>(0)
   const [userResponsibleId, setUserResponsibleId] = useState<number>(0)
-  const [customerId, setCustomerid] = useState<number>(0)
+  const [customerId, setCustomerid] = useState<number>(urlCustomerId)
   const [salesFunnelList, setSalesFunnelList] = useState<ISalesFunnelData[]>([])
   const [customerList, setCustomerList] = useState<ICustomerListData[]>([])
   const [salesFunnelStepsList, setSalesFunnelStepsList] = useState<ISalesFunnelData[]>([])
@@ -119,13 +121,6 @@ export default function BusinessCardEdit( ) {
 
 
   const Initialize = () => {
-    // set business id
-    setBusinessId(Number(pathname.substr(24)))
-
-    // Get customer id
-    const businessCustomerId = Number(localStorage.getItem('@GoJur:businessCustomerId'))
-    setCustomerid(businessCustomerId)
-
     // Load funnel
     LoadSalesFunnel()
     
@@ -160,8 +155,10 @@ export default function BusinessCardEdit( ) {
 
 
   useEffect(() => {
-    if (businessId > 0 && isLoading){
-      BusinessEdit()
+    if (businessId > 0){
+      if (isLoading){
+        BusinessEdit()
+      }
     }
     else{
       // setBusinessStartDate(format(new Date(), 'yyyy-MM-dd'))
@@ -187,13 +184,11 @@ export default function BusinessCardEdit( ) {
 
 
   const GetCustomerName = async()=> {
-    const businessCustomerId = localStorage.getItem('@GoJur:businessCustomerId')
-
-    if (businessCustomerId){
+    if (urlCustomerId > 0){
       const response = await api.get<IBusinessData>('Clientes/SelecionarNome', {
         params:{
           token,
-          id: businessCustomerId
+          id: urlCustomerId
         }
       })
 
@@ -502,9 +497,8 @@ export default function BusinessCardEdit( ) {
       history.push('../../../matter/list')
     }
     else if (!funnelRedirect){
-      const businessCustomerId = localStorage.getItem('@GoJur:businessCustomerId')
-      if (businessCustomerId != null){
-        history.push(`/customer/edit/${ businessCustomerId}` )
+      if (urlCustomerId > 0){
+        history.push(`/customer/edit/${urlCustomerId}?tab=business`)
       }
       else{
         history.push(`../../../CRM/salesFunnel/`)

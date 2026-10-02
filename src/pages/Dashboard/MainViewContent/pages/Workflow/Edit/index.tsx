@@ -312,7 +312,6 @@ export default function Workflow() {
       }
 
       setisSaving(false)
-      localStorage.removeItem('@GoJur:businessCustomerId')
 
       return 0;
     }
@@ -429,7 +428,6 @@ export default function Workflow() {
       }
 
       setisSaving(false)
-      localStorage.removeItem('@GoJur:businessCustomerId')
     }
 
   }, [workflowTrigger, workflow.name, workflow.tpo_Telefone01, workflow.num_Telefone01, workflow.tpo_Telefone02, workflow.num_Telefone02, workflow.cod_PessoaFisica, workflow.cod_Cliente, workflow.cod_PessoaJuridica, workflow.cod_SistemaUsuarioEmpresa, workflow.doubleCheck, workflow.cod_Empresa, workflowName, workflowId, addToast, history]);

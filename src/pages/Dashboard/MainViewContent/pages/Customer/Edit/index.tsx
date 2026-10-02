@@ -55,7 +55,7 @@ export default function Customer() {
   const { handleUserPermission, permission} = useDefaultSettings();
   const {permissionsSecurity, handleValidateSecurity } = useSecurity();
   const { addToast } = useToast();
-  const { pathname  } = useLocation();
+  const { pathname, search } = useLocation();
   const { handleSubmit} = useForm<ICustomerData>();
   const { handleReloadBusinesCard, reloadBusinessCard } = useCustomer();
   const {isConfirmMessage, isCancelMessage, caller, handleCancelMessage,handleConfirmMessage } = useConfirmBox();
@@ -186,22 +186,9 @@ export default function Customer() {
       return;
     }
 
-    const businessCustomerId = localStorage.getItem('@GoJur:businessCustomerId')
-    if (businessCustomerId){
-      handleTabs('business', Number(businessCustomerId))
-      localStorage.removeItem('@GoJur:businessCustomerId')
-    }
-
-    const matterCustomerId = localStorage.getItem('@GoJur:matterCustomerId')
-    if (matterCustomerId){
-      handleTabs('matterList', Number(matterCustomerId))
-      localStorage.removeItem('@GoJur:matterCustomerId')
-    }
-
-    const documentCustomerId = localStorage.getItem('@GoJur:documentCustomerId')
-    if (documentCustomerId){
-      handleTabs('documentList', Number(documentCustomerId))
-      localStorage.removeItem('@GoJur:documentCustomerId')
+    const tabParam = new URLSearchParams(search).get('tab')
+    if (tabParam == 'business' || tabParam == 'matterList' || tabParam == 'documentList'){
+      handleTabs(tabParam, Number(customerId))
     }
 
     try {
@@ -389,7 +376,6 @@ export default function Customer() {
       setPage(currentPage+1)
       setIsLoading(false)
       setIsLoadingSearchTerm(false)
-      localStorage.removeItem('@GoJur:businessCustomerId')
 
     } catch (ex){
       setIsLoading(false);
@@ -704,7 +690,6 @@ export default function Customer() {
       }
 
       setisSaving(false)
-      localStorage.removeItem('@GoJur:businessCustomerId')
     }
 
   },[customerAbertura, customerNasc, customerAddress, customerLegalPerson, customer.cod_Pessoa, customer.tpo_Telefone01, customer.num_Telefone01, customer.tpo_Telefone02, customer.num_Telefone02, customer.cod_PessoaFisica, customer.cod_Cliente, customer.cod_PessoaJuridica, customer.cod_SistemaUsuarioEmpresa, customer.doubleCheck, customer.cod_Empresa, customerName, customerFantasia, customerEmail, customerSenha, customerGroupId, customerGroupValue, customerNacionalidade, customerType, customerNumDoc, customerWhatsapp, customerRg, customerSex, customerECivil, customerProf, customerCtps, customerSCtps, passwordGovBR, customerInss, customerPis, customerPai, customerMae, customerRepresent, customerObs, customerIE, customerEmailFinanAdd, customerRef, customerSalesChannelId, customerStatus, customerStartDate, customerSalary, addToast, history]);
@@ -1399,8 +1384,7 @@ export default function Customer() {
 
     }
     try{
-      localStorage.setItem('@GoJur:businessCustomerId', customerId.toString())
-      history.push('../business/edit/0')
+      history.push(`/customer/business/edit/0?customerId=${customerId}`)
     }
     catch(ex){
       console.log(ex)
