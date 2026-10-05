@@ -6,9 +6,10 @@
 /* eslint-disable radix */
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import api from 'services/api';
 import { format } from 'date-fns'
 import { FaFileAlt } from 'react-icons/fa';
-import { FiTrash, FiDownloadCloud } from 'react-icons/fi';
+import { FiTrash, FiDownloadCloud, FiDownload } from 'react-icons/fi';
 import { ImCloudUpload } from 'react-icons/im';
 import { FaFilePdf } from 'react-icons/fa';
 import { SiMicrosoftexcel } from 'react-icons/si';
@@ -498,6 +499,45 @@ export default function File({matterId, load, sharedFile, fromModal}: FileProps)
   };
 
 
+  const handleDownload = useCallback(async () => {
+    try {
+      setIsLoading(true)
+  
+      const response = await api.get('Processo/BaixarArquivosPorProcesso', {
+        params:{ matterId, token }
+      });
+
+      const bytes = base64ToArrayBuffer(response.data.amazonFile)
+      const blob = new Blob([bytes], { type: "application/octet-stream" });
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement('a');
+    
+      link.href = url;
+      link.setAttribute('download', `${response.data.fileName}.zip`);
+      document.body.appendChild(link);
+      link.click();
+   
+      setIsLoading(false)
+    }
+    catch (err: any) {
+    }
+  }, [matterId])
+
+
+  function base64ToArrayBuffer(base64) {
+    const binaryString = window.atob(base64);
+    const binaryLen = binaryString.length;
+    const bytes = new Uint8Array(binaryLen);
+
+    for (let i = 0; i < binaryLen; i++) {
+      const ascii = binaryString.charCodeAt(i);
+      bytes[i] = ascii;
+    }
+
+    return bytes;
+  }
+
+
   if (isLoading) {
     return (
       <Container>
@@ -537,6 +577,15 @@ export default function File({matterId, load, sharedFile, fromModal}: FileProps)
             {' '}
             {totalRows}
           </TotalRegisters>
+
+          <br />
+          <div>
+            <button className="buttonClick" type='button' onClick={handleDownload}>
+              <FiDownload />
+              Baixar Todos
+          </button>
+          </div>
+
         </>
       )}
 
