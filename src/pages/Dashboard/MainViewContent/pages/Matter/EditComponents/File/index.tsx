@@ -26,7 +26,7 @@ import { languageGridPagination, languageGridEmpty } from 'Shared/utils/commonCo
 import { useLocation } from 'react-router-dom';
 import { Container, DropArea, TaskBar, TotalRegisters } from './styles';
 import { IMatterUploadFile } from '../../Interfaces/IMatter';
-import { CreateFileUpload, DeleteFile, DownloadFile, ListMatterFiles, ShareFile, ValidateFileUpload } from '../Services/MatterUploadData';
+import { CreateFileUpload, DeleteFile, DownloadAllFiles, DownloadFile, ListMatterFiles, ShareFile, ValidateFileUpload } from '../Services/MatterUploadData';
 
 interface FileProps {
   matterId: number;
@@ -44,6 +44,7 @@ export default function File({matterId, load, sharedFile, fromModal}: FileProps)
   const dropFilesAreaRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isDeletingFile, setIsDeletingFile] = useState<boolean>(false);
+  const [isDownloadingAll, setIsDownloadingAll] = useState<boolean>(false);
   const [filesUploadIds, setFilesUploadIds] = useState<Number[]>([]);
   const [documentList, setDocumentList] = useState<IMatterUploadFile[]>([]);
   const [totalRows, setTotalRows] = useState<number>(0);
@@ -290,6 +291,23 @@ export default function File({matterId, load, sharedFile, fromModal}: FileProps)
 
       window.open(response.data, '_blank')
       return false;
+    }
+  }
+
+
+  const handleDownloadAllFiles = async () => {
+    try
+    {
+      setIsDownloadingAll(true)
+
+      // TODO: handle the zip returned by the endpoint once the backend contract is defined
+      await DownloadAllFiles(matterId, sharedFile)
+    }
+    catch(ex){
+      addToast({type: "error", title: "Operação NÃO realizada", description: 'Não foi possível fazer o download de todos os arquivos, tente novamente'})
+    }
+    finally{
+      setIsDownloadingAll(false)
     }
   }
 
@@ -558,6 +576,18 @@ export default function File({matterId, load, sharedFile, fromModal}: FileProps)
         <>
           <TaskBar>
 
+            <button
+              type="button"
+              className="buttonLinkClick"
+              style={{ padding:"0.7rem"}}
+              title="Clique para fazer o download de todos os arquivos em um único .zip"
+              disabled={totalRows === 0}
+              onClick={handleDownloadAllFiles}
+            >
+              <FiDownloadCloud />
+              Baixar Todos
+            </button>
+
             <label className="buttonLinkClick" style={{ padding:"0.7rem"}} title="Clique para selecionar arquivos em seu computador">
               <FaFileAlt />
               Anexar Arquivo
@@ -649,7 +679,7 @@ export default function File({matterId, load, sharedFile, fromModal}: FileProps)
       )}
 
       {/* warning uploading file */}
-      {(isDeletingFile) && (
+      {(isDeletingFile || isDownloadingAll) && (
         <>
           <Overlay />
           <div className='waitingMessage'>
