@@ -26,7 +26,7 @@ import { languageGridPagination, languageGridEmpty } from 'Shared/utils/commonCo
 import { useLocation } from 'react-router-dom';
 import { Container, DropArea, TaskBar, TotalRegisters } from './styles';
 import { IMatterUploadFile } from '../../Interfaces/IMatter';
-import { CreateFileUpload, DeleteFile, DownloadAllFiles, DownloadFile, ListMatterFiles, ShareFile, ValidateFileUpload } from '../Services/MatterUploadData';
+import { CreateFileUpload, DeleteFile, DownloadFile, ListMatterFiles, ShareFile, ValidateFileUpload } from '../Services/MatterUploadData';
 
 interface FileProps {
   matterId: number;
@@ -295,23 +295,6 @@ export default function File({matterId, load, sharedFile, fromModal}: FileProps)
   }
 
 
-  const handleDownloadAllFiles = async () => {
-    try
-    {
-      setIsDownloadingAll(true)
-
-      // TODO: handle the zip returned by the endpoint once the backend contract is defined
-      await DownloadAllFiles(matterId, sharedFile)
-    }
-    catch(ex){
-      addToast({type: "error", title: "Operação NÃO realizada", description: 'Não foi possível fazer o download de todos os arquivos, tente novamente'})
-    }
-    finally{
-      setIsDownloadingAll(false)
-    }
-  }
-
-
   const handleShareFile = async(fileId: number) => {
     try
     {
@@ -537,7 +520,8 @@ export default function File({matterId, load, sharedFile, fromModal}: FileProps)
    
       setIsLoading(false)
     }
-    catch (err: any) {
+    catch (ex: any) {
+      addToast({type: "error", title: "Operação NÃO realizada", description: ex.response.data.Message})
     }
   }, [matterId])
 
@@ -575,14 +559,13 @@ export default function File({matterId, load, sharedFile, fromModal}: FileProps)
       {(accessCode?.includes('MATCONS') || accessCode?.includes('MATLEGAL') || accessCode === 'adm' || userType == 'C') && (
         <>
           <TaskBar>
-
             <button
               type="button"
               className="buttonLinkClick"
               style={{ padding:"0.7rem"}}
               title="Clique para fazer o download de todos os arquivos em um único .zip"
               disabled={totalRows === 0}
-              onClick={handleDownloadAllFiles}
+              onClick={handleDownload}
             >
               <FiDownloadCloud />
               Baixar Todos
@@ -599,7 +582,6 @@ export default function File({matterId, load, sharedFile, fromModal}: FileProps)
                 onChange={(e) => handleSaveFile(e)}
               />
             </label>
-
           </TaskBar>
 
           <TotalRegisters>
@@ -607,15 +589,6 @@ export default function File({matterId, load, sharedFile, fromModal}: FileProps)
             {' '}
             {totalRows}
           </TotalRegisters>
-
-          <br />
-          <div>
-            <button className="buttonClick" type='button' onClick={handleDownload}>
-              <FiDownload />
-              Baixar Todos
-          </button>
-          </div>
-
         </>
       )}
 

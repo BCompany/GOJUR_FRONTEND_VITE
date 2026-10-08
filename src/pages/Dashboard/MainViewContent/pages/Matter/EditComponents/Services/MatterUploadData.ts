@@ -19,20 +19,6 @@ export const DownloadFile = async(request: any) => {
 }
 
 
-// TODO: placeholder endpoint name, adjust when the backend endpoint that returns the zip is created
-export const DownloadAllFiles = async(matterId: number, isCustomerFiles: boolean) => {
-  const token = localStorage.getItem('@GoJur:token');
-
-  const response = api.post('/ProcessoArquivos/DownloadTodosArquivos', {
-    referenceId: matterId,
-    isCustomerFiles,
-    token
-  })
-
-  return response;
-}
-
-
 export const DeleteFile = async(request: any) => {
   const token = localStorage.getItem('@GoJur:token');
 
