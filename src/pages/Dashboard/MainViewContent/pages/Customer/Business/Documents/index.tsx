@@ -7,7 +7,7 @@
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable radix */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { FaFileAlt } from 'react-icons/fa';
 import { MdAttachFile } from 'react-icons/md';
 import { FiTrash, FiDownloadCloud } from 'react-icons/fi';
@@ -306,6 +306,42 @@ const BusinessDocument = () => {
   }
 
 
+  const handleDownload = useCallback(async () => {
+      try {
+        const response = await api.get('NegocioDocumento/BaixarArquivosPorNegocio', {
+          params:{ businessId, token: tokenapi }
+        });
+  
+        const bytes = base64ToArrayBuffer(response.data.amazonFile)
+        const blob = new Blob([bytes], { type: "application/octet-stream" });
+        const url = window.URL.createObjectURL(new Blob([blob]));
+        const link = document.createElement('a');
+      
+        link.href = url;
+        link.setAttribute('download', `${response.data.fileName}.zip`);
+        document.body.appendChild(link);
+        link.click();
+      }
+      catch (ex: any) {
+        addToast({type: "error", title: "Operação NÃO realizada", description: ex.response.data.Message})
+      }
+    }, [businessId, tokenapi])
+  
+  
+    function base64ToArrayBuffer(base64) {
+      const binaryString = window.atob(base64);
+      const binaryLen = binaryString.length;
+      const bytes = new Uint8Array(binaryLen);
+  
+      for (let i = 0; i < binaryLen; i++) {
+        const ascii = binaryString.charCodeAt(i);
+        bytes[i] = ascii;
+      }
+  
+      return bytes;
+    }
+
+
   return (
     <Container>
 
@@ -324,6 +360,19 @@ const BusinessDocument = () => {
         &nbsp;
       <MdAttachFile size={15} />
         &nbsp;Documentos
+        <br />
+
+        <button
+          type="button"
+          className="buttonLinkClick"
+          style={{ padding:"0.7rem"}}
+          title="Clique para fazer o download de todos os arquivos em um único .zip"
+          disabled={totalRows === 0}
+          onClick={handleDownload}
+        >
+          <FiDownloadCloud />
+          Baixar Todos
+        </button>
 
       <section>
         <DropArea

@@ -6,9 +6,10 @@
 /* eslint-disable radix */
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import api from 'services/api';
 import { format } from 'date-fns'
 import { FaFileAlt } from 'react-icons/fa';
-import { FiTrash, FiDownloadCloud } from 'react-icons/fi';
+import { FiTrash, FiDownloadCloud, FiDownload } from 'react-icons/fi';
 import { ImCloudUpload } from 'react-icons/im';
 import { FaFilePdf } from 'react-icons/fa';
 import { SiMicrosoftexcel } from 'react-icons/si';
@@ -43,6 +44,7 @@ export default function File({matterId, load, sharedFile, fromModal}: FileProps)
   const dropFilesAreaRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isDeletingFile, setIsDeletingFile] = useState<boolean>(false);
+  const [isDownloadingAll, setIsDownloadingAll] = useState<boolean>(false);
   const [filesUploadIds, setFilesUploadIds] = useState<Number[]>([]);
   const [documentList, setDocumentList] = useState<IMatterUploadFile[]>([]);
   const [totalRows, setTotalRows] = useState<number>(0);
@@ -498,6 +500,46 @@ export default function File({matterId, load, sharedFile, fromModal}: FileProps)
   };
 
 
+  const handleDownload = useCallback(async () => {
+    try {
+      setIsLoading(true)
+  
+      const response = await api.get('Processo/BaixarArquivosPorProcesso', {
+        params:{ matterId, token }
+      });
+
+      const bytes = base64ToArrayBuffer(response.data.amazonFile)
+      const blob = new Blob([bytes], { type: "application/octet-stream" });
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement('a');
+    
+      link.href = url;
+      link.setAttribute('download', `${response.data.fileName}.zip`);
+      document.body.appendChild(link);
+      link.click();
+   
+      setIsLoading(false)
+    }
+    catch (ex: any) {
+      addToast({type: "error", title: "Operação NÃO realizada", description: ex.response.data.Message})
+    }
+  }, [matterId])
+
+
+  function base64ToArrayBuffer(base64) {
+    const binaryString = window.atob(base64);
+    const binaryLen = binaryString.length;
+    const bytes = new Uint8Array(binaryLen);
+
+    for (let i = 0; i < binaryLen; i++) {
+      const ascii = binaryString.charCodeAt(i);
+      bytes[i] = ascii;
+    }
+
+    return bytes;
+  }
+
+
   if (isLoading) {
     return (
       <Container>
@@ -517,6 +559,17 @@ export default function File({matterId, load, sharedFile, fromModal}: FileProps)
       {(accessCode?.includes('MATCONS') || accessCode?.includes('MATLEGAL') || accessCode === 'adm' || userType == 'C') && (
         <>
           <TaskBar>
+            <button
+              type="button"
+              className="buttonLinkClick"
+              style={{ padding:"0.7rem"}}
+              title="Clique para fazer o download de todos os arquivos em um único .zip"
+              disabled={totalRows === 0}
+              onClick={handleDownload}
+            >
+              <FiDownloadCloud />
+              Baixar Todos
+            </button>
 
             <label className="buttonLinkClick" style={{ padding:"0.7rem"}} title="Clique para selecionar arquivos em seu computador">
               <FaFileAlt />
@@ -529,7 +582,6 @@ export default function File({matterId, load, sharedFile, fromModal}: FileProps)
                 onChange={(e) => handleSaveFile(e)}
               />
             </label>
-
           </TaskBar>
 
           <TotalRegisters>
@@ -600,7 +652,7 @@ export default function File({matterId, load, sharedFile, fromModal}: FileProps)
       )}
 
       {/* warning uploading file */}
-      {(isDeletingFile) && (
+      {(isDeletingFile || isDownloadingAll) && (
         <>
           <Overlay />
           <div className='waitingMessage'>
