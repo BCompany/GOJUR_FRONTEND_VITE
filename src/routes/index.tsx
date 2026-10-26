@@ -20,6 +20,7 @@ import APIDocumentation from 'pages/APIDocumentation';
 import Subscriber from 'pages/Subscriber';
 import FinancialInformation from 'pages/FinancialInformation';
 import CustomerLawyer from 'pages/CustomerLawyer';
+import McpAuthorize from 'pages/McpAuthorize';
 import DashboardPath from 'pages/Dashboard';
 import Dashboard from 'pages/Dashboard';
 import Agenda from 'pages/Dashboard';
@@ -147,6 +148,7 @@ const Routes: React.FC = () => {
       <Route path="/companyfiles" exact component={DashboardPath} isPrivate />
       <Route path="/matter/monitoring" exact component={Matter} isPrivate />
       <Route path="/apidocumentation" exact component={APIDocumentation} isPrivate />
+      <Route path="/mcp/authorize" exact component={McpAuthorize} isPrivate />
 
     </Switch>
   );

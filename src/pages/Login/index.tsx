@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useHistory, useLocation } from "react-router-dom";
 import { FiMail, FiLock } from "react-icons/fi";
 import { FaFacebookSquare, FaInstagram } from "react-icons/fa";
 
@@ -28,11 +28,16 @@ interface Inputs {
   password: string;
 }
 
+interface LocationState {
+  from?: { pathname: string; search: string };
+}
+
 const LoginScreen: React.FC = () => {
   const formRef = useRef<HTMLFormElement>(null);
   const { signIn, name } = useAuth();
   const { addToast } = useToast();
   const history = useHistory();
+  const location = useLocation<LocationState>();
 
   const { handleSubmit, control } = useForm<Inputs>();
 
@@ -81,6 +86,13 @@ const LoginScreen: React.FC = () => {
         localStorage.setItem("@GoJur:LoginType", "N");
         localStorage.setItem("@GoJur:firstPage", "S");
        
+        // MCP OAuth flow breaks if any query param is lost, so return to the exact original URL
+        const from = location.state?.from;
+        if (from?.pathname.toLowerCase().startsWith("/mcp/")) {
+          history.push(`${from.pathname}${from.search}`);
+          return;
+        }
+
         history.push("/clientRedirect");
       } catch (err: any) {
         if (err instanceof Yup.ValidationError) {
@@ -98,7 +110,7 @@ const LoginScreen: React.FC = () => {
         });
       }
     },
-    [signIn, addToast, history]
+    [signIn, addToast, history, location]
   );
 
   return (
