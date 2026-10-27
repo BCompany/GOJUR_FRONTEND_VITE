@@ -231,7 +231,6 @@ export default function UploadList() {
       ref.current.value = "";
     }
     catch(e){
-      console.log(e)
       setUploadingStatus('none')
       setIsDragging(false)
     }
@@ -260,7 +259,7 @@ export default function UploadList() {
         if (existsFileName == undefined){
           documentListData.push({
             id: 0,
-            fileName: item.fileName.toLowerCase(),
+            fileName: item.fileName,
             dateUpload: item.dateUpload,
             customerId,
             tokenPagination: "",
@@ -279,7 +278,6 @@ export default function UploadList() {
       LoadDocuments()
     }
     catch(e){
-      console.log(e)
       setIsDragging(false)
     }
   }

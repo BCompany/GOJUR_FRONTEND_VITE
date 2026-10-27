@@ -234,7 +234,7 @@ const BusinessDocument = () => {
           documentListData.push({
             id: 0,
             businessId,
-            fileName: item.fileName.toLowerCase(),
+            fileName: item.fileName,
             dateUpload: item.dateUpload,
             tokenPagination: "",
             Count: totalRows + 1
