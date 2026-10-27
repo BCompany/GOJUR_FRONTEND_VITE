@@ -2,6 +2,7 @@
 window['web.config'] = {
   // ApiBaseUrl: 'http://localhost:60523',
   ApiBaseUrl: 'https://homoapi.gojur.com.br',
+  McpBaseUrl: 'http://localhost:5199',
   redirectUrl: 'http://bcompany-homo.ddns.net/',
   mainUrl: 'https://app.gojur.com.br/',
   enviroment: 'Homologação',

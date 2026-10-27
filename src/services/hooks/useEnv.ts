@@ -1,5 +1,6 @@
 interface envProps {
   ApiBaseUrl: string;
+  McpBaseUrl: string;
   enviroment: string;
   redirectUrl: string;
   mainUrl: string;
