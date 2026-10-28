@@ -205,7 +205,6 @@ const BusinessDocument = () => {
       ref.current.value = "";
     }
     catch(e){
-      console.log(e)
       setUploadingStatus('none')
       setIsDragging(false)
     }
@@ -235,7 +234,7 @@ const BusinessDocument = () => {
           documentListData.push({
             id: 0,
             businessId,
-            fileName: item.fileName.toLowerCase(),
+            fileName: item.fileName,
             dateUpload: item.dateUpload,
             tokenPagination: "",
             Count: totalRows + 1
@@ -253,16 +252,19 @@ const BusinessDocument = () => {
       LoadDocuments()
     }
     catch(e){
-      console.log(e)
       setIsDragging(false)
     }
   }
 
 
-  const handleDownloadFile = async (fileName: any) => {
+  const handleDownloadFile = async (fileId: any) => {
+
+    const document = documentList.find(doc => doc.id === fileId);
+
     const response = await api.post('/NegocioDocumento/DownloadFile', {
       referenceId:businessId,
-      fileName: fileName.toLowerCase(),
+      fileName: document.fileName,
+      fileNameAmazon: document.fileNameAmazon,
       token: tokenapi
     })
 
@@ -427,7 +429,7 @@ const BusinessDocument = () => {
                       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                       <FiDownloadCloud
                         title="Clique para fazer o download do arquivo"
-                        onClick={() => handleDownloadFile(item.fileName)}
+                        onClick={() => handleDownloadFile(item.id)}
                       />
                     </div>
                     <div>

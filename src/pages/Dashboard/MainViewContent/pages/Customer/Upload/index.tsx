@@ -231,7 +231,6 @@ export default function UploadList() {
       ref.current.value = "";
     }
     catch(e){
-      console.log(e)
       setUploadingStatus('none')
       setIsDragging(false)
     }
@@ -260,7 +259,7 @@ export default function UploadList() {
         if (existsFileName == undefined){
           documentListData.push({
             id: 0,
-            fileName: item.fileName.toLowerCase(),
+            fileName: item.fileName,
             dateUpload: item.dateUpload,
             customerId,
             tokenPagination: "",
@@ -279,21 +278,23 @@ export default function UploadList() {
       LoadDocuments()
     }
     catch(e){
-      console.log(e)
       setIsDragging(false)
     }
   }
 
 
-  const handleDownloadFile = async (fileName: any) => {
+  const handleDownloadFile = async (fileId: any) => {
     // when is a redirect route, get from localsotrage customer id because in query string url has writeen "redirect string" instead of customer id
     if (Number.isNaN(customerId)){
       customerId = GetCustomerIdByFilterStorage();
     }
 
+    const document = documentList.find(doc => doc.id === fileId);
+
     const response = await api.post('/Clientes/DownloadFile', {
       referenceId:customerId,
-      fileName: fileName.toLowerCase(),
+      fileName: document.fileName,
+      fileNameAmazon: document.fileNameAmazon,
       token: tokenapi
     })
 
@@ -347,7 +348,7 @@ export default function UploadList() {
   const handleClick = (props: any) => {
   // call download function
     if (props.column.name === 'download'){
-      handleDownloadFile(props.row.fileName)
+      handleDownloadFile(props.row.id)
     }
 
     // call delete function
